@@ -6,6 +6,7 @@
 using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Interfaces;
 using eShop.Orders.API.Services.Interfaces;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
@@ -15,31 +16,19 @@ namespace eShop.Orders.API.Services;
 /// Provides business logic for order management including placement, retrieval, and deletion operations.
 /// Implements comprehensive observability through distributed tracing and metrics.
 /// </summary>
-public sealed class OrderService : IOrderService
+public sealed class OrderService : IOrderService, IDisposable
 {
     private readonly ILogger<OrderService> _logger;
     private readonly IOrderRepository _orderRepository;
     private readonly IOrdersMessageHandler _ordersMessageHandler;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ActivitySource _activitySource;
-
-    private static readonly Meter Meter = new("eShop.Orders.API");
-    private static readonly Counter<long> OrdersPlacedCounter = Meter.CreateCounter<long>(
-        "eShop.orders.placed",
-        unit: "order",
-        description: "Total number of orders successfully placed in the system");
-    private static readonly Histogram<double> OrderProcessingDuration = Meter.CreateHistogram<double>(
-        "eShop.orders.processing.duration",
-        unit: "ms",
-        description: "Time taken to process order operations in milliseconds");
-    private static readonly Counter<long> OrderProcessingErrors = Meter.CreateCounter<long>(
-        "eShop.orders.processing.errors",
-        unit: "error",
-        description: "Total number of order processing errors categorized by error type");
-    private static readonly Counter<long> OrdersDeletedCounter = Meter.CreateCounter<long>(
-        "eShop.orders.deleted",
-        unit: "order",
-        description: "Total number of orders successfully deleted from the system");
+    private readonly Meter _meter;
+    private readonly Counter<long> _ordersPlacedCounter;
+    private readonly Histogram<double> _orderProcessingDuration;
+    private readonly Counter<long> _orderProcessingErrors;
+    private readonly Counter<long> _ordersDeletedCounter;
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OrderService"/> class.
@@ -49,19 +38,41 @@ public sealed class OrderService : IOrderService
     /// <param name="ordersMessageHandler">The handler for publishing order messages.</param>
     /// <param name="serviceScopeFactory">The service scope factory for creating isolated scopes.</param>
     /// <param name="activitySource">The activity source for distributed tracing.</param>
+    /// <param name="meterFactory">The meter factory for creating metrics instruments.</param>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public OrderService(
         ILogger<OrderService> logger,
         IOrderRepository orderRepository,
         IOrdersMessageHandler ordersMessageHandler,
         IServiceScopeFactory serviceScopeFactory,
-        ActivitySource activitySource)
+        ActivitySource activitySource,
+        IMeterFactory meterFactory)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
         _ordersMessageHandler = ordersMessageHandler ?? throw new ArgumentNullException(nameof(ordersMessageHandler));
         _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
         _activitySource = activitySource ?? throw new ArgumentNullException(nameof(activitySource));
+        ArgumentNullException.ThrowIfNull(meterFactory);
+
+        // Create meter using factory for proper lifecycle management
+        _meter = meterFactory.Create("eShop.Orders.API");
+        _ordersPlacedCounter = _meter.CreateCounter<long>(
+            "eShop.orders.placed",
+            unit: "order",
+            description: "Total number of orders successfully placed in the system");
+        _orderProcessingDuration = _meter.CreateHistogram<double>(
+            "eShop.orders.processing.duration",
+            unit: "ms",
+            description: "Time taken to process order operations in milliseconds");
+        _orderProcessingErrors = _meter.CreateCounter<long>(
+            "eShop.orders.processing.errors",
+            unit: "error",
+            description: "Total number of order processing errors categorized by error type");
+        _ordersDeletedCounter = _meter.CreateCounter<long>(
+            "eShop.orders.deleted",
+            unit: "order",
+            description: "Total number of orders successfully deleted from the system");
     }
 
     /// <summary>
@@ -110,10 +121,10 @@ public sealed class OrderService : IOrderService
             {
                 { "order.status", "success" }
             };
-            OrdersPlacedCounter.Add(1, metricTags);
+            _ordersPlacedCounter.Add(1, metricTags);
             stopwatch.Stop();
             var duration = stopwatch.Elapsed.TotalMilliseconds;
-            OrderProcessingDuration.Record(duration, metricTags);
+            _orderProcessingDuration.Record(duration, metricTags);
 
             _logger.LogInformation("Order {OrderId} placed successfully in {Duration:F2}ms", order.Id, duration);
             return order;
@@ -125,7 +136,7 @@ public sealed class OrderService : IOrderService
                 { "error.type", ex.GetType().Name },
                 { "order.status", "failed" }
             };
-            OrderProcessingErrors.Add(1, errorTags);
+            _orderProcessingErrors.Add(1, errorTags);
 
             // Record exception with full details in activity
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
@@ -166,9 +177,8 @@ public sealed class OrderService : IOrderService
 
         _logger.LogInformation("Placing batch of {Count} orders with parallel processing", ordersList.Count);
 
-        var successfulOrders = new List<Order>();
-        var skippedOrders = new List<Order>();
-        var lockObject = new object();
+        var successfulOrders = new ConcurrentBag<Order>();
+        var skippedOrders = new ConcurrentBag<Order>();
 
         // Process in smaller batches to avoid overwhelming the database
         const int processBatchSize = 50;
@@ -221,16 +231,13 @@ public sealed class OrderService : IOrderService
                     var scopedMessageHandler = scope.ServiceProvider.GetRequiredService<IOrdersMessageHandler>();
 
                     var result = await ProcessSingleOrderAsync(order, scopedRepository, scopedMessageHandler, internalToken);
-                    lock (lockObject)
+                    if (result == OrderProcessResult.Success)
                     {
-                        if (result == OrderProcessResult.Success)
-                        {
-                            successfulOrders.Add(order);
-                        }
-                        else if (result == OrderProcessResult.AlreadyExists)
-                        {
-                            skippedOrders.Add(order);
-                        }
+                        successfulOrders.Add(order);
+                    }
+                    else if (result == OrderProcessResult.AlreadyExists)
+                    {
+                        skippedOrders.Add(order);
                     }
                     return result;
                 }
@@ -440,7 +447,7 @@ public sealed class OrderService : IOrderService
             {
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 _logger.LogInformation("Order {OrderId} deleted successfully", orderId);
-                OrdersDeletedCounter.Add(1, new TagList { { "order.status", "success" } });
+                _ordersDeletedCounter.Add(1, new TagList { { "order.status", "success" } });
             }
             else
             {
@@ -483,7 +490,6 @@ public sealed class OrderService : IOrderService
         }
 
         var deletedCount = 0;
-        var lockObject = new object();
 
         var options = new ParallelOptions
         {
@@ -511,11 +517,8 @@ public sealed class OrderService : IOrderService
                 var deleted = await scopedRepository.DeleteOrderAsync(orderId, ct);
                 if (deleted)
                 {
-                    lock (lockObject)
-                    {
-                        deletedCount++;
-                    }
-                    OrdersDeletedCounter.Add(1, new TagList { { "order.status", "success" } });
+                    Interlocked.Increment(ref deletedCount);
+                    _ordersDeletedCounter.Add(1, new TagList { { "order.status", "success" } });
                 }
             }
             catch (Exception ex)
@@ -585,5 +588,19 @@ public sealed class OrderService : IOrderService
             _logger.LogError(ex, "Failed to retrieve messages from topics");
             throw;
         }
+    }
+
+    /// <summary>
+    /// Disposes the meter and releases managed resources.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _meter.Dispose();
+        _disposed = true;
     }
 }

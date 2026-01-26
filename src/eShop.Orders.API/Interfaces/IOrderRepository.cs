@@ -22,10 +22,23 @@ public interface IOrderRepository
 
     /// <summary>
     /// Retrieves all orders from the data store asynchronously.
+    /// WARNING: This method loads all orders into memory. For large datasets, use GetOrdersPagedAsync instead.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A collection of all orders.</returns>
     Task<IEnumerable<Order>> GetAllOrdersAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves orders with pagination support for efficient handling of large datasets.
+    /// </summary>
+    /// <param name="pageNumber">The 1-based page number to retrieve.</param>
+    /// <param name="pageSize">The number of orders per page (max 100).</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A tuple containing the orders for the page and the total count of all orders.</returns>
+    Task<(IEnumerable<Order> Orders, int TotalCount)> GetOrdersPagedAsync(
+        int pageNumber = 1,
+        int pageSize = 20,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a specific order by its unique identifier.

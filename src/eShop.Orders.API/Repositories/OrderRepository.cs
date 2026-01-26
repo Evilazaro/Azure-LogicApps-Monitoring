@@ -119,6 +119,7 @@ public sealed class OrderRepository : IOrderRepository
 
     /// <summary>
     /// Retrieves all orders from the database asynchronously with optimized query.
+    /// WARNING: This method loads all orders into memory. For large datasets, use GetOrdersPagedAsync instead.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A collection of all orders.</returns>
@@ -164,6 +165,84 @@ public sealed class OrderRepository : IOrderRepository
                 { "exception.type", ex.GetType().FullName ?? ex.GetType().Name }
             }));
             _logger.LogError(ex, "Failed to retrieve all orders from database");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Retrieves orders with pagination support for efficient handling of large datasets.
+    /// </summary>
+    /// <param name="pageNumber">The 1-based page number to retrieve.</param>
+    /// <param name="pageSize">The number of orders per page (max 100).</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A tuple containing the orders for the page and the total count of all orders.</returns>
+    public async Task<(IEnumerable<Order> Orders, int TotalCount)> GetOrdersPagedAsync(
+        int pageNumber = 1,
+        int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        // Validate and normalize pagination parameters
+        pageNumber = Math.Max(1, pageNumber);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        using var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("GetOrdersPagedStarted", tags: new ActivityTagsCollection
+        {
+            { "page.number", pageNumber },
+            { "page.size", pageSize }
+        }));
+
+        // Add trace context to log scope for correlation
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "none",
+            ["PageNumber"] = pageNumber,
+            ["PageSize"] = pageSize
+        });
+
+        try
+        {
+            _logger.LogDebug("Retrieving orders page {PageNumber} with size {PageSize} from database", pageNumber, pageSize);
+
+            // Get total count for pagination metadata
+            var totalCount = await _dbContext.Orders
+                .AsNoTracking()
+                .CountAsync(cancellationToken);
+
+            // Get paginated orders
+            var orderEntities = await _dbContext.Orders
+                .Include(o => o.Products)
+                .AsNoTracking()
+                .AsSplitQuery()
+                .OrderByDescending(o => o.Date)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            var orders = orderEntities.Select(e => e.ToDomainModel()).ToList();
+
+            activity?.AddEvent(new ActivityEvent("GetOrdersPagedCompleted", tags: new ActivityTagsCollection
+            {
+                { "orders.count", orders.Count },
+                { "total.count", totalCount }
+            }));
+
+            _logger.LogDebug("Retrieved {Count} orders (page {PageNumber}, total {TotalCount}) from database",
+                orders.Count, pageNumber, totalCount);
+
+            return (orders, totalCount);
+        }
+        catch (Exception ex)
+        {
+            activity?.AddEvent(new ActivityEvent("GetOrdersPagedFailed", tags: new ActivityTagsCollection
+            {
+                { "error.type", ex.GetType().Name },
+                { "exception.message", ex.Message },
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name }
+            }));
+            _logger.LogError(ex, "Failed to retrieve paginated orders from database (page {PageNumber}, size {PageSize})",
+                pageNumber, pageSize);
             throw;
         }
     }
