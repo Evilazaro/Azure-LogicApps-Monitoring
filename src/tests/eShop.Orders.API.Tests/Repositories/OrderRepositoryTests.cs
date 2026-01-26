@@ -9,7 +9,6 @@ using eShop.Orders.API.Interfaces;
 using eShop.Orders.API.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
 namespace eShop.Orders.API.Tests.Repositories;

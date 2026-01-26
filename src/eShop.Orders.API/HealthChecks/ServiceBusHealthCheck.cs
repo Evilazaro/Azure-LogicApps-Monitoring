@@ -4,7 +4,6 @@
 // =============================================================================
 
 using Azure.Messaging.ServiceBus;
-using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Diagnostics;
 
