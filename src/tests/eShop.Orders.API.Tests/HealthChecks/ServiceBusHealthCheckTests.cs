@@ -131,7 +131,7 @@ public sealed class ServiceBusHealthCheckTests
         // Assert
         Assert.AreEqual(HealthStatus.Healthy, result.Status);
         Assert.IsNotNull(result.Description);
-        Assert.IsTrue(result.Description.Contains(TestTopicName));
+        StringAssert.Contains(result.Description, TestTopicName);
     }
 
     [TestMethod]
@@ -153,7 +153,8 @@ public sealed class ServiceBusHealthCheckTests
         // Assert - Transient errors return Degraded, not Unhealthy
         Assert.AreEqual(HealthStatus.Degraded, result.Status);
         Assert.IsNotNull(result.Description);
-        Assert.IsTrue(result.Description.Contains("transient error") || result.Description.Contains("degraded"));
+        Assert.IsTrue(result.Description.Contains("transient error") || result.Description.Contains("degraded"),
+            $"Expected description to contain 'transient error' or 'degraded', but was: {result.Description}");
         Assert.IsNotNull(result.Exception);
         Assert.IsInstanceOfType<ServiceBusException>(result.Exception);
     }
@@ -176,7 +177,7 @@ public sealed class ServiceBusHealthCheckTests
         // Assert
         Assert.AreEqual(HealthStatus.Unhealthy, result.Status);
         Assert.IsNotNull(result.Description);
-        Assert.IsTrue(result.Description.Contains("Service Bus connection failed"));
+        StringAssert.Contains(result.Description, "Service Bus connection failed");
         Assert.IsNotNull(result.Exception);
         Assert.IsInstanceOfType<ServiceBusException>(result.Exception);
     }
@@ -197,7 +198,7 @@ public sealed class ServiceBusHealthCheckTests
         // Assert
         Assert.AreEqual(HealthStatus.Unhealthy, result.Status);
         Assert.IsNotNull(result.Description);
-        Assert.IsTrue(result.Description.Contains("Service Bus connection failed"));
+        StringAssert.Contains(result.Description, "Service Bus connection failed");
         Assert.IsNotNull(result.Exception);
         Assert.IsInstanceOfType<InvalidOperationException>(result.Exception);
     }
@@ -225,7 +226,7 @@ public sealed class ServiceBusHealthCheckTests
         // Assert
         Assert.AreEqual(HealthStatus.Healthy, result.Status);
         Assert.IsNotNull(result.Description);
-        Assert.IsTrue(result.Description.Contains(DefaultTopicName));
+        StringAssert.Contains(result.Description, DefaultTopicName);
         serviceBusClient.Received(1).CreateSender(DefaultTopicName);
     }
 
@@ -348,7 +349,7 @@ public sealed class ServiceBusHealthCheckTests
         // Assert
         Assert.AreEqual(HealthStatus.Healthy, result.Status);
         Assert.IsNotNull(result.Description);
-        Assert.IsTrue(result.Description.Contains(customTopicName));
+        StringAssert.Contains(result.Description, customTopicName);
     }
 
     [TestMethod]
