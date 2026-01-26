@@ -1,4 +1,26 @@
+---
+title: "clean-secrets Hook"
+description: "Clears .NET user secrets for all projects in the solution for a clean state"
+author: "Evilazaro | Principal Cloud Solution Architect | Microsoft"
+date: "January 2026"
+version: "2.0.1"
+tags: ["clean-secrets", "user-secrets", "dotnet", "configuration", "utility"]
+---
+
 # 🧹 clean-secrets
+
+> [!NOTE]
+> **Target Audience**: Developers, DevOps Engineers  
+> **Reading Time**: ~8 minutes
+
+<details>
+<summary>📖 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [deploy-workflow](deploy-workflow.md) | [📚 Index](README.md) | [configure-federated-credential](configure-federated-credential.md) |
+
+</details>
 
 Clears .NET user secrets for all projects in the solution.
 
@@ -317,6 +339,12 @@ dotnet user-secrets list --project ./app.AppHost
 ```
 
 ---
+
+<div align="center">
+
+**[← deploy-workflow](deploy-workflow.md)** · **[⬆️ Back to Top](#-clean-secrets)** · **[configure-federated-credential →](configure-federated-credential.md)**
+
+</div>
 
 **Version**: 2.0.1  
 **Author**: Evilazaro | Principal Cloud Solution Architect | Microsoft  

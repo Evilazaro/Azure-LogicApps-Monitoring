@@ -1,4 +1,26 @@
+---
+title: "sql-managed-identity-config Hook"
+description: "Configures Azure SQL Database user with Managed Identity authentication for passwordless access"
+author: "Azure Logic Apps Monitoring Team"
+date: "January 2026"
+version: "1.0.0"
+tags: ["sql-database", "managed-identity", "entra-id", "authentication", "azure-sql"]
+---
+
 # 🗄️ sql-managed-identity-config
+
+> [!NOTE]
+> **Target Audience**: Database Administrators, DevOps Engineers, Security Engineers  
+> **Reading Time**: ~12 minutes
+
+<details>
+<summary>📖 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [configure-federated-credential](configure-federated-credential.md) | [📚 Index](README.md) | [Generate-Orders](Generate-Orders.md) |
+
+</details>
 
 Configures Azure SQL Database user with Managed Identity authentication.
 

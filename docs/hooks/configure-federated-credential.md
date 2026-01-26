@@ -1,4 +1,26 @@
+---
+title: "configure-federated-credential Hook"
+description: "Configures federated identity credentials for GitHub Actions OIDC authentication with Azure"
+author: "Azure Developer CLI Hook"
+date: "January 2026"
+version: "1.0.0"
+tags: ["federated-credential", "oidc", "github-actions", "azure-ad", "ci-cd"]
+---
+
 # 🔐 configure-federated-credential
+
+> [!NOTE]
+> **Target Audience**: DevOps Engineers, Security Engineers  
+> **Reading Time**: ~12 minutes
+
+<details>
+<summary>📖 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [clean-secrets](clean-secrets.md) | [📚 Index](README.md) | [sql-managed-identity-config](sql-managed-identity-config.md) |
+
+</details>
 
 Configures federated identity credentials for GitHub Actions OIDC authentication.
 
@@ -367,6 +389,12 @@ az ad app federated-credential show --id <app-object-id> --federated-credential-
 ```
 
 ---
+
+<div align="center">
+
+**[← clean-secrets](clean-secrets.md)** · **[⬆️ Back to Top](#-configure-federated-credential)** · **[sql-managed-identity-config →](sql-managed-identity-config.md)**
+
+</div>
 
 **Version**: 1.0.0  
 **Author**: Azure Developer CLI Hook  
