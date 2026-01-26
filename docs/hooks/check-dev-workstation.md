@@ -1,13 +1,31 @@
 ---
+title: check-dev-workstation Script Documentation
+description: Developer-friendly validation wrapper script that checks workstation prerequisites for the Azure Logic Apps Monitoring solution
 name: check-dev-workstation
 version: 1.0.0
 author: Evilazaro | Principal Cloud Solution Architect | Microsoft
+date: 2026-01-26
 last_modified: 2026-01-07
 license: MIT
 languages: [PowerShell, Bash]
+tags: [validation, prerequisites, developer-tools, workstation, azure, dotnet]
 ---
 
 # 💻 check-dev-workstation
+
+> [!NOTE]
+> **Target Audience:** Developers, New Team Members, CI/CD Engineers  
+> **Estimated Reading Time:** 6 minutes
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+<br>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [sql-managed-identity-config](sql-managed-identity-config.md) | [📑 Index](README.md) | [clean-secrets](clean-secrets.md) |
+
+</details>
 
 ---
 
@@ -91,7 +109,8 @@ flowchart TD
 | Runtime | Bash | >= 4.0 | `bash --version` | ✅ |
 | Script | preprovision.ps1 / preprovision.sh | N/A | Must exist in same directory | ✅ |
 
-> **ℹ️ Note:** All other prerequisites are validated by this script, not required to run it.
+> [!NOTE]
+> All other prerequisites are validated by this script, not required to run it.
 
 [⬆️ Back to top](#-check-dev-workstation)
 
@@ -122,7 +141,8 @@ flowchart TD
 
 **Environment Variables Read:**
 
-> **ℹ️ Note:** None — all validation is performed by preprovision script.
+> [!NOTE]
+> None — all validation is performed by preprovision script.
 
 **Files/Paths Expected:**
 
@@ -256,7 +276,8 @@ flowchart TD
 
 ### 📝 Logging Security
 
-> **✅ Security Features:**
+> [!TIP]
+> **Security Features:**
 >
 > - **Sensitive data masking:** Yes — preprovision handles masking
 > - **Audit trail:** Standard console output
@@ -267,7 +288,8 @@ flowchart TD
 
 ## 🚧 Known Limitations
 
-> **⚠️ Important Notes:**
+> [!WARNING]
+> **Important Notes:**
 >
 > - Requires preprovision script in the same directory
 > - Cannot fix issues — only reports them
@@ -298,3 +320,11 @@ flowchart TD
 | 1.0.0 | 2026-01-07 | Initial release |
 
 [⬆️ Back to top](#-check-dev-workstation)
+
+---
+
+<div align="center">
+
+**[⬅️ Previous: sql-managed-identity-config](sql-managed-identity-config.md)** · **[📑 Index](README.md)** · **[Next: clean-secrets ➡️](clean-secrets.md)**
+
+</div>

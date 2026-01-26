@@ -1,13 +1,31 @@
 ---
+title: clean-secrets Script Documentation
+description: Clears .NET user secrets for all projects in the Azure Logic Apps Monitoring solution to ensure clean configuration state
 name: clean-secrets
 version: 2.0.1
 author: Evilazaro | Principal Cloud Solution Architect | Microsoft
+date: 2026-01-26
 last_modified: 2026-01-06
 license: MIT
 languages: [PowerShell, Bash]
+tags: [secrets, dotnet, user-secrets, cleanup, configuration, security]
 ---
 
 # 🧹 clean-secrets
+
+> [!NOTE]
+> **Target Audience:** Developers, DevOps Engineers  
+> **Estimated Reading Time:** 7 minutes
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+<br>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [postinfradelete](postinfradelete.md) | [📑 Index](README.md) | [configure-federated-credential](configure-federated-credential.md) |
+
+</details>
 
 ---
 
@@ -140,7 +158,8 @@ flowchart TD
 
 **Environment Variables Read:**
 
-> **ℹ️ Note:** None required.
+> [!NOTE]
+> None required.
 
 **Files/Paths Expected:**
 
@@ -280,7 +299,8 @@ flowchart TD
 
 ### 📝 Logging Security
 
-> **✅ Security Features:**
+> [!TIP]
+> **Security Features:**
 >
 > - **Sensitive data masking:** Secret values never logged (only cleared)
 > - **Audit trail:** Timestamped operation logs
@@ -291,7 +311,8 @@ flowchart TD
 
 ## 🚧 Known Limitations
 
-> **⚠️ Important Notes:**
+> [!WARNING]
+> **Important Notes:**
 >
 > - Only clears secrets for predefined projects (not configurable)
 > - Requires projects to have been initialized with user secrets
@@ -324,3 +345,11 @@ flowchart TD
 | 1.0.0 | 2025-01-01 | Initial release |
 
 [⬆️ Back to top](#-clean-secrets)
+
+---
+
+<div align="center">
+
+**[⬅️ Previous: postinfradelete](postinfradelete.md)** · **[📑 Index](README.md)** · **[Next: configure-federated-credential ➡️](configure-federated-credential.md)**
+
+</div>

@@ -1,13 +1,31 @@
 ---
+title: deploy-workflow Script Documentation
+description: Deploys Logic Apps Standard workflow definitions from local OrdersManagement project to Azure with environment variable resolution
 name: deploy-workflow
 version: 2.0.1
 author: Azure DevOps Team
+date: 2026-01-26
 last_modified: 2026-01-06
 license: MIT
 languages: [PowerShell, Bash]
+tags: [deployment, logic-apps, workflows, azure, azd, zip-deploy, api-connections]
 ---
 
 # 🚀 deploy-workflow
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Cloud Architects, Developers  
+> **Estimated Reading Time:** 10 minutes
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+<br>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [configure-federated-credential](configure-federated-credential.md) | [📑 Index](README.md) | [Generate-Orders](Generate-Orders.md) |
+
+</details>
 
 ---
 
@@ -313,7 +331,8 @@ sudo yum install jq zip
 
 ### 📝 Logging Security
 
-> **✅ Security Features:**
+> [!TIP]
+> **Security Features:**
 >
 > - **Sensitive data masking:** Connection strings resolved but not logged in full
 > - **Audit trail:** Deployment logs with timestamps
@@ -324,7 +343,8 @@ sudo yum install jq zip
 
 ## 🚧 Known Limitations
 
-> **⚠️ Important Notes:**
+> [!WARNING]
+> **Important Notes:**
 >
 > - Placeholder resolution only supports `${VARIABLE}` format
 > - Unresolved placeholders generate warnings but don't fail deployment
@@ -356,3 +376,11 @@ sudo yum install jq zip
 | 1.0.0 | 2025-06-01 | Initial release |
 
 [⬆️ Back to top](#-deploy-workflow)
+
+---
+
+<div align="center">
+
+**[⬅️ Previous: configure-federated-credential](configure-federated-credential.md)** · **[📑 Index](README.md)** · **[Next: Generate-Orders ➡️](Generate-Orders.md)**
+
+</div>

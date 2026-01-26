@@ -1,13 +1,31 @@
 ---
+title: configure-federated-credential Script Documentation
+description: Configures federated identity credentials for GitHub Actions OIDC authentication in Azure AD App Registration
 name: configure-federated-credential
 version: 1.0.0
 author: Azure Developer CLI Hook
+date: 2026-01-26
 last_modified: 2026-01-06
 license: MIT
 languages: [PowerShell, Bash]
+tags: [oidc, github-actions, federated-identity, azure-ad, entra-id, authentication, security]
 ---
 
 # 🔐 configure-federated-credential
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Security Engineers, Platform Engineers  
+> **Estimated Reading Time:** 10 minutes
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+<br>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [clean-secrets](clean-secrets.md) | [📑 Index](README.md) | [deploy-workflow](deploy-workflow.md) |
+
+</details>
 
 ---
 
@@ -172,7 +190,8 @@ sudo yum install jq
 
 **Environment Variables Read:**
 
-> **ℹ️ Note:** None required — can be passed as parameters.
+> [!NOTE]
+> None required — can be passed as parameters.
 
 **Required API Permissions:**
 
@@ -315,7 +334,8 @@ sudo yum install jq
 
 ### 📝 Logging Security
 
-> **✅ Security Features:**
+> [!TIP]
+> **Security Features:**
 >
 > - **Sensitive data masking:** Object IDs shown, no secrets logged
 > - **Audit trail:** Azure AD audit logs capture credential creation
@@ -326,7 +346,8 @@ sudo yum install jq
 
 ## 🚧 Known Limitations
 
-> **⚠️ Important Notes:**
+> [!WARNING]
+> **Important Notes:**
 >
 > - Only configures environment-scoped credentials (not branch or PR)
 > - Interactive prompt required if App name not provided
@@ -356,3 +377,11 @@ sudo yum install jq
 | 1.0.0 | 2026-01-06 | Initial release |
 
 [⬆️ Back to top](#-configure-federated-credential)
+
+---
+
+<div align="center">
+
+**[⬅️ Previous: clean-secrets](clean-secrets.md)** · **[📑 Index](README.md)** · **[Next: deploy-workflow ➡️](deploy-workflow.md)**
+
+</div>
