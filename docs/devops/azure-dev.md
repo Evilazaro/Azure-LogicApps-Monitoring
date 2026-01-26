@@ -1,39 +1,39 @@
-# CD - Azure Deployment
+# 🚀 CD - Azure Deployment
 
 ![Workflow Status](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/actions/workflows/azure-dev.yml/badge.svg)
 
-Provisions Azure infrastructure and deploys the .NET application using Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
+> Provisions Azure infrastructure and deploys the .NET application using Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
 
 ---
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Overview](#overview)
+- [📋 Overview](#-overview)
   - [Purpose](#purpose)
   - [Scope](#scope)
   - [Key Features](#key-features)
   - [When to Use](#when-to-use)
-- [Workflow Diagram](#workflow-diagram)
-- [Prerequisites](#prerequisites)
-- [Trigger Events](#trigger-events)
-- [Configuration Reference](#configuration-reference)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [✅ Prerequisites](#-prerequisites)
+- [⚡ Trigger Events](#-trigger-events)
+- [⚙️ Configuration Reference](#️-configuration-reference)
   - [Environment Variables](#environment-variables)
   - [Secrets](#secrets)
   - [Repository Variables](#repository-variables)
-- [Jobs & Steps Breakdown](#jobs--steps-breakdown)
+- [🔧 Jobs & Steps Breakdown](#-jobs--steps-breakdown)
   - [CI Job](#ci-job)
   - [Deploy Dev Job](#deploy-dev-job)
   - [Summary Job](#summary-job)
   - [On-Failure Job](#on-failure-job)
-- [Outputs](#outputs)
-- [Artifacts](#artifacts)
-- [Usage Examples](#usage-examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+- [📤 Outputs](#-outputs)
+- [📦 Artifacts](#-artifacts)
+- [💡 Usage Examples](#-usage-examples)
+- [🔍 Troubleshooting](#-troubleshooting)
+- [🔗 Related Resources](#-related-resources)
 
 ---
 
-## Overview
+## 📋 Overview
 
 ### Purpose
 
@@ -63,7 +63,7 @@ This workflow automates the continuous deployment (CD) pipeline for Azure infras
 
 ---
 
-## Workflow Diagram
+## 📊 Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -113,10 +113,10 @@ flowchart TD
 
 ---
 
-## Prerequisites
+## ✅ Prerequisites
 
 | Requirement | Type | Description | Setup Instructions |
-|-------------|------|-------------|-------------------|
+|:------------|:-----|:------------|:-------------------|
 | **Azure Subscription** | Infrastructure | Active Azure subscription for resource deployment | [Create Azure account](https://azure.microsoft.com/free/) |
 | **Federated Credentials** | Authentication | OIDC federation between GitHub and Azure Entra ID | [Configure federation](https://learn.microsoft.com/azure/developer/github/connect-from-azure) |
 | **GitHub Environment** | Configuration | Environment named `dev` with protection rules | Create via **Settings** → **Environments** → **New environment** |
@@ -126,27 +126,27 @@ flowchart TD
 
 ---
 
-## Trigger Events
+## ⚡ Trigger Events
 
 | Event | Branches | Paths | Conditions |
-|-------|----------|-------|------------|
+|:------|:---------|:------|:-----------|
 | **push** | `docs987678` | `src/**`, `app.*/**`, `infra/**`, `azure.yaml`, `.github/workflows/azure-dev.yml` | Automatic on push |
 | **workflow_dispatch** | Any | N/A | Manual trigger with optional `skip-ci` input |
 
 ### Manual Trigger Inputs
 
 | Input | Type | Default | Description |
-|-------|------|---------|-------------|
+|:------|:-----|:--------|:------------|
 | `skip-ci` | boolean | `false` | Skip CI checks (use with caution) |
 
 ---
 
-## Configuration Reference
+## ⚙️ Configuration Reference
 
 ### Environment Variables
 
 | Variable | Scope | Default | Description |
-|----------|-------|---------|-------------|
+|:---------|:------|:--------|:------------|
 | `DOTNET_VERSION` | Workflow | `10.0.x` | .NET SDK version to install |
 | `DOTNET_SKIP_FIRST_TIME_EXPERIENCE` | Workflow | `true` | Skip .NET first-run experience |
 | `DOTNET_NOLOGO` | Workflow | `true` | Suppress .NET welcome message |
@@ -158,15 +158,15 @@ flowchart TD
 ### Secrets
 
 | Secret Name | Required | Source | Purpose |
-|-------------|----------|--------|---------|
+|:------------|:---------|:-------|:--------|
 | `inherit` | Yes | Reusable workflow | All secrets inherited for CI workflow |
 
-> **Note:** This workflow uses OIDC authentication and does not require stored Azure credentials secrets.
+> **ℹ️ Note:** This workflow uses OIDC authentication and does not require stored Azure credentials secrets.
 
 ### Repository Variables
 
 | Variable | Required | Example Value | Description |
-|----------|----------|---------------|-------------|
+|:---------|:---------|:--------------|:------------|
 | `AZURE_CLIENT_ID` | Yes | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` | Azure AD Application (client) ID |
 | `AZURE_TENANT_ID` | Yes | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` | Azure AD Tenant ID |
 | `AZURE_SUBSCRIPTION_ID` | Yes | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` | Azure Subscription ID |
@@ -177,7 +177,7 @@ flowchart TD
 
 ---
 
-## Jobs & Steps Breakdown
+## 🔧 Jobs & Steps Breakdown
 
 ### CI Job
 
@@ -249,19 +249,19 @@ flowchart TD
 
 ---
 
-## Outputs
+## 📤 Outputs
 
 | Output | Source Job | Description |
-|--------|------------|-------------|
+|:-------|:-----------|:------------|
 | `webapp-url` | `deploy-dev` | URL of the deployed web application |
 | `resource-group` | `deploy-dev` | Name of the Azure resource group |
 
 ---
 
-## Artifacts
+## 📦 Artifacts
 
 | Artifact Name | Contents | Retention | Usage |
-|---------------|----------|-----------|-------|
+|:--------------|:---------|:----------|:------|
 | `build-artifacts-{os}` | Compiled binaries per platform | 30 days | From CI workflow |
 | `test-results-{os}` | Test results (.trx) per platform | 30 days | From CI workflow |
 | `code-coverage-{os}` | Coverage reports (Cobertura) | 30 days | From CI workflow |
@@ -269,7 +269,7 @@ flowchart TD
 
 ---
 
-## Usage Examples
+## 💡 Usage Examples
 
 ### Manual Trigger (Normal)
 
@@ -307,10 +307,10 @@ git push origin feature/my-feature
 
 ---
 
-## Troubleshooting
+## 🔍 Troubleshooting
 
 | Symptom | Possible Cause | Solution |
-|---------|----------------|----------|
+|:--------|:---------------|:---------|
 | **AADSTS700024: Token expired** | OIDC token expired during long operations | Token refresh steps are built-in. If persistent, reduce operation time or add more refresh points |
 | **azd provision failed** | Azure API transient failure or quota limits | Workflow includes retry logic (3 attempts). Check Azure subscription quotas |
 | **SQL user creation failed** | go-sqlcmd not found or wrong version | Workflow installs go-sqlcmd automatically. Verify installation step succeeded |
@@ -351,25 +351,26 @@ az login --federated-token <token> --service-principal \
 
 ---
 
-## Related Resources
+## 🔗 Related Resources
 
-### Internal
+### 📚 Internal
 
 - [ci-dotnet-reusable.md](ci-dotnet-reusable.md) - Reusable CI workflow documentation
 - [ci-dotnet.md](ci-dotnet.md) - CI orchestration workflow documentation
 - [infra/README.md](../../infra/README.md) - Infrastructure documentation
 
-### External
+### 🌐 External
 
 - [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
 - [GitHub OIDC with Azure](https://learn.microsoft.com/azure/developer/github/connect-from-azure)
 - [GitHub Actions Workflow Syntax](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions)
 - [go-sqlcmd Documentation](https://github.com/microsoft/go-sqlcmd)
 
-### Support
+### 🆘 Support
 
 - 📖 [Repository Issues](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
 - 💬 Contact the DevOps team for deployment assistance
 
 ---
 
+[⬆️ Back to Top](#-cd---azure-deployment)
