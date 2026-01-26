@@ -7,13 +7,36 @@ license: MIT
 languages: [PowerShell, Bash]
 ---
 
-# postprovision
+# ⚙️ postprovision
 
-## Overview
+---
+
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [📝 Description](#-description)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [✅ Prerequisites](#-prerequisites)
+- [⚙️ Parameters/Arguments](#️-parametersarguments)
+- [📥 Input/Output Specifications](#-inputoutput-specifications)
+- [💻 Usage Examples](#-usage-examples)
+- [⚠️ Error Handling and Exit Codes](#️-error-handling-and-exit-codes)
+- [🔒 Security Considerations](#-security-considerations)
+- [🚧 Known Limitations](#-known-limitations)
+- [🔗 Related Scripts](#-related-scripts)
+- [📜 Changelog](#-changelog)
+
+---
+
+## 📋 Overview
 
 Post-provisioning script for Azure Developer CLI (azd) that configures .NET user secrets with Azure resource information after infrastructure provisioning completes.
 
-## Description
+[⬆️ Back to top](#️-postprovision)
+
+---
+
+## 📝 Description
 
 This script is automatically executed by Azure Developer CLI (azd) after the infrastructure provisioning phase completes successfully. It bridges the gap between Azure resource deployment and local development by configuring .NET user secrets with the connection information for newly provisioned Azure resources.
 
@@ -21,7 +44,11 @@ The script performs several critical operations: validating that required enviro
 
 The configuration enables local development against Azure resources without hardcoding sensitive information in application configuration files. All secrets are stored securely using .NET's built-in user secrets mechanism, which stores data in a protected location outside the project directory.
 
-## Workflow Diagram
+[⬆️ Back to top](#️-postprovision)
+
+---
+
+## 📊 Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -73,64 +100,76 @@ flowchart TD
     style V fill:#9f9
 ```
 
-## Prerequisites
+[⬆️ Back to top](#️-postprovision)
+
+---
+
+## ✅ Prerequisites
 
 | Category | Requirement | Version | Verification Command | Required |
-|----------|-------------|---------|---------------------|----------|
-| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | Yes |
-| Runtime | Bash | >= 4.0 | `bash --version` | Yes |
-| SDK | .NET SDK | >= 10.0 | `dotnet --version` | Yes |
-| CLI Tool | Azure CLI | >= 2.50 | `az --version` | Yes |
-| CLI Tool | Azure Developer CLI | Latest | `azd version` | Yes |
-| Environment Variable | AZURE_SUBSCRIPTION_ID | N/A | `echo $AZURE_SUBSCRIPTION_ID` | Yes |
-| Environment Variable | AZURE_RESOURCE_GROUP | N/A | `echo $AZURE_RESOURCE_GROUP` | Yes |
-| Environment Variable | AZURE_LOCATION | N/A | `echo $AZURE_LOCATION` | Yes |
+|:---------|:------------|:--------|:---------------------|:--------:|
+| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | ✅ |
+| Runtime | Bash | >= 4.0 | `bash --version` | ✅ |
+| SDK | .NET SDK | >= 10.0 | `dotnet --version` | ✅ |
+| CLI Tool | Azure CLI | >= 2.50 | `az --version` | ✅ |
+| CLI Tool | Azure Developer CLI | Latest | `azd version` | ✅ |
+| Environment Variable | AZURE_SUBSCRIPTION_ID | N/A | `echo $AZURE_SUBSCRIPTION_ID` | ✅ |
+| Environment Variable | AZURE_RESOURCE_GROUP | N/A | `echo $AZURE_RESOURCE_GROUP` | ✅ |
+| Environment Variable | AZURE_LOCATION | N/A | `echo $AZURE_LOCATION` | ✅ |
 
-## Parameters/Arguments
+[⬆️ Back to top](#️-postprovision)
+
+---
+
+## ⚙️ Parameters/Arguments
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `-Force` | `[switch]` | No | `$false` | Skips confirmation prompts and forces execution |
+|:----------|:-----|:--------:|:--------|:------------|
+| `-Force` | `[switch]` | ❌ | `$false` | Skips confirmation prompts and forces execution |
 
 ### Bash Arguments
 
 | Position/Flag | Type | Required | Default | Description |
-|---------------|------|----------|---------|-------------|
-| `--force` | flag | No | `false` | Skip confirmation prompts and force execution |
-| `--verbose` | flag | No | `false` | Enable verbose output for debugging |
-| `--dry-run` | flag | No | `false` | Show what would be executed without making changes |
-| `--help` | flag | No | N/A | Display help message |
+|:--------------|:-----|:--------:|:--------|:------------|
+| `--force` | flag | ❌ | `false` | Skip confirmation prompts and force execution |
+| `--verbose` | flag | ❌ | `false` | Enable verbose output for debugging |
+| `--dry-run` | flag | ❌ | `false` | Show what would be executed without making changes |
+| `--help` | flag | ❌ | N/A | Display help message |
 
-## Input/Output Specifications
+[⬆️ Back to top](#️-postprovision)
+
+---
+
+## 📥 Input/Output Specifications
 
 ### Inputs
 
 **Environment Variables Read (set by azd):**
 
 | Variable | Required | Description |
-|----------|----------|-------------|
-| `AZURE_SUBSCRIPTION_ID` | Yes | Azure subscription GUID |
-| `AZURE_RESOURCE_GROUP` | Yes | Resource group containing deployed resources |
-| `AZURE_LOCATION` | Yes | Azure region where resources are deployed |
-| `AZURE_CONTAINER_REGISTRY_NAME` | No | ACR name for container authentication |
-| `AZURE_CONTAINER_REGISTRY_ENDPOINT` | No | ACR endpoint URL |
-| `SERVICE_BUS_CONNECTION_STRING` | No | Service Bus connection string |
-| `STORAGE_ACCOUNT_NAME` | No | Storage account name |
-| `SQL_SERVER_FQDN` | No | SQL Server fully qualified domain name |
-| `SQL_DATABASE_NAME` | No | SQL database name |
+|:---------|:--------:|:------------|
+| `AZURE_SUBSCRIPTION_ID` | ✅ | Azure subscription GUID |
+| `AZURE_RESOURCE_GROUP` | ✅ | Resource group containing deployed resources |
+| `AZURE_LOCATION` | ✅ | Azure region where resources are deployed |
+| `AZURE_CONTAINER_REGISTRY_NAME` | ❌ | ACR name for container authentication |
+| `AZURE_CONTAINER_REGISTRY_ENDPOINT` | ❌ | ACR endpoint URL |
+| `SERVICE_BUS_CONNECTION_STRING` | ❌ | Service Bus connection string |
+| `STORAGE_ACCOUNT_NAME` | ❌ | Storage account name |
+| `SQL_SERVER_FQDN` | ❌ | SQL Server fully qualified domain name |
+| `SQL_DATABASE_NAME` | ❌ | SQL database name |
 
 ### Outputs
 
 **Exit Codes:**
 
 | Exit Code | Meaning |
-|-----------|---------|
-| 0 | Success - All secrets configured |
-| 1 | General error |
-| 2 | Missing required environment variables |
-| 3 | Azure CLI not authenticated |
+|:---------:|:--------|
+| `0` | Success — All secrets configured |
+| `1` | General error |
+| `2` | Missing required environment variables |
+| `3` | Azure CLI not authenticated |
 
 **stdout Output:**
 
@@ -145,7 +184,11 @@ flowchart TD
 - Storage account credentials
 - Service Bus connection information
 
-## Usage Examples
+[⬆️ Back to top](#️-postprovision)
+
+---
+
+## 💻 Usage Examples
 
 ### Basic Usage
 
@@ -210,14 +253,18 @@ flowchart TD
     AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
 ```
 
-## Error Handling and Exit Codes
+[⬆️ Back to top](#️-postprovision)
+
+---
+
+## ⚠️ Error Handling and Exit Codes
 
 | Exit Code | Meaning | Recovery Action |
-|-----------|---------|-----------------|
-| 0 | Success | N/A |
-| 1 | General error | Check stderr output, review execution logs |
-| 2 | Missing environment variables | Ensure azd provisioning completed successfully |
-| 3 | Azure CLI authentication failure | Run `az login` to authenticate |
+|:---------:|:--------|:----------------|
+| `0` | Success | N/A |
+| `1` | General error | Check stderr output, review execution logs |
+| `2` | Missing environment variables | Ensure azd provisioning completed successfully |
+| `3` | Azure CLI authentication failure | Run `az login` to authenticate |
 
 ### Error Handling Approach
 
@@ -235,9 +282,13 @@ flowchart TD
 - Color-coded error messages
 - Execution statistics tracking (success/failure counts)
 
-## Security Considerations
+[⬆️ Back to top](#️-postprovision)
 
-### Credential Handling
+---
+
+## 🔒 Security Considerations
+
+### 🔑 Credential Handling
 
 - [x] No hardcoded secrets
 - [x] Credentials sourced from: Azure environment variables (set by azd)
@@ -247,42 +298,62 @@ flowchart TD
 ### Required Permissions
 
 | Permission/Role | Scope | Justification |
-|-----------------|-------|---------------|
+|:----------------|:------|:--------------|
 | Reader | Resource Group | Read provisioned resource information |
 | AcrPull | Container Registry | Authenticate and pull container images |
 | Contributor | SQL Database | Configure managed identity access |
 
-### Network Security
+### 🌐 Network Security
 
-- **Endpoints accessed:** Azure Container Registry, Azure SQL Database
-- **TLS requirements:** TLS 1.2+
-- **Firewall rules needed:** Outbound HTTPS (443)
+| Property | Value |
+|:---------|:------|
+| **Endpoints accessed** | Azure Container Registry, Azure SQL Database |
+| **TLS requirements** | TLS 1.2+ |
+| **Firewall rules needed** | Outbound HTTPS (443) |
 
-### Logging Security
+### 📝 Logging Security
 
-- **Sensitive data masking:** Yes - connection strings and tokens are not logged
-- **Audit trail:** Timestamped execution logs
+> **✅ Security Features:**
+>
+> - **Sensitive data masking:** Yes — connection strings and tokens are not logged
+> - **Audit trail:** Timestamped execution logs
 
-## Known Limitations
+[⬆️ Back to top](#️-postprovision)
 
-- Requires azd to have completed provisioning successfully
-- Environment variables must be set before execution
-- ACR authentication may fail if firewall rules are restrictive
-- SQL managed identity configuration requires admin privileges
-- User secrets are stored per-user, not shared across team members
+---
 
-## Related Scripts
+## 🚧 Known Limitations
+
+> **⚠️ Important Notes:**
+>
+> - Requires azd to have completed provisioning successfully
+> - Environment variables must be set before execution
+> - ACR authentication may fail if firewall rules are restrictive
+> - SQL managed identity configuration requires admin privileges
+> - User secrets are stored per-user, not shared across team members
+
+[⬆️ Back to top](#️-postprovision)
+
+---
+
+## 🔗 Related Scripts
 
 | Script | Relationship | Description |
-|--------|--------------|-------------|
+|:-------|:-------------|:------------|
 | [preprovision.md](preprovision.md) | Precedes | Validates prerequisites before provisioning |
 | [clean-secrets.md](clean-secrets.md) | Called by | Clears existing user secrets |
 | [sql-managed-identity-config.md](sql-managed-identity-config.md) | Called by | Configures SQL managed identity |
 
-## Changelog
+[⬆️ Back to top](#️-postprovision)
+
+---
+
+## 📜 Changelog
 
 | Version | Date | Changes |
-|---------|------|---------|
+|:-------:|:----:|:--------|
 | 2.0.1 | 2026-01-06 | Added SQL managed identity configuration |
 | 2.0.0 | 2025-12-01 | Improved secret configuration workflow |
 | 1.0.0 | 2025-01-01 | Initial release |
+
+[⬆️ Back to top](#️-postprovision)
