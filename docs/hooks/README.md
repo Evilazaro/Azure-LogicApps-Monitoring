@@ -90,23 +90,51 @@ The hooks scripts are executed at various stages of the Azure Developer CLI (azd
 ## 📊 Script Execution Flow
 
 ```mermaid
+---
+title: Azure Developer CLI Hooks Execution Flow
+---
 flowchart LR
-    subgraph Provision["azd provision"]
-        A[preprovision] --> B[Infrastructure Deployment]
-        B --> C[postprovision]
+    %% ===== PROVISIONING PHASE =====
+    subgraph Provision["🚀 azd provision"]
+        direction LR
+        preprov["preprovision"]
+        infraDeploy["Infrastructure Deployment"]
+        postprov["postprovision"]
+        preprov -->|validates| infraDeploy
+        infraDeploy -->|triggers| postprov
     end
     
-    subgraph Deploy["azd deploy"]
-        D[deploy-workflow]
+    %% ===== DEPLOYMENT PHASE =====
+    subgraph Deploy["📦 azd deploy"]
+        direction LR
+        deployWf["deploy-workflow"]
     end
     
-    subgraph Down["azd down"]
-        E[Infrastructure Delete]
-        E --> F[postinfradelete]
+    %% ===== TEARDOWN PHASE =====
+    subgraph Down["🗑️ azd down"]
+        direction LR
+        infraDelete["Infrastructure Delete"]
+        postDelete["postinfradelete"]
+        infraDelete -->|triggers| postDelete
     end
     
-    Provision --> Deploy
-    Deploy --> Down
+    %% ===== PHASE CONNECTIONS =====
+    Provision ==>|completes| Deploy
+    Deploy ==>|completes| Down
+    
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    
+    class preprov,postprov,deployWf,postDelete trigger
+    class infraDeploy,infraDelete primary
+    
+    %% ===== SUBGRAPH STYLING =====
+    style Provision fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Deploy fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Down fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
 
 [⬆️ Back to top](#-hooks-scripts-documentation)

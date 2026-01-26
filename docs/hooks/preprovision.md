@@ -69,53 +69,80 @@ When executed without the `--validate-only` flag, the script clears existing .NE
 ## 📊 Workflow Diagram
 
 ```mermaid
+---
+title: Preprovision Script Execution Flow
+---
 flowchart TD
-    subgraph Initialization
-        A([Start]) --> B[Parse Command-Line Arguments]
-        B --> C[Initialize Logging]
+    %% ===== INITIALIZATION PHASE =====
+    subgraph Initialization["🚀 Initialization"]
+        direction TB
+        Start(["▶️ Start"]) -->|begins| ParseArgs["Parse Command-Line Arguments"]
+        ParseArgs -->|configures| InitLog["Initialize Logging"]
     end
     
-    subgraph Validation["Prerequisites Validation"]
-        C --> D{Validate Shell Version}
-        D -->|Pass| E{Validate .NET SDK}
-        D -->|Fail| Z([Exit with Error])
-        E -->|Pass| F{Validate Azure CLI}
-        E -->|Fail| Z
-        F -->|Pass| G{Check Azure Authentication}
-        F -->|Fail| H{Auto-Install Enabled?}
-        H -->|Yes| I[Install Azure CLI]
-        H -->|No| Z
-        I --> F
-        G -->|Pass| J{Validate Bicep CLI}
-        G -->|Fail| K[Prompt for Azure Login]
-        K --> G
-        J -->|Pass| L{Validate azd CLI}
-        J -->|Fail| Z
-        L -->|Pass| M[Validate Resource Providers]
-        L -->|Fail| Z
+    %% ===== VALIDATION PHASE =====
+    subgraph Validation["✅ Prerequisites Validation"]
+        direction TB
+        InitLog -->|triggers| CheckShell{"Validate Shell Version"}
+        CheckShell -->|pass| CheckDotNet{"Validate .NET SDK"}
+        CheckShell -->|fail| ExitError(["❌ Exit with Error"])
+        CheckDotNet -->|pass| CheckAzCLI{"Validate Azure CLI"}
+        CheckDotNet -->|fail| ExitError
+        CheckAzCLI -->|pass| CheckAuth{"Check Azure Authentication"}
+        CheckAzCLI -->|fail| AutoInstall{"Auto-Install Enabled?"}
+        AutoInstall -->|yes| InstallCLI["Install Azure CLI"]
+        AutoInstall -->|no| ExitError
+        InstallCLI -->|retries| CheckAzCLI
+        CheckAuth -->|pass| CheckBicep{"Validate Bicep CLI"}
+        CheckAuth -->|fail| PromptLogin["Prompt for Azure Login"]
+        PromptLogin -->|retries| CheckAuth
+        CheckBicep -->|pass| CheckAzd{"Validate azd CLI"}
+        CheckBicep -->|fail| ExitError
+        CheckAzd -->|pass| ValidateProviders["Validate Resource Providers"]
+        CheckAzd -->|fail| ExitError
     end
     
-    subgraph ResourceValidation["Azure Resource Validation"]
-        M --> N{Check Subscription Quotas}
-        N -->|Sufficient| O{Validate Only Mode?}
-        N -->|Insufficient| P[Display Quota Warnings]
-        P --> O
+    %% ===== RESOURCE VALIDATION PHASE =====
+    subgraph ResourceValidation["🔍 Azure Resource Validation"]
+        direction TB
+        ValidateProviders -->|checks| CheckQuotas{"Check Subscription Quotas"}
+        CheckQuotas -->|sufficient| ValidateMode{"Validate Only Mode?"}
+        CheckQuotas -->|insufficient| DisplayWarnings["Display Quota Warnings"]
+        DisplayWarnings -->|continues| ValidateMode
     end
     
-    subgraph SecretsManagement["Secrets Management"]
-        O -->|Yes| Y([Success - Validation Only])
-        O -->|No| Q{Skip Secrets Clear?}
-        Q -->|Yes| R[Skip Clearing Secrets]
-        Q -->|No| S[Clear .NET User Secrets]
-        R --> T[Display Summary]
-        S --> T
+    %% ===== SECRETS MANAGEMENT PHASE =====
+    subgraph SecretsManagement["🔐 Secrets Management"]
+        direction TB
+        ValidateMode -->|yes| SuccessValidate(["✅ Success - Validation Only"])
+        ValidateMode -->|no| SkipSecrets{"Skip Secrets Clear?"}
+        SkipSecrets -->|yes| SkipClearing["Skip Clearing Secrets"]
+        SkipSecrets -->|no| ClearSecrets["Clear .NET User Secrets"]
+        SkipClearing -->|completes| DisplaySummary["Display Summary"]
+        ClearSecrets -->|completes| DisplaySummary
     end
     
-    T --> U([Success])
+    %% ===== COMPLETION =====
+    DisplaySummary -->|finishes| Success(["✅ Success"])
+
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
     
-    style Z fill:#f96
-    style Y fill:#9f9
-    style U fill:#9f9
+    class Start,Success,SuccessValidate trigger
+    class ParseArgs,InitLog,ValidateProviders,DisplayWarnings,SkipClearing,ClearSecrets,DisplaySummary,InstallCLI,PromptLogin primary
+    class CheckShell,CheckDotNet,CheckAzCLI,CheckAuth,CheckBicep,CheckAzd,CheckQuotas,ValidateMode,SkipSecrets,AutoInstall decision
+    class ExitError failed
+
+    %% ===== SUBGRAPH STYLING =====
+    style Initialization fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Validation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style ResourceValidation fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style SecretsManagement fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 [⬆️ Back to top](#-preprovision)
