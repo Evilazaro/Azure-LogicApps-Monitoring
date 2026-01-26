@@ -161,6 +161,76 @@ public sealed class OrderRepositoryTests
         Assert.AreEqual(3, count);
     }
 
+    [TestMethod]
+    public async Task SaveOrderAsync_DuplicateOrderId_ThrowsException()
+    {
+        // Arrange
+        var order = CreateTestOrder();
+        await _repository.SaveOrderAsync(order, CancellationToken.None);
+
+        // Create another order with the same ID
+        var duplicateOrder = CreateTestOrder();
+
+        // Act & Assert
+        // In-memory database throws InvalidOperationException about tracking
+        // Real database throws InvalidOperationException about duplicate key
+        var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => _repository.SaveOrderAsync(duplicateOrder, CancellationToken.None));
+
+        // Verify it's related to the duplicate/tracking issue
+        Assert.IsTrue(
+            exception.Message.Contains("already") ||
+            exception.Message.Contains("tracked") ||
+            exception.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase),
+            $"Expected exception message to indicate duplicate/tracking issue but got: {exception.Message}");
+    }
+
+    [TestMethod]
+    public async Task SaveOrderAsync_OrderWithZeroTotal_SavesSuccessfully()
+    {
+        // Arrange
+        var order = new Order
+        {
+            Id = TestOrderId,
+            CustomerId = TestCustomerId,
+            Date = DateTime.UtcNow,
+            DeliveryAddress = TestDeliveryAddress,
+            Total = 0m,
+            Products = new List<OrderProduct>()
+        };
+
+        // Act
+        await _repository.SaveOrderAsync(order, CancellationToken.None);
+
+        // Assert
+        var savedOrder = await _dbContext.Orders.FirstOrDefaultAsync(o => o.Id == order.Id);
+        Assert.IsNotNull(savedOrder);
+        Assert.AreEqual(0m, savedOrder.Total);
+    }
+
+    [TestMethod]
+    public async Task SaveOrderAsync_OrderWithLargeTotal_SavesSuccessfully()
+    {
+        // Arrange
+        var order = new Order
+        {
+            Id = TestOrderId,
+            CustomerId = TestCustomerId,
+            Date = DateTime.UtcNow,
+            DeliveryAddress = TestDeliveryAddress,
+            Total = 999999999.99m,
+            Products = new List<OrderProduct>()
+        };
+
+        // Act
+        await _repository.SaveOrderAsync(order, CancellationToken.None);
+
+        // Assert
+        var savedOrder = await _dbContext.Orders.FirstOrDefaultAsync(o => o.Id == order.Id);
+        Assert.IsNotNull(savedOrder);
+        Assert.AreEqual(999999999.99m, savedOrder.Total);
+    }
+
     #endregion
 
     #region GetAllOrdersAsync Tests
