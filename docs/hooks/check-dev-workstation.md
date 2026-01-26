@@ -1,38 +1,38 @@
-# check-dev-workstation
+# 🖥️ check-dev-workstation
 
 Validates developer workstation prerequisites for Azure Logic Apps Monitoring solution.
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Parameters](#parameters)
-- [Environment Variables](#environment-variables)
-- [Functionality](#functionality)
-- [Usage Examples](#usage-examples)
-- [Platform Differences](#platform-differences)
-- [Exit Codes](#exit-codes)
-- [Related Hooks](#related-hooks)
+- [📋 Overview](#-overview)
+- [⚙️ Prerequisites](#️-prerequisites)
+- [🎯 Parameters](#-parameters)
+- [🌐 Environment Variables](#-environment-variables)
+- [⚙️ Functionality](#️-functionality)
+- [📖 Usage Examples](#-usage-examples)
+- [💻 Platform Differences](#-platform-differences)
+- [🚪 Exit Codes](#-exit-codes)
+- [🔗 Related Hooks](#-related-hooks)
 
-## Overview
+## 📋 Overview
 
 This script performs comprehensive validation of the development environment to ensure all required tools, software dependencies, and Azure configurations are properly set up before beginning development work on the Azure Logic Apps Monitoring solution.
 
 The script acts as a **wrapper** around `preprovision.ps1`/`preprovision.sh` in `ValidateOnly` mode, providing a developer-friendly way to check workstation readiness **without performing any modifications** to the environment.
 
-### When to Use
+### 📅 When to Use
 
 - Before starting development on the project
 - After setting up a new development environment
 - When troubleshooting environment-related issues
 - As part of onboarding new team members
 
-## Prerequisites
+## ⚙️ Prerequisites
 
-### Required Tools
+### 🔧 Required Tools
 
 | Tool | Minimum Version | Purpose |
-|------|-----------------|---------|
+|:-----|:---------------:|:--------|
 | PowerShell Core | 7.0+ | Script execution (PowerShell version) |
 | Bash | 4.0+ | Script execution (Bash version) |
 | .NET SDK | 10.0+ | Application development |
@@ -40,47 +40,47 @@ The script acts as a **wrapper** around `preprovision.ps1`/`preprovision.sh` in 
 | Azure CLI (az) | 2.60.0+ | Azure resource management |
 | Bicep CLI | 0.30.0+ | Infrastructure as Code |
 
-### Required Files
+### 📂 Required Files
 
 - `preprovision.ps1` / `preprovision.sh` must exist in the same directory
 
-### Required Permissions
+### 🔐 Required Permissions
 
 - Execute permissions on the hook scripts
 - Azure CLI must be authenticated (`az login`)
 
-## Parameters
+## 🎯 Parameters
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `-Verbose` | Switch | No | `$false` | Displays detailed diagnostic information during validation |
 
 ### Bash Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `-v`, `--verbose` | Flag | No | `false` | Display detailed diagnostic information during validation |
 | `-h`, `--help` | Flag | No | N/A | Display help message and exit |
 
-## Environment Variables
+## 🌐 Environment Variables
 
 ### Variables Read
 
 This script does not directly read environment variables. The underlying `preprovision` script validates:
 
 | Variable | Description |
-|----------|-------------|
+|:---------|:------------|
 | Various Azure CLI authentication state | Checked during Azure CLI validation |
 
 ### Variables Set
 
 This script does not set any environment variables.
 
-## Functionality
+## ⚙️ Functionality
 
-### Execution Flow
+### 🔄 Execution Flow
 
 ```mermaid
 flowchart TD
@@ -120,7 +120,7 @@ flowchart TD
     style V fill:#FF9800,color:#fff
 ```
 
-### Validations Performed
+### ✅ Validations Performed
 
 The script delegates to `preprovision` which performs:
 
@@ -132,13 +132,13 @@ The script delegates to `preprovision` which performs:
 6. **Azure Resource Providers** - Checks required providers are registered
 7. **Azure Subscription Quotas** - Informational check on resource quotas
 
-### Error Handling
+### ⚠️ Error Handling
 
 - **Strict Mode**: Both scripts enable strict mode for robust error handling
 - **Exit Code Propagation**: Exit codes from `preprovision` are preserved and returned
 - **Cleanup**: Resources are cleaned up via `try-finally` (PowerShell) or `trap EXIT` (Bash)
 
-## Usage Examples
+## 📖 Usage Examples
 
 ### PowerShell
 
@@ -163,7 +163,7 @@ The script delegates to `preprovision` which performs:
 ./check-dev-workstation.sh --help
 ```
 
-### Sample Output
+### 📝 Sample Output
 
 ```
 ℹ Starting developer workstation validation...
@@ -185,10 +185,10 @@ The script delegates to `preprovision` which performs:
 ✓ All prerequisites validated successfully
 ```
 
-## Platform Differences
+## 💻 Platform Differences
 
 | Aspect | PowerShell | Bash |
-|--------|------------|------|
+|:-------|:-----------|:-----|
 | Shebang | `#!/usr/bin/env pwsh` | `#!/usr/bin/env bash` |
 | Verbose flag | `-Verbose` (switch) | `-v` or `--verbose` (flag) |
 | Help flag | N/A (use `Get-Help`) | `-h` or `--help` |
@@ -201,25 +201,25 @@ The script delegates to `preprovision` which performs:
 - **PowerShell**: Runs `preprovision.ps1` in a child `pwsh` process to isolate exit behavior
 - **Bash**: Captures output and exit code separately for cleaner handling
 
-## Exit Codes
+## 🚪 Exit Codes
 
 | Code | Meaning |
-|------|---------|
+|:----:|:--------|
 | `0` | Validation successful - all prerequisites met |
 | `1` | General error - missing script or invalid arguments |
 | `>1` | Validation failed - see `preprovision` exit codes for specifics |
 | `130` | Script interrupted by user (SIGINT) |
 
-## Related Hooks
+## 🔗 Related Hooks
 
 | Hook | Relationship |
-|------|--------------|
+|:-----|:-------------|
 | [preprovision](preprovision.md) | **Parent script** - This script wraps `preprovision` in validate-only mode |
 | [postprovision](postprovision.md) | Runs after provisioning; `check-dev-workstation` validates prerequisites for it |
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-### Common Issues
+### ⚠️ Common Issues
 
 1. **"Required script not found"**
    - Ensure `preprovision.ps1`/`preprovision.sh` exists in the same directory as this script

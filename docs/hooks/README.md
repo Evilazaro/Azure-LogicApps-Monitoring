@@ -1,15 +1,27 @@
-# Azure Logic Apps Monitoring - Hooks Documentation
+# 📚 Azure Logic Apps Monitoring - Hooks Documentation
 
 This documentation provides comprehensive details for all Azure Developer CLI (azd) hooks used in the Azure Logic Apps Monitoring solution.
 
-## Overview
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [🔍 Quick Reference](#-quick-reference)
+- [🔄 Hook Execution Order](#-hook-execution-order)
+- [⚙️ Prerequisites](#️-prerequisites)
+- [💻 Platform Compatibility](#-platform-compatibility)
+- [⚠️ Error Handling](#️-error-handling)
+- [🚀 Getting Started](#-getting-started)
+- [🤝 Contributing](#-contributing)
+- [🔗 Links](#-links)
+
+## 📋 Overview
 
 Hooks are scripts that execute at specific points during the Azure Developer CLI lifecycle. They automate pre-provisioning validation, post-provisioning configuration, and other deployment-related tasks.
 
-## Quick Reference
+## 🔍 Quick Reference
 
 | Hook | Purpose | Lifecycle Stage |
-|------|---------|-----------------|
+|:-----|:--------|:----------------|
 | [check-dev-workstation](check-dev-workstation.md) | Validate developer workstation prerequisites | Manual/Pre-development |
 | [preprovision](preprovision.md) | Validate environment and clear secrets before provisioning | `azd provision` (before) |
 | [postprovision](postprovision.md) | Configure .NET user secrets and SQL access after provisioning | `azd provision` (after) |
@@ -20,7 +32,7 @@ Hooks are scripts that execute at specific points during the Azure Developer CLI
 | [sql-managed-identity-config](sql-managed-identity-config.md) | Configure SQL Database with Managed Identity | Post-provisioning |
 | [Generate-Orders](Generate-Orders.md) | Generate sample order data for testing | Manual/Testing |
 
-## Hook Execution Order
+## 🔄 Hook Execution Order
 
 ```mermaid
 flowchart TD
@@ -72,14 +84,14 @@ flowchart TD
     style V fill:#FF9800,color:#fff
 ```
 
-## Prerequisites
+## ⚙️ Prerequisites
 
-### Common Requirements
+### 🔧 Common Requirements
 
 All hooks require the following tools installed and configured:
 
 | Tool | Minimum Version | Purpose |
-|------|-----------------|---------|
+|:-----|:---------------:|:--------|
 | PowerShell Core | 7.0+ | Windows/Cross-platform script execution |
 | Bash | 4.0+ | Linux/macOS script execution |
 | .NET SDK | 10.0+ | Building and running .NET applications |
@@ -87,18 +99,18 @@ All hooks require the following tools installed and configured:
 | Azure Developer CLI (azd) | Latest | Deployment orchestration |
 | Bicep CLI | 0.30.0+ | Infrastructure as Code |
 
-### Environment Variables
+### 🌐 Environment Variables
 
 Key environment variables used across hooks:
 
 | Variable | Description | Set By |
-|----------|-------------|--------|
+|:---------|:------------|:------:|
 | `AZURE_SUBSCRIPTION_ID` | Azure subscription GUID | azd |
 | `AZURE_RESOURCE_GROUP` | Target resource group name | azd |
 | `AZURE_LOCATION` | Azure region for deployment | azd |
 | `MANAGED_IDENTITY_NAME` | User-assigned managed identity name | azd |
 
-## Platform Compatibility
+## 💻 Platform Compatibility
 
 All hooks are provided in both PowerShell (`.ps1`) and Bash (`.sh`) versions:
 
@@ -107,7 +119,7 @@ All hooks are provided in both PowerShell (`.ps1`) and Bash (`.sh`) versions:
 
 Both versions implement identical functionality with platform-appropriate idioms.
 
-## Error Handling
+## ⚠️ Error Handling
 
 All hooks follow consistent error handling patterns:
 
@@ -117,9 +129,9 @@ All hooks follow consistent error handling patterns:
 4. **Logging**: Colored, timestamped output for easy troubleshooting
 5. **Cleanup**: Resources are cleaned up properly on both success and failure
 
-## Getting Started
+## 🚀 Getting Started
 
-### Validate Your Workstation
+### ✅ Validate Your Workstation
 
 Before starting development, validate your environment:
 
@@ -139,7 +151,7 @@ Before starting development, validate your environment:
 ./hooks/check-dev-workstation.sh --verbose
 ```
 
-### Run the Full Deployment
+### 🚢 Run the Full Deployment
 
 ```bash
 # Initialize and deploy
@@ -149,7 +161,7 @@ azd up
 
 The hooks will execute automatically at the appropriate lifecycle stages.
 
-## Contributing
+## 🤝 Contributing
 
 When modifying hooks:
 
@@ -158,7 +170,7 @@ When modifying hooks:
 3. Test on both Windows and Linux/macOS platforms
 4. Update this documentation if adding new hooks or changing behavior
 
-## Links
+## 🔗 Links
 
 - [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
 - [Project Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)

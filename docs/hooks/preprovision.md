@@ -1,24 +1,24 @@
-# preprovision
+# ⚙️ preprovision
 
 Pre-provisioning script for Azure Developer CLI (azd) deployment.
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Parameters](#parameters)
-- [Environment Variables](#environment-variables)
-- [Functionality](#functionality)
-- [Usage Examples](#usage-examples)
-- [Platform Differences](#platform-differences)
-- [Exit Codes](#exit-codes)
-- [Related Hooks](#related-hooks)
+- [📋 Overview](#-overview)
+- [⚙️ Prerequisites](#️-prerequisites)
+- [🎯 Parameters](#-parameters)
+- [🌐 Environment Variables](#-environment-variables)
+- [⚙️ Functionality](#️-functionality)
+- [📖 Usage Examples](#-usage-examples)
+- [💻 Platform Differences](#-platform-differences)
+- [🚪 Exit Codes](#-exit-codes)
+- [🔗 Related Hooks](#-related-hooks)
 
-## Overview
+## 📋 Overview
 
 This script performs pre-provisioning tasks before Azure resources are provisioned. It ensures a clean state by clearing user secrets and validates the development environment comprehensively.
 
-### Key Operations
+### 🔑 Key Operations
 
 - Validates PowerShell/Bash version compatibility
 - Clears .NET user secrets for all projects
@@ -28,17 +28,17 @@ This script performs pre-provisioning tasks before Azure resources are provision
 - Validates Azure subscription quotas (informational)
 - Prepares environment for Azure deployment
 
-### When Executed
+### 📅 When Executed
 
 - **Automatically**: Before `azd provision` or `azd up`
 - **Manually**: When validating environment setup
 
-## Prerequisites
+## ⚙️ Prerequisites
 
-### Required Tools
+### 🔧 Required Tools
 
 | Tool | Minimum Version | Purpose |
-|------|-----------------|---------|
+|:-----|:---------------:|:--------|
 | PowerShell Core | 7.0+ | Script execution (PowerShell version) |
 | Bash | 4.0+ | Script execution (Bash version) |
 | .NET SDK | 10.0+ | Application build and user secrets |
@@ -46,18 +46,18 @@ This script performs pre-provisioning tasks before Azure resources are provision
 | Azure CLI (az) | 2.60.0+ | Azure resource management |
 | Bicep CLI | 0.30.0+ | Infrastructure as Code compilation |
 
-### Required Azure Permissions
+### 🔐 Required Azure Permissions
 
 - **Azure CLI Authentication**: Must be logged in via `az login`
 - **Subscription Access**: Reader access to check quotas
 - **Resource Provider Registration**: Contributor or higher to register providers
 
-### Required Azure Resource Providers
+### ☁️ Required Azure Resource Providers
 
 The following providers must be registered in the target subscription:
 
 | Provider | Purpose |
-|----------|---------|
+|:---------|:--------|
 | `Microsoft.App` | Azure Container Apps |
 | `Microsoft.ServiceBus` | Azure Service Bus |
 | `Microsoft.Storage` | Azure Storage accounts |
@@ -67,12 +67,12 @@ The following providers must be registered in the target subscription:
 | `Microsoft.OperationalInsights` | Log Analytics |
 | `Microsoft.ManagedIdentity` | Managed Identities |
 
-## Parameters
+## 🎯 Parameters
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `-Force` | Switch | No | `$false` | Skip confirmation prompts and force execution |
 | `-SkipSecretsClear` | Switch | No | `$false` | Skip the user secrets clearing step |
 | `-ValidateOnly` | Switch | No | `$false` | Only validate prerequisites without making changes |
@@ -84,7 +84,7 @@ The following providers must be registered in the target subscription:
 ### Bash Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `--force` | Flag | No | `false` | Skip confirmation prompts and force execution |
 | `--skip-secrets-clear` | Flag | No | `false` | Skip the user secrets clearing step |
 | `--validate-only` | Flag | No | `false` | Only validate prerequisites without making changes |
@@ -93,21 +93,21 @@ The following providers must be registered in the target subscription:
 | `--verbose` | Flag | No | `false` | Enable verbose diagnostic output |
 | `--help` | Flag | No | N/A | Display help message and exit |
 
-## Environment Variables
+## 🌐 Environment Variables
 
 ### Variables Read
 
 | Variable | Required | Description |
-|----------|----------|-------------|
+|:---------|:--------:|:------------|
 | `AZURE_SUBSCRIPTION_ID` | No | Used for quota validation if available |
 
 ### Variables Set
 
 This script does not set environment variables. It prepares the local environment for provisioning.
 
-## Functionality
+## ⚙️ Functionality
 
-### Execution Flow
+### 🔄 Execution Flow
 
 ```mermaid
 flowchart TD
@@ -196,7 +196,7 @@ flowchart TD
     style F fill:#f44336,color:#fff
 ```
 
-### Validation Details
+### ✅ Validation Details
 
 #### PowerShell/Bash Version
 
@@ -230,14 +230,14 @@ flowchart TD
 # Validates: Version >= 0.30.0
 ```
 
-### Error Handling
+### ⚠️ Error Handling
 
 - **Strict Mode**: PowerShell uses `Set-StrictMode -Version Latest`; Bash uses `set -euo pipefail`
 - **Preference Backup**: Original preferences are stored and restored in `finally`/`trap EXIT`
 - **Graceful Interruption**: SIGINT/SIGTERM are caught and handled cleanly
 - **Detailed Logging**: Colored, timestamped output with verbose mode for diagnostics
 
-## Usage Examples
+## 📖 Usage Examples
 
 ### PowerShell
 
@@ -295,7 +295,7 @@ flowchart TD
 ./preprovision.sh --force --skip-secrets-clear --verbose
 ```
 
-### Sample Output
+### 📝 Sample Output
 
 ```
 ═══════════════════════════════════════════════════════════════
@@ -345,10 +345,10 @@ flowchart TD
 ✓ Environment is ready for provisioning
 ```
 
-## Platform Differences
+## 💻 Platform Differences
 
 | Aspect | PowerShell | Bash |
-|--------|------------|------|
+|:-------|:-----------|:-----|
 | Parameter style | `-ParameterName` | `--parameter-name` |
 | Boolean parameters | Switch (`-Force`) | Flag (`--force`) |
 | WhatIf support | Native (`-WhatIf`) | N/A (use `--dry-run` equivalent) |
@@ -356,10 +356,10 @@ flowchart TD
 | Help | `Get-Help .\preprovision.ps1` | `./preprovision.sh --help` |
 | Strict mode | `Set-StrictMode -Version Latest` | `set -euo pipefail` |
 
-## Exit Codes
+## 🚪 Exit Codes
 
 | Code | Meaning |
-|------|---------|
+|:----:|:--------|
 | `0` | Success - all validations passed, operations completed |
 | `1` | General error - invalid arguments or unexpected failure |
 | `2` | PowerShell/Bash version too old |
@@ -371,17 +371,17 @@ flowchart TD
 | `8` | Azure Resource Provider not registered |
 | `130` | Script interrupted by user (SIGINT) |
 
-## Related Hooks
+## 🔗 Related Hooks
 
 | Hook | Relationship |
-|------|--------------|
+|:-----|:-------------|
 | [check-dev-workstation](check-dev-workstation.md) | Wraps this script in `--validate-only` mode |
 | [clean-secrets](clean-secrets.md) | Called by this script to clear user secrets |
 | [postprovision](postprovision.md) | Runs after provisioning; relies on prerequisites validated here |
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-### Common Issues
+### ⚠️ Common Issues
 
 1. **".NET SDK not found"**
    - Install .NET SDK 10.0+ from <https://dot.net>
