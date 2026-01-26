@@ -1,24 +1,24 @@
-# postprovision
+# 🚀 postprovision
 
 Post-provisioning script for Azure Developer CLI (azd).
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Parameters](#parameters)
-- [Environment Variables](#environment-variables)
-- [Functionality](#functionality)
-- [Usage Examples](#usage-examples)
-- [Platform Differences](#platform-differences)
-- [Exit Codes](#exit-codes)
-- [Related Hooks](#related-hooks)
+- [📋 Overview](#-overview)
+- [⚙️ Prerequisites](#️-prerequisites)
+- [🎯 Parameters](#-parameters)
+- [🌐 Environment Variables](#-environment-variables)
+- [⚙️ Functionality](#️-functionality)
+- [📖 Usage Examples](#-usage-examples)
+- [💻 Platform Differences](#-platform-differences)
+- [🚪 Exit Codes](#-exit-codes)
+- [🔗 Related Hooks](#-related-hooks)
 
-## Overview
+## 📋 Overview
 
 Configures .NET user secrets with Azure resource information after infrastructure provisioning completes. This script is automatically executed by `azd` after `azd provision` or `azd up`.
 
-### Key Operations
+### 🔑 Key Operations
 
 - Validates required environment variables from azd
 - Authenticates to Azure Container Registry (if configured)
@@ -26,35 +26,35 @@ Configures .NET user secrets with Azure resource information after infrastructur
 - Configures new user secrets with Azure resource information
 - Configures SQL Database managed identity access
 
-### When Executed
+### 📅 When Executed
 
 - **Automatically**: After `azd provision` or `azd up` completes successfully
 - **Manually**: When needing to reconfigure local development secrets
 
-## Prerequisites
+## ⚙️ Prerequisites
 
-### Required Tools
+### 🔧 Required Tools
 
 | Tool | Minimum Version | Purpose |
-|------|-----------------|---------|
+|:-----|:---------------:|:--------|
 | PowerShell Core | 7.0+ | Script execution (PowerShell version) |
 | Bash | 4.0+ | Script execution (Bash version) |
 | .NET SDK | 10.0+ | User secrets management |
 | Azure CLI (az) | 2.50+ | Azure authentication |
 | Azure Developer CLI (azd) | Latest | Environment variable source |
 
-### Required Permissions
+### 🔐 Required Permissions
 
 - **Azure CLI**: Must be authenticated (`az login`)
 - **Container Registry**: `AcrPull` role (if ACR is configured)
 - **SQL Database**: Entra ID admin on SQL Server (for managed identity config)
 
-## Parameters
+## 🎯 Parameters
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `-Force` | Switch | No | `$false` | Skip confirmation prompts and force execution |
 | `-Verbose` | Switch | No | `$false` | Enable verbose diagnostic output |
 | `-WhatIf` | Switch | No | `$false` | Show what would be done without making changes |
@@ -62,18 +62,18 @@ Configures .NET user secrets with Azure resource information after infrastructur
 ### Bash Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `--force` | Flag | No | `false` | Skip confirmation prompts and force execution |
 | `--verbose` | Flag | No | `false` | Enable verbose diagnostic output |
 | `--dry-run` | Flag | No | `false` | Show what would be done without making changes |
 | `--help` | Flag | No | N/A | Display help message and exit |
 
-## Environment Variables
+## 🌐 Environment Variables
 
 ### Variables Read (Required)
 
 | Variable | Description | Set By |
-|----------|-------------|--------|
+|:---------|:------------|:------:|
 | `AZURE_SUBSCRIPTION_ID` | Azure subscription GUID | azd |
 | `AZURE_RESOURCE_GROUP` | Resource group name | azd |
 | `AZURE_LOCATION` | Azure region | azd |
@@ -81,7 +81,7 @@ Configures .NET user secrets with Azure resource information after infrastructur
 ### Variables Read (Optional)
 
 | Variable | Description | Default |
-|----------|-------------|---------|
+|:---------|:------------|:-------:|
 | `CONTAINER_REGISTRY_NAME` | ACR name for authentication | None |
 | `CONTAINER_REGISTRY_ENDPOINT` | ACR login server URL | None |
 | `SQL_SERVER_NAME` | Azure SQL Server name | None |
@@ -97,7 +97,7 @@ Configures .NET user secrets with Azure resource information after infrastructur
 This script configures .NET user secrets (not environment variables):
 
 | Secret Key | Source Variable |
-|------------|-----------------|
+|:-----------|:----------------|
 | `Azure:SubscriptionId` | `AZURE_SUBSCRIPTION_ID` |
 | `Azure:ResourceGroup` | `AZURE_RESOURCE_GROUP` |
 | `Azure:Location` | `AZURE_LOCATION` |
@@ -106,9 +106,9 @@ This script configures .NET user secrets (not environment variables):
 | `Azure:ContainerRegistry` | `CONTAINER_REGISTRY_ENDPOINT` |
 | (and others based on provisioned resources) |
 
-## Functionality
+## ⚙️ Functionality
 
-### Execution Flow
+### 🔄 Execution Flow
 
 ```mermaid
 flowchart TD
@@ -193,15 +193,15 @@ flowchart TD
     style G fill:#f44336,color:#fff
 ```
 
-### Configured Projects
+### 📂 Configured Projects
 
 | Project | Path | Description |
-|---------|------|-------------|
+|:--------|:-----|:------------|
 | `app.AppHost` | `./app.AppHost/` | .NET Aspire AppHost orchestration |
 | `eShop.Orders.API` | `./src/eShop.Orders.API/` | Orders REST API |
 | `eShop.Web.App` | `./src/eShop.Web.App/` | Blazor web application |
 
-### User Secrets Structure
+### 🔐 User Secrets Structure
 
 ```json
 {
@@ -217,14 +217,14 @@ flowchart TD
 }
 ```
 
-### Error Handling
+### ⚠️ Error Handling
 
 - **Required Variable Validation**: Fails fast if required environment variables are missing
 - **Project Path Validation**: Verifies project directories exist before configuring
 - **Secret Set Errors**: Reports failures but continues with remaining secrets
 - **Summary Statistics**: Reports total, succeeded, skipped, and failed counts
 
-## Usage Examples
+## 📖 Usage Examples
 
 ### PowerShell
 
@@ -261,7 +261,7 @@ flowchart TD
 ./postprovision.sh --help
 ```
 
-### Sample Output
+### 📝 Sample Output
 
 ```
 ═══════════════════════════════════════════════════════════════
@@ -321,35 +321,35 @@ Total secrets: 15
 ✓ Post-provisioning completed successfully
 ```
 
-## Platform Differences
+## 💻 Platform Differences
 
 | Aspect | PowerShell | Bash |
-|--------|------------|------|
+|:-------|:-----------|:-----|
 | Secrets command | `dotnet user-secrets set` | `dotnet user-secrets set` |
 | Dry-run support | `-WhatIf` (native) | `--dry-run` (custom) |
 | Color output | `Write-Host -ForegroundColor` | ANSI escape codes |
 | JSON parsing | `ConvertFrom-Json` | `jq` |
 | Path resolution | `Join-Path` | String concatenation |
 
-## Exit Codes
+## 🚪 Exit Codes
 
 | Code | Meaning |
-|------|---------|
+|:----:|:--------|
 | `0` | Success - all secrets configured successfully |
 | `1` | General error - missing required environment variables or unexpected failure |
 | `130` | Script interrupted by user (SIGINT) |
 
-## Related Hooks
+## 🔗 Related Hooks
 
 | Hook | Relationship |
-|------|--------------|
+|:-----|:-------------|
 | [preprovision](preprovision.md) | Runs before provisioning; clears secrets that this script will set |
 | [sql-managed-identity-config](sql-managed-identity-config.md) | Called by this script for SQL Database configuration |
 | [clean-secrets](clean-secrets.md) | Logic shared for clearing secrets |
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-### Common Issues
+### ⚠️ Common Issues
 
 1. **"Required environment variable not set"**
    - Ensure you're running through `azd provision` or `azd up`

@@ -1,70 +1,70 @@
-# configure-federated-credential
+# 🔐 configure-federated-credential
 
 Configures federated identity credentials for GitHub Actions OIDC authentication.
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Parameters](#parameters)
-- [Environment Variables](#environment-variables)
-- [Functionality](#functionality)
-- [Usage Examples](#usage-examples)
-- [Platform Differences](#platform-differences)
-- [Exit Codes](#exit-codes)
-- [Related Hooks](#related-hooks)
+- [📋 Overview](#-overview)
+- [⚙️ Prerequisites](#️-prerequisites)
+- [🎯 Parameters](#-parameters)
+- [🌐 Environment Variables](#-environment-variables)
+- [⚙️ Functionality](#️-functionality)
+- [📖 Usage Examples](#-usage-examples)
+- [💻 Platform Differences](#-platform-differences)
+- [🚪 Exit Codes](#-exit-codes)
+- [🔗 Related Hooks](#-related-hooks)
 
-## Overview
+## 📋 Overview
 
 This script adds or updates federated identity credentials in an Azure AD App Registration to enable GitHub Actions workflows to authenticate using OIDC (OpenID Connect).
 
-### What is Federated Identity?
+### ❓ What is Federated Identity?
 
 Federated identity credentials allow GitHub Actions workflows to authenticate to Azure without storing long-lived secrets. Instead, GitHub Actions obtains a short-lived OIDC token that Azure trusts based on the configured federation.
 
-### Key Operations
+### 🔑 Key Operations
 
 - Validates Azure CLI authentication
 - Retrieves or looks up the App Registration
 - Creates federated identity credential for the specified GitHub environment
 - Configures the trust relationship with GitHub's OIDC provider
 
-### When to Use
+### 📅 When to Use
 
 - Setting up CI/CD pipelines with GitHub Actions
 - Configuring passwordless authentication for deployments
 - Replacing service principal secrets with OIDC federation
 
-## Prerequisites
+## ⚙️ Prerequisites
 
-### Required Tools
+### 🔧 Required Tools
 
 | Tool | Minimum Version | Purpose |
-|------|-----------------|---------|
+|:-----|:---------------:|:--------|
 | PowerShell Core | 7.0+ | Script execution (PowerShell version) |
 | Bash | 4.0+ | Script execution (Bash version) |
 | Azure CLI (az) | 2.40+ | Azure AD operations |
 | jq | Latest | JSON parsing (Bash version only) |
 
-### Required Permissions
+### 🔐 Required Permissions
 
 - **Azure CLI**: Must be authenticated (`az login`)
 - **Azure AD**: Application Administrator or Owner of the App Registration
 - **Microsoft Graph**: `Application.ReadWrite.All` permission
 
-### Required Azure AD Configuration
+### ☁️ Required Azure AD Configuration
 
 An App Registration must exist with:
 
 - Service Principal created
 - Appropriate Azure RBAC roles assigned for deployment
 
-## Parameters
+## 🎯 Parameters
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `-AppName` | String | No | None | Display name of the Azure AD App Registration |
 | `-AppObjectId` | String | No | None | Object ID of the App Registration (alternative to AppName) |
 | `-GitHubOrg` | String | No | `Evilazaro` | GitHub organization or username |
@@ -74,30 +74,30 @@ An App Registration must exist with:
 ### Bash Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `--app-name` | String | No | None | Display name of the Azure AD App Registration |
 | `--app-object-id` | String | No | None | Object ID of the App Registration |
 | `--github-org` | String | No | `Evilazaro` | GitHub organization or username |
 | `--github-repo` | String | No | `Azure-LogicApps-Monitoring` | GitHub repository name |
 | `--environment` | String | No | `dev` | GitHub Environment name to configure |
 
-## Environment Variables
+## 🌐 Environment Variables
 
 ### Variables Read
 
 This script does not require environment variables but can use them as fallbacks:
 
 | Variable | Description |
-|----------|-------------|
+|:---------|:------------|
 | (None required) | |
 
 ### Variables Set
 
 This script does not set any environment variables.
 
-## Functionality
+## ⚙️ Functionality
 
-### Execution Flow
+### 🔄 Execution Flow
 
 ```mermaid
 flowchart TD
@@ -173,7 +173,7 @@ flowchart TD
     style F fill:#f44336,color:#fff
 ```
 
-### Federated Credential Structure
+### 📄 Federated Credential Structure
 
 The script creates a federated identity credential with the following configuration:
 
@@ -187,12 +187,12 @@ The script creates a federated identity credential with the following configurat
 }
 ```
 
-### Subject Claim Patterns
+### 🎯 Subject Claim Patterns
 
 GitHub OIDC tokens include different subject claims based on the trigger:
 
 | Trigger | Subject Pattern |
-|---------|-----------------|
+|:--------|:----------------|
 | Environment | `repo:{owner}/{repo}:environment:{environment}` |
 | Branch | `repo:{owner}/{repo}:ref:refs/heads/{branch}` |
 | Tag | `repo:{owner}/{repo}:ref:refs/tags/{tag}` |
@@ -200,7 +200,7 @@ GitHub OIDC tokens include different subject claims based on the trigger:
 
 This script configures the **environment** pattern.
 
-## Usage Examples
+## 📖 Usage Examples
 
 ### PowerShell
 
@@ -231,7 +231,7 @@ This script configures the **environment** pattern.
 ./configure-federated-credential.sh --app-name "my-app" --github-org "my-org" --github-repo "my-repo" --environment "staging"
 ```
 
-### Sample Output
+### 📝 Sample Output
 
 ```
 ========================================
@@ -280,30 +280,30 @@ Add this to your GitHub Actions workflow:
       subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 ```
 
-## Platform Differences
+## 💻 Platform Differences
 
 | Aspect | PowerShell | Bash |
-|--------|------------|------|
+|:-------|:-----------|:-----|
 | Azure CLI calls | `az ad app ...` | `az ad app ...` |
 | JSON parsing | `ConvertFrom-Json` | `jq` |
 | Interactive prompt | `Read-Host` | `read -p` |
 | Dependency check | `Get-Command` | `command -v` |
 
-## Exit Codes
+## 🚪 Exit Codes
 
 | Code | Meaning |
-|------|---------|
+|:----:|:--------|
 | `0` | Success - federated credential configured |
 | `1` | Error - not logged in, app not found, or configuration failed |
 
-## Related Hooks
+## 🔗 Related Hooks
 
 | Hook | Relationship |
-|------|--------------|
+|:-----|:-------------|
 | [preprovision](preprovision.md) | May provision the App Registration that this script configures |
 | [postprovision](postprovision.md) | Often run after provisioning to set up CI/CD |
 
-## GitHub Actions Workflow Example
+## 🐙 GitHub Actions Workflow Example
 
 After running this script, use the following in your GitHub Actions workflow:
 
@@ -337,9 +337,9 @@ jobs:
         run: azd deploy
 ```
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-### Common Issues
+### ⚠️ Common Issues
 
 1. **"Not logged in to Azure CLI"**
    - Run `az login` before executing the script
@@ -356,7 +356,7 @@ jobs:
    - Ensure system clock is synchronized
    - GitHub OIDC tokens are time-sensitive
 
-### Verifying Configuration
+### ✅ Verifying Configuration
 
 ```bash
 # List federated credentials for an app

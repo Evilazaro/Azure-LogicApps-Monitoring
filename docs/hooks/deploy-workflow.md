@@ -1,73 +1,73 @@
-# deploy-workflow
+# 🚀 deploy-workflow
 
 Deploys Logic Apps Standard workflows to Azure.
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Parameters](#parameters)
-- [Environment Variables](#environment-variables)
-- [Functionality](#functionality)
-- [Usage Examples](#usage-examples)
-- [Platform Differences](#platform-differences)
-- [Exit Codes](#exit-codes)
-- [Related Hooks](#related-hooks)
+- [📋 Overview](#-overview)
+- [⚙️ Prerequisites](#️-prerequisites)
+- [🎯 Parameters](#-parameters)
+- [🌐 Environment Variables](#-environment-variables)
+- [⚙️ Functionality](#️-functionality)
+- [📖 Usage Examples](#-usage-examples)
+- [💻 Platform Differences](#-platform-differences)
+- [🚪 Exit Codes](#-exit-codes)
+- [🔗 Related Hooks](#-related-hooks)
 
-## Overview
+## 📋 Overview
 
 Deploys workflow definitions from OrdersManagement Logic App to Azure. This script runs as an `azd` predeploy hook, meaning environment variables are automatically loaded during the provisioning process.
 
-### Key Operations
+### 🔑 Key Operations
 
 - Resolves environment variable placeholders in workflow files
 - Maps `AZURE_*` variables to `WORKFLOWS_*` equivalents for connections.json compatibility
 - Packages workflow files (excluding debug/test files)
 - Deploys workflows via Azure CLI zip deployment
 
-### When Executed
+### 📅 When Executed
 
 - **Automatically**: Before application deployment during `azd deploy` or `azd up`
 - **Manually**: When needing to update workflow definitions without full redeployment
 
-## Prerequisites
+## ⚙️ Prerequisites
 
-### Required Tools
+### 🔧 Required Tools
 
 | Tool | Minimum Version | Purpose |
-|------|-----------------|---------|
+|:-----|:---------------:|:--------|
 | PowerShell Core | 7.0+ | Script execution (PowerShell version) |
 | Bash | 4.0+ | Script execution (Bash version) |
 | Azure CLI (az) | 2.50+ | Workflow deployment |
 | jq | Latest | JSON manipulation (Bash version) |
 | zip | Latest | Package creation (Bash version) |
 
-### Required Permissions
+### 🔐 Required Permissions
 
 - **Azure CLI**: Must be authenticated (`az login`)
 - **Logic App**: Contributor access on the Logic App resource
 - **Storage**: Access to retrieve connection runtime URLs
 
-## Parameters
+## 🎯 Parameters
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `WorkflowPath` | String | No | `../workflows/OrdersManagement/OrdersManagementLogicApp` | Path to workflow project directory |
 
 ### Bash Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `workflow_path` (positional) | String | No | `../workflows/OrdersManagement/OrdersManagementLogicApp` | Path to workflow project directory |
 
-## Environment Variables
+## 🌐 Environment Variables
 
 ### Variables Read (Required)
 
 | Variable | Description | Set By |
-|----------|-------------|--------|
+|:---------|:------------|:------:|
 | `AZURE_SUBSCRIPTION_ID` | Azure subscription GUID | azd |
 | `AZURE_RESOURCE_GROUP` | Resource group containing Logic App | azd |
 | `AZURE_LOCATION` | Azure region | azd |
@@ -76,7 +76,7 @@ Deploys workflow definitions from OrdersManagement Logic App to Azure. This scri
 ### Variables Read (Optional)
 
 | Variable | Description | Default |
-|----------|-------------|---------|
+|:---------|:------------|:-------:|
 | `MANAGED_IDENTITY_NAME` | Managed identity for connections | None |
 | `SERVICE_BUS_CONNECTION_NAME` | Service Bus API connection name | None |
 | `SERVICE_BUS_NAMESPACE` | Service Bus namespace | None |
@@ -88,7 +88,7 @@ Deploys workflow definitions from OrdersManagement Logic App to Azure. This scri
 The script maps `AZURE_*` variables to `WORKFLOWS_*` for connections.json compatibility:
 
 | Source Variable | Target Variable |
-|-----------------|-----------------|
+|:----------------|:----------------|
 | `AZURE_SUBSCRIPTION_ID` | `WORKFLOWS_SUBSCRIPTION_ID` |
 | `AZURE_RESOURCE_GROUP` | `WORKFLOWS_RESOURCE_GROUP_NAME` |
 | `AZURE_LOCATION` | `WORKFLOWS_LOCATION_NAME` |
@@ -97,9 +97,9 @@ The script maps `AZURE_*` variables to `WORKFLOWS_*` for connections.json compat
 
 Environment aliases are set temporarily during execution for placeholder resolution.
 
-## Functionality
+## ⚙️ Functionality
 
-### Execution Flow
+### 🔄 Execution Flow
 
 ```mermaid
 flowchart TD
@@ -206,7 +206,7 @@ flowchart TD
     style I fill:#f44336,color:#fff
 ```
 
-### Placeholder Pattern
+### 🔄 Placeholder Pattern
 
 The script resolves placeholders in the format `${VARIABLE_NAME}`:
 
@@ -224,12 +224,12 @@ The script resolves placeholders in the format `${VARIABLE_NAME}`:
 }
 ```
 
-### Excluded Files
+### 🚫 Excluded Files
 
 Files matching these patterns are excluded from deployment (per `.funcignore`):
 
 | Pattern | Description |
-|---------|-------------|
+|:--------|:------------|
 | `.debug` | Debug configuration |
 | `.git*` | Git metadata |
 | `.vscode` | VS Code settings |
@@ -240,7 +240,7 @@ Files matching these patterns are excluded from deployment (per `.funcignore`):
 | `test` | Test files |
 | `workflow-designtime` | Design-time artifacts |
 
-### Connection Runtime URL Retrieval
+### 🔗 Connection Runtime URL Retrieval
 
 For API connections, the script retrieves runtime URLs via:
 
@@ -248,7 +248,7 @@ For API connections, the script retrieves runtime URLs via:
 POST https://management.azure.com/subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Web/connections/{connectionName}/listConnectionKeys?api-version=2016-06-01
 ```
 
-## Usage Examples
+## 📖 Usage Examples
 
 ### PowerShell
 
@@ -270,7 +270,7 @@ POST https://management.azure.com/subscriptions/{sub}/resourceGroups/{rg}/provid
 ./deploy-workflow.sh "/path/to/workflows"
 ```
 
-### Sample Output
+### 📝 Sample Output
 
 ```
 11:23:45 [i] Starting workflow deployment...
@@ -300,33 +300,33 @@ POST https://management.azure.com/subscriptions/{sub}/resourceGroups/{rg}/provid
 11:23:55 [✓] Workflow deployment complete
 ```
 
-## Platform Differences
+## 💻 Platform Differences
 
 | Aspect | PowerShell | Bash |
-|--------|------------|------|
+|:-------|:-----------|:-----|
 | Regex replacement | `-replace` operator | `sed` or Bash substitution |
 | Zip creation | `Compress-Archive` | `zip` command |
 | JSON manipulation | `ConvertFrom-Json` / `ConvertTo-Json` | `jq` |
 | Temp directory | `$env:TEMP` | `/tmp` |
 
-## Exit Codes
+## 🚪 Exit Codes
 
 | Code | Meaning |
-|------|---------|
+|:----:|:--------|
 | `0` | Success - workflows deployed successfully |
 | `1` | Error - deployment failed or configuration error |
 | `130` | Script interrupted by user (SIGINT) |
 
-## Related Hooks
+## 🔗 Related Hooks
 
 | Hook | Relationship |
-|------|--------------|
+|:-----|:-------------|
 | [postprovision](postprovision.md) | Configures secrets; runs before this hook deploys workflows |
 | [preprovision](preprovision.md) | Validates environment; ensures azd context is available |
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-### Common Issues
+### ⚠️ Common Issues
 
 1. **"Unresolved placeholders" warnings**
    - Ensure all required environment variables are exported by azd
@@ -345,7 +345,7 @@ POST https://management.azure.com/subscriptions/{sub}/resourceGroups/{rg}/provid
    - Run `az login` to refresh credentials
    - Verify managed identity is properly configured
 
-### Debugging Tips
+### 🐛 Debugging Tips
 
 - Check `connections.json` after resolution to verify placeholders were replaced
 - Use `az webapp log tail` to monitor Logic App deployment logs
