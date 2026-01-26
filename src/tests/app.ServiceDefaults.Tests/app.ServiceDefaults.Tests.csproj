@@ -7,4 +7,24 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\app.ServiceDefaults\app.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.Testing.Extensions.CodeCoverage" Version="18.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.Testing.Extensions.TrxReport" Version="2.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="MSTest.TestAdapter" Version="4.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="MSTest.TestFramework" Version="4.0.2" />
+  </ItemGroup>
+
 </Project>

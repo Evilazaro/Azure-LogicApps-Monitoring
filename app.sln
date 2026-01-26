@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eShop.Orders.API.Tests", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eShop.Web.App.Tests", "src\tests\eShop.Web.App.Tests\eShop.Web.App.Tests.csproj", "{0CA061C2-A0B3-4B56-BBCE-404166F841E8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "app.ServiceDefaults.Tests", "src\tests\app.ServiceDefaults.Tests\app.ServiceDefaults.Tests.csproj", "{401B550A-DA80-4973-9497-58CF3231E89B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +50,10 @@ Global
 		{0CA061C2-A0B3-4B56-BBCE-404166F841E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CA061C2-A0B3-4B56-BBCE-404166F841E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0CA061C2-A0B3-4B56-BBCE-404166F841E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{401B550A-DA80-4973-9497-58CF3231E89B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{401B550A-DA80-4973-9497-58CF3231E89B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{401B550A-DA80-4973-9497-58CF3231E89B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{401B550A-DA80-4973-9497-58CF3231E89B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +66,7 @@ Global
 		{C7782F1D-BF92-49C9-9086-46C5C85C3200} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{D8287D2A-DE18-4705-A43B-7397A29169C1} = {C7782F1D-BF92-49C9-9086-46C5C85C3200}
 		{0CA061C2-A0B3-4B56-BBCE-404166F841E8} = {C7782F1D-BF92-49C9-9086-46C5C85C3200}
+		{401B550A-DA80-4973-9497-58CF3231E89B} = {C7782F1D-BF92-49C9-9086-46C5C85C3200}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9A1ED0EB-82B1-438E-B544-5D614C339003}
