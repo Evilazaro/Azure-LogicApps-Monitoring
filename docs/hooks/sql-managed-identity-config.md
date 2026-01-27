@@ -24,12 +24,12 @@ The script is implemented in **both PowerShell and Bash** to support cross-platf
 - [Usage](#usage)
 - [Parameters](#parameters)
 - [Examples](#examples)
-- [Error Handling and Exit Codes](#error-handling--exit-codes)
-- [Logging and Output](#logging--output)
+- [Error Handling and Exit Codes](#error-handling-and-exit-codes)
+- [Logging and Output](#logging-and-output)
 - [Security Considerations](#security-considerations)
 - [Troubleshooting](#troubleshooting)
 - [Development Notes](#development-notes)
-- [License and Ownership](#license--ownership)
+- [License and Ownership](#license-and-ownership)
 - [Related Links](#related-links)
 
 ## Script Classification
@@ -240,7 +240,7 @@ if ($result.Success) {
 ./sql-managed-identity-config.sh -s myserver -d mydb -p my-app-identity -r "db_datareader,db_datawriter,db_ddladmin"
 ```
 
-## Error Handling & Exit Codes
+## Error Handling and Exit Codes
 
 | Exit Code | Description |
 |-----------|-------------|
@@ -264,7 +264,7 @@ The PowerShell script returns a `PSCustomObject` with:
 | `Message` | String | Success message (on success) |
 | `Error` | String | Error message (on failure) |
 
-## Logging & Output
+## Logging and Output
 
 | Output Type | Description |
 |-------------|-------------|
@@ -334,7 +334,7 @@ az sql server ad-admin create \
 - Firewall rule cleanup is handled automatically
 - Both implementations return structured results for programmatic use
 
-## License & Ownership
+## License and Ownership
 
 | Attribute | Value |
 |-----------|-------|

@@ -27,18 +27,15 @@ The script is implemented in **both PowerShell and Bash** to support cross-platf
 - [Usage](#usage)
 - [Parameters](#parameters)
 - [Examples](#examples)
-- [Error Handling and Exit Codes](#error-handling--exit-codes)
-- [Logging and Output](#logging--output)
+- [Error Handling and Exit Codes](#error-handling-and-exit-codes)
+- [Logging and Output](#logging-and-output)
 - [Security Considerations](#security-considerations)
 - [Troubleshooting](#troubleshooting)
 - [Development Notes](#development-notes)
-- [License and Ownership](#license--ownership)
+- [License and Ownership](#license-and-ownership)
 - [Related Links](#related-links)
 
 ## Script Classification
-
-> [!NOTE]
-> This script runs automatically before `azd provision` or `azd up`. Use `-ValidateOnly` to check prerequisites without making changes.
 
 | Attribute | Value |
 |-----------|-------|
@@ -159,7 +156,7 @@ flowchart TD
 ## Usage
 
 > [!TIP]
-> For remote or headless environments, use `-UseDeviceCodeLogin` to authenticate via device code flow.
+> This script runs automatically before `azd provision` or `azd up`. Use `-ValidateOnly` to check prerequisites without making changes, or `-UseDeviceCodeLogin` for remote/headless environments.
 
 ### PowerShell
 
@@ -279,7 +276,7 @@ azd provision
 ./preprovision.sh --use-device-code-login
 ```
 
-## Error Handling & Exit Codes
+## Error Handling and Exit Codes
 
 | Exit Code | Description |
 |-----------|-------------|
@@ -293,7 +290,7 @@ azd provision
 - **PowerShell**: Uses `SupportsShouldProcess` with `ConfirmImpact = 'Medium'`. Tracks failures and reports summary.
 - **Bash**: Uses `set -euo pipefail` for strict error handling. Signal handlers for graceful interruption.
 
-## Logging & Output
+## Logging and Output
 
 | Output Type | Description |
 |-------------|-------------|
@@ -351,7 +348,7 @@ The `-AutoInstall` flag supports automatic installation of:
 - Both implementations provide functional parity
 - Execution time is tracked and reported at completion
 
-## License & Ownership
+## License and Ownership
 
 | Attribute | Value |
 |-----------|-------|

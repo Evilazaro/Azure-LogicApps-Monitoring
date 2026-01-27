@@ -18,13 +18,13 @@ The script is implemented in **both PowerShell and Bash** to support cross-platf
 - [Usage](#usage)
 - [Parameters](#parameters)
 - [Examples](#examples)
-- [Error Handling and Exit Codes](#error-handling--exit-codes)
-- [Logging and Output](#logging--output)
+- [Error Handling and Exit Codes](#error-handling-and-exit-codes)
+- [Logging and Output](#logging-and-output)
 - [Security Considerations](#security-considerations)
 - [Troubleshooting](#troubleshooting)
 - [Data Generation Details](#data-generation-details)
 - [Development Notes](#development-notes)
-- [License and Ownership](#license--ownership)
+- [License and Ownership](#license-and-ownership)
 - [Related Links](#related-links)
 
 ## Script Classification
@@ -222,7 +222,7 @@ flowchart TD
 ./Generate-Orders.sh --count 10000 --min-products 3 --max-products 10 --force
 ```
 
-## Error Handling & Exit Codes
+## Error Handling and Exit Codes
 
 | Exit Code | Description |
 |-----------|-------------|
@@ -235,7 +235,7 @@ flowchart TD
 - **PowerShell**: Uses `SupportsShouldProcess` for `-WhatIf` support. Validates parameter ranges before execution.
 - **Bash**: Uses `set -euo pipefail` for strict error handling. Includes signal handlers for graceful interruption.
 
-## Logging & Output
+## Logging and Output
 
 | Output Type | Description |
 |-------------|-------------|
@@ -317,7 +317,7 @@ The script includes 20 global delivery addresses from major cities worldwide (US
 - Progress tracking provides periodic updates for large batch operations
 - Both implementations maintain data structure compatibility
 
-## License & Ownership
+## License and Ownership
 
 | Attribute | Value |
 |-----------|-------|

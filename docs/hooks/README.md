@@ -2,6 +2,9 @@
 
 This folder contains documentation for the automation scripts used in the Azure Logic Apps Monitoring solution. These scripts support the Azure Developer CLI (azd) lifecycle and provide utilities for development environment management.
 
+> [!TIP]
+> New to this project? Start with [check-dev-workstation.md](check-dev-workstation.md) to validate your development environment before running any `azd` commands.
+
 ## Contents
 
 ### azd Lifecycle Hooks

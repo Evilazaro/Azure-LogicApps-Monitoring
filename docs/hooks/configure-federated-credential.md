@@ -16,12 +16,12 @@ The script is implemented in **both PowerShell and Bash** to support cross-platf
 - [Usage](#usage)
 - [Parameters](#parameters)
 - [Examples](#examples)
-- [Error Handling and Exit Codes](#error-handling--exit-codes)
-- [Logging and Output](#logging--output)
+- [Error Handling and Exit Codes](#error-handling-and-exit-codes)
+- [Logging and Output](#logging-and-output)
 - [Security Considerations](#security-considerations)
 - [Troubleshooting](#troubleshooting)
 - [Development Notes](#development-notes)
-- [License and Ownership](#license--ownership)
+- [License and Ownership](#license-and-ownership)
 - [Related Links](#related-links)
 
 ## Script Classification
@@ -210,7 +210,7 @@ flowchart TD
 ./configure-federated-credential.sh --app-name "my-app" --github-org "MyOrg" --github-repo "MyRepo" --environment "staging"
 ```
 
-## Error Handling & Exit Codes
+## Error Handling and Exit Codes
 
 | Exit Code | Description |
 |-----------|-------------|
@@ -223,7 +223,7 @@ flowchart TD
 - App Registration lookup failures result in immediate exit with error message
 - Federated credential creation failures are reported with detailed error information
 
-## Logging & Output
+## Logging and Output
 
 | Output Type | Description |
 |-------------|-------------|
@@ -274,7 +274,7 @@ permissions:
 - Temporary files are created for JSON parameters and cleaned up after use
 - Subject claim format: `repo:{org}/{repo}:environment:{environment}`
 
-## License & Ownership
+## License and Ownership
 
 | Attribute | Value |
 |-----------|-------|

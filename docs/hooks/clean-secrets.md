@@ -16,12 +16,12 @@ The script is implemented in **both PowerShell and Bash** to support cross-platf
 - [Usage](#usage)
 - [Parameters](#parameters)
 - [Examples](#examples)
-- [Error Handling and Exit Codes](#error-handling--exit-codes)
-- [Logging and Output](#logging--output)
+- [Error Handling and Exit Codes](#error-handling-and-exit-codes)
+- [Logging and Output](#logging-and-output)
 - [Security Considerations](#security-considerations)
 - [Troubleshooting](#troubleshooting)
 - [Development Notes](#development-notes)
-- [License and Ownership](#license--ownership)
+- [License and Ownership](#license-and-ownership)
 - [Related Links](#related-links)
 
 ## Script Classification
@@ -206,7 +206,7 @@ flowchart TD
 ./clean-secrets.sh --dry-run --verbose
 ```
 
-## Error Handling & Exit Codes
+## Error Handling and Exit Codes
 
 | Exit Code | Description |
 |-----------|-------------|
@@ -219,7 +219,7 @@ flowchart TD
 - **PowerShell**: Uses `SupportsShouldProcess` with `ConfirmImpact = 'High'`. Strict mode enabled with `Set-StrictMode -Version Latest`.
 - **Bash**: Uses `set -euo pipefail` for strict error handling. Includes cleanup trap for graceful exit.
 
-## Logging & Output
+## Logging and Output
 
 | Output Type | Description |
 |-------------|-------------|
@@ -260,7 +260,7 @@ Both implementations provide an execution summary including:
 - Bash implementation provides equivalent `--dry-run` functionality
 - Both implementations track and report execution statistics
 
-## License & Ownership
+## License and Ownership
 
 | Attribute | Value |
 |-----------|-------|

@@ -18,18 +18,15 @@ The script is implemented in **both PowerShell and Bash** to support cross-platf
 - [Usage](#usage)
 - [Parameters](#parameters)
 - [Examples](#examples)
-- [Error Handling and Exit Codes](#error-handling--exit-codes)
-- [Logging and Output](#logging--output)
+- [Error Handling and Exit Codes](#error-handling-and-exit-codes)
+- [Logging and Output](#logging-and-output)
 - [Security Considerations](#security-considerations)
 - [Troubleshooting](#troubleshooting)
 - [Development Notes](#development-notes)
-- [License and Ownership](#license--ownership)
+- [License and Ownership](#license-and-ownership)
 - [Related Links](#related-links)
 
 ## Script Classification
-
-> [!NOTE]
-> This script automatically runs as an `azd predeploy` hook. Manual execution is also supported.
 
 | Attribute | Value |
 |-----------|-------|
@@ -143,6 +140,9 @@ flowchart TD
 
 ## Usage
 
+> [!NOTE]
+> This script automatically runs as an `azd predeploy` hook. Manual execution is also supported.
+
 ### PowerShell
 
 ```powershell
@@ -211,7 +211,7 @@ export LOGIC_APP_NAME="my-logic-app"
 ./deploy-workflow.sh "/path/to/workflows/LogicApp"
 ```
 
-## Error Handling & Exit Codes
+## Error Handling and Exit Codes
 
 | Exit Code | Description |
 |-----------|-------------|
@@ -223,7 +223,7 @@ export LOGIC_APP_NAME="my-logic-app"
 - **PowerShell**: Uses `$ErrorActionPreference = 'Stop'` for strict error handling. Errors are caught and logged with stack traces in verbose mode.
 - **Bash**: Uses `set -euo pipefail` for strict error handling. Cleanup trap ensures temporary files are removed on exit.
 
-## Logging & Output
+## Logging and Output
 
 | Output Type | Description |
 |-------------|-------------|
@@ -283,7 +283,7 @@ The following patterns are excluded from deployment (per `.funcignore`):
 - Environment aliases are automatically set for `WORKFLOWS_*` variables
 - Connection runtime URLs are fetched from Azure if not provided in environment
 
-## License & Ownership
+## License and Ownership
 
 | Attribute | Value |
 |-----------|-------|

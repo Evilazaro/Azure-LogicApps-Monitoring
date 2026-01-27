@@ -24,18 +24,15 @@ The script is implemented in **both PowerShell and Bash** to support cross-platf
 - [Parameters](#parameters)
 - [Target Projects](#target-projects)
 - [Examples](#examples)
-- [Error Handling and Exit Codes](#error-handling--exit-codes)
-- [Logging and Output](#logging--output)
+- [Error Handling and Exit Codes](#error-handling-and-exit-codes)
+- [Logging and Output](#logging-and-output)
 - [Security Considerations](#security-considerations)
 - [Troubleshooting](#troubleshooting)
 - [Development Notes](#development-notes)
-- [License and Ownership](#license--ownership)
+- [License and Ownership](#license-and-ownership)
 - [Related Links](#related-links)
 
 ## Script Classification
-
-> [!NOTE]
-> This script runs automatically after `azd provision` or `azd up` completes. Manual execution is also supported.
 
 | Attribute | Value |
 |-----------|-------|
@@ -155,7 +152,7 @@ flowchart TD
 ## Usage
 
 > [!TIP]
-> Use `-WhatIf` (PowerShell) or `--dry-run` (Bash) to preview configuration changes.
+> This script runs automatically after `azd provision` or `azd up`. For manual execution, use `-WhatIf` (PowerShell) or `--dry-run` (Bash) to preview configuration changes.
 
 ### PowerShell
 
@@ -253,7 +250,7 @@ azd provision
 ./postprovision.sh --force --verbose
 ```
 
-## Error Handling & Exit Codes
+## Error Handling and Exit Codes
 
 | Exit Code | Description |
 |-----------|-------------|
@@ -266,7 +263,7 @@ azd provision
 - **PowerShell**: Uses `SupportsShouldProcess` with `ConfirmImpact = 'Medium'`. Non-critical failures (ACR login) are logged but don't stop execution.
 - **Bash**: Uses `set -euo pipefail` for strict error handling. ACR authentication failures are non-blocking.
 
-## Logging & Output
+## Logging and Output
 
 | Output Type | Description |
 |-------------|-------------|
@@ -315,7 +312,7 @@ dotnet user-secrets set "ConnectionStrings:SqlDatabase" "Server=xxx;Database=xxx
 - ACR authentication is non-blocking - deployment continues if it fails
 - Statistics tracking provides success/skipped/failed counts
 
-## License & Ownership
+## License and Ownership
 
 | Attribute | Value |
 |-----------|-------|
