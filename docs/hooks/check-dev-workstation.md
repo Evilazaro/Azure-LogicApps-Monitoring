@@ -33,6 +33,9 @@ The script is implemented in **both PowerShell and Bash** to support cross-platf
 
 ## Prerequisites
 
+> [!NOTE]
+> This script is a lightweight wrapper that delegates all validation logic to the `preprovision` script.
+
 | Prerequisite | Required | Description |
 |--------------|----------|-------------|
 | PowerShell 7.0+ | Yes (for .ps1) | PowerShell Core for cross-platform execution |
@@ -83,6 +86,9 @@ flowchart TD
 ```
 
 ## Usage
+
+> [!TIP]
+> Run this script before starting development to ensure all prerequisites are properly configured.
 
 ### PowerShell
 
@@ -174,6 +180,9 @@ flowchart TD
 
 ## Security Considerations
 
+> [!IMPORTANT]
+> This script runs in read-only mode and makes no changes to your system.
+
 - The script does not modify any system configuration
 - No credentials or secrets are handled directly
 - Spawns a child process to execute preprovision, isolating exit behavior
@@ -203,3 +212,9 @@ flowchart TD
 | Version | 1.0.0 |
 | Last Modified | 2026-01-07 |
 | Repository | [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring) |
+
+## Related Links
+
+- [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+- [.NET SDK Installation](https://dotnet.microsoft.com/download)
+- [Azure CLI Installation](https://docs.microsoft.com/cli/azure/install-azure-cli)

@@ -2,6 +2,9 @@
 
 ## Overview
 
+> [!CAUTION]
+> This script permanently removes user secrets. Use `-WhatIf` or `--dry-run` to preview changes before execution.
+
 This script clears all .NET user secrets from the configured projects in the Azure Logic Apps Monitoring solution to ensure a clean state. This is essential before re-provisioning Azure resources, when troubleshooting configuration issues, when rotating secrets or credentials, or when setting up a fresh development environment.
 
 The script is implemented in **both PowerShell and Bash** to support cross-platform development environments.
@@ -39,6 +42,9 @@ The script is implemented in **both PowerShell and Bash** to support cross-platf
 | Project files | Yes | Target project `.csproj` files must exist |
 
 ### Target Projects
+
+> [!NOTE]
+> The following projects must exist in the expected directory structure for the script to function correctly.
 
 The script clears user secrets for the following projects:
 
@@ -95,6 +101,9 @@ flowchart TD
 ```
 
 ## Usage
+
+> [!TIP]
+> Always use `--dry-run` or `-WhatIf` first to preview which secrets will be cleared.
 
 ### PowerShell
 
@@ -247,3 +256,8 @@ Both implementations provide an execution summary including:
 | Version | 2.0.1 |
 | Last Modified | 2026-01-06 |
 | Repository | [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring) |
+
+## Related Links
+
+- [.NET User Secrets Documentation](https://learn.microsoft.com/dotnet/core/tools/dotnet-user-secrets)
+- [Safe Storage of App Secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets)
