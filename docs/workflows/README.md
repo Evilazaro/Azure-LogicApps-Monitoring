@@ -119,51 +119,90 @@ flowchart LR
 ## Pipeline Architecture
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': {'fontSize': '14px', 'primaryColor': '#1f6feb', 'lineColor': '#8b949e'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '14px', 'primaryColor': '#1976D2', 'lineColor': '#78909C', 'textColor': '#37474F'}}}%%
 flowchart TB
     subgraph pipeline["🔄 Complete CI/CD Pipeline"]
         direction TB
-        style pipeline fill:#0d1117,stroke:#30363d,stroke-width:3px,color:#e6edf3
+        style pipeline fill:#263238,stroke:#455A64,stroke-width:3px,color:#ECEFF1
         
         subgraph triggers["⚡ Triggers"]
-            style triggers fill:#1c2128,stroke:#7ee787,stroke-width:2px,color:#7ee787
+            direction LR
+            style triggers fill:#37474F,stroke:#66BB6A,stroke-width:2px,color:#A5D6A7
             push(["🔔 Push"]):::node-trigger
             pr(["🔔 Pull Request"]):::node-trigger
             manual(["🔔 Manual"]):::node-trigger
         end
         
         subgraph ci["🔨 CI Stage"]
-            direction LR
-            style ci fill:#1c2128,stroke:#79c0ff,stroke-width:2px,color:#79c0ff
-            build["Build"]:::node-build
-            test["Test"]:::node-test
-            analyze["Analyze"]:::node-lint
-            codeql["CodeQL"]:::node-security
+            direction TB
+            style ci fill:#37474F,stroke:#42A5F5,stroke-width:2px,color:#90CAF9
+            subgraph build-matrix["🔨 Build Matrix"]
+                direction LR
+                style build-matrix fill:#455A64,stroke:#4FC3F7,stroke-width:1px,color:#B3E5FC
+                build-ubuntu["🐧 Ubuntu"]:::node-ubuntu
+                build-windows["🪟 Windows"]:::node-windows
+                build-macos["🍎 macOS"]:::node-macos
+            end
+            subgraph test-matrix["🧪 Test Matrix"]
+                direction LR
+                style test-matrix fill:#455A64,stroke:#AB47BC,stroke-width:1px,color:#CE93D8
+                test-ubuntu["🐧 Ubuntu"]:::node-ubuntu
+                test-windows["🪟 Windows"]:::node-windows
+                test-macos["🍎 macOS"]:::node-macos
+            end
+            subgraph analysis["🔍 Analysis"]
+                direction LR
+                style analysis fill:#455A64,stroke:#BA68C8,stroke-width:1px,color:#E1BEE7
+                analyze["📝 Analyze"]:::node-lint
+                codeql["🛡️ CodeQL"]:::node-security
+            end
         end
         
         subgraph cd["🚀 CD Stage"]
             direction LR
-            style cd fill:#1c2128,stroke:#3fb950,stroke-width:2px,color:#3fb950
-            provision["Provision"]:::node-build
-            sql["SQL Config"]:::node-staging
-            deploy["Deploy"]:::node-production
+            style cd fill:#37474F,stroke:#66BB6A,stroke-width:2px,color:#A5D6A7
+            subgraph deployment["Deployment"]
+                direction LR
+                style deployment fill:#455A64,stroke:#66BB6A,stroke-width:1px,color:#C8E6C9
+                provision["🏗️ Provision"]:::node-build
+                sql["🔑 SQL Config"]:::node-staging
+                deploy["🚀 Deploy"]:::node-production
+            end
         end
     end
     
-    push & pr & manual --> build
-    build --> test & analyze & codeql
-    test & analyze & codeql --> provision
+    %% Trigger connections
+    push & pr & manual --> build-ubuntu & build-windows & build-macos
+    
+    %% Build to Test (OS-specific)
+    build-ubuntu --> test-ubuntu
+    build-windows --> test-windows
+    build-macos --> test-macos
+    
+    %% Build to Analysis
+    build-ubuntu & build-windows & build-macos --> analyze & codeql
+    
+    %% CI to CD
+    test-ubuntu & test-windows & test-macos --> provision
+    analyze & codeql --> provision
+    
+    %% CD flow
     provision --> sql --> deploy
     
-    classDef node-trigger fill:#238636,stroke:#2ea043,stroke-width:2px,color:#ffffff,font-weight:bold
-    classDef node-build fill:#1f6feb,stroke:#58a6ff,stroke-width:2px,color:#ffffff
-    classDef node-test fill:#8957e5,stroke:#a371f7,stroke-width:2px,color:#ffffff
-    classDef node-lint fill:#a371f7,stroke:#d2a8ff,stroke-width:2px,color:#ffffff
-    classDef node-security fill:#da3633,stroke:#f85149,stroke-width:2px,color:#ffffff
-    classDef node-staging fill:#9e6a03,stroke:#d29922,stroke-width:2px,color:#ffffff
-    classDef node-production fill:#238636,stroke:#3fb950,stroke-width:2px,color:#ffffff,font-weight:bold
+    %% Material Design Node Classes
+    classDef node-trigger fill:#43A047,stroke:#66BB6A,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    classDef node-build fill:#1976D2,stroke:#42A5F5,stroke-width:2px,color:#FFFFFF
+    classDef node-lint fill:#8E24AA,stroke:#BA68C8,stroke-width:2px,color:#FFFFFF
+    classDef node-security fill:#C62828,stroke:#EF5350,stroke-width:2px,color:#FFFFFF
+    classDef node-staging fill:#EF6C00,stroke:#FFA726,stroke-width:2px,color:#FFFFFF
+    classDef node-production fill:#2E7D32,stroke:#66BB6A,stroke-width:2px,color:#FFFFFF,font-weight:bold
     
-    linkStyle default stroke:#8b949e,stroke-width:2px
+    %% OS-Specific Node Classes (Material Design)
+    classDef node-ubuntu fill:#E65100,stroke:#FF9800,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    classDef node-windows fill:#0277BD,stroke:#03A9F4,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    classDef node-macos fill:#455A64,stroke:#78909C,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    
+    linkStyle default stroke:#78909C,stroke-width:2px
 ```
 
 ---
