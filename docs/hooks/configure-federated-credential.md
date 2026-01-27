@@ -49,10 +49,10 @@ This script adds or updates federated identity credentials in an Azure AD App Re
 
 ## Compatibility
 
-| Platform    | Script                            | Status |
-|:------------|:----------------------------------|:------:|
-| Windows     | `configure-federated-credential.ps1` |   ✅   |
-| Linux/macOS | `configure-federated-credential.sh`  |   ✅   |
+| Platform | Script | Status |
+|:---------|:-------|:------:|
+| Windows | `configure-federated-credential.ps1` | ✅ |
+| Linux/macOS | `configure-federated-credential.sh` | ✅ |
 
 ---
 

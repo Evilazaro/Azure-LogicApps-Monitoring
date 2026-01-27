@@ -50,10 +50,10 @@ When Azure Logic Apps Standard are deleted through normal infrastructure teardow
 
 ## Compatibility
 
-| Platform    | Script               | Status |
-|:------------|:---------------------|:------:|
-| Windows     | `postinfradelete.ps1` |   ✅   |
-| Linux/macOS | `postinfradelete.sh`  |   ✅   |
+| Platform | Script | Status |
+|:---------|:-------|:------:|
+| Windows | `postinfradelete.ps1` | ✅ |
+| Linux/macOS | `postinfradelete.sh` | ✅ |
 
 ---
 

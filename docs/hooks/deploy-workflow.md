@@ -50,10 +50,10 @@ This script deploys workflow definitions from the OrdersManagement Logic App to 
 
 ## Compatibility
 
-| Platform    | Script              | Status |
-|:------------|:--------------------|:------:|
-| Windows     | `deploy-workflow.ps1` |   ✅   |
-| Linux/macOS | `deploy-workflow.sh`  |   ✅   |
+| Platform | Script | Status |
+|:---------|:-------|:------:|
+| Windows | `deploy-workflow.ps1` | ✅ |
+| Linux/macOS | `deploy-workflow.sh` | ✅ |
 
 ---
 

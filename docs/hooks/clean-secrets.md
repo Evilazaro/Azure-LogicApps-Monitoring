@@ -53,10 +53,10 @@ This script clears all .NET user secrets from the configured projects to ensure 
 
 ## Compatibility
 
-| Platform    | Script            | Status |
-|:------------|:------------------|:------:|
-| Windows     | `clean-secrets.ps1` |   ✅   |
-| Linux/macOS | `clean-secrets.sh`  |   ✅   |
+| Platform | Script | Status |
+|:---------|:-------|:------:|
+| Windows | `clean-secrets.ps1` | ✅ |
+| Linux/macOS | `clean-secrets.sh` | ✅ |
 
 ---
 

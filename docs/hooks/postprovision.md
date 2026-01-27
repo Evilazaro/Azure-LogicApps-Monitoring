@@ -55,10 +55,10 @@ This script is automatically executed by azd after infrastructure provisioning c
 
 ## Compatibility
 
-| Platform    | Script             | Status |
-|:------------|:-------------------|:------:|
-| Windows     | `postprovision.ps1` |   ✅   |
-| Linux/macOS | `postprovision.sh`  |   ✅   |
+| Platform | Script | Status |
+|:---------|:-------|:------:|
+| Windows | `postprovision.ps1` | ✅ |
+| Linux/macOS | `postprovision.sh` | ✅ |
 
 ---
 

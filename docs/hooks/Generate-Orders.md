@@ -58,10 +58,10 @@ This script generates randomized e-commerce orders containing products, customer
 
 ## Compatibility
 
-| Platform    | Script              | Status |
-|:------------|:--------------------|:------:|
-| Windows     | `Generate-Orders.ps1` |   ✅   |
-| Linux/macOS | `Generate-Orders.sh`  |   ✅   |
+| Platform | Script | Status |
+|:---------|:-------|:------:|
+| Windows | `Generate-Orders.ps1` | ✅ |
+| Linux/macOS | `Generate-Orders.sh` | ✅ |
 
 ---
 
