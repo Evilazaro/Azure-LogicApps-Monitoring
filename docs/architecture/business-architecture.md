@@ -167,7 +167,7 @@ block-beta
     columns 4
     
     block:strategic["🎯 Strategic Capabilities"]:4
-        direction TB
+        space:8
         columns 4
         SC1["Customer\nEngagement"]
         SC2["Order\nIntelligence"]
@@ -178,6 +178,7 @@ block-beta
     space:4
     
     block:core["⚙️ Core Business Capabilities"]:4
+        space:8
         columns 4
         CC1["Order\nManagement"]
         CC2["Order\nProcessing"]
@@ -188,6 +189,7 @@ block-beta
     space:4
     
     block:enabling["🔧 Enabling Capabilities"]:4
+        space:8
         columns 4
         EC1["Monitoring &\nObservability"]
         EC2["Notification\nManagement"]
