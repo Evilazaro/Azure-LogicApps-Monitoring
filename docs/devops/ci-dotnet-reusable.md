@@ -2,10 +2,34 @@
 
 ![Workflow Status](https://img.shields.io/badge/workflow-ci--dotnet--reusable.yml-blue)
 
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Workflow Diagram](#workflow-diagram)
+- [Jobs](#jobs)
+  - [Job: build](#job-build)
+  - [Job: test](#job-test)
+  - [Job: analyze](#job-analyze)
+  - [Job: codeql](#job-codeql)
+  - [Job: summary](#job-summary)
+  - [Job: on-failure](#job-on-failure)
+- [Inputs and Secrets](#inputs-and-secrets)
+- [Permissions](#permissions)
+- [Artifacts and Outputs](#artifacts-and-outputs)
+- [Dependencies](#dependencies)
+- [Usage Examples](#usage-examples)
+- [Environment Variables](#environment-variables)
+- [CodeQL Configuration](#codeql-configuration)
+- [Related Workflows](#related-workflows)
+
+---
+
 ## Overview
 
 | Property | Value |
-|----------|-------|
+|:---------|:------|
 | **File** | `.github/workflows/ci-dotnet-reusable.yml` |
 | **Name** | CI - .NET Reusable Workflow |
 | **Triggers** | `workflow_call` (reusable workflow) |
@@ -266,7 +290,7 @@ Provides visual failure indication and reports detailed failure information.
 ### Inputs
 
 | Name | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
+|:-----|:----:|:--------:|:-------:|:------------|
 | `configuration` | string | No | `Release` | Build configuration (Release/Debug) |
 | `dotnet-version` | string | No | `10.0.x` | .NET SDK version to use |
 | `solution-file` | string | No | `app.sln` | Path to the solution file |
@@ -281,8 +305,8 @@ Provides visual failure indication and reports detailed failure information.
 ### Secrets
 
 | Name | Required | Description |
-|------|----------|-------------|
-| (inherited) | - | Secrets inherited from calling workflow |
+|:-----|:--------:|:------------|
+| (inherited) | — | Secrets inherited from calling workflow |
 
 ## Permissions
 
@@ -299,7 +323,7 @@ permissions:
 ### Artifacts
 
 | Name | Path | Job | Description |
-|------|------|-----|-------------|
+|:-----|:-----|:---:|:------------|
 | `build-artifacts-{os}` | `**/bin/{config}/**` | `build` | Compiled binaries per platform |
 | `test-results-{os}` | `TestResults/**/*.trx` | `test` | Test results in .trx format per platform |
 | `code-coverage-{os}` | `TestResults/**/coverage.cobertura.xml` | `test` | Coverage reports (Cobertura) per platform |
@@ -308,7 +332,7 @@ permissions:
 ### Outputs
 
 | Output | Description | Value |
-|--------|-------------|-------|
+|:-------|:------------|:------|
 | `build-version` | The generated build version | `${{ jobs.build.outputs.build-version }}` |
 | `build-result` | Build job result | `${{ jobs.build.result }}` |
 | `test-result` | Test job result | `${{ jobs.test.result }}` |
@@ -320,7 +344,7 @@ permissions:
 ### External Actions
 
 | Action | Version | Purpose |
-|--------|---------|---------|
+|:-------|:--------|:--------|
 | `actions/checkout` | `v6.0.2` (SHA: `de0fac2e4500dabe0009e67214ff5f5447ce83dd`) | Checkout repository code |
 | `actions/setup-dotnet` | `v5.1.0` (SHA: `baa11fbfe1d6520db94683bd5c7a3818018e4309`) | Setup .NET SDK |
 | `actions/upload-artifact` | `v6.0.0` (SHA: `b7c566a772e6b6bfb58ed0dc250532a479d7789f`) | Upload workflow artifacts |
@@ -375,7 +399,7 @@ jobs:
 ## Environment Variables
 
 | Variable | Value | Description |
-|----------|-------|-------------|
+|:---------|:------|:------------|
 | `DOTNET_SKIP_FIRST_TIME_EXPERIENCE` | `true` | Skip .NET first-time setup |
 | `DOTNET_NOLOGO` | `true` | Suppress .NET logo |
 | `DOTNET_CLI_TELEMETRY_OPTOUT` | `true` | Disable .NET telemetry |
@@ -395,5 +419,9 @@ config:
 
 ## Related Workflows
 
-- [azure-dev.md](azure-dev.md) - Azure deployment workflow that calls this reusable workflow
-- [ci-dotnet.md](ci-dotnet.md) - Standalone CI workflow that calls this reusable workflow
+- [azure-dev.md](azure-dev.md) — Azure deployment workflow that calls this reusable workflow
+- [ci-dotnet.md](ci-dotnet.md) — Standalone CI workflow that calls this reusable workflow
+
+---
+
+[↑ Back to Top](#workflow-ci---net-reusable-workflow)

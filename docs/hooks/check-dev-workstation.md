@@ -51,10 +51,10 @@ The script acts as a wrapper around `preprovision.ps1`/`preprovision.sh` in Vali
 
 ## Compatibility
 
-| Platform    | Script                     | Status |
-|:------------|:---------------------------|:------:|
-| Windows     | `check-dev-workstation.ps1` |   ✅   |
-| Linux/macOS | `check-dev-workstation.sh`  |   ✅   |
+| Platform | Script | Status |
+|:---------|:-------|:------:|
+| Windows | `check-dev-workstation.ps1` | ✅ |
+| Linux/macOS | `check-dev-workstation.sh` | ✅ |
 
 ---
 

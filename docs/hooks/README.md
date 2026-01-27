@@ -253,10 +253,10 @@ All scripts follow consistent error handling patterns:
 
 | Exit Code | Meaning |
 |----------:|:--------|
-| 0 | ✅ Success - All operations completed successfully |
-| 1 | ❌ General error - Operation failed |
-| 2 | ❌ Invalid arguments - Unknown or malformed options |
-| 130 | ⚠️ Interrupted - User cancelled (Ctrl+C) |
+| 0 | ✅ Success — All operations completed successfully |
+| 1 | ❌ General error — Operation failed |
+| 2 | ❌ Invalid arguments — Unknown or malformed options |
+| 130 | ⚠️ Interrupted — User cancelled (Ctrl+C) |
 
 ---
 
@@ -273,4 +273,4 @@ When adding new hook scripts:
 
 ---
 
-[← Back to Documentation](../README.md)
+[← Back to Documentation](../README.md) | [↑ Back to Top](#hooks-documentation)
