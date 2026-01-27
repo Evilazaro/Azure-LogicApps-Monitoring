@@ -1,10 +1,52 @@
-# CD - Azure Deployment Workflow
+---
+title: CD - Azure Deployment Workflow
+description: Complete CI/CD pipeline documentation for Azure infrastructure provisioning and application deployment using Azure Developer CLI (azd)
+author: DevOps Team
+last_updated: 2026-01-27
+tags: [azure, deployment, ci-cd, oidc, bicep, azd]
+---
+
+# 🚀 CD - Azure Deployment Workflow
+
+<div align="center">
 
 ![Workflow](https://img.shields.io/badge/workflow-CD-purple?style=flat-square)
 ![Azure](https://img.shields.io/badge/Azure-Deployment-blue?style=flat-square)
 ![OIDC](https://img.shields.io/badge/auth-OIDC%20Federated-green?style=flat-square)
+![Status](https://img.shields.io/badge/status-Production-success?style=flat-square)
 
-## Overview
+**[📚 Documentation Index](README.md)** • **[🔨 CI Workflow](ci-dotnet.md)** • **[🔄 Reusable CI](ci-dotnet-reusable.md)**
+
+</div>
+
+---
+
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [🔄 Pipeline Flow Diagram](#-pipeline-flow-diagram)
+- [⚡ Trigger Events](#-trigger-events)
+- [📝 Jobs Breakdown](#-jobs-breakdown)
+  - [🔄 CI Job](#-ci-job)
+  - [🚀 Deploy Dev Job](#-deploy-dev-job)
+  - [📊 Summary Job](#-summary-job)
+  - [❌ On-Failure Job](#-on-failure-job)
+- [🔐 Permissions](#-permissions)
+- [🌍 Environment Variables](#-environment-variables)
+- [🔑 Secrets and Variables](#-secrets-and-variables)
+- [📤 Outputs](#-outputs)
+- [⚙️ Concurrency](#️-concurrency)
+- [🔗 External Actions Used](#-external-actions-used)
+- [📦 Dependencies](#-dependencies)
+- [🛡️ Security Features](#️-security-features)
+- [🔄 Retry Logic](#-retry-logic)
+- [💡 Usage Examples](#-usage-examples)
+- [📚 Related Documentation](#-related-documentation)
+
+---
+
+## 📋 Overview
 
 | Property | Value |
 |----------|-------|
@@ -22,9 +64,14 @@ This workflow implements a complete CI/CD pipeline with:
 - **Application deployment** with retry logic
 - **Comprehensive summaries** and rollback instructions
 
+> [!IMPORTANT]
+> This workflow uses **OIDC federated credentials** for authentication. No long-lived secrets are stored in GitHub.
+
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Workflow Diagram
+## 📊 Workflow Diagram
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'fontSize': '14px', 'primaryColor': '#E3F2FD', 'lineColor': '#90A4AE', 'textColor': '#37474F', 'clusterBkg': '#FAFAFA'}}}%%
@@ -148,9 +195,11 @@ flowchart TB
     classDef node-production fill:#E8F5E9,stroke:#66BB6A,stroke-width:2px,color:#2E7D32,font-weight:bold
 ```
 
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Pipeline Flow Diagram
+## 🔄 Pipeline Flow Diagram
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'fontSize': '14px', 'primaryColor': '#E3F2FD', 'lineColor': '#90A4AE', 'textColor': '#37474F', 'clusterBkg': '#FAFAFA'}}}%%
@@ -175,9 +224,11 @@ flowchart LR
     classDef node-error fill:#FFEBEE,stroke:#EF5350,stroke-width:2px,color:#C62828
 ```
 
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Trigger Events
+## ⚡ Trigger Events
 
 | Trigger | Branches | Path Filters |
 |---------|----------|--------------|
