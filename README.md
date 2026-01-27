@@ -33,29 +33,71 @@ This solution provides a complete reference implementation for monitoring Azure 
 
 ## Architecture
 
-```
+```mermaid
+flowchart TB
+    subgraph AzureResourceGroup["☁️ Azure Resource Group"]
+        direction TB
+        
+        subgraph Frontend["🖥️ Frontend Layer"]
+            WebApp["📱 Web App<br/>(Blazor / Fluent UI)"]
+        end
+        
+        subgraph Backend["⚙️ Backend Services"]
+            OrdersAPI["🔌 Orders API<br/>(ASP.NET Core)"]
+            SQLDatabase[("🗄️ Azure SQL<br/>Database")]
+        end
+        
+        subgraph Messaging["📨 Messaging Layer"]
+            ServiceBus["📬 Azure Service Bus<br/>(Topics/Subscriptions)"]
+        end
+        
+        subgraph Workflows["🔄 Workflow Engine"]
+            LogicApps["⚡ Logic Apps Standard<br/>(Order Processing)"]
+            BlobStorage["📦 Azure Blob Storage<br/>(Order Archives)"]
+        end
+        
+        subgraph Monitoring["📊 Observability"]
+            AppInsights["🔍 Application Insights"]
+            LogAnalytics["📈 Log Analytics Workspace"]
+        end
+    end
+    
+    subgraph Orchestration["🎯 Local Development"]
+        Aspire["🚀 .NET Aspire<br/>(Service Discovery)"]
+    end
+    
+    WebApp -->|"HTTP/REST"| OrdersAPI
+    OrdersAPI -->|"Persist Orders"| SQLDatabase
+    OrdersAPI -->|"Publish Events"| ServiceBus
+    ServiceBus -->|"Trigger Workflows"| LogicApps
+    LogicApps -->|"Process Orders"| OrdersAPI
+    LogicApps -->|"Archive Results"| BlobStorage
+    
+    WebApp -.->|"Telemetry"| AppInsights
+    OrdersAPI -.->|"Telemetry"| AppInsights
+    LogicApps -.->|"Diagnostics"| LogAnalytics
+    AppInsights -.->|"Logs"| LogAnalytics
+    
+    Aspire -.->|"Orchestrates"| WebApp
+    Aspire -.->|"Orchestrates"| OrdersAPI
 
-┌─────────────────────────────────────────────────────────────────────────┐
-│                          Azure Resource Group                           │
-├─────────────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────────────────┐  │
-│  │   Web App    │───▶│  Orders API  │───▶│    Azure Service Bus     │  │
-│  │  (Blazor)    │    │  (REST API)  │    │   (Topics/Subscriptions) │  │
-│  └──────────────┘    └──────────────┘    └────────────┬─────────────┘  │
-│         │                   │                         │                 │
-│         │                   ▼                         ▼                 │
-│         │            ┌──────────────┐         ┌──────────────┐         │
-│         │            │  Azure SQL   │         │  Logic Apps  │         │
-│         │            │   Database   │         │  (Standard)  │         │
-│         │            └──────────────┘         └──────┬───────┘         │
-│         │                                            │                  │
-│         ▼                                            ▼                  │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │                    Azure Monitor / Application Insights           │  │
-│  │                         Log Analytics Workspace                   │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
-
+    style AzureResourceGroup fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
+    style Frontend fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px
+    style Backend fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px
+    style Messaging fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
+    style Workflows fill:#E0F7FA,stroke:#00838F,stroke-width:2px
+    style Monitoring fill:#FFEBEE,stroke:#C62828,stroke-width:2px
+    style Orchestration fill:#FAFAFA,stroke:#616161,stroke-width:2px
+    
+    style WebApp fill:#C8E6C9,stroke:#2E7D32
+    style OrdersAPI fill:#FFE0B2,stroke:#EF6C00
+    style SQLDatabase fill:#FFE0B2,stroke:#EF6C00
+    style ServiceBus fill:#E1BEE7,stroke:#7B1FA2
+    style LogicApps fill:#B2EBF2,stroke:#00838F
+    style BlobStorage fill:#B2EBF2,stroke:#00838F
+    style AppInsights fill:#FFCDD2,stroke:#C62828
+    style LogAnalytics fill:#FFCDD2,stroke:#C62828
+    style Aspire fill:#F5F5F5,stroke:#616161
 ```
 
 ### Key Components
