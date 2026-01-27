@@ -49,56 +49,117 @@ This workflow serves as the entry point for the CI pipeline, handling:
 ## Workflow Diagram
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': {'fontSize': '14px', 'primaryColor': '#1f6feb', 'lineColor': '#8b949e'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '14px', 'primaryColor': '#1976D2', 'lineColor': '#78909C', 'textColor': '#37474F'}}}%%
 flowchart TB
     subgraph wf["🔄 Workflow: CI - .NET Build and Test"]
         direction TB
-        style wf fill:#0d1117,stroke:#30363d,stroke-width:3px,color:#e6edf3
+        style wf fill:#263238,stroke:#455A64,stroke-width:3px,color:#ECEFF1
         
         subgraph triggers["⚡ Stage: Triggers"]
             direction LR
-            style triggers fill:#1c2128,stroke:#7ee787,stroke-width:2px,color:#7ee787
+            style triggers fill:#37474F,stroke:#66BB6A,stroke-width:2px,color:#A5D6A7
             subgraph events["Events"]
-                style events fill:#161b22,stroke:#30363d,stroke-width:1px,color:#c9d1d9
-                push(["🔔 push"]):::node-trigger
-                pr(["🔔 pull_request"]):::node-trigger
+                style events fill:#455A64,stroke:#78909C,stroke-width:1px,color:#CFD8DC
+                push(["🔔 push: main, feature/**"]):::node-trigger
+                pr(["🔔 pull_request: main"]):::node-trigger
                 manual(["🔔 workflow_dispatch"]):::node-trigger
             end
         end
         
-        subgraph ci-stage["🚀 Stage: CI Pipeline"]
+        subgraph ci-stage["🔄 Stage: CI Pipeline"]
             direction TB
-            style ci-stage fill:#1c2128,stroke:#79c0ff,stroke-width:2px,color:#79c0ff
-            subgraph reusable["Reusable Workflow"]
-                style reusable fill:#161b22,stroke:#30363d,stroke-width:1px,color:#c9d1d9
-                ci[["🚀 CI Reusable Workflow"]]:::node-build
+            style ci-stage fill:#37474F,stroke:#42A5F5,stroke-width:2px,color:#90CAF9
+            subgraph reusable["📦 Reusable Workflow"]
+                style reusable fill:#455A64,stroke:#4FC3F7,stroke-width:1px,color:#B3E5FC
+                ci-call[["🔄 ci-dotnet-reusable.yml"]]:::node-build
             end
-            subgraph executed-jobs["Executed Jobs"]
-                style executed-jobs fill:#161b22,stroke:#a371f7,stroke-width:1px,color:#d2a8ff
-                build["🔨 Build (3 platforms)"]:::node-build
-                test["🧪 Test (3 platforms)"]:::node-test
+        end
+        
+        subgraph build-stage["🔨 Stage: Build"]
+            direction TB
+            style build-stage fill:#37474F,stroke:#42A5F5,stroke-width:2px,color:#90CAF9
+            subgraph build-matrix["🔨 Build Matrix"]
+                direction LR
+                style build-matrix fill:#455A64,stroke:#4FC3F7,stroke-width:1px,color:#B3E5FC
+                build-ubuntu["🐧 Ubuntu"]:::node-ubuntu
+                build-windows["🪟 Windows"]:::node-windows
+                build-macos["🍎 macOS"]:::node-macos
+            end
+        end
+        
+        subgraph test-stage["🧪 Stage: Test"]
+            direction TB
+            style test-stage fill:#37474F,stroke:#AB47BC,stroke-width:2px,color:#CE93D8
+            subgraph test-matrix["🧪 Test Matrix"]
+                direction LR
+                style test-matrix fill:#455A64,stroke:#4FC3F7,stroke-width:1px,color:#B3E5FC
+                test-ubuntu["🐧 Ubuntu"]:::node-ubuntu
+                test-windows["🪟 Windows"]:::node-windows
+                test-macos["🍎 macOS"]:::node-macos
+            end
+        end
+        
+        subgraph analysis-stage["🔍 Stage: Analysis"]
+            direction LR
+            style analysis-stage fill:#37474F,stroke:#BA68C8,stroke-width:2px,color:#E1BEE7
+            subgraph quality["Quality Checks"]
+                style quality fill:#455A64,stroke:#BA68C8,stroke-width:1px,color:#E1BEE7
                 analyze["🔍 Analyze"]:::node-lint
+            end
+            subgraph security["Security"]
+                style security fill:#455A64,stroke:#EF5350,stroke-width:1px,color:#EF9A9A
                 codeql["🛡️ CodeQL"]:::node-security
-                summary["📊 Summary"]:::node-staging
+            end
+        end
+        
+        subgraph summary-stage["📊 Stage: Summary"]
+            direction LR
+            style summary-stage fill:#37474F,stroke:#66BB6A,stroke-width:2px,color:#A5D6A7
+            subgraph reports["Reports"]
+                style reports fill:#455A64,stroke:#66BB6A,stroke-width:1px,color:#C8E6C9
+                summary["📊 Summary"]:::node-production
+                on-failure["❌ On Failure"]:::node-error
             end
         end
     end
     
-    push & pr & manual -->|"triggers"| ci
-    ci -->|"executes"| build
-    build --> test
-    build --> analyze
-    build --> codeql
-    test & analyze & codeql --> summary
+    %% Trigger connections
+    push & pr & manual -->|"triggers"| ci-call
     
-    classDef node-trigger fill:#238636,stroke:#2ea043,stroke-width:2px,color:#ffffff,font-weight:bold
-    classDef node-build fill:#1f6feb,stroke:#58a6ff,stroke-width:2px,color:#ffffff
-    classDef node-test fill:#8957e5,stroke:#a371f7,stroke-width:2px,color:#ffffff
-    classDef node-lint fill:#a371f7,stroke:#d2a8ff,stroke-width:2px,color:#ffffff
-    classDef node-security fill:#da3633,stroke:#f85149,stroke-width:2px,color:#ffffff
-    classDef node-staging fill:#9e6a03,stroke:#d29922,stroke-width:2px,color:#ffffff
+    %% Reusable workflow executes matrix builds
+    ci-call -->|"executes"| build-ubuntu & build-windows & build-macos
     
-    linkStyle default stroke:#8b949e,stroke-width:2px
+    %% Build to Test (OS-specific)
+    build-ubuntu --> test-ubuntu
+    build-windows --> test-windows
+    build-macos --> test-macos
+    
+    %% Build to Analysis
+    build-ubuntu & build-windows & build-macos --> analyze & codeql
+    
+    %% All jobs to Summary
+    test-ubuntu & test-windows & test-macos --> summary
+    analyze & codeql --> summary
+    
+    %% Failure handling
+    build-ubuntu & build-windows & build-macos -.->|"on failure"| on-failure
+    test-ubuntu & test-windows & test-macos -.->|"on failure"| on-failure
+    analyze & codeql -.->|"on failure"| on-failure
+    
+    %% Material Design Node Classes
+    classDef node-trigger fill:#43A047,stroke:#66BB6A,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    classDef node-build fill:#1976D2,stroke:#42A5F5,stroke-width:2px,color:#FFFFFF
+    classDef node-lint fill:#8E24AA,stroke:#BA68C8,stroke-width:2px,color:#FFFFFF
+    classDef node-security fill:#C62828,stroke:#EF5350,stroke-width:2px,color:#FFFFFF
+    classDef node-production fill:#2E7D32,stroke:#66BB6A,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    classDef node-error fill:#C62828,stroke:#EF5350,stroke-width:2px,color:#FFFFFF
+    
+    %% OS-Specific Node Classes (Material Design)
+    classDef node-ubuntu fill:#E65100,stroke:#FF9800,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    classDef node-windows fill:#0277BD,stroke:#03A9F4,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    classDef node-macos fill:#455A64,stroke:#78909C,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    
+    linkStyle default stroke:#78909C,stroke-width:2px
 ```
 
 ---
