@@ -91,35 +91,61 @@ concurrency:
 ### Mermaid Diagram
 
 ```mermaid
+---
+title: CI Entry Point Pipeline
+---
 flowchart LR
+    %% ===== TRIGGER SOURCES =====
     subgraph triggers["Trigger Sources"]
-        push["Push Event"]
-        pr["Pull Request"]
-        manual["Manual Dispatch"]
+        direction TB
+        push(["Push Event"]):::trigger
+        pr(["Pull Request"]):::trigger
+        manual(["Manual Dispatch"]):::trigger
     end
 
+    %% ===== CALLER WORKFLOW =====
     subgraph caller["Caller Workflow"]
-        ci_entry["CI Entry Point"]
+        direction TB
+        ciEntry["CI Entry Point"]:::primary
     end
 
+    %% ===== REUSABLE CI WORKFLOW =====
     subgraph reusable["Reusable CI Workflow"]
-        build["Build Job"]
-        test["Test Job"]
-        analyze["Analyze Job"]
-        codeql["CodeQL Job"]
-        summary["Summary Job"]
+        direction TB
+        build["Build Job"]:::primary
+        test["Test Job"]:::secondary
+        analyze["Analyze Job"]:::secondary
+        codeql["CodeQL Job"]:::secondary
+        summary["Summary Job"]:::datastore
     end
 
-    push --> ci_entry
-    pr --> ci_entry
-    manual --> ci_entry
-    ci_entry -->|calls| build
-    build --> test
-    build --> analyze
-    build --> codeql
-    test --> summary
-    analyze --> summary
-    codeql --> summary
+    %% ===== CONNECTIONS =====
+    push -->|triggers| ciEntry
+    pr -->|triggers| ciEntry
+    manual -->|triggers| ciEntry
+    ciEntry ==>|calls| build
+    build -->|completes| test
+    build -->|completes| analyze
+    build -->|completes| codeql
+    test -->|reports| summary
+    analyze -->|reports| summary
+    codeql -->|reports| summary
+
+    %% ===== NODE STYLES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+
+    %% ===== SUBGRAPH STYLES =====
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style caller fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style reusable fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ### Interpretation Notes

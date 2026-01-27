@@ -66,41 +66,67 @@ jobs:
 ### Mermaid Diagram
 
 ```mermaid
+---
+title: CI Reusable Workflow Pipeline
+---
 flowchart LR
-    subgraph build_phase["Build Phase"]
-        build_ubuntu["Build Ubuntu"]
-        build_windows["Build Windows"]
-        build_macos["Build macOS"]
+    %% ===== BUILD PHASE =====
+    subgraph buildPhase["Build Phase"]
+        direction TB
+        buildUbuntu["Build Ubuntu"]:::matrix
+        buildWindows["Build Windows"]:::matrix
+        buildMacos["Build macOS"]:::matrix
     end
 
-    subgraph validation_phase["Validation Phase"]
-        test_ubuntu["Test Ubuntu"]
-        test_windows["Test Windows"]
-        test_macos["Test macOS"]
-        analyze["Analyze"]
-        codeql["CodeQL Scan"]
+    %% ===== VALIDATION PHASE =====
+    subgraph validationPhase["Validation Phase"]
+        direction TB
+        testUbuntu["Test Ubuntu"]:::matrix
+        testWindows["Test Windows"]:::matrix
+        testMacos["Test macOS"]:::matrix
+        analyze["Analyze Code"]:::primary
+        codeql["CodeQL Scan"]:::primary
     end
 
-    subgraph reporting_phase["Reporting Phase"]
-        summary["Summary"]
-        failure["Handle Failure"]
+    %% ===== REPORTING PHASE =====
+    subgraph reportingPhase["Reporting Phase"]
+        direction TB
+        summary["Summary"]:::datastore
+        failure["Handle Failure"]:::failed
     end
 
-    build_ubuntu --> test_ubuntu
-    build_windows --> test_windows
-    build_macos --> test_macos
-    build_ubuntu --> analyze
-    build_ubuntu --> codeql
-    test_ubuntu --> summary
-    test_windows --> summary
-    test_macos --> summary
-    analyze --> summary
-    codeql --> summary
-    test_ubuntu -.->|failure| failure
-    test_windows -.->|failure| failure
-    test_macos -.->|failure| failure
-    analyze -.->|failure| failure
-    codeql -.->|failure| failure
+    %% ===== CONNECTIONS =====
+    buildUbuntu -->|compiled| testUbuntu
+    buildWindows -->|compiled| testWindows
+    buildMacos -->|compiled| testMacos
+    buildUbuntu -->|triggers| analyze
+    buildUbuntu -->|triggers| codeql
+    testUbuntu -->|results| summary
+    testWindows -->|results| summary
+    testMacos -->|results| summary
+    analyze -->|report| summary
+    codeql -->|findings| summary
+    testUbuntu -.->|on failure| failure
+    testWindows -.->|on failure| failure
+    testMacos -.->|on failure| failure
+    analyze -.->|on failure| failure
+    codeql -.->|on failure| failure
+
+    %% ===== NODE STYLES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+
+    %% ===== SUBGRAPH STYLES =====
+    style buildPhase fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style validationPhase fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style reportingPhase fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ### Interpretation Notes
@@ -114,26 +140,52 @@ flowchart LR
 ### Build Job Internal Flow
 
 ```mermaid
+---
+title: Build Job Internal Flow
+---
 flowchart TD
+    %% ===== ENVIRONMENT SETUP =====
     subgraph setup["Environment Setup"]
-        checkout["Checkout"]
-        dotnet_setup["Setup .NET SDK"]
-        workload["Update Workloads"]
+        direction TB
+        checkout["Checkout Repository"]:::primary
+        dotnetSetup["Setup .NET SDK"]:::primary
+        workload["Update Workloads"]:::primary
     end
 
+    %% ===== BUILD SOLUTION =====
     subgraph build["Build Solution"]
-        version["Generate Version"]
-        restore["Restore Dependencies"]
-        compile["Compile Solution"]
+        direction TB
+        version["Generate Version"]:::secondary
+        restore["Restore Dependencies"]:::secondary
+        compile["Compile Solution"]:::primary
     end
 
+    %% ===== ARTIFACT GENERATION =====
     subgraph artifacts["Artifact Generation"]
-        upload["Upload Build Artifacts"]
-        summary["Generate Summary"]
+        direction TB
+        upload["Upload Build Artifacts"]:::datastore
+        summary["Generate Summary"]:::datastore
     end
 
-    setup --> build
-    build --> artifacts
+    %% ===== CONNECTIONS =====
+    setup -->|environment ready| build
+    build -->|build complete| artifacts
+
+    %% ===== NODE STYLES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+
+    %% ===== SUBGRAPH STYLES =====
+    style setup fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style build fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style artifacts fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ---

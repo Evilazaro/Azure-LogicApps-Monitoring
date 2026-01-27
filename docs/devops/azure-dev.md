@@ -92,24 +92,54 @@ concurrency:
 ### Mermaid Diagram
 
 ```mermaid
+---
+title: CD Pipeline Flow
+---
 flowchart LR
+    %% ===== TRIGGER/ENTRY =====
+    trigger(["Start"]):::trigger
+
+    %% ===== VALIDATION PHASE =====
     subgraph validation["Validation Phase"]
-        ci["CI Pipeline"]
+        direction TB
+        ci["CI Pipeline"]:::primary
     end
 
+    %% ===== DEPLOYMENT PHASE =====
     subgraph deployment["Deployment Phase"]
-        deploy["Deploy Dev"]
+        direction TB
+        deployDev["Deploy Dev"]:::primary
     end
 
+    %% ===== REPORTING PHASE =====
     subgraph reporting["Reporting Phase"]
-        summary["Summary"]
-        failure["Handle Failure"]
+        direction TB
+        summary["Summary"]:::datastore
+        failure["Handle Failure"]:::failed
     end
 
-    ci -->|success/skipped| deploy
-    deploy --> summary
-    ci -.->|failure| failure
-    deploy -.->|failure| failure
+    %% ===== CONNECTIONS =====
+    trigger -->|initiates| ci
+    ci -->|success/skipped| deployDev
+    deployDev -->|generates| summary
+    ci -.->|on failure| failure
+    deployDev -.->|on failure| failure
+
+    %% ===== NODE STYLES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+
+    %% ===== SUBGRAPH STYLES =====
+    style validation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style deployment fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style reporting fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ### Interpretation Notes
@@ -122,37 +152,69 @@ flowchart LR
 ### Detailed Deployment Flow
 
 ```mermaid
+---
+title: Detailed Deployment Flow
+---
 flowchart TD
+    %% ===== PHASE 1: SETUP =====
     subgraph setup["Phase 1: Setup"]
-        checkout["Checkout"]
-        prereqs["Install Prerequisites"]
-        azd_install["Install azd CLI"]
-        dotnet_setup["Setup .NET SDK"]
+        direction TB
+        checkout["Checkout Repository"]:::primary
+        prereqs["Install Prerequisites"]:::primary
+        azdInstall["Install azd CLI"]:::primary
+        dotnetSetup["Setup .NET SDK"]:::primary
     end
 
+    %% ===== PHASE 2: AUTHENTICATION =====
     subgraph auth["Phase 2: Authentication"]
-        azd_login["azd OIDC Login"]
-        az_login["Azure CLI Login"]
+        direction TB
+        azdLogin["azd OIDC Login"]:::secondary
+        azLogin["Azure CLI Login"]:::secondary
     end
 
+    %% ===== PHASE 3: PROVISION =====
     subgraph provision["Phase 3: Provision"]
-        infra["Provision Infrastructure"]
+        direction TB
+        infra["Provision Infrastructure"]:::primary
     end
 
-    subgraph sql_config["Phase 4: SQL Configuration"]
-        refresh_pre["Refresh Tokens"]
-        sql_user["Create SQL User"]
+    %% ===== PHASE 4: SQL CONFIGURATION =====
+    subgraph sqlConfig["Phase 4: SQL Configuration"]
+        direction TB
+        refreshPre["Refresh Tokens"]:::secondary
+        sqlUser[("Create SQL User")]:::datastore
     end
 
-    subgraph deploy["Phase 5: Deploy"]
-        refresh_post["Refresh Tokens"]
-        app_deploy["Deploy Application"]
+    %% ===== PHASE 5: DEPLOY =====
+    subgraph deployPhase["Phase 5: Deploy"]
+        direction TB
+        refreshPost["Refresh Tokens"]:::secondary
+        appDeploy["Deploy Application"]:::primary
     end
 
-    setup --> auth
-    auth --> provision
-    provision --> sql_config
-    sql_config --> deploy
+    %% ===== CONNECTIONS =====
+    setup -->|configured| auth
+    auth -->|authenticated| provision
+    provision -->|resources ready| sqlConfig
+    sqlConfig -->|database ready| deployPhase
+
+    %% ===== NODE STYLES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+
+    %% ===== SUBGRAPH STYLES =====
+    style setup fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style auth fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style provision fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style sqlConfig fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style deployPhase fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
 ```
 
 ---
