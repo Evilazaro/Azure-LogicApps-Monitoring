@@ -439,9 +439,11 @@ Reports detailed failure information when any job fails.
 | `DOTNET_NOLOGO` | `true` | Suppress .NET logo |
 | `DOTNET_CLI_TELEMETRY_OPTOUT` | `true` | Opt out of telemetry |
 
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
-## Usage Examples
+## 💡 Usage Examples
 
 ### Basic Usage
 
@@ -480,11 +482,40 @@ jobs:
     secrets: inherit
 ```
 
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
-## Related Documentation
+## 📚 Related Documentation
 
-- [CI - .NET Build and Test](ci-dotnet.md) - Caller workflow documentation
-- [CD - Azure Deployment](azure-dev.md) - Deployment workflow documentation
-- [GitHub Reusable Workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows)
-- [CodeQL Documentation](https://docs.github.com/en/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning-with-codeql)
+### Internal Documentation
+
+| Document | Description |
+|----------|-------------|
+| [📚 Documentation Index](README.md) | Main documentation hub |
+| [🔨 CI - .NET Build and Test](ci-dotnet.md) | Caller workflow documentation |
+| [🚀 CD - Azure Deployment](azure-dev.md) | Deployment workflow documentation |
+
+### External Resources
+
+| Resource | Description |
+|----------|-------------|
+| [GitHub Reusable Workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows) | Official reusable workflows guide |
+| [CodeQL Documentation](https://docs.github.com/en/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning-with-codeql) | Security scanning documentation |
+| [.NET SDK Documentation](https://docs.microsoft.com/en-us/dotnet/) | Official .NET documentation |
+
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
+---
+
+<div align="center">
+
+**🔗 Navigation**
+
+[⬅️ Previous: CI Workflow](ci-dotnet.md) • [📚 Documentation Index](README.md) • [➡️ Next: CD Workflow](azure-dev.md)
+
+---
+
+*Last updated: January 27, 2026*
+
+</div>

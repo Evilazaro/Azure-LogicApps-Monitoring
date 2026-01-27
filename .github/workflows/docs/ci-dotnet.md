@@ -1,10 +1,42 @@
-# CI - .NET Build and Test Workflow
+---
+title: CI - .NET Build and Test Workflow
+description: Continuous Integration workflow documentation for orchestrating the CI pipeline through the reusable workflow
+author: DevOps Team
+last_updated: 2026-01-27
+tags: [ci, dotnet, cross-platform, testing, code-analysis]
+---
+
+# 🔨 CI - .NET Build and Test Workflow
+
+<div align="center">
 
 ![Workflow](https://img.shields.io/badge/workflow-CI-blue?style=flat-square)
 ![.NET](https://img.shields.io/badge/.NET-10.0-purple?style=flat-square)
 ![Cross-Platform](https://img.shields.io/badge/cross--platform-Ubuntu%20%7C%20Windows%20%7C%20macOS-orange?style=flat-square)
+![Status](https://img.shields.io/badge/status-Production-success?style=flat-square)
 
-## Overview
+**[📚 Documentation Index](README.md)** • **[🔄 Reusable CI](ci-dotnet-reusable.md)** • **[🚀 CD Workflow](azure-dev.md)**
+
+</div>
+
+---
+
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [⚡ Trigger Events](#-trigger-events)
+- [📝 Jobs Breakdown](#-jobs-breakdown)
+- [📥 Inputs Passed to Reusable Workflow](#-inputs-passed-to-reusable-workflow)
+- [🔐 Permissions](#-permissions)
+- [⚙️ Concurrency](#️-concurrency)
+- [📦 Dependencies](#-dependencies)
+- [💡 Usage Examples](#-usage-examples)
+- [📚 Related Documentation](#-related-documentation)
+
+---
+
+## 📋 Overview
 
 | Property | Value |
 |----------|-------|
@@ -15,9 +47,14 @@
 
 This workflow serves as the entry point for continuous integration, handling triggers and path filters while delegating the actual CI work to the reusable workflow (`ci-dotnet-reusable.yml`).
 
+> [!TIP]
+> This is a **caller workflow** - it defines triggers and passes configuration to the reusable workflow. For details on individual jobs, see the [Reusable CI Workflow](ci-dotnet-reusable.md).
+
+[⬆️ Back to Top](#-ci---net-build-and-test-workflow)
+
 ---
 
-## Workflow Diagram
+## 📊 Workflow Diagram
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'fontSize': '14px', 'primaryColor': '#E3F2FD', 'lineColor': '#90A4AE', 'textColor': '#37474F', 'clusterBkg': '#FAFAFA'}}}%%
@@ -121,9 +158,11 @@ flowchart TB
     classDef node-macos fill:#ECEFF1,stroke:#78909C,stroke-width:2px,color:#455A64,font-weight:bold
 ```
 
+[⬆️ Back to Top](#-ci---net-build-and-test-workflow)
+
 ---
 
-## Trigger Events
+## ⚡ Trigger Events
 
 | Trigger | Branches | Path Filters |
 |---------|----------|--------------|
@@ -138,9 +177,14 @@ flowchart TB
 | `configuration` | choice | `Release` | Build configuration (`Release` or `Debug`) |
 | `enable-code-analysis` | boolean | `true` | Enable code formatting analysis |
 
+> [!NOTE]
+> Path filters ensure the CI workflow only runs when relevant source files change, saving runner minutes.
+
+[⬆️ Back to Top](#-ci---net-build-and-test-workflow)
+
 ---
 
-## Jobs Breakdown
+## 📝 Jobs Breakdown
 
 This workflow calls the reusable workflow `ci-dotnet-reusable.yml`, which executes the following jobs:
 
@@ -153,9 +197,11 @@ This workflow calls the reusable workflow `ci-dotnet-reusable.yml`, which execut
 | 📊 **Summary** | `ubuntu-latest` | Aggregates results from all jobs |
 | ❌ **On-Failure** | `ubuntu-latest` | Reports failures (conditional) |
 
+[⬆️ Back to Top](#-ci---net-build-and-test-workflow)
+
 ---
 
-## Inputs Passed to Reusable Workflow
+## 📥 Inputs Passed to Reusable Workflow
 
 | Input | Value | Description |
 |-------|-------|-------------|
