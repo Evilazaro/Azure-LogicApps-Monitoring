@@ -5,7 +5,7 @@ This directory contains comprehensive documentation for all GitHub Actions workf
 ## 📋 Workflow Index
 
 | Workflow | File | Purpose | Type |
-|----------|------|---------|------|
+|:---------|:-----|:--------|:----:|
 | [CD - Azure Deployment](azure-dev.md) | `azure-dev.yml` | Provisions Azure infrastructure and deploys the application | Deployment |
 | [CI - .NET Reusable Workflow](ci-dotnet-reusable.md) | `ci-dotnet-reusable.yml` | Cross-platform CI pipeline (build, test, analyze, security) | Reusable |
 | [CI - .NET Build and Test](ci-dotnet.md) | `ci-dotnet.yml` | Orchestrates CI by calling the reusable workflow | CI Orchestrator |
@@ -70,7 +70,7 @@ The CI pipeline is triggered on:
 **Jobs executed:**
 
 | Job | Description | Platforms |
-|-----|-------------|-----------|
+|:----|:------------|:----------|
 | 🔨 Build | Compiles .NET solution | Ubuntu, Windows, macOS |
 | 🧪 Test | Runs tests with coverage | Ubuntu, Windows, macOS |
 | 🔍 Analyze | Verifies code formatting | Ubuntu |
@@ -86,7 +86,7 @@ The CD pipeline is triggered on:
 **Jobs executed:**
 
 | Job | Description | Environment |
-|-----|-------------|-------------|
+|:----|:------------|:------------|
 | 🔄 CI | Calls reusable CI workflow | Cross-platform |
 | 🚀 Deploy Dev | Provisions infrastructure and deploys | Ubuntu → Azure |
 | 📊 Summary | Generates deployment report | Ubuntu |
@@ -94,7 +94,7 @@ The CD pipeline is triggered on:
 ## 🔐 Security Features
 
 | Feature | Description |
-|---------|-------------|
+|:--------|:------------|
 | **OIDC Authentication** | Uses federated credentials (no stored secrets) |
 | **CodeQL Scanning** | Security vulnerability detection in C# code |
 | **Pinned Actions** | All actions use SHA-pinned versions |
@@ -103,7 +103,7 @@ The CD pipeline is triggered on:
 ## 📦 Artifacts Generated
 
 | Artifact | Source | Description |
-|----------|--------|-------------|
+|:---------|:------:|:------------|
 | `build-artifacts-{os}` | CI | Compiled binaries per platform |
 | `test-results-{os}` | CI | Test results (.trx) per platform |
 | `code-coverage-{os}` | CI | Cobertura coverage reports per platform |
@@ -161,3 +161,5 @@ gh workflow run azure-dev.yml -f skip-ci=true
 ---
 
 *Documentation generated for workflows in `.github/workflows/`*
+
+[↑ Back to Top](#github-actions-workflows-documentation)

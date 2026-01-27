@@ -2,10 +2,32 @@
 
 ![Workflow Status](https://img.shields.io/badge/workflow-azure--dev.yml-blue)
 
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Workflow Diagram](#workflow-diagram)
+- [Jobs](#jobs)
+  - [Job: ci](#job-ci)
+  - [Job: deploy-dev](#job-deploy-dev)
+  - [Job: summary](#job-summary)
+  - [Job: on-failure](#job-on-failure)
+- [Inputs and Secrets](#inputs-and-secrets)
+- [Permissions](#permissions)
+- [Artifacts and Outputs](#artifacts-and-outputs)
+- [Dependencies](#dependencies)
+- [Usage Examples](#usage-examples)
+- [Concurrency](#concurrency)
+- [Environment Variables](#environment-variables)
+- [Related Workflows](#related-workflows)
+
+---
+
 ## Overview
 
 | Property | Value |
-|----------|-------|
+|:---------|:------|
 | **File** | `.github/workflows/azure-dev.yml` |
 | **Name** | CD - Azure Deployment |
 | **Triggers** | `workflow_dispatch`, `push` (branches: `docs987678`, paths: `src/**`, `app.*/**`, `infra/**`, `azure.yaml`, `.github/workflows/azure-dev.yml`) |
@@ -103,7 +125,7 @@ This job calls the reusable CI workflow (`ci-dotnet-reusable.yml`) which execute
 This is a reusable workflow call with the following inputs:
 
 | Input | Value |
-|-------|-------|
+|:------|:------|
 | `configuration` | `Release` |
 | `dotnet-version` | `10.0.x` |
 | `solution-file` | `app.sln` |
@@ -168,26 +190,26 @@ This is a reusable workflow call with the following inputs:
 ### Inputs
 
 | Name | Required | Default | Description |
-|------|----------|---------|-------------|
+|:-----|:--------:|:-------:|:------------|
 | `skip-ci` | No | `false` | Skip CI checks (use with caution) |
 
 ### Secrets
 
 | Name | Required | Description |
-|------|----------|-------------|
+|:-----|:--------:|:------------|
 | (inherited) | Yes | Secrets are inherited from the calling workflow via `secrets: inherit` |
 
 ### Repository Variables Referenced
 
 | Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `AZURE_CLIENT_ID` | Yes | - | Service Principal/App Registration Client ID |
-| `AZURE_TENANT_ID` | Yes | - | Azure AD Tenant ID |
-| `AZURE_SUBSCRIPTION_ID` | Yes | - | Target Azure Subscription |
+|:---------|:--------:|:-------:|:------------|
+| `AZURE_CLIENT_ID` | Yes | — | Service Principal/App Registration Client ID |
+| `AZURE_TENANT_ID` | Yes | — | Azure AD Tenant ID |
+| `AZURE_SUBSCRIPTION_ID` | Yes | — | Target Azure Subscription |
 | `AZURE_ENV_NAME` | No | `dev` | Azure environment name |
 | `AZURE_LOCATION` | No | `eastus2` | Azure region |
 | `DEPLOYER_PRINCIPAL_TYPE` | No | `ServicePrincipal` | Type of deployer principal |
-| `DEPLOY_HEALTH_MODEL` | No | - | Health model configuration |
+| `DEPLOY_HEALTH_MODEL` | No | — | Health model configuration |
 
 ## Permissions
 
@@ -205,13 +227,13 @@ permissions:
 ### Artifacts
 
 | Name | Path | Job |
-|------|------|-----|
+|:-----|:-----|:----|
 | (from CI workflow) | Various | `ci` |
 
 ### Outputs
 
 | Output | Value | Source Job |
-|--------|-------|------------|
+|:-------|:------|:----------:|
 | `webapp-url` | `${{ steps.deploy.outputs.webapp-url }}` | `deploy-dev` |
 | `resource-group` | `${{ steps.deploy.outputs.resource-group }}` | `deploy-dev` |
 
@@ -220,7 +242,7 @@ permissions:
 ### External Actions
 
 | Action | Version | Purpose |
-|--------|---------|---------|
+|:-------|:--------|:--------|
 | `actions/checkout` | `v6.0.2` (SHA: `de0fac2e4500dabe0009e67214ff5f5447ce83dd`) | Checkout repository code |
 | `Azure/setup-azd` | `v2.2.1` (SHA: `c495e71ba59e44bfaaac10a32c8ee90d191ca4a3`) | Install Azure Developer CLI |
 | `actions/setup-dotnet` | `v5.1.0` (SHA: `baa11fbfe1d6520db94683bd5c7a3818018e4309`) | Setup .NET SDK |
@@ -229,7 +251,7 @@ permissions:
 ### Reusable Workflows
 
 | Workflow | Path | Description |
-|----------|------|-------------|
+|:---------|:-----|:------------|
 | `ci-dotnet-reusable.yml` | `./.github/workflows/ci-dotnet-reusable.yml` | .NET CI pipeline (build, test, analyze, CodeQL) |
 
 ## Usage Examples
@@ -267,7 +289,7 @@ Prevents simultaneous deployments to the same environment. Does not cancel in-pr
 ## Environment Variables
 
 | Variable | Value | Description |
-|----------|-------|-------------|
+|:---------|:------|:------------|
 | `DOTNET_VERSION` | `10.0.x` | .NET SDK version |
 | `DOTNET_SKIP_FIRST_TIME_EXPERIENCE` | `true` | Skip .NET first-time setup |
 | `DOTNET_NOLOGO` | `true` | Suppress .NET logo |
@@ -275,5 +297,9 @@ Prevents simultaneous deployments to the same environment. Does not cancel in-pr
 
 ## Related Workflows
 
-- [ci-dotnet-reusable.md](ci-dotnet-reusable.md) - Reusable CI workflow called by this deployment workflow
-- [ci-dotnet.md](ci-dotnet.md) - Standalone CI workflow using the same reusable workflow
+- [ci-dotnet-reusable.md](ci-dotnet-reusable.md) — Reusable CI workflow called by this deployment workflow
+- [ci-dotnet.md](ci-dotnet.md) — Standalone CI workflow using the same reusable workflow
+
+---
+
+[↑ Back to Top](#workflow-cd---azure-deployment)
