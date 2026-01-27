@@ -241,9 +241,14 @@ flowchart LR
 |-------|------|---------|-------------|
 | `skip-ci` | boolean | `false` | Skip CI checks (use with caution) |
 
+> [!CAUTION]
+> Setting `skip-ci=true` will deploy code without running tests or security scans. Use only for emergency deployments.
+
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Jobs Breakdown
+## 📝 Jobs Breakdown
 
 ### 🔄 CI Job
 
@@ -260,6 +265,8 @@ Calls `ci-dotnet-reusable.yml` with:
 - Solution: `app.sln`
 - Code Analysis: Enabled
 - Fail on Format Issues: Disabled
+
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
 
 ---
 
@@ -304,6 +311,11 @@ Calls `ci-dotnet-reusable.yml` with:
 | 🚀 Deploy Application | Run azd deploy with retry logic |
 | 📊 Generate Summary | Create deployment summary report |
 
+> [!NOTE]
+> Token refresh steps are critical for long-running deployments to prevent authentication timeouts.
+
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
 ### 📊 Summary Job
@@ -317,6 +329,8 @@ Calls `ci-dotnet-reusable.yml` with:
 | **Condition** | `always()` |
 
 Generates comprehensive workflow summary with pipeline status.
+
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
 
 ---
 
@@ -332,9 +346,11 @@ Generates comprehensive workflow summary with pipeline status.
 
 Reports failure with job statuses and next steps.
 
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Permissions
+## 🔐 Permissions
 
 | Permission | Level | Purpose |
 |------------|-------|---------|
@@ -344,9 +360,14 @@ Reports failure with job statuses and next steps.
 | `pull-requests` | `write` | Post comments on pull requests |
 | `security-events` | `write` | Upload CodeQL SARIF results |
 
+> [!IMPORTANT]
+> The `id-token: write` permission is **required** for OIDC authentication. Without it, Azure login will fail.
+
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Environment Variables
+## 🌍 Environment Variables
 
 ### Workflow-Level
 
@@ -369,9 +390,11 @@ Reports failure with job statuses and next steps.
 | `DEPLOYER_PRINCIPAL_TYPE` | `vars.DEPLOYER_PRINCIPAL_TYPE` | `ServicePrincipal` | Principal type |
 | `DEPLOY_HEALTH_MODEL` | `vars.DEPLOY_HEALTH_MODEL` | Optional | Health model flag |
 
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Secrets and Variables
+## 🔑 Secrets and Variables
 
 ### Required Repository Variables
 
@@ -390,9 +413,14 @@ Reports failure with job statuses and next steps.
 | `DEPLOYER_PRINCIPAL_TYPE` | `ServicePrincipal` | Principal type for deployment |
 | `DEPLOY_HEALTH_MODEL` | N/A | Health model configuration |
 
+> [!TIP]
+> Configure these variables at the repository or environment level in **Settings → Secrets and variables → Actions**.
+
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Outputs
+## 📤 Outputs
 
 ### Deploy Job Outputs
 
@@ -401,9 +429,11 @@ Reports failure with job statuses and next steps.
 | `webapp-url` | URL of deployed web application |
 | `resource-group` | Azure resource group name |
 
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Concurrency
+## ⚙️ Concurrency
 
 ```yaml
 concurrency:
@@ -414,9 +444,14 @@ concurrency:
 - Prevents simultaneous deployments to the same environment
 - Does **not** cancel in-progress deployments
 
+> [!WARNING]
+> Unlike CI workflows, CD workflows do **not** cancel in-progress runs. This prevents partial deployments.
+
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## External Actions Used
+## 🔗 External Actions Used
 
 | Action | Version | Purpose |
 |--------|---------|---------|
@@ -425,9 +460,11 @@ concurrency:
 | `actions/setup-dotnet` | `v5.1.0` (SHA pinned) | .NET SDK setup |
 | `azure/login` | `v2.4.0` (SHA pinned) | Azure CLI OIDC login |
 
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Dependencies
+## 📦 Dependencies
 
 ### Reusable Workflows Called
 
@@ -441,9 +478,11 @@ concurrency:
 2. **GitHub Environment** - `dev` environment (with optional protection rules)
 3. **go-sqlcmd** - Installed automatically for SQL Managed Identity configuration
 
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Security Features
+## 🛡️ Security Features
 
 | Feature | Description |
 |---------|-------------|
@@ -454,9 +493,11 @@ concurrency:
 | **CodeQL Scanning** | Security vulnerability detection (via CI) |
 | **SHA-Pinned Actions** | Supply chain security |
 
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Retry Logic
+## 🔄 Retry Logic
 
 ### Infrastructure Provisioning
 
@@ -479,9 +520,14 @@ MAX_RETRIES=3
 RETRY_DELAY=30  # seconds, doubles on each retry
 ```
 
+> [!NOTE]
+> All retry operations use exponential backoff to handle transient failures gracefully.
+
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Usage Examples
+## 💡 Usage Examples
 
 ### Automatic Trigger
 
