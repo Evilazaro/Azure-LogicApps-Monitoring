@@ -36,7 +36,7 @@ version: "1.0.0"
 
 This script configures Azure SQL Database access for managed identities by creating database users from Microsoft Entra ID (formerly Azure AD) principals and assigning appropriate database roles. This enables passwordless authentication for Azure services accessing SQL Database.
 
-**Operations Performed:**
+**Operations Performed**:
 
 1. Validates Azure CLI installation and authentication
 2. Validates sqlcmd availability
@@ -45,7 +45,7 @@ This script configures Azure SQL Database access for managed identities by creat
 5. Assigns database roles to the user
 6. Validates configuration success
 
-**Supported Database Roles:**
+**Supported Database Roles**:
 
 - `db_datareader` — Read access to all tables
 - `db_datawriter` — Write access to all tables
@@ -459,4 +459,4 @@ The script outputs a JSON result object:
 
 ---
 
-[← Back to Hooks Documentation](README.md)
+[← Back to Hooks Documentation](README.md) | [↑ Back to Top](#sql-managed-identity-config)
