@@ -1,6 +1,19 @@
+// ============================================================================
+// OrdersManagement Logic App - VS Code Settings
+// ============================================================================
+// Purpose:     Configure VS Code for Logic App development in this workspace
+// Used by:     VS Code IDE, Azure Logic Apps Standard extension
+// Environment: Development
+//
+// Documentation: https://learn.microsoft.com/azure/logic-apps/
+// ============================================================================
 {
+  "$schema": "https://json.schemastore.org/vs-code-settings.json",
+  // Azure Logic Apps Standard Configuration
   "azureLogicAppsStandard.deploySubpath": ".",
   "azureLogicAppsStandard.projectLanguage": "JavaScript",
   "azureLogicAppsStandard.projectRuntime": "~4",
+  // Azure Functions Configuration
+  // Suppresses project prompts since Logic Apps use the Functions runtime
   "azureFunctions.suppressProject": true
 }

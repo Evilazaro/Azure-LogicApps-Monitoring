@@ -4,12 +4,26 @@
     Deploys Logic Apps Standard workflows to Azure.
 
 .DESCRIPTION
-    Deploys workflow definitions from OrdersManagement Logic App to Azure.
-    Runs as azd predeploy hook - environment variables are already loaded.
+    This script deploys workflow definitions from the OrdersManagement Logic App to Azure.
+    It is designed to run as an Azure Developer CLI (azd) predeploy hook, where environment
+    variables are automatically loaded from the azd environment.
+
+    The script performs the following operations:
+    1. Validates required environment variables (AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, LOGIC_APP_NAME)
+    2. Discovers workflow directories containing workflow.json files
+    3. Resolves ${VARIABLE} placeholders in connections.json, parameters.json, and workflow.json files
+    4. Fetches connection runtime URLs for Service Bus and Azure Blob connections if not provided
+    5. Creates a deployment package (zip) with processed files
+    6. Updates Logic App application settings with connection runtime URLs
+    7. Deploys the package using Azure CLI zip deployment
+
+    Environment variable aliases are automatically set up to map AZURE_* variables to
+    WORKFLOWS_* equivalents for connections.json compatibility.
 
 .PARAMETER WorkflowPath
     Optional path to the workflow project directory. If not specified, defaults to
     '../workflows/OrdersManagement/OrdersManagementLogicApp' relative to script location.
+    The directory must contain host.json and at least one workflow subdirectory with workflow.json.
 
 .EXAMPLE
     ./deploy-workflow.ps1
@@ -19,9 +33,38 @@
     ./deploy-workflow.ps1 -WorkflowPath "C:\MyWorkflows\LogicApp"
     Deploys workflows from a custom path.
 
+.EXAMPLE
+    $env:AZURE_SUBSCRIPTION_ID = "00000000-0000-0000-0000-000000000000"
+    $env:AZURE_RESOURCE_GROUP = "my-rg"
+    $env:LOGIC_APP_NAME = "my-logic-app"
+    ./deploy-workflow.ps1
+    Deploys workflows with manually set environment variables.
+
+.INPUTS
+    None. This script does not accept pipeline input.
+
+.OUTPUTS
+    None. This script outputs status messages to the console.
+
 .NOTES
     Version: 2.0.1
     Requires: Azure CLI 2.50+, PowerShell Core 7.0+
+    
+    Required Environment Variables:
+    - AZURE_SUBSCRIPTION_ID: The Azure subscription ID
+    - AZURE_RESOURCE_GROUP: The resource group containing the Logic App
+    - LOGIC_APP_NAME: The name of the Logic App Standard resource
+
+    Optional Environment Variables:
+    - AZURE_LOCATION: Azure region (defaults to 'westus3')
+    - SERVICE_BUS_CONNECTION_RUNTIME_URL: Runtime URL for Service Bus connection
+    - AZURE_BLOB_CONNECTION_RUNTIME_URL: Runtime URL for Azure Blob connection
+
+.LINK
+    https://learn.microsoft.com/azure/logic-apps/
+
+.LINK
+    https://learn.microsoft.com/azure/developer/azure-developer-cli/
 #>
 
 #Requires -Version 7.0

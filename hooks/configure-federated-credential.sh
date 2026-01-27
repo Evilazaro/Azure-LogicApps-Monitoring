@@ -12,20 +12,56 @@
 #     This script is designed to be run as an Azure Developer CLI (azd) hook, where environment
 #     variables are automatically loaded during the provisioning process.
 #
+#     The script performs the following operations:
+#       1. Validates required dependencies (jq, Azure CLI)
+#       2. Verifies Azure CLI login status
+#       3. Resolves the App Registration by name or Object ID
+#       4. Lists existing federated credentials
+#       5. Creates a new federated credential for the specified GitHub environment
+#       6. Optionally creates credentials for the main branch and pull requests
+#       7. Displays workflow configuration guidance
+#
 # PARAMETERS
 #     --app-name          The display name of the Azure AD App Registration.
+#                         If not provided, lists available registrations for selection.
 #     --app-object-id     The Object ID of the Azure AD App Registration.
+#                         Takes precedence over --app-name if both are provided.
 #     --github-org        The GitHub organization or username. Default: Evilazaro
 #     --github-repo       The GitHub repository name. Default: Azure-LogicApps-Monitoring
 #     --environment       The GitHub Environment name to configure. Default: dev
+#     -h, --help          Show usage information and exit.
+#
+# DEPENDENCIES
+#     - Azure CLI (az) - Must be installed and logged in
+#     - jq - JSON processor for parsing Azure CLI output
+#     - Bash 4.0+ - Required for associative arrays and modern bash features
+#
+# EXIT CODES
+#     0 - Success
+#     1 - Error (missing dependency, authentication failure, or operation failure)
 #
 # EXAMPLES
+#     # Configure using App Registration display name
 #     ./configure-federated-credential.sh --app-name "my-app-registration"
+#
+#     # Configure using App Object ID with custom environment
 #     ./configure-federated-credential.sh --app-object-id "00000000-0000-0000-0000-000000000000" --environment "prod"
+#
+#     # Configure with custom GitHub organization and repository
+#     ./configure-federated-credential.sh --app-name "my-app" --github-org "MyOrg" --github-repo "MyRepo"
+#
+#     # Interactive mode (prompts for App Registration selection)
+#     ./configure-federated-credential.sh
 #
 # NOTES
 #     Author: Azure Developer CLI Hook
-#     Requires: Azure CLI, Bash 4.0+
+#     Requires: Azure CLI, jq, Bash 4.0+
+#
+# SEE ALSO
+#     - Azure AD Workload Identity Federation:
+#       https://learn.microsoft.com/en-us/azure/active-directory/workload-identities/
+#     - GitHub Actions OIDC:
+#       https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/
 #
 
 set -euo pipefail

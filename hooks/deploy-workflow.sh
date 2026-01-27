@@ -7,17 +7,42 @@
 #
 # DESCRIPTION
 #   Deploys workflow definitions from OrdersManagement Logic App to Azure.
-#   Runs as azd predeploy hook - environment variables are already loaded.
+#   This script packages workflow files (workflow.json, connections.json,
+#   parameters.json, host.json), resolves environment variable placeholders,
+#   and deploys via zip deployment to Azure Logic Apps Standard.
+#
+#   Runs as azd predeploy hook - environment variables are already loaded
+#   from the Azure Developer CLI environment.
 #
 # USAGE
 #   ./deploy-workflow.sh [workflow_path]
 #
 # PARAMETERS
 #   workflow_path   Optional path to the workflow project directory.
+#                   Defaults to ../workflows/OrdersManagement/OrdersManagementLogicApp
+#                   relative to the script location.
+#
+# ENVIRONMENT VARIABLES
+#   Required:
+#     AZURE_SUBSCRIPTION_ID     - Azure subscription ID for deployment
+#     AZURE_RESOURCE_GROUP      - Target resource group name
+#     LOGIC_APP_NAME            - Name of the Logic App Standard resource
+#
+#   Optional:
+#     AZURE_LOCATION                    - Azure region (default: westus3)
+#     SERVICE_BUS_CONNECTION_RUNTIME_URL - Pre-fetched Service Bus runtime URL
+#     AZURE_BLOB_CONNECTION_RUNTIME_URL  - Pre-fetched Azure Blob runtime URL
+#     WORKFLOWS_SUBSCRIPTION_ID         - Alias for AZURE_SUBSCRIPTION_ID
+#     WORKFLOWS_RESOURCE_GROUP_NAME     - Alias for AZURE_RESOURCE_GROUP
+#     WORKFLOWS_LOCATION_NAME           - Alias for AZURE_LOCATION
+#
+# EXIT CODES
+#   0 - Deployment completed successfully
+#   1 - Missing dependencies, environment variables, or deployment failure
 #
 # NOTES
 #   Version: 2.0.1
-#   Requires: Azure CLI 2.50+, Bash 4.0+, jq
+#   Requires: Azure CLI 2.50+, Bash 4.0+, jq, zip
 #
 
 set -euo pipefail

@@ -4,31 +4,51 @@
 
 <#
 .SYNOPSIS
-    Generates sample order data for testing Azure Logic Apps monitoring.
+    Generates sample order data for testing Azure Logic Apps monitoring and demonstration scenarios.
 
 .DESCRIPTION
-    This script generates random e-commerce orders with products, customer information, 
-    and delivery addresses. The generated data is saved as JSON for use in testing 
-    and demonstration scenarios.
+    This script generates randomized e-commerce orders containing products, customer information, 
+    and delivery addresses. The generated data is serialized to JSON format for use in testing,
+    development, and demonstration scenarios with Azure Logic Apps.
     
-    Order IDs are generated using GUIDs to ensure uniqueness across multiple runs.
+    Key features:
+    - GUID-based order IDs ensure uniqueness across multiple runs and distributed systems
+    - Configurable product count per order with validation
+    - Price variation simulation (±20%) to mimic real-world pricing fluctuations
+    - Global delivery address pool for international e-commerce simulation
+    - Random date generation within a defined range (2024-2025)
+    - Progress tracking with periodic updates for large batch operations
+    - ShouldProcess support for -WhatIf and -Confirm parameters
+    
+    The output JSON structure is compatible with Azure Logic Apps workflow triggers
+    and can be used to simulate high-volume order processing scenarios.
 
 .PARAMETER OrderCount
-    The number of orders to generate. Default is 2000.
+    The number of orders to generate. Must be between 1 and 10,000.
+    Default is 2000.
 
 .PARAMETER OutputPath
-    The path where the JSON file will be saved. 
+    The path where the JSON file will be saved. The script will create
+    the directory structure if it does not exist.
     Default is '..\infra\data\ordersBatch.json' relative to the script location.
 
 .PARAMETER MinProducts
-    Minimum number of products per order. Default is 1.
+    Minimum number of products per order. Must be between 1 and 20.
+    Cannot be greater than MaxProducts.
+    Default is 1.
 
 .PARAMETER MaxProducts
-    Maximum number of products per order. Default is 6.
+    Maximum number of products per order. Must be between 1 and 20.
+    Cannot be less than MinProducts.
+    Default is 6.
+
+.PARAMETER Force
+    Suppresses confirmation prompts and forces execution without user interaction.
+    Useful for automated scripts and CI/CD pipelines.
 
 .EXAMPLE
     .\Generate-Orders.ps1
-    Generates 2000 orders using default settings.
+    Generates 2000 orders using default settings and saves to the default output path.
 
 .EXAMPLE
     .\Generate-Orders.ps1 -OrderCount 100 -OutputPath "C:\temp\orders.json"
@@ -37,6 +57,22 @@
 .EXAMPLE
     .\Generate-Orders.ps1 -OrderCount 25 -MinProducts 2 -MaxProducts 4
     Generates 25 orders with 2-4 products each.
+
+.EXAMPLE
+    .\Generate-Orders.ps1 -OrderCount 500 -Force -Verbose
+    Generates 500 orders without prompts and displays verbose progress information.
+
+.EXAMPLE
+    .\Generate-Orders.ps1 -WhatIf
+    Shows what actions would be performed without actually generating or writing files.
+
+.INPUTS
+    None. This script does not accept pipeline input.
+
+.OUTPUTS
+    System.Void
+    The script writes a JSON file to the specified OutputPath and displays a summary
+    to the console. No objects are returned to the pipeline.
 
 .NOTES
     File Name      : Generate-Orders.ps1

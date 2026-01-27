@@ -7,68 +7,111 @@
     Pre-provisioning script for Azure Developer CLI (azd) deployment.
 
 .DESCRIPTION
-    This script performs pre-provisioning tasks before Azure resources are provisioned.
-    It ensures a clean state by clearing user secrets and validates the development environment.
+    This script performs comprehensive pre-provisioning tasks before Azure resources are provisioned
+    using the Azure Developer CLI (azd). It ensures a clean state by clearing user secrets, validates
+    the development environment, and optionally installs missing prerequisites.
     
     The script performs the following operations:
-    - Validates PowerShell version compatibility
+    - Validates PowerShell version compatibility (7.0+)
+    - Validates and optionally installs required tools:
+      * .NET SDK 10.0 or higher
+      * Azure Developer CLI (azd)
+      * Azure CLI with authentication
+      * Bicep CLI for infrastructure as code
+      * zip utility for Logic Apps workflow deployment
+    - Checks Azure resource provider registration
     - Clears .NET user secrets for all projects
-    - Validates required tools (.NET SDK)
-    - Prepares environment for Azure deployment
-    - Provides detailed logging and error handling
+    - Prepares the environment for Azure deployment
+    - Provides detailed logging, error handling, and execution summaries
 
 .PARAMETER Force
     Skips confirmation prompts and forces execution of all operations.
+    Sets ConfirmPreference to 'None' to suppress ShouldProcess prompts.
 
 .PARAMETER SkipSecretsClear
-    Skips the user secrets clearing step.
+    Skips the user secrets clearing step. Useful when secrets should be preserved
+    between deployments or when running partial provisioning.
 
 .PARAMETER ValidateOnly
-    Only validates prerequisites without making changes.
+    Only validates prerequisites without making any changes to the system.
+    Does not clear secrets or modify any files.
 
 .PARAMETER UseDeviceCodeLogin
     Uses device code flow for Azure authentication instead of browser-based login.
-    Useful for remote sessions, SSH connections, or environments without a browser.
+    Useful for remote sessions, SSH connections, WSL, or environments without a browser.
+    Displays a code that must be entered at https://microsoft.com/devicelogin.
 
 .PARAMETER AutoInstall
     Automatically installs missing prerequisites without prompting for confirmation.
-    Useful for automated/CI scenarios.
+    Useful for automated/CI scenarios where interactive prompts are not possible.
+    Supports installation via winget (Windows) or appropriate package managers (Linux/macOS).
 
 .EXAMPLE
     .\preprovision.ps1
-    Runs standard pre-provisioning with confirmation prompts.
+    Runs standard pre-provisioning with confirmation prompts for any missing prerequisites.
 
 .EXAMPLE
     .\preprovision.ps1 -Force
-    Runs pre-provisioning without confirmation prompts.
+    Runs pre-provisioning without confirmation prompts, automatically proceeding with all operations.
 
 .EXAMPLE
     .\preprovision.ps1 -ValidateOnly
-    Only validates prerequisites without clearing secrets.
+    Only validates prerequisites without clearing secrets or making changes.
 
 .EXAMPLE
     .\preprovision.ps1 -SkipSecretsClear -Verbose
-    Skips secret clearing and shows verbose output.
+    Skips secret clearing and shows detailed verbose output for troubleshooting.
 
 .EXAMPLE
     .\preprovision.ps1 -UseDeviceCodeLogin
-    Uses device code flow for Azure login (useful for remote/headless sessions).
+    Uses device code flow for Azure login, suitable for remote/headless sessions.
 
 .EXAMPLE
     .\preprovision.ps1 -AutoInstall -Force
-    Automatically installs all missing prerequisites without prompts.
+    Automatically installs all missing prerequisites without prompts - ideal for CI/CD pipelines.
+
+.EXAMPLE
+    .\preprovision.ps1 -WhatIf
+    Shows what actions would be performed without actually executing them.
+
+.INPUTS
+    None. This script does not accept pipeline input.
+
+.OUTPUTS
+    System.Void. This script does not return objects but exits with code 0 on success, 1 on failure.
 
 .NOTES
     File Name      : preprovision.ps1
     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
     Version        : 2.3.0
     Last Modified  : 2026-01-06
-    Prerequisite   : PowerShell 7.0 or higher
-    Prerequisite   : .NET SDK 10.0 or higher
-    Prerequisite   : Azure Developer CLI (azd)
+    
+    Prerequisites:
+    - PowerShell 7.0 or higher
+    - .NET SDK 10.0 or higher
+    - Azure Developer CLI (azd)
+    - Azure CLI 2.60.0 or higher
+    - Bicep CLI 0.30.0 or higher
+    - zip utility (built-in on Windows via Compress-Archive)
+    
+    Required Azure Resource Providers:
+    - Microsoft.App
+    - Microsoft.ServiceBus
+    - Microsoft.Storage
+    - Microsoft.Web
+    - Microsoft.ContainerRegistry
+    - Microsoft.Insights
+    - Microsoft.OperationalInsights
+    - Microsoft.ManagedIdentity
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
+
+.LINK
+    https://learn.microsoft.com/azure/developer/azure-developer-cli/
+
+.LINK
+    https://learn.microsoft.com/dotnet/core/tools/dotnet-user-secrets
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]

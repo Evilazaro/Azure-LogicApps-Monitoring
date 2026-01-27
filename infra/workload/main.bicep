@@ -1,18 +1,37 @@
 /*
   Workload Infrastructure Module
-  ==============================
-  Orchestrates deployment of all workload components.
   
-  Components:
-  1. Identity: Managed identity with role assignments
-  2. Messaging: Service Bus namespace, queues, and workflow storage
-  3. Services: Container Registry and Container Apps Environment
-  4. Workflows: Logic Apps Standard with App Service Plan
+  This Bicep module orchestrates the deployment of workload-specific Azure resources including:
+  - Messaging: Service Bus namespace with topics and subscriptions for event-driven communication
+  - Services: Azure Container Registry, Container Apps Environment, and Aspire Dashboard
+  - Workflows: Logic Apps Standard with App Service Plan and API connections
   
-  Deployment Order:
-  - Identity first (required by other modules)
-  - Messaging and Services in parallel (both use identity)
-  - Workflows last (depends on identity and messaging storage)
+  Dependencies:
+  - Requires a pre-provisioned User Assigned Managed Identity
+  - Requires a Log Analytics workspace for diagnostics
+  - Requires storage accounts for diagnostics and Logic Apps runtime
+  - Requires virtual network subnets for Container Apps and Logic Apps
+  
+  Usage:
+    module workload 'workload/main.bicep' = {
+      params: {
+        name: 'myapp'
+        envName: 'dev'
+        location: 'eastus'
+        userAssignedIdentityId: identityId
+        userAssignedIdentityName: identityName
+        workspaceId: logAnalyticsId
+        workspaceCustomerId: customerId
+        workspacePrimaryKey: primaryKey
+        apiSubnetId: apiSubnet
+        logicappSubnetId: logicSubnet
+        storageAccountId: storageId
+        appInsightsConnectionString: appInsightsConnStr
+        workflowStorageAccountName: 'workflowstorage'
+        workflowStorageAccountId: workflowStorageId
+        tags: { environment: 'dev' }
+      }
+    }
 */
 
 metadata name = 'Workload Infrastructure'
@@ -179,7 +198,8 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs
 // Logic Apps Module: Deploys Logic Apps Standard workflow engine
 // Depends on identity and messaging storage account outputs
 // Ensures storage role assignments are complete before deploying
-@description('Deploys Logic Apps Standard workflow engine with App Service Plan')
+// NOTE: This module must wait for messaging module to complete due to Service Bus namespace dependency
+@description('Deploys Logic Apps Standard workflow engine with App Service Plan and API connections')
 module workflows 'logic-app.bicep' = {
   params: {
     name: name
@@ -199,7 +219,8 @@ module workflows 'logic-app.bicep' = {
   }
 }
 
-// Logic Apps Outputs
+// ========== Logic Apps Outputs ==========
+
 @description('Name of the deployed Logic App')
 output LOGIC_APP_NAME string = workflows.outputs.logicAppName
 
@@ -212,5 +233,5 @@ output SERVICE_BUS_CONNECTION_RUNTIME_URL string = workflows.outputs.SERVICE_BUS
 @description('Runtime URL of the Azure Blob Storage API connection')
 output AZURE_BLOB_CONNECTION_RUNTIME_URL string = workflows.outputs.AZURE_BLOB_CONNECTION_RUNTIME_URL
 
-@description('Storage account name for Logic Apps workflows and data')
+@description('Storage account name for Logic Apps workflows and runtime data')
 output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = workflowStorageAccountName

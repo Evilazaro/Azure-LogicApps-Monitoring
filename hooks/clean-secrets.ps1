@@ -4,38 +4,72 @@
 
 <#
 .SYNOPSIS
-    Clears .NET user secrets for all projects in the solution.
+    Clears .NET user secrets for all projects in the Azure Logic Apps Monitoring solution.
 
 .DESCRIPTION
     This script clears all .NET user secrets from the configured projects to ensure
-    a clean state. This is useful before re-provisioning or when troubleshooting
-    configuration issues.
+    a clean state. This is particularly useful in the following scenarios:
+    - Before re-provisioning Azure resources
+    - When troubleshooting configuration issues
+    - When rotating secrets or credentials
+    - Setting up a fresh development environment
     
     The script performs the following operations:
-    - Validates .NET SDK availability
-    - Clears user secrets for app.AppHost project
-    - Clears user secrets for eShop.Orders.API project
-    - Clears user secrets for eShop.Web.App project
-    - Provides detailed logging and error handling
+    1. Validates .NET SDK availability (requires version 10.0 or higher)
+    2. Validates all configured project paths exist
+    3. Clears user secrets for app.AppHost project
+    4. Clears user secrets for eShop.Orders.API project
+    5. Clears user secrets for eShop.Web.App project
+    6. Provides detailed logging, progress tracking, and error handling
+    
+    The script supports PowerShell's common parameters including -WhatIf, -Confirm,
+    and -Verbose for safe execution and debugging.
 
 .PARAMETER Force
-    Skips confirmation prompts and forces execution.
+    Skips confirmation prompts and forces execution. Use with caution as this
+    will immediately clear all user secrets without asking for confirmation.
 
 .PARAMETER WhatIf
     Common parameter (because SupportsShouldProcess is enabled).
-    Shows what would be executed without making changes.
+    Shows what would be executed without making any actual changes.
+    Useful for previewing the impact of the script.
+
+.PARAMETER Confirm
+    Common parameter. Prompts for confirmation before each operation.
+
+.PARAMETER Verbose
+    Common parameter. Displays detailed information about script operations.
 
 .EXAMPLE
     .\clean-secrets.ps1
-    Clears all user secrets with confirmation prompt.
+    
+    Clears all user secrets with confirmation prompt. The script will ask for
+    confirmation before clearing secrets for each project.
 
 .EXAMPLE
     .\clean-secrets.ps1 -Force
-    Clears all user secrets without confirmation.
+    
+    Clears all user secrets without any confirmation prompts. Useful for
+    automated scripts or CI/CD pipelines.
 
 .EXAMPLE
     .\clean-secrets.ps1 -WhatIf -Verbose
-    Shows what would be cleared without making changes, with verbose output.
+    
+    Shows what would be cleared without making any changes, with detailed
+    verbose output. Recommended for first-time execution to understand impact.
+
+.EXAMPLE
+    .\clean-secrets.ps1 -Verbose
+    
+    Clears all user secrets with confirmation and displays detailed logging
+    information about each step of the process.
+
+.INPUTS
+    None. This script does not accept pipeline input.
+
+.OUTPUTS
+    System.Void. This script does not produce output objects.
+    Exit code 0 indicates success, exit code 1 indicates failure.
 
 .NOTES
     File Name      : clean-secrets.ps1
@@ -43,9 +77,13 @@
     Version        : 2.0.1
     Last Modified  : 2026-01-06
     Prerequisite   : .NET SDK 10.0 or higher
+    Repository     : Azure-LogicApps-Monitoring
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
+
+.LINK
+    https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]

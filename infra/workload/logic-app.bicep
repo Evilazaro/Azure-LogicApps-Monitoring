@@ -1,17 +1,46 @@
 /*
-  Logic Apps Standard Module (Refactored)
-  ======================================
-  - App Service Plan (WorkflowStandard / WS1) with elastic scale
-  - Logic App Standard (Microsoft.Web/sites) with User Assigned Identity
-  - Runtime app settings wired to an existing storage account (required)
-  - Optional “private storage” switch (WEBSITE_CONTENTOVERVNET)
-
-  Key refactors vs original:
-  - Use storage *resourceId* (no same-RG assumptions)
-  - Single listKeys() call reused
-  - Conditional WEBSITE_CONTENTOVERVNET
-  - WORKFLOWS_TENANT_ID uses tenant().tenantId
-  - Safer/cleaner naming and variables
+  Logic App Standard Bicep Module
+  ================================
+  
+  This module deploys a Logic Apps Standard workflow engine with the following components:
+  
+  ## Resources Deployed
+  - App Service Plan (WorkflowStandard tier with elastic scaling)
+  - Logic App Standard (workflow engine)
+  - Service Bus API Connection (managed identity authentication)
+  - Azure Blob Storage API Connection (managed identity authentication)
+  - Diagnostic settings for monitoring and logging
+  
+  ## Authentication
+  Uses User Assigned Managed Identity for:
+  - Service Bus namespace access
+  - Azure Blob Storage access
+  - Workflow storage account access (AzureWebJobsStorage)
+  
+  ## Networking
+  - VNet integration via subnet
+  - Private endpoint connectivity for storage services
+  - Content share access over VNet enabled
+  
+  ## Monitoring
+  - Application Insights integration with OpenTelemetry
+  - Diagnostic logs sent to Log Analytics workspace
+  - Metrics exported to storage account
+  
+  ## Parameters Required
+  - name: Base name for resources (3-20 chars)
+  - envName: Environment identifier (dev/test/prod/staging)
+  - userAssignedIdentityId: Resource ID of managed identity
+  - apiSubnetId: Subnet for VNet integration
+  - serviceBusNamespace: Service Bus namespace name
+  - workspaceId: Log Analytics workspace ID
+  - workflowStorageAccountName: Storage account for Logic Apps runtime
+  
+  ## Outputs Provided
+  - logicAppName, logicAppId: Logic App resource identifiers
+  - serviceBusConnectionName, serviceBusConnectionId: Service Bus connection details
+  - SERVICE_BUS_CONNECTION_RUNTIME_URL: Runtime URL for Service Bus connection
+  - AZURE_BLOB_CONNECTION_RUNTIME_URL: Runtime URL for Blob Storage connection
 */
 
 metadata name = 'Logic Apps Standard'

@@ -1,4 +1,7 @@
 {
+  // Azure Functions host configuration for Logic App Standard workflow
+  // Configures logging, telemetry, and workflow runtime settings
+  "$schema": "https://json.schemastore.org/host.json",
   "version": "2.0",
   "logging": {
     "applicationInsights": {

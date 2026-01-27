@@ -1,19 +1,50 @@
 /*
   Log Analytics Workspace Module
   ==============================
-  Deploys Log Analytics workspace with associated storage account.
+  Deploys a Log Analytics workspace with an associated storage account for centralized
+  logging and monitoring in Azure.
   
   Components:
-  - Storage account for diagnostic logs with lifecycle management
-  - Log Analytics workspace with 30-day retention
+  - Storage account for diagnostic logs with lifecycle management policies
+  - Log Analytics workspace with 30-day retention and PerGB2018 pricing tier
   - Linked storage accounts for alerts and query results
-  - Diagnostic settings configuration
+  - Diagnostic settings configuration for workspace telemetry
   
   Key Features:
-  - PerGB2018 pricing tier for pay-as-you-go model
-  - Automatic log deletion after 30 days
-  - System-assigned managed identity
-  - Dedicated log analytics destination
+  - PerGB2018 pricing tier for cost-effective pay-as-you-go billing
+  - Automatic log deletion after 30 days to manage storage costs
+  - System-assigned managed identity for secure resource access
+  - Dedicated log analytics destination type for diagnostic data
+  - TLS 1.2 enforcement and HTTPS-only traffic for storage security
+  - Lifecycle management to auto-delete append blobs (activity logs) after 30 days
+  
+  Parameters:
+  - name: Base name for the workspace (3-20 characters)
+  - envName: Environment identifier (dev, test, prod, staging)
+  - location: Azure region for deployment (defaults to resource group location)
+  - logsSettings: Array of log category settings for diagnostics
+  - metricsSettings: Array of metric category settings for diagnostics
+  - tags: Resource tags for organization and cost tracking
+  
+  Outputs:
+  - AZURE_LOG_ANALYTICS_WORKSPACE_ID: Resource ID of the workspace
+  - AZURE_LOG_ANALYTICS_WORKSPACE_NAME: Name of the workspace
+  - AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID: Workspace customer/workspace ID
+  - AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY: Primary shared key for workspace access
+  - AZURE_STORAGE_ACCOUNT_ID_LOGS: Resource ID of the logs storage account
+  
+  Usage:
+    module logAnalytics 'log-analytics-workspace.bicep' = {
+      name: 'logAnalyticsDeployment'
+      params: {
+        name: 'myapp'
+        envName: 'prod'
+        location: 'eastus'
+        logsSettings: [{ category: 'Audit', enabled: true }]
+        metricsSettings: [{ category: 'AllMetrics', enabled: true }]
+        tags: { environment: 'production' }
+      }
+    }
 */
 
 metadata name = 'Log Analytics Workspace'

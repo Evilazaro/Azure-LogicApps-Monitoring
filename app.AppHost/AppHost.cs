@@ -52,6 +52,17 @@ builder.Build().Run();
 // Helper Methods
 // =============================================================================
 
+/// <summary>
+/// Configures Azure credentials for local development environments.
+/// Sets AZURE_TENANT_ID and AZURE_CLIENT_ID environment variables when configured.
+/// </summary>
+/// <param name="builder">The distributed application builder.</param>
+/// <param name="ordersApi">The orders API project resource to configure with Azure credentials.</param>
+/// <remarks>
+/// This method only applies to local development mode. In Azure Container Apps deployment,
+/// Aspire automatically configures the managed identity. Adding credentials here during
+/// publish mode would create duplicates and potentially cause authentication failures.
+/// </remarks>
 static void ConfigureAzureCredentials(IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> ordersApi)
 {
     ArgumentNullException.ThrowIfNull(builder);
@@ -78,8 +89,23 @@ static void ConfigureAzureCredentials(IDistributedApplicationBuilder builder, IR
 /// Creates the Azure Resource Group parameter if Azure resources are configured.
 /// This ensures the parameter is only created once and shared across all Azure resources.
 /// </summary>
-/// <param name="builder">The distributed application builder.</param>
-/// <returns>The resource group parameter builder, or null if not in Azure mode.</returns>
+/// <param name="builder">The distributed application builder used to create the parameter.</param>
+/// <returns>
+/// A <see cref="IResourceBuilder{ParameterResource}"/> containing the resource group parameter if Azure:ResourceGroup 
+/// is configured; otherwise, <c>null</c> to indicate local development mode without Azure resources.
+/// </returns>
+/// <remarks>
+/// <para>
+/// This method reads the "Azure:ResourceGroup" configuration key to determine if Azure resources are being used.
+/// If the value is null or whitespace, the method returns null, indicating that the application should use 
+/// local development resources (containers, emulators, etc.) instead of Azure services.
+/// </para>
+/// <para>
+/// The returned parameter builder is intended to be shared across multiple Azure resource configurations
+/// (Service Bus, SQL Database, Application Insights) to maintain consistency and avoid duplicate parameters.
+/// </para>
+/// </remarks>
+/// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
 static IResourceBuilder<ParameterResource>? CreateResourceGroupParameterIfNeeded(
 IDistributedApplicationBuilder builder)
 {

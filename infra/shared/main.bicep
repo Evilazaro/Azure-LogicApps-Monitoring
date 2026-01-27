@@ -1,17 +1,43 @@
 /*
-  Shared Infrastructure Module
-  ============================
-  Orchestrates deployment of shared infrastructure components.
+  ============================================================================
+  Shared Infrastructure Bicep Module
+  ============================================================================
   
-  Components:
-  - Identity: User-assigned managed identity with role assignments
-  - Monitoring: Log Analytics workspace and Application Insights
-  - Data: Storage accounts and SQL Server database
-  
+  Description:
+    This module orchestrates the deployment of shared infrastructure components
+    required by the Azure Logic Apps Monitoring solution. It serves as the main
+    entry point for provisioning foundational resources that are consumed by
+    application workloads.
+
+  Components Deployed:
+    - Network:    Virtual network with subnets for Container Apps, Logic Apps,
+                  and data services workload isolation
+    - Identity:   User-assigned managed identity for secure resource access
+                  without credential management
+    - Monitoring: Log Analytics workspace and Application Insights for
+                  centralized logging, metrics, and application telemetry
+    - Data:       Storage accounts for workflow state and SQL Server for
+                  persistent data storage with private endpoints
+
   Deployment Order:
-  - Identity first (required by other modules)
-  - Monitoring second (provides workspace IDs for diagnostics)
-  - Data last (depends on identity and monitoring outputs)
+    1. Network    - VNet and subnets (no dependencies)
+    2. Identity   - Managed identity (no dependencies)
+    3. Monitoring - Log Analytics & App Insights (depends on Network)
+    4. Data       - Storage & SQL (depends on Identity, Monitoring, Network)
+
+  Usage:
+    module shared 'shared/main.bicep' = {
+      name: 'shared-infrastructure'
+      params: {
+        name: 'myapp'
+        location: 'eastus'
+        envName: 'dev'
+        tags: { environment: 'dev' }
+      }
+    }
+
+  Author: Azure Logic Apps Monitoring Team
+  ============================================================================
 */
 
 metadata name = 'Shared Infrastructure'
@@ -80,6 +106,7 @@ var allMetricsSettings array = [
 
 // ========== Modules ==========
 
+@description('Deploys virtual network infrastructure with subnets for Container Apps, Logic Apps, and data services')
 module network 'network/main.bicep' = {
   params: {
     name: name
@@ -160,7 +187,8 @@ output AZURE_STORAGE_ACCOUNT_ID_LOGS string = monitoring.outputs.AZURE_STORAGE_A
 
 // Data Module: Deploys storage accounts and SQL Server
 // Provides storage for workflows and persistent data
-@description('Deploys storage accounts and SQL Server database for workflow data storage')
+// Depends on identity for managed identity and monitoring for diagnostic settings
+@description('Deploys storage accounts, SQL Server database, and private endpoints for workflow data storage')
 module data 'data/main.bicep' = {
   params: {
     name: name

@@ -1,5 +1,9 @@
 {
+  // This file defines the managed API connections used by the OrdersManagement Logic App workflow.
+  // It configures connections for Azure Service Bus and Azure Blob Storage using Managed Service Identity (MSI) authentication.
+  // Connection properties reference app settings and parameters for subscription, resource group, and identity configuration.
   "managedApiConnections": {
+    // Azure Service Bus connection for messaging operations
     "servicebus": {
       "api": {
         "id": "/subscriptions/@{appsetting('WORKFLOWS_SUBSCRIPTION_ID')}/providers/Microsoft.Web/locations/@{appsetting('WORKFLOWS_LOCATION_NAME')}/managedApis/servicebus"

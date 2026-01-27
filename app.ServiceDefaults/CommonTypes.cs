@@ -8,9 +8,38 @@ using System.ComponentModel.DataAnnotations;
 namespace app.ServiceDefaults.CommonTypes;
 
 /// <summary>
+/// Contains shared domain models used across the eShop distributed application.
+/// </summary>
+/// <remarks>
+/// This namespace provides common data transfer objects and domain models including:
+/// <list type="bullet">
+///     <item><description><see cref="WeatherForecast"/> - Weather forecast data for demonstration and health checks</description></item>
+///     <item><description><see cref="Order"/> - Customer order with products and delivery information</description></item>
+///     <item><description><see cref="OrderProduct"/> - Individual product item within an order</description></item>
+/// </list>
+/// All models include data validation attributes for ensuring data integrity.
+/// </remarks>
+
+/// <summary>
 /// Represents a weather forecast with temperature and condition information.
 /// Used for demonstration and health check purposes.
 /// </summary>
+/// <remarks>
+/// This class provides weather forecast data including the date, temperature in both
+/// Celsius and Fahrenheit, and a textual summary of conditions. The Fahrenheit temperature
+/// is automatically calculated from the Celsius value.
+/// </remarks>
+/// <example>
+/// <code>
+/// var forecast = new WeatherForecast
+/// {
+///     Date = DateOnly.FromDateTime(DateTime.Now),
+///     TemperatureC = 25,
+///     Summary = "Warm and sunny"
+/// };
+/// Console.WriteLine($"Temperature: {forecast.TemperatureF}°F");
+/// </code>
+/// </example>
 public sealed class WeatherForecast
 {
     /// <summary>

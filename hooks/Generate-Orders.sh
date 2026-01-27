@@ -12,16 +12,24 @@
 #     for use in testing and demonstration scenarios.
 #
 #     Order IDs are generated using UUIDs to ensure uniqueness across multiple
-#     runs.
+#     runs. Each order contains a random selection of products from a built-in
+#     catalog of 20 items, with configurable quantity ranges and price
+#     variations (±20%) to simulate real-world pricing fluctuations.
+#
+#     The script includes a diverse set of global delivery addresses and
+#     generates random order dates between 2024-01-01 and 2025-12-31.
 #
 # USAGE
 #     ./Generate-Orders.sh [OPTIONS]
 #
 # OPTIONS
 #     -c, --count <number>     Number of orders to generate (default: 2000)
+#                              Valid range: 1-10000
 #     -o, --output <path>      Output file path (default: ../infra/data/ordersBatch.json)
 #     -m, --min-products <n>   Minimum products per order (default: 1)
+#                              Valid range: 1-20
 #     -M, --max-products <n>   Maximum products per order (default: 6)
+#                              Valid range: 1-20
 #     -f, --force              Force execution without prompting
 #     -n, --dry-run            Show what would be executed without making changes
 #     -v, --verbose            Display detailed diagnostic information
@@ -37,16 +45,46 @@
 #     ./Generate-Orders.sh --count 25 --min-products 2 --max-products 4
 #         Generates 25 orders with 2-4 products each.
 #
+#     ./Generate-Orders.sh --dry-run --verbose
+#         Preview what would be generated without making changes.
+#
 # EXIT CODES
 #     0    Success - All operations completed successfully
 #     1    Error - Fatal error occurred or validation failed
+#     130  Interrupted - Script was interrupted by user (Ctrl+C)
+#
+# DEPENDENCIES
+#     - Bash 4.0 or higher
+#     - jq - Command-line JSON processor
+#     - bc - Arbitrary precision calculator
+#     - uuidgen or /proc/sys/kernel/random/uuid for UUID generation
+#
+# OUTPUT FORMAT
+#     The script generates a JSON array of order objects with the following
+#     structure:
+#     {
+#       "id": "ORD-<UUID>",
+#       "customerId": "CUST-<UUID>",
+#       "date": "<ISO 8601 timestamp>",
+#       "deliveryAddress": "<address string>",
+#       "total": <decimal>,
+#       "products": [
+#         {
+#           "id": "OP-<UUID>",
+#           "orderId": "ORD-<UUID>",
+#           "productId": "PROD-<ID>",
+#           "productDescription": "<description>",
+#           "quantity": <integer>,
+#           "price": <decimal>
+#         }
+#       ]
+#     }
 #
 # NOTES
 #     File Name      : Generate-Orders.sh
 #     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
 #     Version        : 2.0.1
 #     Last Modified  : 2026-01-06
-#     Prerequisite   : Bash 4.0 or higher, jq (for JSON generation)
 #
 # LINKS
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

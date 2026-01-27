@@ -1,17 +1,38 @@
+// ============================================================================
+// OrdersManagement Logic App - VS Code Tasks
+// ============================================================================
+// Purpose:     Define build and debug tasks for Logic App development
+// Used by:     VS Code Tasks Runner, Azure Logic Apps extension
+// Environment: Development
+//
+// Documentation: https://learn.microsoft.com/azure/logic-apps/create-single-tenant-workflows-visual-studio-code
+// ============================================================================
 {
+  "$schema": "https://json.schemastore.org/tasks.json",
   "version": "2.0.0",
   "tasks": [
+    // Task: Generate Debug Symbols
+    // Required for debugging Logic App workflows
     {
       "label": "generateDebugSymbols",
-      "command": "${config:azureLogicAppsStandard.dotnetBinaryPath}",
-      "args": ["${input:getDebugSymbolDll}"],
       "type": "process",
+      "command": "${config:azureLogicAppsStandard.dotnetBinaryPath}",
+      "args": [
+        "${input:getDebugSymbolDll}"
+      ],
       "problemMatcher": "$msCompile"
     },
+    // Task: Start Functions Host
+    // Starts the local Azure Functions runtime for Logic App execution
+    // Default build task (Ctrl+Shift+B)
     {
+      "label": "func: host start",
       "type": "shell",
       "command": "${config:azureLogicAppsStandard.funcCoreToolsBinaryPath}",
-      "args": ["host", "start"],
+      "args": [
+        "host",
+        "start"
+      ],
       "options": {
         "env": {
           "PATH": "${config:azureLogicAppsStandard.autoRuntimeDependenciesPath}\\NodeJs;${config:azureLogicAppsStandard.autoRuntimeDependenciesPath}\\DotNetSDK;$env:PATH"
@@ -19,13 +40,13 @@
       },
       "problemMatcher": "$func-watch",
       "isBackground": true,
-      "label": "func: host start",
       "group": {
         "kind": "build",
         "isDefault": true
       }
     }
   ],
+  // Input Variables for dynamic value retrieval
   "inputs": [
     {
       "id": "getDebugSymbolDll",

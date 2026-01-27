@@ -1,16 +1,30 @@
 /*
-  Messaging Infrastructure Module
-  ===============================
-  Deploys Azure Service Bus infrastructure for message brokering.
+  Messaging Infrastructure Bicep Module
   
-  Components:
-  1. Service Bus namespace with an orders topic
+  This module deploys an Azure Service Bus namespace configured for message brokering,
+  including topics and subscriptions for handling messages in a decoupled architecture.
   
-  Key Features:
-  - Standard Service Bus tier for topic-based messaging
-  - Capacity of 16 messaging units
-  - Managed identity authentication for Service Bus
-  - Topic-based messaging for order processing events
+  Resources deployed:
+  - Azure Service Bus namespace (Standard tier) with User Assigned Identity
+  - Service Bus Topic ('ordersplaced') for order processing workflow
+  - Service Bus Subscription ('orderprocessingsub') with dead-lettering and TTL configuration
+  - Diagnostic settings for Log Analytics and Storage Account integration
+  
+  Parameters:
+  - name: Base name for the Service Bus namespace (3-20 characters)
+  - envName: Environment identifier (dev, test, prod, staging)
+  - location: Azure region for deployment (defaults to resource group location)
+  - userAssignedIdentityId: Resource ID of the User Assigned Identity
+  - workspaceId: Log Analytics workspace resource ID for diagnostics
+  - storageAccountId: Storage Account resource ID for diagnostic logs
+  - logsSettings: Configuration for diagnostic log categories
+  - metricsSettings: Configuration for diagnostic metrics
+  - tags: Resource tags to apply to all resources
+  
+  Outputs:
+  - MESSAGING_SERVICEBUSENDPOINT: Service Bus endpoint URL
+  - MESSAGING_SERVICEBUSHOSTNAME: Service Bus hostname for connections
+  - MESSAGING_SERVICEBUSNAME: Name of the deployed Service Bus namespace
 */
 
 metadata name = 'Messaging Infrastructure'

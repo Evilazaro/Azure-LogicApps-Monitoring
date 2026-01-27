@@ -10,30 +10,67 @@
 #   - CodeQL security scanning (always enabled)
 #
 # Jobs:
-#   1. Build     - Compiles solution on all platforms (matrix)
-#   2. Test      - Runs tests with coverage on all platforms (matrix)
-#   3. Analyze   - Verifies code formatting (optional)
-#   4. CodeQL    - Security vulnerability scanning (always runs)
-#   5. Summary   - Aggregates results from all jobs
-#   6. On-Failure - Reports failures with actionable information
+#   1. Build      - Compiles solution on all platforms (matrix strategy)
+#   2. Test       - Runs tests with coverage on all platforms (matrix strategy)
+#   3. Analyze    - Verifies code formatting against .editorconfig (optional)
+#   4. CodeQL     - Security vulnerability scanning (always runs)
+#   5. Summary    - Aggregates results from all jobs into a single report
+#   6. On-Failure - Reports failures with actionable diagnostic information
 #
 # Usage:
+#   To call this reusable workflow from another workflow:
+#
 #   jobs:
 #     ci:
 #       uses: ./.github/workflows/ci-dotnet-reusable.yml
 #       with:
-#         configuration: 'Release'
-#         dotnet-version: '10.0.x'
+#         configuration: 'Release'        # Build configuration (Release/Debug)
+#         dotnet-version: '10.0.x'         # .NET SDK version
+#         solution-file: 'app.sln'         # Path to solution file
+#         enable-code-analysis: true       # Enable/disable code formatting check
+#         fail-on-format-issues: true      # Fail workflow on formatting issues
+#         artifact-retention-days: 30      # Days to retain artifacts
 #       secrets: inherit
 #
+# Inputs:
+#   | Name                        | Type    | Required | Default          | Description                                    |
+#   |-----------------------------|---------|----------|------------------|------------------------------------------------|
+#   | configuration               | string  | false    | Release          | Build configuration (Release/Debug)            |
+#   | dotnet-version              | string  | false    | 10.0.x           | .NET SDK version to use                        |
+#   | solution-file               | string  | false    | app.sln          | Path to the solution file                      |
+#   | test-results-artifact-name  | string  | false    | test-results     | Name for test results artifact                 |
+#   | build-artifacts-name        | string  | false    | build-artifacts  | Name for build artifacts                       |
+#   | coverage-artifact-name      | string  | false    | code-coverage    | Name for code coverage artifact                |
+#   | artifact-retention-days     | number  | false    | 30               | Number of days to retain artifacts             |
+#   | runs-on                     | string  | false    | ubuntu-latest    | Runner for analyze/summary jobs                |
+#   | enable-code-analysis        | boolean | false    | true             | Enable code formatting analysis                |
+#   | fail-on-format-issues       | boolean | false    | true             | Fail workflow if formatting issues are found   |
+#
+# Outputs:
+#   | Name           | Description                      |
+#   |----------------|----------------------------------|
+#   | build-version  | The generated build version      |
+#   | build-result   | Build job result                 |
+#   | test-result    | Test job result                  |
+#   | analyze-result | Analysis job result              |
+#   | codeql-result  | CodeQL security scan result      |
+#
 # Artifacts Generated:
-#   - build-artifacts-{os}    : Compiled binaries per platform
-#   - test-results-{os}       : Test results (.trx) per platform
-#   - code-coverage-{os}      : Coverage reports (Cobertura) per platform
-#   - codeql-sarif-results    : Security scan results (SARIF)
+#   - build-artifacts-{os}    : Compiled binaries per platform (ubuntu, windows, macos)
+#   - test-results-{os}       : Test results in .trx format per platform
+#   - code-coverage-{os}      : Coverage reports in Cobertura XML format per platform
+#   - codeql-sarif-results    : Security scan results in SARIF format
+#
+# Permissions Required:
+#   - contents: read          - Read repository contents for checkout
+#   - checks: write           - Create check runs for test results
+#   - pull-requests: write    - Post comments on pull requests
+#   - security-events: write  - Upload CodeQL SARIF results to Security tab
 #
 # Documentation:
-#   https://docs.github.com/en/actions/using-workflows/reusing-workflows
+#   - GitHub Reusable Workflows: https://docs.github.com/en/actions/using-workflows/reusing-workflows
+#   - CodeQL: https://docs.github.com/en/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning-with-codeql
+#   - .NET CLI: https://learn.microsoft.com/en-us/dotnet/core/tools/
 #
 # ============================================================================
 
@@ -181,7 +218,7 @@ jobs:
       # Phase 1: Environment Setup
       # ------------------------------------------------------------------
       - name: 📥 Checkout repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
 
@@ -293,7 +330,7 @@ jobs:
       # Phase 1: Environment Setup
       # ------------------------------------------------------------------
       - name: 📥 Checkout repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: 🔧 Setup .NET SDK
         uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
@@ -426,7 +463,7 @@ jobs:
       # Phase 1: Environment Setup
       # ------------------------------------------------------------------
       - name: 📥 Checkout repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: 🔧 Setup .NET SDK
         uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309 # v5.1.0
@@ -544,7 +581,7 @@ jobs:
       # Phase 1: Environment Setup
       # ------------------------------------------------------------------
       - name: 📥 Checkout repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0 # Full history for accurate CodeQL blame tracking
 

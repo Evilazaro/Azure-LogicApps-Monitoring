@@ -1,21 +1,39 @@
 /*
-  Container Services Module
-  =========================
-  Deploys container infrastructure for microservices hosting.
-  
-  Components:
-  1. Azure Container Registry (Premium tier)
-  2. Container Apps managed environment with:
-     - Log Analytics integration
-     - Application Insights telemetry
-     - Consumption workload profile
-  3. .NET Aspire dashboard for observability
-  
-  Key Features:
-  - Premium ACR for geo-replication and enhanced throughput
-  - System-assigned and user-assigned identity support
-  - KEDA and Dapr configurations ready
-  - Public network access enabled for development
+  Azure Container Services Bicep Module
+
+  This module deploys the following container services:
+  - Azure Container Registry (ACR) for storing container images
+  - Azure Container Apps Environment for hosting containerized applications
+  - .NET Aspire Dashboard for application observability and distributed tracing
+
+  The module configures diagnostic settings to send logs and metrics to a specified
+  Log Analytics workspace and storage account. It also integrates with Application Insights
+  for enhanced monitoring capabilities.
+
+  Parameters:
+  - name: Base name for the container services
+  - location: Azure region for deployment
+  - userAssignedIdentityId: Resource ID of the User Assigned Identity
+  - envName: Environment name to differentiate deployments (dev, test, prod, staging)
+  - workspaceId: Resource ID of the Log Analytics workspace
+  - workspaceCustomerId: Log Analytics Workspace Customer ID
+  - workspacePrimaryKey: Primary Key for Log Analytics workspace
+  - apiSubnetId: Resource ID of the API subnet for Container Apps infrastructure
+  - storageAccountId: Storage Account ID for diagnostic logs and metrics
+  - logsSettings: Logs settings for the Log Analytics workspace
+  - metricsSettings: Metrics settings for the Log Analytics workspace
+  - appInsightsConnectionString: Connection string for Application Insights instance
+  - tags: Resource tags applied to container services
+
+  Outputs:
+  - AZURE_CONTAINER_REGISTRY_ENDPOINT: Container Registry login server endpoint
+  - AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID: Managed identity resource ID for Container Registry
+  - AZURE_CONTAINER_REGISTRY_NAME: Name of the Azure Container Registry
+  - AZURE_CONTAINER_APPS_ENVIRONMENT_NAME: Name of the Container Apps Environment
+  - AZURE_CONTAINER_APPS_ENVIRONMENT_ID: Resource ID of the Container Apps Environment
+  - AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN: Default domain for the Container Apps Environment
+  - ASPIRE_DASHBOARD_ID: Resource ID of the Aspire Dashboard
+  - ASPIRE_DASHBOARD_NAME: Name of the Aspire Dashboard component
 */
 
 metadata name = 'Container Services'

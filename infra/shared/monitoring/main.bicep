@@ -1,17 +1,38 @@
 /*
   Monitoring Infrastructure Module
   ================================
-  Orchestrates deployment of all monitoring and observability components.
+  Orchestrates deployment of all monitoring and observability components for Azure Logic Apps.
   
   Components:
-  - Log Analytics workspace with linked storage accounts
-  - Application Insights for telemetry collection
-  - Azure Monitor health model for service hierarchy
+  - Log Analytics workspace with linked storage accounts for centralized log management
+  - Application Insights for application telemetry and performance monitoring
+  - Azure Monitor health model for service hierarchy (optional)
   
   Key Features:
-  - Centralized logging with 30-day retention
-  - Workspace-based Application Insights integration
-  - Diagnostic settings for all resources
+  - Centralized logging with configurable retention policies
+  - Workspace-based Application Insights integration for unified observability
+  - Comprehensive diagnostic settings capturing all logs and metrics
+  - Environment-specific deployments (dev, test, staging, prod)
+  
+  Dependencies:
+  - Requires ../../types.bicep for tagsType definition
+  - Deploys child modules: log-analytics-workspace.bicep, app-insights.bicep
+  
+  Outputs:
+  - Log Analytics workspace connection details (ID, name, customer ID, primary key)
+  - Application Insights connection string and instrumentation key
+  - Storage account ID for diagnostic data
+  
+  Usage:
+    module monitoring 'shared/monitoring/main.bicep' = {
+      params: {
+        name: 'myapp'
+        envName: 'dev'
+        location: 'eastus'
+        tags: { environment: 'dev' }
+        deployHealthModel: false
+      }
+    }
 */
 
 metadata name = 'Monitoring Infrastructure'

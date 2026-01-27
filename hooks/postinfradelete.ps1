@@ -4,39 +4,84 @@
 
 <#
 .SYNOPSIS
-    Post-infrastructure-delete hook for Azure Developer CLI (azd).
+    Post-infrastructure-delete hook for Azure Developer CLI (azd) that purges soft-deleted Logic Apps.
 
 .DESCRIPTION
-    Purges soft-deleted Logic Apps Standard resources after infrastructure deletion.
-    This script is automatically executed by azd after 'azd down' completes.
-    
-    When Azure Logic Apps Standard are deleted, they enter a soft-delete state
-    and must be explicitly purged to fully remove them. This script handles
-    the purge operation to ensure complete cleanup.
-    
-    The script performs the following operations:
-    - Validates required environment variables (subscription, location)
-    - Authenticates to Azure using the current CLI session
-    - Retrieves the list of soft-deleted Logic Apps in the specified location
-    - Purges any Logic Apps that match the resource group naming pattern
+    This script serves as a post-infrastructure-delete hook for the Azure Developer CLI (azd).
+    It is automatically executed after 'azd down' completes to handle cleanup of soft-deleted
+    Azure Logic Apps Standard resources.
+
+    When Azure Logic Apps Standard are deleted through normal infrastructure teardown, they
+    enter a soft-delete state and remain recoverable for a retention period. This script
+    permanently purges these soft-deleted resources to ensure complete cleanup of the
+    Azure environment.
+
+    The script performs the following operations in sequence:
+    1. Validates that Azure CLI is installed and the user is authenticated
+    2. Validates required environment variables (AZURE_SUBSCRIPTION_ID, AZURE_LOCATION)
+    3. Queries the Azure REST API for soft-deleted Logic Apps in the specified location
+    4. Filters results by resource group and/or Logic App name if specified
+    5. Purges matching soft-deleted Logic Apps via the Azure REST API
+
+    Environment variables are automatically set by azd when running as a hook:
+    - AZURE_SUBSCRIPTION_ID: The target Azure subscription
+    - AZURE_LOCATION: The Azure region where resources were deployed
+    - AZURE_RESOURCE_GROUP: (Optional) Filter by specific resource group
+    - LOGIC_APP_NAME: (Optional) Filter by Logic App name pattern
 
 .PARAMETER Force
-    Skips confirmation prompts and forces execution.
+    Bypasses all confirmation prompts and forces immediate execution of purge operations.
+    Use with caution as purged resources cannot be recovered.
 
 .PARAMETER WhatIf
-    Shows what would be executed without making changes.
+    Displays which Logic Apps would be purged without actually performing the purge.
+    Useful for previewing the impact of the operation before committing to changes.
+
+.PARAMETER Confirm
+    Prompts for confirmation before purging each Logic App. This is the default behavior
+    unless -Force is specified.
+
+.PARAMETER Verbose
+    Displays detailed diagnostic information during script execution, including API calls
+    and intermediate processing steps.
 
 .EXAMPLE
     .\postinfradelete.ps1
-    Purges soft-deleted Logic Apps with confirmation prompt.
+
+    Runs the script interactively, prompting for confirmation before purging each
+    soft-deleted Logic App found in the configured location.
+
+.EXAMPLE
+    .\postinfradelete.ps1 -Force
+
+    Purges all soft-deleted Logic Apps without prompting for confirmation.
 
 .EXAMPLE
     .\postinfradelete.ps1 -Force -Verbose
-    Purges soft-deleted Logic Apps without confirmation, with verbose output.
+
+    Purges all soft-deleted Logic Apps without confirmation while displaying detailed
+    diagnostic output for troubleshooting.
 
 .EXAMPLE
     .\postinfradelete.ps1 -WhatIf
-    Shows which Logic Apps would be purged without making changes.
+
+    Displays which Logic Apps would be purged without making any changes. Useful for
+    verifying which resources will be affected before running the actual purge.
+
+.EXAMPLE
+    $env:AZURE_SUBSCRIPTION_ID = "12345678-1234-1234-1234-123456789012"
+    $env:AZURE_LOCATION = "eastus2"
+    .\postinfradelete.ps1 -Force
+
+    Manually sets required environment variables and runs the purge operation.
+    This is useful for testing outside of the azd hook context.
+
+.INPUTS
+    None. This script does not accept pipeline input.
+
+.OUTPUTS
+    None. This script outputs log messages to the console and returns an exit code.
+    Exit code 0 indicates success, exit code 1 indicates failure.
 
 .NOTES
     File Name      : postinfradelete.ps1
@@ -46,9 +91,22 @@
     Prerequisite   : Azure CLI 2.50+, PowerShell Core 7.0+
     Required Env   : AZURE_SUBSCRIPTION_ID, AZURE_LOCATION (set by azd)
 
+    This script is designed to be run as an azd hook and expects environment variables
+    to be set by the azd tooling. When run manually, ensure the required environment
+    variables are configured before execution.
+
+    The script uses the Azure REST API directly via 'az rest' commands rather than
+    Azure PowerShell modules to minimize dependencies and ensure compatibility with
+    the azd execution environment.
+
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
+
+.LINK
     https://learn.microsoft.com/en-us/azure/logic-apps/
+
+.LINK
+    https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]

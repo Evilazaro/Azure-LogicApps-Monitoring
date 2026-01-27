@@ -1,18 +1,25 @@
+// Local settings configuration for Azure Logic Apps Standard (Orders Management workflow)
+// This file contains environment variables and connection settings for local development.
+// NOTE: Do not commit sensitive values; use environment variable placeholders instead.
 {
+  "$schema": "https://json.schemastore.org/local.settings.json",
   "IsEncrypted": false,
   "Values": {
+    // Logic Apps Standard runtime configuration
     "APP_KIND": "workflowapp",
-    "ProjectDirectoryPath": "z:\\Azure-LogicApps-Monitoring\\workflows\\OrdersManagement\\OrdersManagementLogicApp",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_INPROC_NET8_ENABLED": "1",
+    // Connection runtime URLs for managed connectors
     "servicebus-ConnectionRuntimeUrl": "${SERVICE_BUS_CONNECTION_RUNTIME_URL}",
     "azureblob-ConnectionRuntimeUrl": "${AZURE_BLOB_CONNECTION_RUNTIME_URL}",
+    // Azure subscription and resource context for workflow management
     "WORKFLOWS_TENANT_ID": "${AZURE_TENANT_ID}",
     "WORKFLOWS_SUBSCRIPTION_ID": "${AZURE_SUBSCRIPTION_ID}",
     "WORKFLOWS_RESOURCE_GROUP_NAME": "${AZURE_RESOURCE_GROUP}",
     "WORKFLOWS_LOCATION_NAME": "${AZURE_LOCATION}",
     "WORKFLOWS_MANAGEMENT_BASE_URI": "https://management.azure.com/",
+    // Authentication method for workflow connections
     "WORKFLOWS_AUTHENTICATION_METHOD": "managedServiceIdentity"
   }
 }

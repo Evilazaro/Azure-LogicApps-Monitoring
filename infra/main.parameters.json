@@ -1,16 +1,24 @@
+// Azure ARM deployment parameters file for Azure Logic Apps Monitoring infrastructure.
+// This file defines environment-specific configuration values that are substituted at deployment time.
+// Environment variables are referenced using ${VAR_NAME} syntax, with optional defaults using ${VAR_NAME=default}.
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    // Azure region where resources will be deployed (e.g., "eastus", "westeurope")
     "location": {
       "value": "${AZURE_LOCATION}"
     },
+    // Name of the Azure environment (used for resource naming and tagging)
     "envName": {
       "value": "${AZURE_ENV_NAME}"
     },
+    // Principal type for the deployer identity. Defaults to "User" if not specified.
+    // Valid values: "User", "ServicePrincipal"
     "deployerPrincipalType": {
       "value": "${DEPLOYER_PRINCIPAL_TYPE=User}"
     },
+    // Flag to enable/disable health model deployment. Defaults to true if not specified.
     "deployHealthModel": {
       "value": "${DEPLOY_HEALTH_MODEL=true}"
     }

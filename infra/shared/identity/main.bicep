@@ -1,18 +1,80 @@
 /*
+  ============================================================================
   Managed Identity Module
-  =======================
-  Deploys user-assigned managed identity with comprehensive role assignments.
+  ============================================================================
   
-  Purpose:
-  - Single managed identity for all workload resources
-  - Principle of least privilege with specific role assignments
-  - Role assignments for both managed identity and deployment user
+  DESCRIPTION:
+    Deploys a user-assigned managed identity with comprehensive role assignments
+    for Azure workload resources following the principle of least privilege.
   
-  Assigned Roles:
-  - Storage: Account Contributor, Blob Data Contributor
-  - Monitoring: Metrics Publisher, Contributor, Application Insights
-  - Service Bus: Data Owner, Receiver, Sender
-  - Container Registry: ACR Pull, ACR Push
+  PURPOSE:
+    - Creates a single user-assigned managed identity for all workload resources
+    - Implements principle of least privilege with specific, scoped role assignments
+    - Configures role assignments for both the managed identity and deployment user
+    - Supports both interactive (User) and CI/CD (ServicePrincipal) deployment scenarios
+  
+  ASSIGNED ROLES:
+    Storage:
+      - Storage Account Contributor
+      - Storage Blob Data Contributor
+      - Storage Blob Data Owner
+      - Storage Table Data Contributor
+      - Storage Queue Data Contributor
+      - Storage File Data Privileged Contributor
+      - Storage File Data SMB Admin
+      - Storage File Data SMB MI Admin
+      - Storage File Data SMB Share Contributor
+      - Storage File Data SMB Share Elevated Contributor
+    
+    Monitoring:
+      - Monitoring Metrics Publisher
+      - Monitoring Contributor
+      - Application Insights Component Contributor
+      - Application Insights Snapshot Debugger
+    
+    Service Bus:
+      - Azure Service Bus Data Owner
+      - Azure Service Bus Data Receiver
+      - Azure Service Bus Data Sender
+    
+    Container Registry:
+      - ACR Pull
+      - ACR Push
+    
+    Resource Notifications:
+      - Azure Resource Notifications System Topics Subscriber
+  
+  PARAMETERS:
+    name                  - Base name for the managed identity resource (3-20 chars)
+    location              - Azure region for deployment (3-50 chars)
+    envName               - Environment identifier: dev | test | prod | staging
+    tags                  - Resource tags for organization and cost tracking
+    deployerPrincipalType - Principal type: User (interactive) | ServicePrincipal (CI/CD)
+  
+  OUTPUTS:
+    MANAGED_IDENTITY_CLIENT_ID        - Client ID for application authentication
+    MANAGED_IDENTITY_NAME             - Name of the created managed identity resource
+    AZURE_MANAGED_IDENTITY_ID         - Full resource ID of the managed identity
+    AZURE_MANAGED_IDENTITY_PRINCIPAL_ID - Principal ID for permission assignments
+  
+  USAGE:
+    module identity 'shared/identity/main.bicep' = {
+      name: 'identity-deployment'
+      params: {
+        name: 'myapp'
+        location: 'eastus'
+        envName: 'dev'
+        tags: { environment: 'dev' }
+        deployerPrincipalType: 'User'
+      }
+    }
+  
+  NOTES:
+    - Role assignments use guid() to generate deterministic, idempotent names
+    - Consistent assignment names prevent conflicts on redeployment
+    - All roles are assigned at resource group scope
+  
+  ============================================================================
 */
 
 metadata name = 'Managed Identity'
@@ -78,8 +140,30 @@ output MANAGED_IDENTITY_NAME string = mi.name
 
 // ========== Role Assignments ==========
 
-// Built-in Azure role definition IDs for managed identity
-// These GUIDs are consistent across all Azure subscriptions
+/*
+  Built-in Azure Role Definition IDs
+  -----------------------------------
+  These GUIDs represent Azure's built-in role definitions and are consistent
+  across all Azure subscriptions. Roles are organized by service category:
+  
+  Storage Roles:
+  - Storage Account Contributor: Manage storage accounts
+  - Storage Blob Data Contributor/Owner: Read, write, delete blob data
+  - Storage Table/Queue Data Contributor: Access table and queue data
+  - Storage File Data roles: Various file share access levels
+  
+  Monitoring Roles:
+  - Monitoring Metrics Publisher: Publish metrics to Azure Monitor
+  - Monitoring Contributor: Full access to monitoring resources
+  - Application Insights roles: Manage and debug App Insights components
+  
+  Messaging Roles:
+  - Service Bus Data Owner/Receiver/Sender: Full messaging access
+  - Resource Notifications Subscriber: Subscribe to system topics
+  
+  Container Roles:
+  - ACR Pull/Push: Pull and push container images
+*/
 @description('Array of Azure built-in role definition IDs for resource access')
 var roles string[] = [
   '17d1049b-9a84-46fb-8f53-869881c3d3ab' // Storage Account Contributor

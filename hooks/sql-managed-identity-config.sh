@@ -8,18 +8,22 @@
 #   Configures Azure SQL Database user with Managed Identity authentication.
 #
 # DESCRIPTION
-#   Creates a database user from an external provider (Microsoft Entra ID/Managed Identity)
-#   and assigns specified database roles using Azure AD token-based authentication.
-#   
-#   This script performs the following operations:
-#   - Validates Azure CLI authentication
-#   - Acquires an access token for Azure SQL Database
-#   - Creates a contained database user from external provider
-#   - Assigns specified database roles to the user
-#   - Returns a structured result
+#   This script automates the creation and configuration of database users 
+#   authenticated via Microsoft Entra ID (formerly Azure AD) Managed Identities.
+#   It establishes secure, passwordless authentication for Azure resources 
+#   accessing SQL databases.
+#
+#   Key Operations:
+#   1. Validates Azure CLI authentication and prerequisites
+#   2. Configures SQL Server firewall rules for the current client IP
+#   3. Acquires an Entra ID access token for Azure SQL Database
+#   4. Creates a contained database user from an external provider
+#   5. Assigns specified database roles to the user
+#   6. Verifies successful user creation and role assignment
+#   7. Returns a structured JSON result with execution details
 #   
 #   The script is idempotent and can be safely re-run. It will skip existing users
-#   and role memberships.
+#   and role memberships, making it suitable for CI/CD pipelines.
 #
 # PARAMETERS
 #   --sql-server-name, -s  The Azure SQL Server name (without suffix) [Required]

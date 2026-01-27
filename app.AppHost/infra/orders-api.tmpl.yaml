@@ -1,70 +1,188 @@
+# =============================================================================
+# Azure Container Apps Manifest - Orders API
+# =============================================================================
+#
+# Purpose:
+#   Defines the Azure Container Apps deployment configuration for the Orders API
+#   service. This template is processed by Azure Developer CLI (azd) during
+#   deployment, with Go template variables ({{ .Env.* }}) resolved at runtime.
+#
+# Usage:
+#   This template is automatically processed by azd during deployment:
+#     $ azd up                    # Deploy all services including this one
+#     $ azd deploy orders-api     # Deploy only the orders-api service
+#
+# Service:
+#   eShop.Orders.API - REST API for order management operations
+#
+# Dependencies:
+#   - Azure SQL Database (OrderDb) - Order data persistence
+#   - Azure Service Bus - Async messaging for order processing
+#   - Azure Container Registry - Container image storage
+#   - Application Insights - Telemetry and monitoring
+#
+# Template Variables:
+#   {{ .Env.* }}              - Environment variables from azd environment
+#   {{ .Image }}              - Container image URI (resolved by azd)
+#   {{ targetPortOrDefault }} - Port helper function (default: 8080)
+#
+# Security:
+#   - Uses User-Assigned Managed Identity for Azure resource access
+#   - SQL connection uses Active Directory Default authentication (no passwords)
+#   - Secrets stored in Container Apps secrets (not environment variables)
+#
+# Documentation:
+#   - Container Apps: https://learn.microsoft.com/azure/container-apps/
+#   - API Reference: https://learn.microsoft.com/azure/templates/microsoft.app/containerapps
+#
+# Author: Evilazaro
+# Last Modified: 2026-01-26
+# =============================================================================
+
+# API version for Azure Container Apps resource provider
 api-version: 2024-02-02-preview
+
+# Azure region for deployment (inherited from azd environment)
 location: {{ .Env.AZURE_LOCATION }}
+
+# -----------------------------------------------------------------------------
+# Identity Configuration
+# -----------------------------------------------------------------------------
+# User-Assigned Managed Identity enables secure, passwordless authentication
+# to Azure services (SQL, Service Bus, Container Registry, Key Vault)
 identity:
   type: UserAssigned
   userAssignedIdentities:
     "{{ .Env.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID }}": {}
+
 properties:
+  # Container Apps Environment ID (shared compute environment)
   environmentId: {{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_ID }}
+
+  # ---------------------------------------------------------------------------
+  # Application Configuration
+  # ---------------------------------------------------------------------------
   configuration:
+    # Revision mode: 'single' = only one active revision at a time
+    # Use 'multiple' for blue-green deployments or A/B testing
     activeRevisionsMode: single
+
+    # .NET runtime-specific settings
     runtime:
       dotnet:
+        # Enables automatic Data Protection key management across replicas
         autoConfigureDataProtection: true
+
+    # -------------------------------------------------------------------------
+    # Ingress Configuration
+    # -------------------------------------------------------------------------
+    # Exposes the API externally with HTTP ingress
     ingress:
-      external: true
-      targetPort: {{ targetPortOrDefault 8080 }}
-      transport: http
-      allowInsecure: false
+      external: true                          # Publicly accessible endpoint
+      targetPort: {{ targetPortOrDefault 8080 }}  # Container listening port
+      transport: http                         # Protocol (http/http2/tcp)
+      allowInsecure: false                    # Require HTTPS (TLS termination at ingress)
+
+    # -------------------------------------------------------------------------
+    # Container Registry Authentication
+    # -------------------------------------------------------------------------
+    # Uses Managed Identity to pull images (no registry credentials needed)
     registries:
       - server: {{ .Env.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
         identity: {{ .Env.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID }}
+
+    # -------------------------------------------------------------------------
+    # Secrets Configuration
+    # -------------------------------------------------------------------------
+    # Sensitive values stored securely, referenced by containers via secretRef
+    # SECURITY: Never expose secrets directly in environment variables
     secrets:
+      # Application Insights connection for distributed tracing
       - name: applicationinsights-connection-string
         value: "{{ .Env.TELEMETRY_APPINSIGHTSCONNECTIONSTRING }}"
+      # SQL Server connection string using Azure AD authentication
+      # Note: "Active Directory Default" uses Managed Identity - no password required
       - name: connectionstrings--orderdb
         value: Server=tcp:{{ .Env.ORDERSDATABASE_SQLSERVERFQDN }},1433;Encrypt=True;Authentication="Active Directory Default";Database=OrderDb
+      # Service Bus endpoint for async messaging
       - name: connectionstrings--messaging
         value: "{{ .Env.MESSAGING_SERVICEBUSENDPOINT }}"
+
+  # ---------------------------------------------------------------------------
+  # Container Template
+  # ---------------------------------------------------------------------------
   template:
     containers:
-      - image: {{ .Image }}
+      - image: {{ .Image }}   # Resolved by azd to full ACR image URI
         name: orders-api
+
+        # ---------------------------------------------------------------------
+        # Environment Variables
+        # ---------------------------------------------------------------------
         env:
+          # --- Identity Configuration ---
+          # Client ID for Managed Identity (used by Azure SDKs)
           - name: AZURE_CLIENT_ID
             value: {{ .Env.MANAGED_IDENTITY_CLIENT_ID }}
+
+          # --- ASP.NET Core Configuration ---
+          # Enable forwarded headers for proper HTTPS handling behind load balancer
           - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
             value: "true"
+          # HTTP port binding (Kestrel)
           - name: HTTP_PORTS
             value: "{{ targetPortOrDefault 0 }}"
+
+          # --- Messaging Configuration (Azure Service Bus) ---
           - name: MESSAGING_HOST
             value: "{{ .Env.MESSAGING_SERVICEBUSHOSTNAME }}"
           - name: MESSAGING_URI
             value: "{{ .Env.MESSAGING_SERVICEBUSENDPOINT }}"
+
+          # --- Database Configuration (Azure SQL) ---
           - name: ORDERDB_DATABASENAME
             value: OrderDb
           - name: ORDERDB_HOST
             value: "{{ .Env.ORDERSDATABASE_SQLSERVERFQDN }}"
+          # JDBC connection string (for compatibility with Java-based tools)
           - name: ORDERDB_JDBCCONNECTIONSTRING
             value: jdbc:sqlserver://{{ .Env.ORDERSDATABASE_SQLSERVERFQDN }}:1433;database=OrderDb;encrypt=true;trustServerCertificate=false
           - name: ORDERDB_PORT
             value: "1433"
           - name: ORDERDB_URI
             value: mssql://{{ .Env.ORDERSDATABASE_SQLSERVERFQDN }}:1433/OrderDb
+
+          # --- OpenTelemetry Configuration ---
+          # Enable detailed event and exception logging for distributed tracing
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES
             value: "true"
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES
             value: "true"
+          # Retry strategy for OTLP export failures
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY
             value: in_memory
+
+          # --- Secret References ---
+          # These reference secrets defined above (never stored as plain text)
           - name: APPLICATIONINSIGHTS_CONNECTION_STRING
             secretRef: applicationinsights-connection-string
           - name: ConnectionStrings__OrderDb
             secretRef: connectionstrings--orderdb
           - name: ConnectionStrings__messaging
             secretRef: connectionstrings--messaging
+
+    # -------------------------------------------------------------------------
+    # Scaling Configuration
+    # -------------------------------------------------------------------------
+    # Define min/max replicas for autoscaling behavior
+    # TODO: Consider adding scale rules based on HTTP concurrency or queue depth
     scale:
-      minReplicas: 10
+      minReplicas: 10  # Minimum instances for high availability
+
+# -----------------------------------------------------------------------------
+# Resource Tags
+# -----------------------------------------------------------------------------
+# Tags for resource identification and azd service mapping
 tags:
-  azd-service-name: orders-api
-  aspire-resource-name: orders-api
+  azd-service-name: orders-api       # Maps to azd service definition
+  aspire-resource-name: orders-api   # .NET Aspire resource identifier
