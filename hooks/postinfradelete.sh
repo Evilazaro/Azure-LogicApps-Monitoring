@@ -5,7 +5,8 @@
 # ==============================================================================
 #
 # SYNOPSIS:
-#   Purges soft-deleted Logic Apps Standard resources after infrastructure deletion.
+#   Purges soft-deleted Azure Logic Apps Standard resources after infrastructure
+#   deletion to ensure complete cleanup of cloud resources.
 #
 # DESCRIPTION:
 #   When Azure Logic Apps Standard are deleted, they enter a soft-delete state

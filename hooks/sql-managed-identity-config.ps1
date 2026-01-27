@@ -7,18 +7,24 @@
     Configures Azure SQL Database user with Managed Identity authentication.
 
 .DESCRIPTION
-    Creates a database user from an external provider (Microsoft Entra ID/Managed Identity)
-    and assigns specified database roles using Azure AD token-based authentication.
+    This script automates the configuration of Microsoft Entra ID (formerly Azure AD) 
+    managed identities for Azure SQL Database access. It creates contained database users 
+    from external providers and assigns specified database roles using token-based authentication.
     
-    This script performs the following operations:
-    - Validates Azure CLI authentication
-    - Acquires an access token for Azure SQL Database
-    - Creates a contained database user from external provider
-    - Assigns specified database roles to the user
-    - Returns a structured result object
+    The script performs the following operations in sequence:
+    1. Validates Azure CLI installation and authentication status
+    2. Detects the client's public IP and configures SQL Server firewall rules
+    3. Acquires an OAuth 2.0 access token for Azure SQL Database from Entra ID
+    4. Generates an idempotent T-SQL script for user creation and role assignment
+    5. Executes the script against the target database using Microsoft.Data.SqlClient
+    6. Returns a structured result object with execution details
     
-    The script is idempotent and can be safely re-run. It will skip existing users
-    and role memberships.
+    Key Features:
+    - Idempotent execution: Safe to re-run without side effects (skips existing users/roles)
+    - Cross-platform: Supports Windows, Linux, and macOS via Microsoft.Data.SqlClient
+    - Multi-cloud: Works with Azure Public, Government, China, and Germany clouds
+    - Secure: Uses token-based authentication with TLS 1.2+ encryption (no SQL passwords)
+    - Robust: Includes retry logic, detailed error handling, and comprehensive logging
 
 .PARAMETER SqlServerName
     The name of the Azure SQL Server (logical server name only, without .database.windows.net suffix).

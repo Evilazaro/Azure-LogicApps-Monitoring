@@ -4,40 +4,86 @@
 
 <#
 .SYNOPSIS
-    Post-provisioning script for Azure Developer CLI (azd).
+    Post-provisioning script for Azure Developer CLI (azd) that configures .NET user secrets
+    and Azure SQL Database managed identity access.
 
 .DESCRIPTION
-    Configures .NET user secrets with Azure resource information after provisioning.
     This script is automatically executed by azd after infrastructure provisioning completes.
+    It performs comprehensive post-deployment configuration to enable local development and
+    Azure resource connectivity.
     
     The script performs the following operations:
-    - Validates required environment variables
-    - Authenticates to Azure Container Registry (if configured)
-    - Clears existing .NET user secrets
-    - Configures new user secrets with Azure resource information
+    1. ENVIRONMENT VALIDATION
+       - Validates all required environment variables (AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, AZURE_LOCATION)
+       - Provides detailed error messages for missing configuration
+    
+    2. AZURE CONTAINER REGISTRY AUTHENTICATION
+       - Authenticates to ACR if AZURE_CONTAINER_REGISTRY_ENDPOINT is configured
+       - Gracefully handles missing Azure CLI or authentication failures
+       - Non-blocking: deployment continues even if ACR login fails
+    
+    3. SQL DATABASE MANAGED IDENTITY CONFIGURATION
+       - Configures managed identity database user with db_owner role
+       - Enables Entity Framework migrations and schema management
+       - Optionally configures current Azure user for local development
+       - Invokes sql-managed-identity-config.ps1 helper script
+    
+    4. .NET USER SECRETS MANAGEMENT
+       - Clears existing user secrets for all target projects
+       - Configures secrets for AppHost, API, and Web App projects
+       - Supports Azure AD authentication connection strings for SQL Database
+    
+    TARGET PROJECTS:
+    - AppHost Project: app.AppHost/app.AppHost.csproj (full Azure configuration)
+    - API Project: src/eShop.Orders.API/eShop.Orders.API.csproj (Service Bus, Database, App Insights)
+    - Web App Project: src/eShop.Web.App/eShop.Web.App.csproj (Application Insights)
 
 .PARAMETER Force
-    Skips confirmation prompts and forces execution.
+    Skips confirmation prompts and forces execution by setting $ConfirmPreference to 'None'.
+    Useful for automated pipelines and CI/CD scenarios.
+
+.INPUTS
+    None. This script reads configuration from environment variables set by azd.
+
+.OUTPUTS
+    System.Void. The script outputs status messages via Write-Information and Write-Verbose.
 
 .EXAMPLE
     .\postprovision.ps1
-    Runs the post-provisioning script with default settings.
+    Runs the post-provisioning script with default settings and interactive prompts.
 
 .EXAMPLE
     .\postprovision.ps1 -Verbose
-    Runs the script with verbose output for debugging.
+    Runs the script with detailed diagnostic output for troubleshooting.
 
 .EXAMPLE
     .\postprovision.ps1 -WhatIf
-    Shows what the script would do without making changes.
+    Previews all changes without executing them. Useful for validation.
+
+.EXAMPLE
+    .\postprovision.ps1 -Force
+    Runs without confirmation prompts. Suitable for CI/CD pipelines.
+
+.EXAMPLE
+    .\postprovision.ps1 -Force -Verbose
+    Automated execution with full diagnostic logging.
+
+.LINK
+    https://learn.microsoft.com/azure/developer/azure-developer-cli/
+    https://learn.microsoft.com/aspnet/core/security/app-secrets
+    https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure
 
 .NOTES
     File Name      : postprovision.ps1
-    Prerequisite   : .NET SDK, Azure Developer CLI, Azure CLI
+    Prerequisite   : .NET SDK 8.0+, Azure Developer CLI, Azure CLI
     Required Env   : AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, AZURE_LOCATION
+    Optional Env   : AZURE_CONTAINER_REGISTRY_ENDPOINT, AZURE_SQL_SERVER_NAME, 
+                     AZURE_SQL_DATABASE_NAME, MANAGED_IDENTITY_NAME, MANAGED_IDENTITY_CLIENT_ID,
+                     APPLICATIONINSIGHTS_CONNECTION_STRING, MESSAGING_SERVICEBUSHOSTNAME
     Author         : Azure DevOps Team
     Last Modified  : 2026-01-06
     Version        : 2.0.1
+    Repository     : Azure-LogicApps-Monitoring
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]

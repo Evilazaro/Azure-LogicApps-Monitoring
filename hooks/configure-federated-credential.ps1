@@ -7,35 +7,68 @@
 
 .DESCRIPTION
     This script adds or updates federated identity credentials in an Azure AD App Registration
-    to enable GitHub Actions workflows to authenticate using OIDC (OpenID Connect).
+    to enable GitHub Actions workflows to authenticate using OpenID Connect (OIDC) without
+    storing secrets.
+
+    The script performs the following operations:
+    - Verifies Azure CLI login status
+    - Retrieves or looks up the target App Registration by name or Object ID
+    - Lists existing federated credentials for the App Registration
+    - Creates a new federated credential for the specified GitHub environment
+    - Optionally creates additional credentials for the main branch and pull requests
 
     This script is designed to be run as an Azure Developer CLI (azd) hook, where environment
-    variables are automatically loaded during the provisioning process.
+    variables are automatically loaded during the provisioning process. It can also be run
+    standalone with the required parameters.
 
 .PARAMETER AppName
-    The display name of the Azure AD App Registration.
+    The display name of the Azure AD App Registration. If not provided and AppObjectId is also
+    not specified, the script will list available App Registrations and prompt for selection.
 
 .PARAMETER AppObjectId
-    The Object ID of the Azure AD App Registration. If not provided, the script will look it up by AppName.
+    The Object ID of the Azure AD App Registration. If provided, this takes precedence over AppName
+    and skips the lookup process.
 
 .PARAMETER GitHubOrg
-    The GitHub organization or username. Default: Evilazaro
+    The GitHub organization or username that owns the repository. Default: Evilazaro
 
 .PARAMETER GitHubRepo
-    The GitHub repository name. Default: Azure-LogicApps-Monitoring
+    The GitHub repository name for which to configure OIDC authentication. Default: Azure-LogicApps-Monitoring
 
 .PARAMETER Environment
-    The GitHub Environment name to configure. Default: dev
+    The GitHub Environment name to configure for OIDC. This creates a subject claim in the format
+    'repo:{org}/{repo}:environment:{environment}'. Default: dev
 
 .EXAMPLE
     ./configure-federated-credential.ps1 -AppName 'my-app-registration'
 
+    Configures a federated credential for the 'dev' environment using the specified App Registration name.
+
 .EXAMPLE
     ./configure-federated-credential.ps1 -AppObjectId '00000000-0000-0000-0000-000000000000' -Environment 'prod'
+
+    Configures a federated credential for the 'prod' environment using the App Registration Object ID.
+
+.EXAMPLE
+    ./configure-federated-credential.ps1 -AppName 'my-app' -GitHubOrg 'MyOrg' -GitHubRepo 'MyRepo' -Environment 'staging'
+
+    Configures a federated credential for a custom GitHub organization, repository, and environment.
+
+.INPUTS
+    None. This script does not accept pipeline input.
+
+.OUTPUTS
+    None. This script writes status messages to the host but does not return objects.
 
 .NOTES
     Author: Azure Developer CLI Hook
     Requires: Azure CLI, PowerShell 7.0+
+
+.LINK
+    https://docs.microsoft.com/en-us/azure/active-directory/develop/workload-identity-federation
+
+.LINK
+    https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-azure
 #>
 
 [CmdletBinding(SupportsShouldProcess)]

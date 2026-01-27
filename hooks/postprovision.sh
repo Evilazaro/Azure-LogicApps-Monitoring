@@ -5,40 +5,75 @@
 #============================================================================
 #
 # SYNOPSIS
-#   Post-provisioning script for Azure Developer CLI (azd).
+#   Configures Azure resource secrets and managed identity access after
+#   infrastructure provisioning via Azure Developer CLI (azd).
 #
 # DESCRIPTION
-#   Configures .NET user secrets with Azure resource information after
-#   provisioning. This script is automatically executed by azd after
-#   infrastructure provisioning completes.
+#   This script is automatically invoked by azd as a post-provisioning hook
+#   after infrastructure deployment completes. It performs essential
+#   configuration tasks to connect deployed Azure resources with local
+#   .NET development environments.
 #   
 #   The script performs the following operations:
-#   - Validates required environment variables
-#   - Authenticates to Azure Container Registry (if configured)
-#   - Clears existing .NET user secrets
-#   - Configures new user secrets with Azure resource information
-#   - Configures SQL Database managed identity access
+#   - Validates required environment variables (subscription, resource group, location)
+#   - Authenticates to Azure Container Registry (ACR) if endpoint is configured
+#   - Clears existing .NET user secrets to ensure clean configuration state
+#   - Configures new user secrets with Azure resource connection information
+#   - Configures SQL Database managed identity access for passwordless authentication
+#   - Provides comprehensive logging and error reporting
+#
+#   User secrets are configured for three projects:
+#   - AppHost: Full Azure configuration for local orchestration
+#   - API: Minimal runtime secrets including SQL connection string
+#   - Web App: Frontend configuration (Application Insights)
 #
 # OPTIONS
 #   --force       Skip confirmation prompts and force execution
-#   --verbose     Enable verbose output for debugging
-#   --dry-run     Show what the script would do without making changes
-#   --help        Display this help message
+#   --verbose     Enable verbose output for debugging and troubleshooting
+#   --dry-run     Show what the script would do without making actual changes
+#   --help        Display this help message and exit
 #
 # EXAMPLES
 #   ./postprovision.sh
 #     Runs the post-provisioning script with default settings.
 #
 #   ./postprovision.sh --verbose
-#     Runs the script with verbose output for debugging.
+#     Runs the script with detailed debug output for troubleshooting.
 #
 #   ./postprovision.sh --dry-run
-#     Shows what the script would do without making changes.
+#     Simulates execution and shows what changes would be made.
+#
+#   ./postprovision.sh --force --verbose
+#     Forces execution with verbose output, skipping all prompts.
+#
+# ENVIRONMENT VARIABLES
+#   Required:
+#     AZURE_SUBSCRIPTION_ID     - Azure subscription GUID
+#     AZURE_RESOURCE_GROUP      - Resource group containing deployed resources
+#     AZURE_LOCATION            - Azure region where resources are deployed
+#
+#   Optional (enhance functionality when set):
+#     AZURE_TENANT_ID                          - Azure AD tenant ID
+#     MANAGED_IDENTITY_CLIENT_ID               - Client ID of managed identity
+#     MANAGED_IDENTITY_NAME                    - Name of managed identity for SQL access
+#     APPLICATIONINSIGHTS_CONNECTION_STRING    - App Insights connection string
+#     AZURE_SQL_SERVER_NAME                    - SQL Server name for managed identity config
+#     AZURE_SQL_DATABASE_NAME                  - SQL Database name
+#     AZURE_CONTAINER_REGISTRY_ENDPOINT        - ACR endpoint for authentication
+#
+# EXIT CODES
+#   0    Success - all operations completed successfully
+#   1    General error - operation failed
+#   2    Invalid arguments - unknown command-line option provided
+#
+# DEPENDENCIES
+#   - .NET SDK (dotnet CLI) - Required for user secrets management
+#   - Azure CLI (az) - Optional, used for ACR authentication
+#   - go-sqlcmd - Optional, used for SQL managed identity configuration
 #
 # NOTES
 #   File Name      : postprovision.sh
-#   Prerequisite   : .NET SDK, Azure Developer CLI, Azure CLI
-#   Required Env   : AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, AZURE_LOCATION
+#   Prerequisite   : .NET SDK, Azure Developer CLI, Azure CLI (optional)
 #   Author         : Azure DevOps Team
 #   Last Modified  : 2026-01-06
 #   Version        : 2.0.1

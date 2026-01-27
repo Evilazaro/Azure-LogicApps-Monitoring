@@ -4,62 +4,98 @@
 # Pre-provisioning script for Azure Developer CLI (azd) deployment
 #
 # SYNOPSIS:
-#     Pre-provisioning script for Azure Developer CLI (azd) deployment.
+#     preprovision.sh [OPTIONS]
 #
 # DESCRIPTION:
-#     This script performs pre-provisioning tasks before Azure resources are 
-#     provisioned. It ensures a clean state by clearing user secrets and 
-#     validates the development environment.
+#     This script performs comprehensive pre-provisioning tasks before Azure 
+#     resources are provisioned using the Azure Developer CLI (azd). It validates
+#     the development environment, ensures all required tools are installed and
+#     properly configured, and prepares the workspace for deployment.
 #     
-#     The script performs the following operations:
-#     - Validates Bash version compatibility (4.0+)
-#     - Validates required tools (.NET SDK 10.0+)
-#     - Validates Azure Developer CLI (azd)
-#     - Validates Azure CLI (2.60.0+) with authentication
-#     - Validates Bicep CLI (0.30.0+)
-#     - Validates Azure Resource Provider registration
-#     - Checks Azure subscription quotas (informational)
-#     - Clears .NET user secrets for all projects
-#     - Provides detailed logging and error handling
+#     The script performs the following operations in sequence:
+#     1. Validates Bash version compatibility (requires 4.0+ for associative arrays)
+#     2. Validates required development tools:
+#        - .NET SDK 10.0+ (for building .NET applications)
+#        - Azure Developer CLI (azd) for deployment automation
+#        - Azure CLI 2.60.0+ with authentication verification
+#        - Bicep CLI 0.30.0+ for infrastructure-as-code
+#        - sqlcmd utility for SQL Database managed identity configuration
+#        - iconv utility for Azure AD token encoding (UTF-16LE)
+#        - zip utility for Logic Apps workflow deployment
+#     3. Validates Azure Resource Provider registration status
+#     4. Checks Azure subscription quotas (informational guidance)
+#     5. Clears .NET user secrets for all projects (optional)
+#     6. Provides detailed logging, error handling, and auto-installation options
 #
 # PARAMETERS:
-#     --force                     Skip confirmation prompts and force execution
-#     --skip-secrets-clear        Skip the user secrets clearing step
-#     --validate-only             Only validate prerequisites without making changes
-#     --use-device-code-login     Use device code flow for Azure authentication
+#     --force                     Skip all confirmation prompts and force execution
+#                                 of all operations without user interaction.
+#
+#     --skip-secrets-clear        Skip the user secrets clearing step. Useful when
+#                                 secrets are already clean or managed externally.
+#
+#     --validate-only             Run in dry-run mode - only validates prerequisites
+#                                 without making any changes to the system.
+#
+#     --use-device-code-login     Use device code flow for Azure authentication.
+#                                 Recommended for remote, headless, or SSH sessions
+#                                 where browser-based login is not available.
+#
 #     --auto-install              Automatically install missing prerequisites
-#     --verbose                   Enable verbose output
-#     --help                      Display this help message
+#                                 without prompting for confirmation. Combines
+#                                 well with --force for fully unattended execution.
+#
+#     --verbose                   Enable verbose output for detailed diagnostic
+#                                 information during execution.
+#
+#     --help, -h                  Display comprehensive help message and exit.
 #
 # EXAMPLES:
 #     ./preprovision.sh
-#         Runs standard pre-provisioning with confirmation prompts.
+#         Runs standard pre-provisioning with interactive confirmation prompts.
 #
 #     ./preprovision.sh --force
-#         Runs pre-provisioning without confirmation prompts.
+#         Runs pre-provisioning without any confirmation prompts.
 #
 #     ./preprovision.sh --validate-only
-#         Only validates prerequisites without clearing secrets.
+#         Only validates prerequisites without clearing secrets or making changes.
 #
 #     ./preprovision.sh --skip-secrets-clear --verbose
-#         Skips secret clearing and shows verbose output.
+#         Skips secret clearing and shows detailed verbose output.
 #
 #     ./preprovision.sh --use-device-code-login
 #         Uses device code flow for Azure login (useful for remote/headless sessions).
 #
 #     ./preprovision.sh --auto-install --force
-#         Automatically installs all missing prerequisites without prompts.
+#         Automatically installs all missing prerequisites without any prompts.
+#         Ideal for CI/CD pipelines and automated deployment scenarios.
+#
+#     ./preprovision.sh --validate-only --verbose
+#         Performs a detailed validation check with verbose output for debugging.
+#
+# EXIT CODES:
+#     0   - Success: All validations passed and operations completed successfully
+#     1   - Failure: One or more validations failed or operations encountered errors
+#     2   - Invalid arguments: Unknown or malformed command-line options provided
+#     130 - Interrupted: Script was terminated by user (Ctrl+C)
+#
+# DEPENDENCIES:
+#     Required tools that will be validated (and optionally installed):
+#     - Bash 4.0 or higher (for associative arrays and advanced features)
+#     - .NET SDK 10.0 or higher (for building and managing .NET projects)
+#     - Azure Developer CLI (azd) (for Azure deployment automation)
+#     - Azure CLI 2.60.0 or higher (for Azure resource management)
+#     - Bicep CLI 0.30.0 or higher (for infrastructure-as-code deployments)
+#     - sqlcmd utility (for SQL Database managed identity configuration)
+#     - iconv utility (for Azure AD token encoding - typically pre-installed)
+#     - zip utility (for Logic Apps workflow deployment)
 #
 # NOTES:
 #     File Name      : preprovision.sh
 #     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
 #     Version        : 2.3.0
 #     Last Modified  : 2026-01-06
-#     Prerequisite   : Bash 4.0 or higher
-#     Prerequisite   : .NET SDK 10.0 or higher
-#     Prerequisite   : Azure Developer CLI (azd)
-#     Prerequisite   : Azure CLI 2.60.0 or higher
-#     Prerequisite   : Bicep CLI 0.30.0 or higher
+#     Repository     : Azure-LogicApps-Monitoring
 #
 # LINK:
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
