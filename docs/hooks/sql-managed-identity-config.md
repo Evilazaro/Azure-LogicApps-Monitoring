@@ -58,10 +58,10 @@ This script automates the configuration of managed identity authentication for A
 
 ## Compatibility
 
-| Platform    | Script                          | Status |
-|:------------|:--------------------------------|:------:|
-| Windows     | `sql-managed-identity-config.ps1` |   ✅   |
-| Linux/macOS | `sql-managed-identity-config.sh`  |   ✅   |
+| Platform | Script | Status |
+|:---------|:-------|:------:|
+| Windows | `sql-managed-identity-config.ps1` | ✅ |
+| Linux/macOS | `sql-managed-identity-config.sh` | ✅ |
 
 ---
 

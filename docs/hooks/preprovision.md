@@ -48,10 +48,10 @@ This script performs comprehensive pre-provisioning tasks before Azure resources
 
 ## Compatibility
 
-| Platform    | Script            | Status |
-|:------------|:------------------|:------:|
-| Windows     | `preprovision.ps1` |   ✅   |
-| Linux/macOS | `preprovision.sh`  |   ✅   |
+| Platform | Script | Status |
+|:---------|:-------|:------:|
+| Windows | `preprovision.ps1` | ✅ |
+| Linux/macOS | `preprovision.sh` | ✅ |
 
 ---
 
