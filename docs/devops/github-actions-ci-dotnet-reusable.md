@@ -60,32 +60,43 @@ The workflow executes six jobs with dependencies:
 
 ```mermaid
 flowchart LR
-    subgraph build-stage["Build Stage"]
+    subgraph Build ["Build Stage"]
         build-ubuntu["build (ubuntu)"]
         build-windows["build (windows)"]
         build-macos["build (macos)"]
     end
-    
-    subgraph test-stage["Test Stage"]
+
+    subgraph Test ["Test Stage"]
         test-ubuntu["test (ubuntu)"]
         test-windows["test (windows)"]
         test-macos["test (macos)"]
     end
-    
-    subgraph analysis-stage["Analysis Stage"]
+
+    subgraph Analysis ["Analysis Stage"]
         analyze["analyze"]
         codeql["codeql"]
     end
-    
-    subgraph reporting["Reporting"]
+
+    subgraph Reporting ["Reporting"]
         summary["summary"]
         on-failure["on-failure"]
     end
-    
-    build-stage --> test-stage
-    build-stage --> analysis-stage
-    test-stage --> reporting
-    analysis-stage --> reporting
+
+    build-ubuntu --> test-ubuntu
+    build-windows --> test-windows
+    build-macos --> test-macos
+    build-ubuntu --> analyze
+    build-ubuntu --> codeql
+    test-ubuntu --> summary
+    test-windows --> summary
+    test-macos --> summary
+    analyze --> summary
+    codeql --> summary
+    test-ubuntu -->|failure| on-failure
+    test-windows -->|failure| on-failure
+    test-macos -->|failure| on-failure
+    analyze -->|failure| on-failure
+    codeql -->|failure| on-failure
 ```
 
 ### Interpretation Notes

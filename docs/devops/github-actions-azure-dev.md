@@ -64,24 +64,24 @@ The CI job can be bypassed via manual dispatch (`skip-ci=true`) for emergency sc
 
 ```mermaid
 flowchart LR
-    subgraph ci-stage["CI Stage"]
+    subgraph CI ["CI Pipeline"]
         ci["ci"]
     end
-    
-    subgraph deploy-stage["Deploy Stage"]
+
+    subgraph Deployment ["Deployment"]
         deploy-dev["deploy-dev"]
     end
-    
-    subgraph reporting["Reporting"]
+
+    subgraph Reporting ["Reporting"]
         summary["summary"]
         on-failure["on-failure"]
     end
-    
-    ci-stage --> deploy-stage
-    deploy-stage --> reporting
+
     ci -->|success/skipped| deploy-dev
     deploy-dev --> summary
-    ci & deploy-dev -->|failure| on-failure
+    ci --> summary
+    ci -->|failure| on-failure
+    deploy-dev -->|failure| on-failure
 ```
 
 ### Interpretation Notes
