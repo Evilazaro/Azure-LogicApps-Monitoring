@@ -164,9 +164,9 @@ Business capabilities are organized into three tiers following TOGAF capability 
 
 ```mermaid
 block-beta
-    columns 1
+    columns 4
     
-    block:strategic["🎯 Strategic Capabilities"]
+    block:strategic["🎯 Strategic Capabilities"]:4
         columns 4
         SC1["Customer\nEngagement"]
         SC2["Order\nIntelligence"]
@@ -176,7 +176,7 @@ block-beta
     
     space
     
-    block:core["⚙️ Core Business Capabilities"]
+    block:core["⚙️ Core Business Capabilities"]:4
         columns 4
         CC1["Order\nManagement"]
         CC2["Order\nProcessing"]
@@ -186,7 +186,7 @@ block-beta
     
     space
     
-    block:enabling["🔧 Enabling Capabilities"]
+    block:enabling["🔧 Enabling Capabilities"]:4
         columns 4
         EC1["Monitoring &\nObservability"]
         EC2["Notification\nManagement"]
