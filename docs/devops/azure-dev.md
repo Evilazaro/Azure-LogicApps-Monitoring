@@ -1,10 +1,35 @@
+---
+title: CD - Azure Deployment
+description: Provisions Azure infrastructure and deploys .NET applications using Azure Developer CLI (azd) with OIDC authentication
+author: DevOps Team
+date: 2026-01-26
+version: 1.0.0
+tags: [cd, deployment, azure, azd, oidc, bicep, github-actions]
+---
+
 # 🚀 CD - Azure Deployment
 
 > Provisions Azure infrastructure and deploys .NET applications using Azure Developer CLI (azd) with OIDC authentication.
 
+> [!NOTE]
+> **Audience:** DevOps Engineers, Platform Engineers, Developers  
+> **Reading time:** ~15 minutes
+
 ---
 
-## 📑 Table of Contents
+<details>
+<summary>🧭 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:------|:-----|
+| [🔄 CI Reusable Workflow](ci-dotnet-reusable.md) | [📚 Documentation Index](README.md) | — |
+
+</details>
+
+---
+
+<details>
+<summary>📑 Table of Contents</summary>
 
 - [📋 Overview and Purpose](#-overview-and-purpose)
 - [⚡ Triggers](#-triggers)
@@ -21,6 +46,8 @@
 - [👥 Ownership and Maintenance](#-ownership-and-maintenance)
 - [📝 Assumptions and Gaps](#-assumptions-and-gaps)
 
+</details>
+
 ---
 
 ## 📋 Overview and Purpose
@@ -36,18 +63,22 @@ This workflow provisions Azure infrastructure and deploys a .NET application usi
 
 The workflow uses OIDC federated credentials, eliminating the need for stored secrets.
 
-### ✅ When to Use
+> [!TIP]
+>
+> ### ✅ When to Use
+>
+> - **Automated deployments**: Triggered on push to the configured branch with relevant path changes
+> - **Manual deployments**: Via `workflow_dispatch` for controlled releases
+> - **Infrastructure updates**: When Bicep templates or Azure configuration changes
+> - **Application releases**: When application code changes require deployment
 
-- **Automated deployments**: Triggered on push to the configured branch with relevant path changes
-- **Manual deployments**: Via `workflow_dispatch` for controlled releases
-- **Infrastructure updates**: When Bicep templates or Azure configuration changes
-- **Application releases**: When application code changes require deployment
-
-### ❌ When NOT to Use
-
-- **CI-only validation**: Use the CI workflow directly for build/test without deployment
-- **Production deployments**: This workflow targets the `dev` environment only
-- **Emergency hotfixes**: May want to skip CI using the `skip-ci` input for urgent fixes
+> [!CAUTION]
+>
+> ### ❌ When NOT to Use
+>
+> - **CI-only validation**: Use the CI workflow directly for build/test without deployment
+> - **Production deployments**: This workflow targets the `dev` environment only
+> - **Emergency hotfixes**: May want to skip CI using the `skip-ci` input for urgent fixes
 
 ---
 
@@ -73,7 +104,8 @@ concurrency:
   cancel-in-progress: false
 ```
 
-> **Note:** Concurrent deployments to the same environment are queued, not cancelled, to prevent partial deployments.
+> [!IMPORTANT]
+> Concurrent deployments to the same environment are queued, not cancelled, to prevent partial deployments.
 
 ---
 
@@ -144,6 +176,9 @@ flowchart LR
 | `summary` | `ubuntu-latest` | 5 min | Generate consolidated workflow report | `ci`, `deploy-dev` |
 | `on-failure` | `ubuntu-latest` | 5 min | Report failure details | `ci`, `deploy-dev` |
 
+<details>
+<summary>📖 Deploy-Dev Job Phases</summary>
+
 ### Deploy-Dev Job Phases
 
 | Phase | Description |
@@ -163,6 +198,8 @@ flowchart LR
 |:-------|:------------|
 | `webapp-url` | URL of the deployed web application |
 | `resource-group` | Azure resource group name |
+
+</details>
 
 ---
 
@@ -213,7 +250,8 @@ The CI job passes the following configuration to the reusable workflow:
 |:-------|:------|:--------|
 | `inherit` | Repository | All secrets inherited for CI workflow |
 
-> **Note:** No explicit secrets are stored or referenced. OIDC federated credentials are used for Azure authentication.
+> [!NOTE]
+> No explicit secrets are stored or referenced. OIDC federated credentials are used for Azure authentication.
 
 ---
 
@@ -231,12 +269,13 @@ The CI job passes the following configuration to the reusable workflow:
 
 ### Authentication Model
 
-This workflow uses **OpenID Connect (OIDC) federated credentials**:
-
-- No client secrets are stored in GitHub
-- Tokens are short-lived (approximately 5 minutes)
-- Multiple re-authentication steps are required during long-running operations
-- Both Azure Developer CLI (`azd auth login`) and Azure CLI (`az login`) are authenticated
+> [!IMPORTANT]
+> This workflow uses **OpenID Connect (OIDC) federated credentials**:
+>
+> - No client secrets are stored in GitHub
+> - Tokens are short-lived (approximately 5 minutes)
+> - Multiple re-authentication steps are required during long-running operations
+> - Both Azure Developer CLI (`azd auth login`) and Azure CLI (`az login`) are authenticated
 
 ### Security Considerations
 
@@ -358,7 +397,8 @@ gh workflow run azure-dev.yml
 gh workflow run azure-dev.yml -f skip-ci=true
 ```
 
-> **Warning:** Skipping CI bypasses build validation, test execution, and security scanning. Use only for emergency deployments.
+> [!WARNING]
+> Skipping CI bypasses build validation, test execution, and security scanning. Use only for emergency deployments.
 
 ### Via GitHub UI
 
@@ -368,12 +408,15 @@ gh workflow run azure-dev.yml -f skip-ci=true
 4. Optionally check "Skip CI checks"
 5. Click "Run workflow"
 
-### Common Mistakes to Avoid
+<details>
+<summary>⚠️ Common Mistakes to Avoid</summary>
 
 - **Pushing to wrong branch**: The trigger branch is `docs987678`, not `main`
 - **Missing Azure configuration**: Ensure repository variables are configured
 - **Expired federated credentials**: Verify Azure AD federation is active
 - **Insufficient permissions**: Ensure the Azure AD application has required Azure RBAC roles
+
+</details>
 
 ---
 
@@ -418,19 +461,23 @@ deploy-prod:
 | Trigger branch | Hardcoded to `docs987678` | Update trigger configuration as needed |
 | No rollback automation | Manual rollback required | Use `azd down` or re-deploy previous commit |
 
-### OIDC Token Expiration
+> [!WARNING]
+>
+> ### OIDC Token Expiration
+>
+> The workflow includes three authentication points:
+>
+> 1. Initial authentication before provisioning
+> 2. Re-authentication before SQL operations
+> 3. Re-authentication before deployment
+>
+> This pattern addresses AADSTS700024 token expiration errors.
 
-The workflow includes three authentication points:
-
-1. Initial authentication before provisioning
-2. Re-authentication before SQL operations
-3. Re-authentication before deployment
-
-This pattern addresses AADSTS700024 token expiration errors.
-
-### SQL User Creation
-
-The workflow creates SQL users using the managed identity's **Client ID** (Application ID), not the Object ID. This is required because Azure SQL uses the Client ID for SID calculation in Entra ID authentication.
+> [!TIP]
+>
+> ### SQL User Creation
+>
+> The workflow creates SQL users using the managed identity's **Client ID** (Application ID), not the Object ID. This is required because Azure SQL uses the Client ID for SID calculation in Entra ID authentication.
 
 ---
 
@@ -483,14 +530,30 @@ The workflow creates SQL users using the managed identity's **Client ID** (Appli
 
 ### Prerequisites Documentation
 
-The workflow references external prerequisites that must be configured:
-
-- Azure Entra ID federated credentials
-- GitHub Environment: `dev`
-- Repository variables for Azure configuration
-
-Detailed setup instructions should exist in a separate onboarding document.
+> [!IMPORTANT]
+> The workflow references external prerequisites that must be configured:
+>
+> - Azure Entra ID federated credentials
+> - GitHub Environment: `dev`
+> - Repository variables for Azure configuration
+>
+> See [configure-federated-credential.md](../hooks/configure-federated-credential.md) for setup instructions.
 
 ---
 
+## 📚 Related Documents
+
+| Document | Description |
+|:---------|:------------|
+| [🛠️ CI Orchestration](ci-dotnet.md) | CI workflow that validates code before deployment |
+| [🔄 CI Reusable Workflow](ci-dotnet-reusable.md) | Reusable CI workflow called by both CI and CD |
+| [📚 Documentation Index](README.md) | Central index of all DevOps documentation |
+| [Federated Credential Setup](../hooks/configure-federated-credential.md) | Azure AD OIDC setup instructions |
+
+---
+
+<div align="center">
+
 [⬆️ Back to Top](#-cd---azure-deployment) | [📚 Documentation Index](README.md)
+
+</div>

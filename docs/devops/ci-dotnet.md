@@ -63,18 +63,22 @@ This workflow serves as the orchestration layer for continuous integration in th
 - Manages concurrency to prevent redundant builds
 - Passes configuration to the reusable CI workflow
 
-### ✅ When to Use
+> [!TIP]
+>
+> ### ✅ When to Use
+>
+> - **Automatic execution**: Triggered on push events to monitored branches when source files change
+> - **Pull request validation**: Runs automatically when PRs target the `main` branch
+> - **Manual execution**: Use `workflow_dispatch` for ad-hoc CI runs with custom configuration
+> - **Pre-deployment validation**: Ensures code quality before merging to protected branches
 
-- **Automatic execution**: Triggered on push events to monitored branches when source files change
-- **Pull request validation**: Runs automatically when PRs target the `main` branch
-- **Manual execution**: Use `workflow_dispatch` for ad-hoc CI runs with custom configuration
-- **Pre-deployment validation**: Ensures code quality before merging to protected branches
-
-### ❌ When NOT to Use
-
-- Infrastructure-only changes (Bicep/Terraform files without application code)
-- Documentation-only updates that do not affect monitored paths
-- Hotfix scenarios where deployment is urgent and CI can be bypassed via the CD workflow's `skip-ci` input
+> [!CAUTION]
+>
+> ### ❌ When NOT to Use
+>
+> - Infrastructure-only changes (Bicep/Terraform files without application code)
+> - Documentation-only updates that do not affect monitored paths
+> - Hotfix scenarios where deployment is urgent and CI can be bypassed via the CD workflow's `skip-ci` input
 
 ---
 
@@ -211,7 +215,8 @@ flowchart LR
 |:-------|:------|:--------|
 | `inherit` | Repository | All secrets are inherited by the reusable workflow |
 
-> **Note:** No explicit secrets are defined. The `secrets: inherit` directive passes all repository secrets to the reusable workflow.
+> [!NOTE]
+> No explicit secrets are defined. The `secrets: inherit` directive passes all repository secrets to the reusable workflow.
 
 ### Variables
 
@@ -236,6 +241,9 @@ This workflow does not define or require repository variables. All configuration
 - **No deployment permissions**: This workflow does not deploy; it only validates code
 - **No `id-token: write`**: OIDC authentication is not used in this workflow
 - **Inherited secrets**: Secrets are inherited but not explicitly referenced; the reusable workflow determines usage
+
+> [!IMPORTANT]
+> This workflow does not have deployment permissions. It only validates code quality and security.
 
 ---
 
@@ -302,11 +310,14 @@ gh workflow run ci-dotnet.yml -f configuration=Debug -f enable-code-analysis=fal
 4. Select configuration options
 5. Click "Run workflow"
 
-### Common Mistakes to Avoid
+<details>
+<summary>⚠️ Common Mistakes to Avoid</summary>
 
 - Pushing to branches not matching the configured patterns will not trigger the workflow
 - Changes outside monitored paths will not trigger execution
 - Manually running without checking existing in-progress runs may cause cancellation
+
+</details>
 
 ---
 
@@ -384,4 +395,18 @@ To add environment-specific CI configuration, consider creating separate caller 
 
 ---
 
-[⬆️ Back to Top](#️-ci---net-build-and-test) | [📚 Documentation Index](README.md)
+## 📚 Related Documents
+
+| Document | Description |
+|:---------|:------------|
+| [🔄 CI Reusable Workflow](ci-dotnet-reusable.md) | The reusable workflow called by this orchestration |
+| [🚀 CD - Azure Deployment](azure-dev.md) | Deployment workflow that depends on CI |
+| [📚 Documentation Index](README.md) | Central index of all DevOps documentation |
+
+---
+
+<div align="center">
+
+[⬆️ Back to Top](#️-ci---net-build-and-test) | [📚 Documentation Index](README.md) | [➡️ Next: CI Reusable](ci-dotnet-reusable.md)
+
+</div>

@@ -1,10 +1,35 @@
+---
+title: CI - .NET Reusable Workflow
+description: Comprehensive reusable CI workflow for .NET solutions with cross-platform builds, testing, code analysis, and CodeQL security scanning
+author: DevOps Team
+date: 2026-01-26
+version: 1.0.0
+tags: [ci, dotnet, reusable-workflow, github-actions, codeql, testing, cross-platform]
+---
+
 # 🔄 CI - .NET Reusable Workflow
 
 > Comprehensive reusable CI workflow for .NET solutions with cross-platform builds, testing, code analysis, and CodeQL security scanning.
 
+> [!NOTE]
+> **Audience:** DevOps Engineers, Platform Engineers, Developers  
+> **Reading time:** ~12 minutes
+
 ---
 
-## 📑 Table of Contents
+<details>
+<summary>🧭 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:------|:-----|
+| [🛠️ CI Orchestration](ci-dotnet.md) | [📚 Documentation Index](README.md) | [🚀 Azure Deployment](azure-dev.md) |
+
+</details>
+
+---
+
+<details>
+<summary>📑 Table of Contents</summary>
 
 - [📋 Overview and Purpose](#-overview-and-purpose)
 - [⚡ Triggers](#-triggers)
@@ -21,6 +46,8 @@
 - [👥 Ownership and Maintenance](#-ownership-and-maintenance)
 - [📝 Assumptions and Gaps](#-assumptions-and-gaps)
 
+</details>
+
 ---
 
 ## 📋 Overview and Purpose
@@ -36,18 +63,22 @@ This is a comprehensive reusable CI workflow for .NET solutions that provides:
 
 The workflow is designed to be called by other workflows, providing a consistent CI experience across the repository.
 
-### ✅ When to Use
+> [!TIP]
+>
+> ### ✅ When to Use
+>
+> - **As a reusable component**: Called via `uses:` syntax from other workflows
+> - **Standardized CI**: When consistent build, test, and security scanning is required
+> - **Cross-platform validation**: When code must compile and run on multiple operating systems
+> - **Security compliance**: When CodeQL scanning is mandatory for all code changes
 
-- **As a reusable component**: Called via `uses:` syntax from other workflows
-- **Standardized CI**: When consistent build, test, and security scanning is required
-- **Cross-platform validation**: When code must compile and run on multiple operating systems
-- **Security compliance**: When CodeQL scanning is mandatory for all code changes
-
-### ❌ When NOT to Use
-
-- **Direct execution**: This workflow cannot be triggered directly; it must be called by another workflow
-- **Deployment scenarios**: This is a CI workflow; use a CD workflow for deployments
-- **Single-platform builds**: If cross-platform validation is not required, a simpler workflow may suffice
+> [!WARNING]
+>
+> ### ❌ When NOT to Use
+>
+> - **Direct execution**: This workflow cannot be triggered directly; it must be called by another workflow
+> - **Deployment scenarios**: This is a CI workflow; use a CD workflow for deployments
+> - **Single-platform builds**: If cross-platform validation is not required, a simpler workflow may suffice
 
 ---
 
@@ -127,6 +158,9 @@ flowchart LR
 | `summary` | Configurable (`runs-on` input) | Aggregate results, generate workflow summary | `build`, `test`, `analyze`, `codeql` | Consolidated report |
 | `on-failure` | Configurable (`runs-on` input) | Report failure details | `build`, `test`, `analyze`, `codeql` | Failure report |
 
+<details>
+<summary>📖 Detailed Job Information</summary>
+
 ### Job Details
 
 #### 🔨 Build Job
@@ -155,6 +189,8 @@ flowchart LR
 - Scans C# code with `security-extended` and `security-and-quality` query suites
 - Excludes test files from scanning
 - Uploads SARIF results to GitHub Security tab
+
+</details>
 
 ---
 
@@ -215,6 +251,9 @@ This workflow expects secrets to be inherited from the caller workflow via `secr
 | `security-events` | write | Upload CodeQL SARIF results |
 
 ### Security Considerations
+
+> [!IMPORTANT]
+> **Supply Chain Security**: All actions use SHA-pinned versions to prevent supply chain attacks.
 
 - **Pinned action versions**: All actions use SHA-pinned versions for supply chain security
 - **Least privilege**: Permissions are minimal for CI operations
@@ -306,12 +345,15 @@ jobs:
     secrets: inherit
 ```
 
-### Common Mistakes to Avoid
+<details>
+<summary>⚠️ Common Mistakes to Avoid</summary>
 
 - **Direct triggering**: This workflow cannot be triggered directly; it must be called via `uses:`
 - **Missing secrets inheritance**: Always include `secrets: inherit` unless explicitly managing secrets
 - **Incorrect solution path**: Ensure `solution-file` points to a valid `.sln` file
 - **Runner availability**: The `runs-on` input must specify a valid GitHub-hosted or self-hosted runner
+
+</details>
 
 ---
 
@@ -344,7 +386,8 @@ jobs:
       # Additional steps
 ```
 
-> **Note:** Ensure the Summary job's `needs` array includes the new job.
+> [!IMPORTANT]
+> Ensure the Summary job's `needs` array includes the new job.
 
 ---
 
@@ -411,4 +454,18 @@ jobs:
 
 ---
 
-[⬆️ Back to Top](#-ci---net-reusable-workflow) | [📚 Documentation Index](README.md)
+## 📚 Related Documents
+
+| Document | Description |
+|:---------|:------------|
+| [🛠️ CI Orchestration](ci-dotnet.md) | The caller workflow that invokes this reusable workflow |
+| [🚀 CD - Azure Deployment](azure-dev.md) | Deployment workflow that uses CI outputs |
+| [📚 Documentation Index](README.md) | Central index of all DevOps documentation |
+
+---
+
+<div align="center">
+
+[⬆️ Back to Top](#-ci---net-reusable-workflow) | [📚 Documentation Index](README.md) | [➡️ Next: Azure Deployment](azure-dev.md)
+
+</div>
