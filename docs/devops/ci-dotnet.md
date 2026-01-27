@@ -73,6 +73,9 @@ Changes to the following paths trigger the workflow:
 
 ### Concurrency Configuration
 
+> [!TIP]
+> The concurrency configuration cancels in-progress runs when new commits are pushed, optimizing resource usage and avoiding stale CI results.
+
 ```yaml
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -80,7 +83,6 @@ concurrency:
 ```
 
 - Groups runs by workflow name and PR number or branch reference
-- **Cancels in-progress** runs when new commits are pushed (optimizes resource usage)
 
 ---
 
@@ -166,6 +168,9 @@ flowchart LR
 ## 🔐 Secrets and Variables
 
 ### Secrets
+
+> [!NOTE]
+> Using `secrets: inherit` passes all repository secrets to the reusable workflow automatically, avoiding the need for explicit secret enumeration.
 
 | Secret | Scope | Purpose |
 |--------|-------|---------|
@@ -276,6 +281,9 @@ This workflow does not deploy to any environment. It is purely a CI validation w
 
 ### Non-Obvious Behavior
 
+> [!WARNING]
+> Both push and PR triggers run independently. Pushing to a PR branch may trigger CI twice.
+
 - **Cancel in-progress**: Pushing multiple commits quickly cancels intermediate runs
 - **Path filtering**: Changes outside filtered paths do not trigger CI
 - **PR vs Push**: Both triggers run independently; PR may run twice on push to PR branch
@@ -313,3 +321,10 @@ This workflow does not deploy to any environment. It is purely a CI validation w
 |-----|--------|----------------|
 | No scheduled runs | Stale dependency detection delayed | Consider adding cron schedule |
 | No dependency caching config | Slower builds | Caching handled by reusable workflow |
+
+---
+
+## 📚 See Also
+
+- [CI - .NET Reusable Workflow](ci-dotnet-reusable.md) - Detailed implementation called by this workflow
+- [CD - Azure Deployment Workflow](azure-dev.md) - Deployment workflow that depends on CI success
