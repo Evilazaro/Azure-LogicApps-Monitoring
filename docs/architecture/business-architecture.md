@@ -124,7 +124,7 @@ The eShop Orders Management Platform delivers the following key business benefit
 The solution provides business capabilities organized across three tiers that support the order management value chain:
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph strategic["🎯 Strategic Capabilities"]
         direction LR
         SC1["Customer Engagement"]
