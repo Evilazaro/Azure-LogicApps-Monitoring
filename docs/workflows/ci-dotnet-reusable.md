@@ -93,7 +93,7 @@ flowchart TB
     JOB2 -->|needs: build, test, analyze, codeql| JOB5
     JOB3 --> JOB5
     JOB4 --> JOB5
-    JOB5 -.->|if: failure()| JOB6
+    JOB5 -.-> JOB6
 
     style trigger fill:#FF9800,stroke:#E65100,color:#fff
     style b1 fill:#E65100,stroke:#BF360C,color:#fff

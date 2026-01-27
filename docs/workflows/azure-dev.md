@@ -87,7 +87,7 @@ flowchart TB
     TRIGGERS --> JOB1
     JOB1 -->|needs: ci\nif: success OR skipped| JOB2
     JOB2 -->|needs: ci, deploy-dev| JOB3
-    JOB2 -.->|if: failure()| JOB4
+    JOB2 -.-> JOB4
 
     style dispatch fill:#FF9800,stroke:#E65100,color:#fff
     style push fill:#FF9800,stroke:#E65100,color:#fff
