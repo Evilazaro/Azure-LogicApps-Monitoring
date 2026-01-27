@@ -1,16 +1,26 @@
 /*
   Common Type Definitions
   =======================
-  Shared user-defined types used across all Bicep modules.
+  Shared user-defined types used across all Bicep modules in the Azure Logic Apps Monitoring solution.
   
   Purpose:
-  - Enforce consistent tagging across all resources
-  - Standardize storage account configurations
-  - Provide type safety and validation
+  - Enforce consistent tagging across all resources for organization and cost tracking
+  - Standardize storage account configurations with security and performance settings
+  - Define reusable trigger types for Logic Apps workflows (Service Bus integration)
+  - Provide type safety, validation, and IntelliSense support across modules
+  
+  Exported Types:
+  - tagsType: Standard resource tags (Solution, Environment, CostCenter, Owner, etc.)
+  - storageAccountConfig: Storage account SKU, kind, access tier, and security settings
+  - triggersType: Service Bus topic subscription trigger configuration for Logic Apps
   
   Usage:
-  - Import types in other modules: import { tagsType } from './types.bicep'
-  - All exported types are available for use in dependent modules
+  - Import types in other modules: import { tagsType, storageAccountConfig, triggersType } from './types.bicep'
+  - All exported types (@export() decorator) are available for use in dependent modules
+  
+  Example:
+    import { tagsType } from './types.bicep'
+    param tags tagsType
 */
 
 // ========== Common Type Definitions ==========

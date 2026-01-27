@@ -1,17 +1,41 @@
 /*
-Azure Logic Apps Monitoring Solution
-====================================
-Main deployment orchestrator for the complete monitoring infrastructure.
+  Azure Logic Apps Monitoring Solution
 
-Purpose:
-- Deploys monitoring infrastructure (Log Analytics, Application Insights)
-- Deploys workload infrastructure (Identity, Messaging, Container Services, Logic Apps)
-- Orchestrates resource group creation at subscription scope
+  This Bicep template deploys a comprehensive monitoring solution for Azure Logic Apps Standard,
+  including Application Insights, Log Analytics, Service Bus, and supporting infrastructure.
 
-Dependencies:
-- ./monitoring/main.bicep: Monitoring infrastructure module
-- ./workload/main.bicep: Workload infrastructure module
-- ./types.bicep: Shared type definitions
+  Architecture Overview:
+  ----------------------
+  - Resource Group: Central container for all resources (rg-{solution}-{env}-{location})
+  - Shared Module: Deploys identity, monitoring (Log Analytics, App Insights), networking, and data resources (SQL Server/Database)
+  - Workload Module: Deploys messaging (Service Bus), Container Apps, Container Registry, and Logic Apps
+
+  Deployment Order:
+  -----------------
+  1. Resource Group creation
+  2. Shared infrastructure (identity, monitoring, storage, SQL, networking)
+  3. Workload infrastructure (Service Bus, Container Apps, Logic Apps) - depends on shared outputs
+
+  Parameters:
+  -----------
+  - solutionName: Base name prefix for all resources (default: 'orders')
+  - location: Azure region for deployment
+  - envName: Environment identifier (dev/test/staging/prod)
+  - deployerPrincipalType: User for interactive, ServicePrincipal for CI/CD
+  - deployHealthModel: Toggle for Azure Monitor Health Model deployment
+
+  Outputs:
+  --------
+  - Identity: Managed identity client ID and name
+  - Monitoring: Log Analytics workspace, Application Insights connection strings
+  - Data: SQL Server FQDN, database names
+  - Messaging: Service Bus endpoint and hostname
+  - Container: Registry endpoint, Container Apps environment details
+  - Logic Apps: App name, connection runtime URLs, storage account
+
+  Usage:
+  ------
+  az deployment sub create --location <region> --template-file main.bicep --parameters location=<region> envName=<env>
 */
 
 targetScope = 'subscription'

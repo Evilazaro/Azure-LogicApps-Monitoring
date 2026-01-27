@@ -1,40 +1,80 @@
 /*
+  ============================================================================
   Managed Identity Module
-  =======================
-  Deploys a user-assigned managed identity with comprehensive role assignments
-  for Azure workload resources following the principle of least privilege.
+  ============================================================================
   
-  Purpose:
-  - Creates a single user-assigned managed identity for all workload resources
-  - Implements principle of least privilege with specific, scoped role assignments
-  - Configures role assignments for both the managed identity and deployment user
-  - Supports both interactive (User) and CI/CD (ServicePrincipal) deployment scenarios
+  DESCRIPTION:
+    Deploys a user-assigned managed identity with comprehensive role assignments
+    for Azure workload resources following the principle of least privilege.
   
-  Assigned Roles:
-  - Storage: Account Contributor, Blob Data Contributor, Blob Data Owner,
-             Table Data Contributor, Queue Data Contributor, File Data roles
-  - Monitoring: Metrics Publisher, Contributor, Application Insights Component Contributor,
-                Application Insights Snapshot Debugger
-  - Service Bus: Data Owner, Data Receiver, Data Sender
-  - Container Registry: ACR Pull, ACR Push
-  - Resource Notifications: System Topics Subscriber
+  PURPOSE:
+    - Creates a single user-assigned managed identity for all workload resources
+    - Implements principle of least privilege with specific, scoped role assignments
+    - Configures role assignments for both the managed identity and deployment user
+    - Supports both interactive (User) and CI/CD (ServicePrincipal) deployment scenarios
   
-  Parameters:
-  - name: Base name for the managed identity resource
-  - location: Azure region for deployment
-  - envName: Environment identifier (dev, test, prod, staging)
-  - tags: Resource tags for organization and cost tracking
-  - deployerPrincipalType: Principal type for deployment user role assignments
+  ASSIGNED ROLES:
+    Storage:
+      - Storage Account Contributor
+      - Storage Blob Data Contributor
+      - Storage Blob Data Owner
+      - Storage Table Data Contributor
+      - Storage Queue Data Contributor
+      - Storage File Data Privileged Contributor
+      - Storage File Data SMB Admin
+      - Storage File Data SMB MI Admin
+      - Storage File Data SMB Share Contributor
+      - Storage File Data SMB Share Elevated Contributor
+    
+    Monitoring:
+      - Monitoring Metrics Publisher
+      - Monitoring Contributor
+      - Application Insights Component Contributor
+      - Application Insights Snapshot Debugger
+    
+    Service Bus:
+      - Azure Service Bus Data Owner
+      - Azure Service Bus Data Receiver
+      - Azure Service Bus Data Sender
+    
+    Container Registry:
+      - ACR Pull
+      - ACR Push
+    
+    Resource Notifications:
+      - Azure Resource Notifications System Topics Subscriber
   
-  Outputs:
-  - MANAGED_IDENTITY_CLIENT_ID: Client ID for application authentication
-  - MANAGED_IDENTITY_NAME: Name of the created managed identity resource
-  - AZURE_MANAGED_IDENTITY_ID: Full resource ID of the managed identity
-  - AZURE_MANAGED_IDENTITY_PRINCIPAL_ID: Principal ID for permission assignments
+  PARAMETERS:
+    name                  - Base name for the managed identity resource (3-20 chars)
+    location              - Azure region for deployment (3-50 chars)
+    envName               - Environment identifier: dev | test | prod | staging
+    tags                  - Resource tags for organization and cost tracking
+    deployerPrincipalType - Principal type: User (interactive) | ServicePrincipal (CI/CD)
   
-  Usage:
-  This module creates deterministic, idempotent role assignments using guid()
-  to generate consistent assignment names across redeployments.
+  OUTPUTS:
+    MANAGED_IDENTITY_CLIENT_ID        - Client ID for application authentication
+    MANAGED_IDENTITY_NAME             - Name of the created managed identity resource
+    AZURE_MANAGED_IDENTITY_ID         - Full resource ID of the managed identity
+    AZURE_MANAGED_IDENTITY_PRINCIPAL_ID - Principal ID for permission assignments
+  
+  USAGE:
+    module identity 'shared/identity/main.bicep' = {
+      name: 'identity-deployment'
+      params: {
+        name: 'myapp'
+        location: 'eastus'
+        envName: 'dev'
+        tags: { environment: 'dev' }
+        deployerPrincipalType: 'User'
+      }
+    }
+  
+  NOTES:
+    - Role assignments use guid() to generate deterministic, idempotent names
+    - Consistent assignment names prevent conflicts on redeployment
+    - All roles are assigned at resource group scope
+  
+  ============================================================================
 */
 
 metadata name = 'Managed Identity'

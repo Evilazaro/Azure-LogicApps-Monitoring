@@ -1,3 +1,72 @@
+/*
+  ============================================================================
+  Module:       Data Infrastructure
+  Repository:   Evilazaro/Azure-LogicApps-Monitoring
+  ============================================================================
+
+  Description:
+    This Bicep module provisions the shared data infrastructure required for
+    Azure Logic Apps monitoring and workflow management. It deploys secure,
+    enterprise-grade storage and database resources with private networking.
+
+  Resources Deployed:
+    - Azure Storage Account (StorageV2, Standard_LRS)
+      • Blob containers for order processing (success, failed, completed)
+      • File share for Logic Apps workflow state persistence
+    - Azure SQL Server with Entra ID-only authentication
+      • SQL Database (General Purpose, Gen5, 2 vCores)
+    - Private Endpoints for all services:
+      • Blob, File, Table, Queue storage endpoints
+      • SQL Server endpoint
+    - Private DNS Zones linked to the virtual network
+
+  Security Features:
+    - TLS 1.2 minimum enforcement on all resources
+    - Entra ID-only authentication for SQL Server
+    - Private endpoints for network isolation
+    - User-assigned managed identity for secure access
+
+  Parameters:
+    - name:                   Base name for resource naming
+    - envName:                Environment identifier (dev/test/staging/prod)
+    - location:               Azure region for deployment
+    - userAssignedIdentityId: Managed identity for resource access
+    - workspaceId:            Log Analytics workspace for diagnostics
+    - storageAccountId:       Storage account for diagnostic logs
+    - dataSubnetId:           Subnet for private endpoints
+    - vnetId:                 Virtual network for DNS zone linking
+    - logsSettings:           Diagnostic log configuration
+    - metricsSettings:        Diagnostic metrics configuration
+    - tags:                   Resource tags
+    - deployerPrincipalType:  Principal type (User/ServicePrincipal)
+
+  Outputs:
+    - AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW: Storage account name
+    - AZURE_STORAGE_ACCOUNT_ID_WORKFLOW:   Storage account resource ID
+    - ORDERSDATABASE_SQLSERVERFQDN:        SQL Server FQDN
+    - AZURE_SQL_SERVER_NAME:               SQL Server name
+    - AZURE_SQL_DATABASE_NAME:             SQL Database name
+
+  Usage Example:
+    module data 'shared/data/main.bicep' = {
+      name: 'dataInfrastructure'
+      params: {
+        name: 'myapp'
+        envName: 'dev'
+        location: 'eastus'
+        userAssignedIdentityId: identity.outputs.id
+        workspaceId: monitoring.outputs.workspaceId
+        storageAccountId: monitoring.outputs.storageAccountId
+        dataSubnetId: network.outputs.dataSubnetId
+        vnetId: network.outputs.vnetId
+        logsSettings: logsConfig
+        metricsSettings: metricsConfig
+        tags: commonTags
+      }
+    }
+  ============================================================================
+*/
+
 metadata name = 'Data Infrastructure'
 metadata description = 'Storage accounts and containers for workflow data and Container Apps persistent storage'
 
