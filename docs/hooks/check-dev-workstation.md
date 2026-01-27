@@ -10,7 +10,7 @@ version: "1.0"
 
 [Home](../../README.md) > [Docs](..) > [Hooks](README.md) > check-dev-workstation
 
-> 🔍 Validates developer workstation prerequisites for Azure Logic Apps Monitoring solution
+> 🔍 **Summary**: Validates developer workstation prerequisites for Azure Logic Apps Monitoring solution.
 
 ---
 
@@ -35,9 +35,9 @@ version: "1.0"
 
 This script performs comprehensive validation of the development environment to ensure all required tools, software dependencies, and Azure configurations are properly set up before beginning development work on the Azure Logic Apps Monitoring solution.
 
-The script acts as a wrapper around `preprovision.ps1`/`preprovision.sh` in ValidateOnly mode, providing a developer-friendly way to check workstation readiness without performing any modifications to the environment.
+The script acts as a wrapper around `preprovision.ps1` / `preprovision.sh` in ValidateOnly mode, providing a developer-friendly way to check workstation readiness without performing any modifications to the environment.
 
-**Operations Performed:**
+**Operations Performed**:
 
 1. Validates script prerequisites (preprovision.ps1/preprovision.sh exists)
 2. Executes preprovision script in ValidateOnly mode

@@ -10,7 +10,7 @@ version: "1.0"
 
 [Home](../../README.md) > [Docs](..) > Hooks
 
-> 🔧 Azure Developer CLI hook scripts for provisioning, deployment, and development workflow automation
+> 🔧 **Summary**: Azure Developer CLI hook scripts for provisioning, deployment, and development workflow automation.
 
 ---
 
@@ -22,14 +22,15 @@ version: "1.0"
 - [Script Reference](#script-reference)
 - [Execution Order](#execution-order)
 - [Cross-Platform Compatibility](#cross-platform-compatibility)
+- [See Also](#see-also)
 
 ---
 
 ## Overview
 
-This folder contains hook scripts that are automatically executed by the Azure Developer CLI (azd) at various stages of the deployment lifecycle. Each hook is implemented as both a PowerShell (`.ps1`) and Bash (`.sh`) script to ensure cross-platform compatibility.
+This folder contains hook scripts that are automatically executed by the Azure Developer CLI (`azd`) at various stages of the deployment lifecycle. Each hook is implemented as both a PowerShell (`.ps1`) and Bash (`.sh`) script to ensure cross-platform compatibility.
 
-**Purpose:**
+**Purpose**:
 
 - Automate pre-provisioning validations and environment setup
 - Configure Azure resources after infrastructure deployment
@@ -150,8 +151,15 @@ All scripts are implemented in both PowerShell and Bash to support:
 | macOS | `.sh` | ✅ |
 | WSL | Both | ✅ |
 
-> ℹ️ **Note**: The Azure Developer CLI (azd) automatically selects the appropriate script based on your operating system.
+> ℹ️ **Note**: The Azure Developer CLI (`azd`) automatically selects the appropriate script based on your operating system.
 
 ---
 
-[← Back to Documentation](../README.md)
+## See Also
+
+- [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+- [azd Extensibility and Hooks](https://learn.microsoft.com/azure/developer/azure-developer-cli/azd-extensibility)
+
+---
+
+[← Back to Documentation](../README.md) | [↑ Back to Top](#hooks-documentation)
