@@ -126,7 +126,7 @@ The solution provides business capabilities organized across three tiers that su
 ```mermaid
 flowchart LR
     subgraph strategic["🎯 Strategic Capabilities"]
-        direction LR
+        direction TD
         SC1["Customer Engagement"]
         SC2["Order Fulfillment Excellence"]
         SC3["Business Performance Monitoring"]
