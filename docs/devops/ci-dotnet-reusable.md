@@ -108,34 +108,62 @@ The Build job uses a matrix strategy with `fail-fast: false`, meaning all platfo
 ### Mermaid Diagram
 
 ```mermaid
+---
+title: CI Reusable Workflow Job Dependencies
+---
 flowchart LR
-    subgraph build-test[Build and Test]
-        build[build]
-        test[test]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+
+    %% ===== BUILD AND TEST SECTION =====
+    subgraph buildTest["Build and Test Phase"]
+        build["build"]
+        testJob["test"]
     end
 
-    subgraph quality[Quality Gates]
-        analyze[analyze]
-        codeql[codeql]
+    %% ===== QUALITY GATES SECTION =====
+    subgraph quality["Quality Gates"]
+        analyze["analyze"]
+        codeql["codeql"]
     end
 
-    subgraph reporting[Reporting]
-        summary[summary]
-        onfailure[on-failure]
+    %% ===== REPORTING SECTION =====
+    subgraph reporting["Reporting"]
+        summaryJob["summary"]
+        onfailure["on-failure"]
     end
 
-    build --> test
-    build --> analyze
-    build --> codeql
+    %% ===== PRIMARY FLOW =====
+    build ==>|artifacts ready| testJob
+    build -->|ready for analysis| analyze
+    build -->|ready for scan| codeql
 
-    test --> summary
-    analyze --> summary
-    codeql --> summary
+    %% ===== SUMMARY AGGREGATION =====
+    testJob -->|test results| summaryJob
+    analyze -->|format status| summaryJob
+    codeql -->|security results| summaryJob
 
-    build -.->|failure| onfailure
-    test -.->|failure| onfailure
-    analyze -.->|failure| onfailure
-    codeql -.->|failure| onfailure
+    %% ===== FAILURE PATHS =====
+    build -.->|on failure| onfailure
+    testJob -.->|on failure| onfailure
+    analyze -.->|on failure| onfailure
+    codeql -.->|on failure| onfailure
+
+    %% ===== APPLY CLASSES =====
+    class build primary
+    class testJob matrix
+    class analyze,codeql secondary
+    class summaryJob datastore
+    class onfailure failed
+
+    %% ===== SUBGRAPH STYLES =====
+    style buildTest fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style quality fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style reporting fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ### Interpretation Notes

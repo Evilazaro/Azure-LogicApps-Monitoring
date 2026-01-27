@@ -125,37 +125,69 @@ The Deploy-Dev job contains multiple phases that must complete sequentially: Set
 ### Mermaid Diagram
 
 ```mermaid
+---
+title: CD Azure Deployment Workflow Flow
+---
 flowchart LR
-    subgraph triggers[Triggers]
-        push([push])
-        manual([workflow_dispatch])
+    %% ===== CLASS DEFINITIONS =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+
+    %% ===== TRIGGERS SECTION =====
+    subgraph triggers["Triggers"]
+        push(["push"])
+        manual(["workflow_dispatch"])
     end
 
-    subgraph ci-stage[CI Stage]
-        ci[ci]
+    %% ===== CI STAGE SECTION =====
+    subgraph ciStage["CI Stage"]
+        ciJob[["ci"]]
     end
 
-    subgraph deploy-stage[Deployment Stage]
-        deploy[deploy-dev]
+    %% ===== DEPLOYMENT STAGE SECTION =====
+    subgraph deployStage["Deployment Stage"]
+        deploy["deploy-dev"]
     end
 
-    subgraph reporting[Reporting]
-        summary[summary]
-        onfailure[on-failure]
+    %% ===== REPORTING SECTION =====
+    subgraph reporting["Reporting"]
+        summaryJob["summary"]
+        onfailure["on-failure"]
     end
 
-    push --> ci
-    manual --> ci
-    manual -.->|skip-ci| deploy
+    %% ===== TRIGGER TO CI =====
+    push -->|triggers| ciJob
+    manual -->|triggers| ciJob
+    manual -.->|skip-ci flag| deploy
 
-    ci --> deploy
-    ci -.->|skipped| deploy
+    %% ===== CI TO DEPLOY FLOW =====
+    ciJob ==>|on success| deploy
+    ciJob -.->|when skipped| deploy
 
-    deploy --> summary
-    ci --> summary
+    %% ===== REPORTING CONNECTIONS =====
+    deploy -->|deployment status| summaryJob
+    ciJob -->|ci status| summaryJob
 
-    ci -.->|failure| onfailure
-    deploy -.->|failure| onfailure
+    %% ===== FAILURE PATHS =====
+    ciJob -.->|on failure| onfailure
+    deploy -.->|on failure| onfailure
+
+    %% ===== APPLY CLASSES =====
+    class push,manual trigger
+    class ciJob external
+    class deploy primary
+    class summaryJob datastore
+    class onfailure failed
+
+    %% ===== SUBGRAPH STYLES =====
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style ciStage fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style deployStage fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style reporting fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ### Interpretation Notes
