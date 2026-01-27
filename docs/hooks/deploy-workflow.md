@@ -119,7 +119,7 @@ flowchart TD
         L[🔎 Get Logic App connection runtime URL]:::execution
         L --> M[📋 Create temp deployment directory]:::data
         M --> N[📋 Copy workflow files]:::data
-        N --> O[🔄 Resolve ${'{'}VARIABLE{'}'} placeholders]:::execution
+        N --> O[🔄 Resolve variable placeholders]:::execution
         O --> P[📦 Create deployment zip package]:::execution
         P --> Q[⚡ Deploy via kudu zip API]:::execution
         Q --> R{🔍 Deployment successful?}:::validation
@@ -214,7 +214,7 @@ sequenceDiagram
     FS-->>Script: Files copied
     deactivate FS
 
-    Script->>Script: Resolve ${'{'}VARIABLE{'}'} placeholders
+    Script->>Script: Resolve VARIABLE placeholders
 
     loop For each config file
         Script->>FS: Read file content
