@@ -1,27 +1,49 @@
 {
+  // Schema reference for IntelliSense and validation support in launchSettings.json
   "$schema": "https://json.schemastore.org/launchsettings.json",
+  // Launch profiles define different configurations for running the application
   "profiles": {
+    // HTTPS profile - runs the application with SSL/TLS enabled
     "https": {
+      // Specifies this is a project-based launch configuration
       "commandName": "Project",
+      // Enables dotnet run messages in the console output
       "dotnetRunMessages": true,
+      // Automatically opens the default browser when the application starts
       "launchBrowser": true,
+      // URLs the application listens on (HTTPS on port 17267, HTTP fallback on port 15175)
       "applicationUrl": "https://localhost:17267;http://localhost:15175",
+      // Environment variables for the HTTPS profile configuration
       "environmentVariables": {
+        // Sets ASP.NET Core to Development mode for enhanced debugging and error details
         "ASPNETCORE_ENVIRONMENT": "Development",
+        // Sets the .NET runtime environment to Development
         "DOTNET_ENVIRONMENT": "Development",
+        // Aspire Dashboard OTLP endpoint for telemetry collection over HTTPS
         "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21055",
+        // Aspire Resource Service endpoint for resource management over HTTPS
         "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22031"
       }
     },
+    // HTTP profile - runs the application without SSL (for local development without certificates)
     "http": {
+      // Specifies this is a project-based launch configuration
       "commandName": "Project",
+      // Enables dotnet run messages in the console output
       "dotnetRunMessages": true,
+      // Automatically opens the default browser when the application starts
       "launchBrowser": true,
+      // URL the application listens on (HTTP only on port 15175)
       "applicationUrl": "http://localhost:15175",
+      // Environment variables for the HTTP profile configuration
       "environmentVariables": {
+        // Sets ASP.NET Core to Development mode for enhanced debugging and error details
         "ASPNETCORE_ENVIRONMENT": "Development",
+        // Sets the .NET runtime environment to Development
         "DOTNET_ENVIRONMENT": "Development",
+        // Aspire Dashboard OTLP endpoint for telemetry collection over HTTP
         "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:19041",
+        // Aspire Resource Service endpoint for resource management over HTTP
         "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:20127"
       }
     }

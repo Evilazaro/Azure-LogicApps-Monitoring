@@ -4,9 +4,14 @@
 #
 # Purpose:
 #   Defines the Azure Container Apps deployment configuration for the eShop
-#   Web Application (Blazor frontend). This template is processed by Azure
-#   Developer CLI (azd) during deployment, with Go template variables
-#   ({{ .Env.* }}) resolved at runtime.
+#   Web Application (Blazor Server frontend). This YAML template specifies the
+#   container runtime settings, networking, scaling, and service discovery
+#   configuration required for deployment to Azure Container Apps.
+#
+# Processing:
+#   This template is processed by Azure Developer CLI (azd) during deployment,
+#   with Go template variables ({{ .Env.* }}) resolved at runtime from the
+#   azd environment configuration.
 #
 # Service:
 #   eShop.Web.App - Blazor Server frontend for the eShop application

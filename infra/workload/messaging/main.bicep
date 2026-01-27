@@ -3,14 +3,72 @@
   ===============================
   Deploys Azure Service Bus infrastructure for message brokering.
   
+  Overview:
+  This module provisions a complete Azure Service Bus messaging solution
+  with topic-based publish/subscribe messaging patterns for order processing.
+  
+  Architecture:
+  ┌─────────────────────────────────────────────────────────────┐
+  │                  Service Bus Namespace                      │
+  │  ┌─────────────────────────────────────────────────────┐   │
+  │  │              Orders Topic (ordersplaced)             │   │
+  │  │  ┌─────────────────────────────────────────────┐    │   │
+  │  │  │   Order Processing Subscription             │    │   │
+  │  │  │   - Max Delivery: 10 attempts               │    │   │
+  │  │  │   - Lock Duration: 5 minutes                │    │   │
+  │  │  │   - TTL: 14 days                            │    │   │
+  │  │  │   - Dead-letter enabled                     │    │   │
+  │  │  └─────────────────────────────────────────────┘    │   │
+  │  └─────────────────────────────────────────────────────┘   │
+  └─────────────────────────────────────────────────────────────┘
+  
   Components:
-  1. Service Bus namespace with an orders topic
+  1. Service Bus namespace (Standard tier)
+  2. Orders topic for order processing events
+  3. Order processing subscription with dead-letter support
+  4. Diagnostic settings for monitoring and logging
   
   Key Features:
   - Standard Service Bus tier for topic-based messaging
-  - Capacity of 16 messaging units
-  - Managed identity authentication for Service Bus
-  - Topic-based messaging for order processing events
+  - User Assigned Managed Identity for secure authentication
+  - Topic-based pub/sub messaging for order processing events
+  - Configurable message TTL (14 days) and lock duration (5 minutes)
+  - Dead-letter queue support for failed/expired messages
+  - Integration with Log Analytics and Storage Account for diagnostics
+  
+  Parameters:
+  - name: Base name for Service Bus namespace (3-20 chars)
+  - envName: Environment identifier (dev, test, staging, prod)
+  - location: Azure region for deployment
+  - userAssignedIdentityId: Resource ID of User Assigned Identity
+  - workspaceId: Log Analytics workspace ID for diagnostics
+  - storageAccountId: Storage Account ID for diagnostic logs
+  - logsSettings: Log Analytics log configuration
+  - metricsSettings: Log Analytics metrics configuration
+  - tags: Resource tags
+  
+  Outputs:
+  - MESSAGING_SERVICEBUSENDPOINT: Service Bus endpoint URL
+  - MESSAGING_SERVICEBUSHOSTNAME: Service Bus hostname
+  - MESSAGING_SERVICEBUSNAME: Service Bus namespace name
+  
+  Usage Example:
+  ```bicep
+  module messaging 'workload/messaging/main.bicep' = {
+    name: 'messaging-deployment'
+    params: {
+      name: 'myapp'
+      envName: 'dev'
+      location: 'eastus'
+      userAssignedIdentityId: identity.outputs.identityId
+      workspaceId: monitoring.outputs.workspaceId
+      storageAccountId: storage.outputs.storageAccountId
+      logsSettings: logsConfig
+      metricsSettings: metricsConfig
+      tags: commonTags
+    }
+  }
+  ```
 */
 
 metadata name = 'Messaging Infrastructure'

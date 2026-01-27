@@ -1,7 +1,43 @@
 // =============================================================================
 // Service Defaults Extensions
-// Provides cross-cutting concerns for .NET Aspire services including
-// OpenTelemetry, health checks, service discovery, and resilience patterns
+// =============================================================================
+// 
+// Purpose:
+//   Provides cross-cutting concerns for .NET Aspire services including
+//   OpenTelemetry instrumentation, health checks, service discovery, and
+//   resilience patterns for distributed microservices architecture.
+//
+// Key Features:
+//   - OpenTelemetry: Distributed tracing, metrics, and logging with support
+//     for OTLP and Azure Monitor exporters
+//   - Health Checks: Kubernetes/Azure Container Apps compatible health and
+//     liveness endpoints (/health, /alive)
+//   - Service Discovery: Automatic service discovery for HTTP clients
+//   - Resilience: Retry policies, circuit breakers, and timeout handling
+//   - Azure Service Bus: Configurable client with managed identity support
+//
+// Usage:
+//   <code>
+//   var builder = WebApplication.CreateBuilder(args);
+//   builder.AddServiceDefaults();
+//   builder.AddAzureServiceBusClient(); // Optional
+//   var app = builder.Build();
+//   app.MapDefaultEndpoints();
+//   </code>
+//
+// Configuration:
+//   - OTEL_EXPORTER_OTLP_ENDPOINT: OpenTelemetry collector endpoint
+//   - APPLICATIONINSIGHTS_CONNECTION_STRING: Azure Monitor connection
+//   - MESSAGING_HOST: Service Bus namespace or "localhost" for emulator
+//   - ConnectionStrings:messaging: Local emulator connection string
+//
+// Dependencies:
+//   - Azure.Identity: For managed identity authentication
+//   - Azure.Messaging.ServiceBus: For Service Bus client
+//   - Azure.Monitor.OpenTelemetry.Exporter: For Azure Monitor integration
+//   - OpenTelemetry: For distributed tracing and metrics
+//   - Microsoft.Extensions.Http.Resilience: For HTTP resilience policies
+//
 // =============================================================================
 
 using Azure.Identity;

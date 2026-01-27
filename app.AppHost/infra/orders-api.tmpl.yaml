@@ -7,6 +7,11 @@
 #   service. This template is processed by Azure Developer CLI (azd) during
 #   deployment, with Go template variables ({{ .Env.* }}) resolved at runtime.
 #
+# Usage:
+#   This template is automatically processed by azd during deployment:
+#     $ azd up                    # Deploy all services including this one
+#     $ azd deploy orders-api     # Deploy only the orders-api service
+#
 # Service:
 #   eShop.Orders.API - REST API for order management operations
 #

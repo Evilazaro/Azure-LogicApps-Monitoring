@@ -1,18 +1,47 @@
 /*
   Application Insights Module
   ===========================
-  Deploys workspace-based Application Insights instance.
+  Deploys a workspace-based Application Insights instance for centralized
+  application telemetry and monitoring.
   
   Features:
-  - Workspace-based Application Insights (connected to Log Analytics)
-  - Public network access enabled for ingestion and query
-  - Diagnostic settings for Application Insights telemetry
-  - Web application type for general-purpose monitoring
+  - Workspace-based Application Insights (connected to Log Analytics workspace)
+  - Public network access enabled for both ingestion and query operations
+  - Diagnostic settings for forwarding Application Insights telemetry to
+    Log Analytics and Storage Account
+  - Web application type configuration for general-purpose monitoring scenarios
+  - Unique resource naming using resource group, environment, and location
+  
+  Parameters:
+  - name: Base name prefix for the Application Insights resource
+  - location: Azure region for deployment (defaults to resource group location)
+  - envName: Environment identifier (dev, test, staging, prod)
+  - logAnalyticsWorkspaceId: Resource ID of the Log Analytics workspace for integration
+  - storageAccountId: Resource ID of the Storage Account for diagnostic logs
+  - logsSettings: Array of log category configurations for diagnostics
+  - metricsSettings: Array of metric category configurations for diagnostics
+  - tags: Resource tags for organization and cost management
   
   Outputs:
-  - Connection string for application telemetry
-  - Instrumentation key for legacy integrations
-  - Resource name for reference
+  - APPLICATION_INSIGHTS_NAME: Name of the deployed Application Insights instance
+  - APPLICATION_INSIGHTS_INSTRUMENTATION_KEY: Instrumentation key for legacy SDK integrations
+  - APPLICATIONINSIGHTS_CONNECTION_STRING: Connection string for modern SDK telemetry
+  
+  Usage Example:
+  ```bicep
+  module appInsights 'shared/monitoring/app-insights.bicep' = {
+    name: 'appInsightsDeploy'
+    params: {
+      name: 'myapp'
+      envName: 'dev'
+      logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
+      storageAccountId: storageAccount.outputs.id
+      logsSettings: [{ category: 'AppTraces', enabled: true }]
+      metricsSettings: [{ category: 'AllMetrics', enabled: true }]
+      tags: { environment: 'dev' }
+    }
+  }
+  ```
 */
 
 metadata name = 'Application Insights'

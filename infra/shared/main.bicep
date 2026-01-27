@@ -1,17 +1,35 @@
 /*
   Shared Infrastructure Module
   ============================
-  Orchestrates deployment of shared infrastructure components.
+  Orchestrates deployment of shared infrastructure components for the Azure Logic Apps
+  Monitoring solution. This module serves as the main entry point for provisioning
+  foundational Azure resources required by the application.
   
   Components:
-  - Identity: User-assigned managed identity with role assignments
-  - Monitoring: Log Analytics workspace and Application Insights
-  - Data: Storage accounts and SQL Server database
+  - Network: Virtual network with dedicated subnets for Container Apps, Logic Apps, and data services
+  - Identity: User-assigned managed identity with RBAC role assignments for secure resource access
+  - Monitoring: Log Analytics workspace and Application Insights for centralized telemetry
+  - Data: Storage accounts for workflow data and SQL Server database for persistent storage
   
   Deployment Order:
-  - Identity first (required by other modules)
-  - Monitoring second (provides workspace IDs for diagnostics)
-  - Data last (depends on identity and monitoring outputs)
+  1. Network - Virtual network infrastructure (no dependencies)
+  2. Identity - Managed identity for secure authentication (no dependencies)
+  3. Monitoring - Logging and telemetry infrastructure (depends on Network)
+  4. Data - Storage and database resources (depends on Identity, Monitoring, Network)
+  
+  Parameters:
+  - name: Base name used for generating resource names
+  - location: Azure region for resource deployment
+  - envName: Environment identifier (dev/test/staging/prod)
+  - tags: Resource tags for organization and cost tracking
+  - deployerPrincipalType: Principal type for RBAC assignments (User or ServicePrincipal)
+  - deployHealthModel: Flag to enable Azure Monitor Health Model deployment
+  
+  Outputs:
+  - Identity outputs: Managed identity resource ID, client ID, and name
+  - Monitoring outputs: Log Analytics workspace details, Application Insights connection info
+  - Data outputs: Storage account names/IDs, SQL Server FQDN and database details
+  - Network outputs: Subnet resource IDs for API, Web App, and Logic App workloads
 */
 
 metadata name = 'Shared Infrastructure'
