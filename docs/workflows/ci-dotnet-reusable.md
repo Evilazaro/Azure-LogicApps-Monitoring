@@ -49,70 +49,75 @@ workflow_file: .github/workflows/ci-dotnet-reusable.yml
 
 ## Workflow Diagram
 
+This workflow contains **6 jobs** with the following dependency structure:
+
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#616161', 'secondaryColor': '#E3F2FD', 'tertiaryColor': '#FAFAFA', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'lineColor': '#616161', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
 flowchart TB
-    subgraph level1 ["🎯 Level 1: Trigger"]
-        wf-call["📞 workflow_call"]
-    end
+    trigger["📞 workflow_call\nTriggered by caller workflow"]
 
-    subgraph level2 ["📋 Level 2: Stages"]
+    subgraph JOB1 ["build job"]
         direction LR
-        s-build["🔨 Build"]
-        s-test["🧪 Test"]
-        s-analyze["🔍 Analyze"]
-        s-summary["📊 Summary"]
+        b1["🐧 ubuntu-latest"]
+        b2["🪟 windows-latest"]
+        b3["🍎 macos-latest"]
     end
 
-    subgraph level3 ["🔨 Level 3: Build Jobs"]
+    subgraph JOB2 ["test job"]
         direction LR
-        build-ubuntu["🐧 Ubuntu<br/>───────<br/>Checkout<br/>Setup .NET<br/>Restore<br/>Build<br/>Upload"]
-        build-windows["🪟 Windows<br/>───────<br/>Checkout<br/>Setup .NET<br/>Restore<br/>Build<br/>Upload"]
-        build-macos["🍎 macOS<br/>───────<br/>Checkout<br/>Setup .NET<br/>Restore<br/>Build<br/>Upload"]
+        t1["🐧 ubuntu-latest"]
+        t2["🪟 windows-latest"]
+        t3["🍎 macos-latest"]
     end
 
-    subgraph level3b ["🧪 Level 3: Test Jobs"]
-        direction LR
-        test-ubuntu["🐧 Ubuntu<br/>───────<br/>Checkout<br/>Setup .NET<br/>Build<br/>Test<br/>Coverage"]
-        test-windows["🪟 Windows<br/>───────<br/>Checkout<br/>Setup .NET<br/>Build<br/>Test<br/>Coverage"]
-        test-macos["🍎 macOS<br/>───────<br/>Checkout<br/>Setup .NET<br/>Build<br/>Test<br/>Coverage"]
+    subgraph JOB3 ["analyze job"]
+        analyze["🎨 Code Format\nruns-on: inputs.runs-on\nif: enable-code-analysis"]
     end
 
-    subgraph level3c ["🔍 Level 3: Analysis Jobs"]
-        direction LR
-        analyze["🎨 Format Check<br/>───────<br/>dotnet format<br/>--verify-no-changes"]
-        codeql["🛡️ CodeQL Scan<br/>───────<br/>security-extended<br/>security-and-quality"]
+    subgraph JOB4 ["codeql job"]
+        codeql["🛡️ Security Scan\nruns-on: inputs.runs-on\nalways runs"]
     end
 
-    subgraph level3d ["📊 Level 3: Summary"]
-        direction LR
-        summary["📊 Results<br/>Aggregation"]
-        failure["❌ Failure<br/>Handler"]
+    subgraph JOB5 ["summary job"]
+        summary["📊 Aggregate Results\nruns-on: inputs.runs-on\nif: always()"]
     end
 
-    level1 --> level2
-    s-build --> s-test --> s-analyze --> s-summary
-    s-build -.-> level3
-    s-test -.-> level3b
-    s-analyze -.-> level3c
-    s-summary -.-> level3d
+    subgraph JOB6 ["on-failure job"]
+        onfailure["❌ Failure Handler\nruns-on: inputs.runs-on\nif: failure()"]
+    end
 
-    style wf-call fill:#FF9800,stroke:#E65100,color:#fff
-    style s-build fill:#4CAF50,stroke:#2E7D32,color:#fff
-    style s-test fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    style s-analyze fill:#00BCD4,stroke:#00838F,color:#fff
-    style s-summary fill:#607D8B,stroke:#455A64,color:#fff
-    style build-ubuntu fill:#E65100,stroke:#BF360C,color:#fff
-    style build-windows fill:#0277BD,stroke:#01579B,color:#fff
-    style build-macos fill:#424242,stroke:#212121,color:#fff
-    style test-ubuntu fill:#E65100,stroke:#BF360C,color:#fff
-    style test-windows fill:#0277BD,stroke:#01579B,color:#fff
-    style test-macos fill:#424242,stroke:#212121,color:#fff
+    trigger --> JOB1
+    JOB1 -->|needs: build| JOB2
+    JOB1 -->|needs: build| JOB3
+    JOB1 -->|needs: build| JOB4
+    JOB2 -->|needs: build, test, analyze, codeql| JOB5
+    JOB3 --> JOB5
+    JOB4 --> JOB5
+    JOB5 -.->|if: failure()| JOB6
+
+    style trigger fill:#FF9800,stroke:#E65100,color:#fff
+    style b1 fill:#E65100,stroke:#BF360C,color:#fff
+    style b2 fill:#0277BD,stroke:#01579B,color:#fff
+    style b3 fill:#424242,stroke:#212121,color:#fff
+    style t1 fill:#E65100,stroke:#BF360C,color:#fff
+    style t2 fill:#0277BD,stroke:#01579B,color:#fff
+    style t3 fill:#424242,stroke:#212121,color:#fff
     style analyze fill:#00BCD4,stroke:#00838F,color:#fff
     style codeql fill:#00BCD4,stroke:#00838F,color:#fff
     style summary fill:#607D8B,stroke:#455A64,color:#fff
-    style failure fill:#F44336,stroke:#C62828,color:#fff
+    style onfailure fill:#F44336,stroke:#C62828,color:#fff
 ```
+
+### Job Dependencies
+
+| Job | Depends On | Condition |
+|-----|------------|----------|
+| `build` | - | Always runs |
+| `test` | `build` | Always runs |
+| `analyze` | `build` | `if: inputs.enable-code-analysis` |
+| `codeql` | `build` | Always runs |
+| `summary` | `build`, `test`, `analyze`, `codeql` | `if: always()` |
+| `on-failure` | `build`, `test`, `analyze`, `codeql` | `if: failure()` |
 
 ---
 

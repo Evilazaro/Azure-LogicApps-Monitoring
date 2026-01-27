@@ -45,61 +45,64 @@ workflow_file: .github/workflows/ci-dotnet.yml
 
 ## Workflow Diagram
 
+This diagram shows the **actual job structure** from the workflow files:
+
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#616161', 'secondaryColor': '#E3F2FD', 'tertiaryColor': '#FAFAFA', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'lineColor': '#616161', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
 flowchart TB
-    subgraph level1 ["🎯 Level 1: Triggers"]
-        direction LR
-        push["📤 Push<br/>main, feature/**, bugfix/**"]
-        pr["🔀 Pull Request"]
-        dispatch["🖱️ Manual"]
+    subgraph TRIGGERS ["Triggers"]
+        push["📤 Push\nmain, feature/**\nbugfix/**, etc."]
+        pr["🔀 Pull Request\nmain branch"]
+        dispatch["🖱️ Manual\nworkflow_dispatch"]
     end
 
-    subgraph level2 ["📋 Level 2: Orchestration"]
-        orchestrator["🔧 ci-dotnet.yml<br/>calls reusable workflow"]
+    subgraph ORCHESTRATOR ["ci-dotnet.yml (1 job)"]
+        ci-job["ci job\nuses: ci-dotnet-reusable.yml"]
     end
 
-    subgraph level3 ["🔨 Level 3: Jobs"]
-        direction TB
-        subgraph build-group ["🔨 Build Matrix"]
-            direction LR
-            build-ubuntu["🐧 Ubuntu"]
-            build-windows["🪟 Windows"]
-            build-macos["🍎 macOS"]
+    subgraph REUSABLE ["ci-dotnet-reusable.yml (6 jobs)"]
+        subgraph BUILD_MATRIX ["build job (matrix)"]
+            b1["🐧 ubuntu-latest"]
+            b2["🪟 windows-latest"]
+            b3["🍎 macos-latest"]
         end
-        subgraph test-group ["🧪 Test Matrix"]
-            direction LR
-            test-ubuntu["🐧 Ubuntu"]
-            test-windows["🪟 Windows"]
-            test-macos["🍎 macOS"]
+        
+        subgraph TEST_MATRIX ["test job (matrix)\nneeds: build"]
+            t1["🐧 ubuntu-latest"]
+            t2["🪟 windows-latest"]
+            t3["🍎 macos-latest"]
         end
-        subgraph analysis-group ["🔍 Analysis"]
-            direction LR
-            analyze["🎨 Format"]
-            codeql["🛡️ CodeQL"]
-        end
-        summary["📊 Summary"]
-        failure["❌ On Failure"]
+        
+        analyze["analyze job\nneeds: build"]
+        codeql["codeql job\nneeds: build"]
+        summary["summary job\nneeds: build, test,\nanalyze, codeql"]
+        onfailure["on-failure job\nif: failure()"]
     end
 
-    level1 --> level2 --> level3
-    build-group --> test-group --> analysis-group --> summary
-    analysis-group -.-> failure
+    TRIGGERS --> ORCHESTRATOR
+    ci-job -.->|calls| REUSABLE
+    BUILD_MATRIX --> TEST_MATRIX
+    BUILD_MATRIX --> analyze
+    BUILD_MATRIX --> codeql
+    TEST_MATRIX --> summary
+    analyze --> summary
+    codeql --> summary
+    summary -.-> onfailure
 
     style push fill:#FF9800,stroke:#E65100,color:#fff
     style pr fill:#FF9800,stroke:#E65100,color:#fff
     style dispatch fill:#FF9800,stroke:#E65100,color:#fff
-    style orchestrator fill:#1976D2,stroke:#0D47A1,color:#fff
-    style build-ubuntu fill:#E65100,stroke:#BF360C,color:#fff
-    style build-windows fill:#0277BD,stroke:#01579B,color:#fff
-    style build-macos fill:#424242,stroke:#212121,color:#fff
-    style test-ubuntu fill:#E65100,stroke:#BF360C,color:#fff
-    style test-windows fill:#0277BD,stroke:#01579B,color:#fff
-    style test-macos fill:#424242,stroke:#212121,color:#fff
+    style ci-job fill:#9C27B0,stroke:#6A1B9A,color:#fff
+    style b1 fill:#E65100,stroke:#BF360C,color:#fff
+    style b2 fill:#0277BD,stroke:#01579B,color:#fff
+    style b3 fill:#424242,stroke:#212121,color:#fff
+    style t1 fill:#E65100,stroke:#BF360C,color:#fff
+    style t2 fill:#0277BD,stroke:#01579B,color:#fff
+    style t3 fill:#424242,stroke:#212121,color:#fff
     style analyze fill:#00BCD4,stroke:#00838F,color:#fff
     style codeql fill:#00BCD4,stroke:#00838F,color:#fff
     style summary fill:#607D8B,stroke:#455A64,color:#fff
-    style failure fill:#F44336,stroke:#C62828,color:#fff
+    style onfailure fill:#F44336,stroke:#C62828,color:#fff
 ```
 
 ---

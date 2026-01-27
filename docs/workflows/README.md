@@ -38,63 +38,53 @@ This project implements a modern CI/CD pipeline using GitHub Actions with the fo
 ## Workflow Architecture
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#616161', 'secondaryColor': '#E3F2FD', 'tertiaryColor': '#FAFAFA', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
-flowchart TB
-    subgraph triggers ["🎯 Triggers"]
-        direction LR
-        push["📤 Push"]
-        pr["🔀 PR"]
-        manual["🖱️ Manual"]
-    end
-
-    subgraph ci ["🔄 CI Pipeline"]
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#616161', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
+flowchart LR
+    subgraph CI ["ci-dotnet.yml"]
         direction TB
-        subgraph build ["🔨 Build"]
-            direction LR
-            b-ubuntu["🐧 Ubuntu"]
-            b-windows["🪟 Windows"]
-            b-macos["🍎 macOS"]
-        end
-        subgraph test ["🧪 Test"]
-            direction LR
-            t-ubuntu["🐧 Ubuntu"]
-            t-windows["🪟 Windows"]
-            t-macos["🍎 macOS"]
-        end
-        subgraph analyze ["🔍 Analyze"]
-            format["🎨 Format"]
-            codeql["🛡️ CodeQL"]
-        end
+        ci-trigger["🎯 Triggers"]
+        ci-call["📞 Calls Reusable"]
+        ci-trigger --> ci-call
     end
 
-    subgraph cd ["🚀 CD Pipeline"]
+    subgraph REUSABLE ["ci-dotnet-reusable.yml"]
         direction TB
-        provision["🏗️ Provision"]
-        deploy["🚀 Deploy"]
+        build["🔨 Build\n3x OS Matrix"]
+        test["🧪 Test\n3x OS Matrix"]
+        analyze["🎨 Analyze"]
+        codeql["🛡️ CodeQL"]
+        ci-summary["📊 Summary"]
+        
+        build --> test
+        build --> analyze
+        build --> codeql
+        test --> ci-summary
+        analyze --> ci-summary
+        codeql --> ci-summary
     end
 
-    summary["📊 Summary"]
+    subgraph CD ["azure-dev.yml"]
+        direction TB
+        cd-ci["🔄 CI Job\n(optional)"]
+        deploy["🚀 Deploy Dev\n7 Phases"]
+        cd-summary["📊 Summary"]
+        
+        cd-ci --> deploy --> cd-summary
+    end
 
-    triggers --> ci
-    triggers --> cd
-    build --> test --> analyze
-    ci --> summary
-    provision --> deploy --> summary
+    ci-call -.-> REUSABLE
+    cd-ci -.-> REUSABLE
 
-    style push fill:#FF9800,stroke:#E65100,color:#fff
-    style pr fill:#FF9800,stroke:#E65100,color:#fff
-    style manual fill:#FF9800,stroke:#E65100,color:#fff
-    style b-ubuntu fill:#E65100,stroke:#BF360C,color:#fff
-    style b-windows fill:#0277BD,stroke:#01579B,color:#fff
-    style b-macos fill:#424242,stroke:#212121,color:#fff
-    style t-ubuntu fill:#E65100,stroke:#BF360C,color:#fff
-    style t-windows fill:#0277BD,stroke:#01579B,color:#fff
-    style t-macos fill:#424242,stroke:#212121,color:#fff
-    style format fill:#00BCD4,stroke:#00838F,color:#fff
+    style ci-trigger fill:#FF9800,stroke:#E65100,color:#fff
+    style ci-call fill:#9C27B0,stroke:#6A1B9A,color:#fff
+    style build fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style test fill:#2196F3,stroke:#1565C0,color:#fff
+    style analyze fill:#00BCD4,stroke:#00838F,color:#fff
     style codeql fill:#00BCD4,stroke:#00838F,color:#fff
-    style provision fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style ci-summary fill:#607D8B,stroke:#455A64,color:#fff
+    style cd-ci fill:#9C27B0,stroke:#6A1B9A,color:#fff
     style deploy fill:#4CAF50,stroke:#2E7D32,color:#fff
-    style summary fill:#607D8B,stroke:#455A64,color:#fff
+    style cd-summary fill:#607D8B,stroke:#455A64,color:#fff
 ```
 
 ---

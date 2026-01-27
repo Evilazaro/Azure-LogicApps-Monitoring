@@ -48,64 +48,70 @@ workflow_file: .github/workflows/azure-dev.yml
 
 ## Workflow Diagram
 
+This workflow contains **4 jobs**:
+
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#616161', 'secondaryColor': '#E3F2FD', 'tertiaryColor': '#FAFAFA', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'lineColor': '#616161', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
 flowchart TB
-    subgraph level1 ["🎯 Level 1: Triggers"]
-        direction LR
-        dispatch["🖱️ Manual<br/>skip-ci option"]
-        push["📤 Push<br/>src/**, infra/**"]
+    subgraph TRIGGERS ["Triggers"]
+        dispatch["🖱️ workflow_dispatch\nskip-ci option"]
+        push["📤 push\nsrc/**, infra/**"]
     end
 
-    subgraph level2 ["📋 Level 2: Pipeline"]
-        direction LR
-        ci-stage["🔄 CI<br/>(optional)"]
-        deploy-stage["🚀 Deploy"]
-        report-stage["📊 Report"]
+    subgraph JOB1 ["ci job"]
+        ci-call["🔄 Calls ci-dotnet-reusable.yml\nif: skip-ci != true"]
     end
 
-    subgraph level3-ci ["🔄 Level 3: CI Job"]
-        ci-call["🔧 Reusable CI<br/>Build → Test → Analyze"]
-    end
-
-    subgraph level3-deploy ["🚀 Level 3: Deploy Phases"]
+    subgraph JOB2 ["deploy-dev job"]
         direction TB
-        p1["📥 Setup<br/>Prerequisites"]
-        p2["🔐 Auth<br/>OIDC Login"]
-        p3["🏗️ Provision<br/>Infrastructure"]
-        p4["🔑 SQL<br/>Managed Identity"]
-        p5["🚀 Deploy<br/>Application"]
-        p6["📊 Summary"]
+        p1["📥 Phase 1: Setup\nInstall go-sqlcmd, azd, .NET"]
+        p2["🔐 Phase 2: Auth\nazd auth + az login (OIDC)"]
+        p3["🏗️ Phase 3: Provision\nazd provision --no-prompt"]
+        p4a["🔐 Phase 4a: Re-auth\nRefresh tokens before SQL"]
+        p4b["🔑 Phase 4b: SQL Config\nCreate managed identity user"]
+        p5["🔐 Phase 5: Re-auth\nRefresh tokens after SQL"]
+        p6["🚀 Phase 6: Deploy\nazd deploy --no-prompt"]
+        p7["📊 Phase 7: Summary\nGenerate deployment report"]
+        
+        p1 --> p2 --> p3 --> p4a --> p4b --> p5 --> p6 --> p7
     end
 
-    subgraph level3-report ["📊 Level 3: Reporting"]
-        direction LR
-        summary["📊 Summary"]
-        failure["❌ On Failure"]
+    subgraph JOB3 ["summary job"]
+        summary["📊 Workflow Summary\nif: always()"]
     end
 
-    level1 --> level2
-    ci-stage --> deploy-stage --> report-stage
-    ci-stage -.-> level3-ci
-    deploy-stage -.-> level3-deploy
-    report-stage -.-> level3-report
-    p1 --> p2 --> p3 --> p4 --> p5 --> p6
+    subgraph JOB4 ["on-failure job"]
+        onfailure["❌ Failure Handler\nif: failure()"]
+    end
+
+    TRIGGERS --> JOB1
+    JOB1 -->|needs: ci\nif: success OR skipped| JOB2
+    JOB2 -->|needs: ci, deploy-dev| JOB3
+    JOB2 -.->|if: failure()| JOB4
 
     style dispatch fill:#FF9800,stroke:#E65100,color:#fff
     style push fill:#FF9800,stroke:#E65100,color:#fff
-    style ci-stage fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    style deploy-stage fill:#4CAF50,stroke:#2E7D32,color:#fff
-    style report-stage fill:#607D8B,stroke:#455A64,color:#fff
     style ci-call fill:#9C27B0,stroke:#6A1B9A,color:#fff
     style p1 fill:#2196F3,stroke:#1565C0,color:#fff
     style p2 fill:#00BCD4,stroke:#00838F,color:#fff
     style p3 fill:#FF5722,stroke:#E64A19,color:#fff
-    style p4 fill:#795548,stroke:#5D4037,color:#fff
-    style p5 fill:#4CAF50,stroke:#2E7D32,color:#fff
-    style p6 fill:#607D8B,stroke:#455A64,color:#fff
+    style p4a fill:#00BCD4,stroke:#00838F,color:#fff
+    style p4b fill:#795548,stroke:#5D4037,color:#fff
+    style p5 fill:#00BCD4,stroke:#00838F,color:#fff
+    style p6 fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style p7 fill:#607D8B,stroke:#455A64,color:#fff
     style summary fill:#607D8B,stroke:#455A64,color:#fff
-    style failure fill:#F44336,stroke:#C62828,color:#fff
+    style onfailure fill:#F44336,stroke:#C62828,color:#fff
 ```
+
+### Job Dependencies
+
+| Job | Depends On | Condition |
+|-----|------------|----------|
+| `ci` | - | `if: inputs.skip-ci != 'true'` |
+| `deploy-dev` | `ci` | `if: ci.result == 'success' OR 'skipped'` |
+| `summary` | `ci`, `deploy-dev` | `if: always()` |
+| `on-failure` | `ci`, `deploy-dev` | `if: failure()` |
 
 ---
 
