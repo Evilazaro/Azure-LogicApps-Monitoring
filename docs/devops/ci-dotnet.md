@@ -36,7 +36,7 @@ This workflow serves as the entry point for .NET Continuous Integration, orchest
 
 ---
 
-## 2. Triggers
+## ⚙️ Triggers
 
 | Trigger Type | Configuration | Description |
 |-------------|---------------|-------------|
@@ -84,7 +84,7 @@ concurrency:
 
 ---
 
-## 3. Pipeline Flow
+## 🔄 Pipeline Flow
 
 ### Mermaid Diagram
 
@@ -129,7 +129,7 @@ flowchart LR
 
 ---
 
-## 4. Jobs Breakdown
+## 🛠 Jobs Breakdown
 
 | Job | Responsibility | Key Outputs | Conditions |
 |-----|---------------|-------------|------------|
@@ -152,7 +152,7 @@ flowchart LR
 
 ---
 
-## 5. Inputs & Parameters
+## ⚙️ Inputs and Parameters
 
 ### Workflow Dispatch Inputs
 
@@ -163,7 +163,7 @@ flowchart LR
 
 ---
 
-## 6. Secrets & Variables
+## 🔐 Secrets and Variables
 
 ### Secrets
 
@@ -175,7 +175,7 @@ This workflow uses `secrets: inherit` to pass all repository secrets to the reus
 
 ---
 
-## 7. Permissions & Security Model
+## 🔐 Permissions and Security Model
 
 ### GitHub Actions Permissions
 
@@ -196,13 +196,13 @@ This workflow uses `secrets: inherit` to pass all repository secrets to the reus
 
 ---
 
-## 8. Environments & Deployment Strategy
+## 🌐 Environments and Deployment Strategy
 
-This workflow does **not** deploy to any environment. It is purely a CI validation workflow.
+This workflow does not deploy to any environment. It is purely a CI validation workflow.
 
 ---
 
-## 9. Failure Handling & Recovery
+## ⚠️ Failure Handling and Recovery
 
 ### Failure Behavior
 
@@ -218,7 +218,7 @@ This workflow does **not** deploy to any environment. It is purely a CI validati
 
 ---
 
-## 10. How to Run This Workflow
+## 🚀 How to Run This Workflow
 
 ### Automatic Triggers
 
@@ -245,7 +245,7 @@ This workflow does **not** deploy to any environment. It is purely a CI validati
 
 ---
 
-## 11. Extensibility & Customization
+## 🧩 Extensibility and Customization
 
 ### Safe Extension Points
 
@@ -265,7 +265,7 @@ This workflow does **not** deploy to any environment. It is purely a CI validati
 
 ---
 
-## 12. Known Limitations & Gotchas
+## ⚠️ Known Limitations and Gotchas
 
 ### Limitations
 
@@ -282,7 +282,7 @@ This workflow does **not** deploy to any environment. It is purely a CI validati
 
 ---
 
-## 13. Ownership & Maintenance
+## 👥 Ownership and Maintenance
 
 ### Owning Team
 
@@ -299,7 +299,7 @@ This workflow does **not** deploy to any environment. It is purely a CI validati
 
 ---
 
-## 14. Assumptions & Gaps
+## 📋 Assumptions and Gaps
 
 ### Assumptions Made
 
