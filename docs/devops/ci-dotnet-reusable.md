@@ -1,10 +1,26 @@
 # CI - .NET Reusable Workflow Documentation
 
-## 1. Overview & Purpose
+## Table of Contents
 
-### Primary Purpose
+- [Overview](#-overview)
+- [Triggers](#-triggers)
+- [Pipeline Flow](#-pipeline-flow)
+- [Jobs Breakdown](#-jobs-breakdown)
+- [Inputs and Parameters](#-inputs-and-parameters)
+- [Secrets and Variables](#-secrets-and-variables)
+- [Permissions and Security Model](#-permissions-and-security-model)
+- [Environments and Deployment Strategy](#-environments-and-deployment-strategy)
+- [Failure Handling and Recovery](#-failure-handling-and-recovery)
+- [How to Run This Workflow](#-how-to-run-this-workflow)
+- [Extensibility and Customization](#-extensibility-and-customization)
+- [Known Limitations and Gotchas](#-known-limitations-and-gotchas)
+- [Ownership and Maintenance](#-ownership-and-maintenance)
+- [Assumptions and Gaps](#-assumptions-and-gaps)
+- [Artifacts Generated](#artifacts-generated)
 
-This is a **comprehensive reusable CI workflow** for .NET solutions that performs cross-platform builds, testing with code coverage, code formatting analysis, and CodeQL security scanning. It is designed to be called by other workflows and provides consistent CI validation across all .NET projects.
+## 🧭 Overview
+
+This is a comprehensive reusable CI workflow for .NET solutions that performs cross-platform builds, testing with code coverage, code formatting analysis, and CodeQL security scanning. It is designed to be called by other workflows and provides consistent CI validation across all .NET projects.
 
 ### In-Scope Responsibilities
 
@@ -26,7 +42,7 @@ This is a **comprehensive reusable CI workflow** for .NET solutions that perform
 
 ---
 
-## 2. Triggers
+## ⚙️ Triggers
 
 This workflow is triggered exclusively via `workflow_call` from other workflows. It does not have direct triggers.
 
@@ -45,7 +61,7 @@ jobs:
 
 ---
 
-## 3. Pipeline Flow
+## 🔄 Pipeline Flow
 
 ### Mermaid Diagram
 
@@ -122,7 +138,7 @@ flowchart TD
 
 ---
 
-## 4. Jobs Breakdown
+## 🛠 Jobs Breakdown
 
 | Job | Runner | Responsibility | Dependencies | Conditions |
 |-----|--------|---------------|--------------|------------|
@@ -187,7 +203,7 @@ flowchart TD
 
 ---
 
-## 5. Inputs & Parameters
+## ⚙️ Inputs and Parameters
 
 ### Required Inputs
 
@@ -220,7 +236,7 @@ None - all inputs have defaults.
 
 ---
 
-## 6. Secrets & Variables
+## 🔐 Secrets and Variables
 
 ### Secrets
 
@@ -236,7 +252,7 @@ This workflow receives secrets via `secrets: inherit` from caller workflows. No 
 
 ---
 
-## 7. Permissions & Security Model
+## 🔐 Permissions and Security Model
 
 ### GitHub Actions Permissions
 
@@ -248,6 +264,9 @@ This workflow receives secrets via `secrets: inherit` from caller workflows. No 
 | `security-events` | write | Upload CodeQL SARIF results |
 
 ### CodeQL Security Scanning
+
+> [!IMPORTANT]
+> CodeQL security scanning runs on every CI execution. Results are uploaded to GitHub Security tab regardless of findings.
 
 | Configuration | Value | Purpose |
 |--------------|-------|---------|
@@ -267,15 +286,18 @@ This workflow receives secrets via `secrets: inherit` from caller workflows. No 
 
 ---
 
-## 8. Environments & Deployment Strategy
+## 🌐 Environments and Deployment Strategy
 
-This workflow does **not** deploy to any environment. It is purely a CI validation workflow.
+This workflow does not deploy to any environment. It is purely a CI validation workflow.
 
 ---
 
-## 9. Failure Handling & Recovery
+## ⚠️ Failure Handling and Recovery
 
 ### Matrix Strategy Configuration
+
+> [!NOTE]
+> Setting `fail-fast: false` ensures all platforms complete their builds even if one fails, providing comprehensive failure information across all target environments.
 
 ```yaml
 strategy:
@@ -283,9 +305,6 @@ strategy:
   matrix:
     os: [ubuntu-latest, windows-latest, macos-latest]
 ```
-
-- **fail-fast: false**: All platforms complete even if one fails
-- Ensures comprehensive failure information across all platforms
 
 ### Failure Behavior by Job
 
@@ -305,7 +324,7 @@ strategy:
 
 ---
 
-## 10. How to Run This Workflow
+## 🚀 How to Run This Workflow
 
 ### Running via Caller Workflow
 
@@ -333,7 +352,7 @@ jobs:
 
 ---
 
-## 11. Extensibility & Customization
+## 🧩 Extensibility and Customization
 
 ### Safe Extension Points
 
@@ -345,6 +364,9 @@ jobs:
 | Additional CodeQL languages | Add to `languages` list |
 
 ### What Should NOT Be Changed
+
+> [!WARNING]
+> Action SHA pins are security-critical. Unpinning actions exposes the workflow to supply chain attacks.
 
 | Component | Reason |
 |-----------|--------|
@@ -372,7 +394,7 @@ strategy:
 
 ---
 
-## 12. Known Limitations & Gotchas
+## ⚠️ Known Limitations and Gotchas
 
 ### Limitations
 
@@ -399,7 +421,7 @@ strategy:
 
 ---
 
-## 13. Ownership & Maintenance
+## 👥 Ownership and Maintenance
 
 ### Owning Team
 
@@ -425,7 +447,7 @@ strategy:
 
 ---
 
-## 14. Assumptions & Gaps
+## 📋 Assumptions and Gaps
 
 ### Assumptions Made
 
@@ -473,3 +495,10 @@ strategy:
 - **Test results**: Displayed in GitHub check runs; downloadable for analysis
 - **Code coverage**: Integration with coverage reporting tools
 - **SARIF results**: Displayed in GitHub Security tab
+
+---
+
+## 📚 See Also
+
+- [CI - .NET Build and Test Workflow](ci-dotnet.md) - Entry point workflow that calls this reusable workflow
+- [CD - Azure Deployment Workflow](azure-dev.md) - Deployment workflow that uses CI output

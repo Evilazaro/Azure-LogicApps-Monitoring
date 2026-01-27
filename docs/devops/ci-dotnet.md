@@ -1,10 +1,25 @@
 # CI - .NET Build and Test Workflow Documentation
 
-## 1. Overview & Purpose
+## Table of Contents
 
-### Primary Purpose
+- [Overview](#-overview)
+- [Triggers](#-triggers)
+- [Pipeline Flow](#-pipeline-flow)
+- [Jobs Breakdown](#-jobs-breakdown)
+- [Inputs and Parameters](#-inputs-and-parameters)
+- [Secrets and Variables](#-secrets-and-variables)
+- [Permissions and Security Model](#-permissions-and-security-model)
+- [Environments and Deployment Strategy](#-environments-and-deployment-strategy)
+- [Failure Handling and Recovery](#-failure-handling-and-recovery)
+- [How to Run This Workflow](#-how-to-run-this-workflow)
+- [Extensibility and Customization](#-extensibility-and-customization)
+- [Known Limitations and Gotchas](#-known-limitations-and-gotchas)
+- [Ownership and Maintenance](#-ownership-and-maintenance)
+- [Assumptions and Gaps](#-assumptions-and-gaps)
 
-This workflow serves as the **entry point for .NET Continuous Integration**, orchestrating CI operations by calling a reusable workflow. It handles trigger configuration, path filtering, and passes build configuration to the comprehensive reusable CI pipeline.
+## 🧭 Overview
+
+This workflow serves as the entry point for .NET Continuous Integration, orchestrating CI operations by calling a reusable workflow. It handles trigger configuration, path filtering, and passes build configuration to the comprehensive reusable CI pipeline.
 
 ### In-Scope Responsibilities
 
