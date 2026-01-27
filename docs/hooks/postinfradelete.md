@@ -10,7 +10,7 @@ version: "2.0.0"
 
 [Home](../../README.md) > [Docs](..) > [Hooks](README.md) > postinfradelete
 
-> 🗑️ Purges soft-deleted Azure Logic Apps after infrastructure deletion to free up names and resources
+> 🗑️ **Summary**: Purges soft-deleted Azure Logic Apps after infrastructure deletion to free up names and resources.
 
 ---
 
@@ -43,7 +43,7 @@ This script:
 3. Permanently purges them using the Azure Resource Manager REST API
 4. Frees up the Logic App names for reuse in subsequent deployments
 
-**Operations Performed:**
+**Operations Performed**:
 
 1. Validates Azure CLI installation and authentication
 2. Queries soft-deleted Logic Apps via Azure REST API

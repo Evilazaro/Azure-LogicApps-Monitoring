@@ -261,4 +261,4 @@ The script implements comprehensive error handling:
 
 ---
 
-[← Back to Hooks Documentation](README.md)
+[← Back to Hooks Documentation](README.md) | [↑ Back to Top](#check-dev-workstation)

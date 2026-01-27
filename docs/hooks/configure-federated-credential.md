@@ -10,7 +10,7 @@ version: "1.0"
 
 [Home](../../README.md) > [Docs](..) > [Hooks](README.md) > configure-federated-credential
 
-> 🔐 Configures Azure AD federated credentials for secure GitHub Actions authentication using OIDC
+> 🔐 **Summary**: Configures Azure AD federated credentials for secure GitHub Actions authentication using OIDC.
 
 ---
 
@@ -38,7 +38,7 @@ This script configures Azure Active Directory (Azure AD) federated identity cred
 
 Federated credentials eliminate the need to store long-lived secrets in GitHub, instead allowing workflows to request short-lived tokens from Azure AD using the GitHub Actions OIDC provider.
 
-**Operations Performed:**
+**Operations Performed**:
 
 1. Validates Azure CLI installation and authentication
 2. Retrieves or creates Azure AD application registration
@@ -391,4 +391,4 @@ The script implements comprehensive error handling:
 
 ---
 
-[← Back to Hooks Documentation](README.md)
+[← Back to Hooks Documentation](README.md) | [↑ Back to Top](#configure-federated-credential)

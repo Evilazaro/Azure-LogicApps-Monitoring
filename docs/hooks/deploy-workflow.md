@@ -10,7 +10,7 @@ version: "2.0.1"
 
 [Home](../../README.md) > [Docs](..) > [Hooks](README.md) > deploy-workflow
 
-> 🚀 Deploys Azure Logic Apps Standard workflows to Azure using zip deployment mechanism
+> 🚀 **Summary**: Deploys Azure Logic Apps Standard workflows to Azure using zip deployment mechanism.
 
 ---
 
@@ -38,7 +38,7 @@ This script deploys Azure Logic Apps Standard workflows to Azure using the zip d
 
 The script supports variable placeholder resolution using the `${VARIABLE}` syntax, allowing workflow definitions to reference environment-specific values that are substituted at deployment time.
 
-**Operations Performed:**
+**Operations Performed**:
 
 1. Validates Azure CLI installation and authentication
 2. Retrieves Logic App connection runtime URL
@@ -391,4 +391,4 @@ The script implements comprehensive error handling:
 
 ---
 
-[← Back to Hooks Documentation](README.md)
+[← Back to Hooks Documentation](README.md) | [↑ Back to Top](#deploy-workflow)

@@ -10,7 +10,7 @@ version: "2.0.1"
 
 [Home](../../README.md) > [Docs](..) > [Hooks](README.md) > clean-secrets
 
-> 🔐 Clears .NET user secrets from specified project directories for clean environment management
+> 🔐 **Summary**: Clears .NET user secrets from specified project directories for clean environment management.
 
 ---
 
@@ -35,13 +35,13 @@ version: "2.0.1"
 
 This script clears .NET user secrets from specified project directories to ensure a clean development environment. User secrets store sensitive configuration data outside the project tree and may need to be cleared when switching between environments, resetting development state, or troubleshooting configuration issues.
 
-**Target Projects:**
+**Target Projects**:
 
 1. `app.AppHost` — Aspire host orchestration project
 2. `eShop.Orders.API` — Orders API microservice
 3. `eShop.Web.App` — Blazor web application frontend
 
-**Operations Performed:**
+**Operations Performed**:
 
 1. Validates .NET SDK availability and version
 2. Locates target project directories
@@ -295,4 +295,4 @@ The script implements comprehensive error handling:
 
 ---
 
-[← Back to Hooks Documentation](README.md)
+[← Back to Hooks Documentation](README.md) | [↑ Back to Top](#clean-secrets)
