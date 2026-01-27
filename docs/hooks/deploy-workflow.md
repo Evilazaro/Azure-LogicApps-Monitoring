@@ -2,6 +2,9 @@
 
 ## Overview
 
+> [!NOTE]
+> This script automatically runs as an `azd predeploy` hook. Manual execution is also supported.
+
 This script deploys workflow definitions from the OrdersManagement Logic App to Azure. It packages workflow files (`workflow.json`, `connections.json`, `parameters.json`, `host.json`), resolves environment variable placeholders, and deploys via zip deployment to Azure Logic Apps Standard.
 
 The script is designed to run as an **Azure Developer CLI (azd) predeploy hook**, where environment variables are automatically loaded from the azd environment.
@@ -44,6 +47,9 @@ The script is implemented in **both PowerShell and Bash** to support cross-platf
 | Azure Authentication | Yes | Must be logged in with appropriate permissions |
 
 ### Required Environment Variables
+
+> [!WARNING]
+> Deployment will fail if these environment variables are not set. When running via `azd deploy`, they are set automatically.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -236,6 +242,9 @@ export LOGIC_APP_NAME="my-logic-app"
 | `jq is required but not installed` (Bash) | Install jq: `brew install jq` (macOS), `apt-get install jq` (Ubuntu) |
 
 ### Excluded Patterns
+
+> [!TIP]
+> These patterns are excluded from the deployment package. Modify `.funcignore` to customize exclusions.
 
 The following patterns are excluded from deployment (per `.funcignore`):
 

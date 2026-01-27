@@ -2,6 +2,9 @@
 
 ## Overview
 
+> [!NOTE]
+> This script generates **synthetic test data only**. No real customer information is created or transmitted.
+
 This script generates randomized e-commerce orders containing products, customer information, and delivery addresses. The generated data is serialized to JSON format for use in testing, development, and demonstration scenarios with Azure Logic Apps workflows.
 
 Key features include GUID-based order IDs for uniqueness, configurable product counts, price variation simulation (±20%), a global delivery address pool, and random date generation within a defined range (2024-2025).
@@ -99,6 +102,9 @@ flowchart TD
 
 ## Usage
 
+> [!TIP]
+> Use `-WhatIf` (PowerShell) or `--dry-run` (Bash) to preview generation without writing files.
+
 ### PowerShell
 
 ```powershell
@@ -141,6 +147,9 @@ flowchart TD
 ```
 
 ## Parameters
+
+> [!IMPORTANT]
+> Ensure `MinProducts` ≤ `MaxProducts` and `OrderCount` is between 1–10,000.
 
 | Logical Parameter | PowerShell Name | Bash Name | Required | Default | Description |
 |-------------------|-----------------|-----------|----------|---------|-------------|
@@ -297,3 +306,8 @@ The script includes 20 global delivery addresses from major cities worldwide (US
 | Version | 2.0.1 |
 | Last Modified | 2026-01-06 |
 | Repository | [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring) |
+
+## Related Links
+
+- [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
+- [JSON Schema Specification](https://json-schema.org/)

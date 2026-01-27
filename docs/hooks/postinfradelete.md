@@ -2,6 +2,9 @@
 
 ## Overview
 
+> [!CAUTION]
+> This script **permanently purges** soft-deleted Logic Apps. Purged resources cannot be recovered.
+
 This script serves as a post-infrastructure-delete hook for the Azure Developer CLI (azd). It is automatically executed after `azd down` completes to handle cleanup of soft-deleted Azure Logic Apps Standard resources.
 
 When Azure Logic Apps Standard are deleted through normal infrastructure teardown, they enter a soft-delete state and remain recoverable for a retention period. This script permanently purges these soft-deleted resources to ensure complete cleanup of the Azure environment.
@@ -116,6 +119,9 @@ flowchart TD
 
 ## Usage
 
+> [!TIP]
+> Use `-WhatIf` (PowerShell) to preview which Logic Apps would be purged before executing.
+
 ### PowerShell
 
 ```powershell
@@ -227,6 +233,9 @@ azd down
 | Verbose | `[v]` | Detailed diagnostic output (when enabled) |
 
 ## Security Considerations
+
+> [!WARNING]
+> Purged resources cannot be recovered. Always verify with `-WhatIf` or confirmation prompts before purging.
 
 - Uses Azure CLI authentication (no additional credentials stored)
 - REST API calls are authenticated via Azure CLI session

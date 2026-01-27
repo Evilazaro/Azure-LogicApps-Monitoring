@@ -2,6 +2,9 @@
 
 ## Overview
 
+> [!IMPORTANT]
+> The authenticated user **must be an Entra ID administrator** of the SQL Server to run this script.
+
 This script automates the configuration of Microsoft Entra ID (formerly Azure AD) managed identities for Azure SQL Database access. It creates contained database users from external providers and assigns specified database roles using token-based authentication.
 
 Key features include:
@@ -161,6 +164,9 @@ if ($result.Success) {
 
 ## Parameters
 
+> [!WARNING]
+> The `DatabaseName` parameter cannot be `master`. Specify a user database for managed identity configuration.
+
 | Logical Parameter | PowerShell Name | Bash Name | Required | Default | Description |
 |-------------------|-----------------|-----------|----------|---------|-------------|
 | SQL Server Name | `-SqlServerName` | `-s`, `--sql-server-name` | Yes | N/A | Azure SQL Server name (without suffix) |
@@ -257,6 +263,9 @@ The PowerShell script returns a `PSCustomObject` with:
 
 ## Security Considerations
 
+> [!NOTE]
+> This script is **idempotent** and safe to re-run. Existing users and roles are skipped, not duplicated.
+
 - **Token-based authentication** - No SQL passwords are used or stored
 - **TLS 1.2+** - All connections are encrypted
 - **Access tokens not logged** - Sensitive data is excluded from logs
@@ -290,6 +299,9 @@ az sql server ad-admin create \
 | `Firewall blocking connection` | The script auto-configures firewall; check AZURE_RESOURCE_GROUP is set |
 
 ### Installing go-sqlcmd
+
+> [!TIP]
+> Use the platform-specific commands below to install the cross-platform `sqlcmd` tool.
 
 | Platform | Command |
 |----------|---------|

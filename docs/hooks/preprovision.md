@@ -2,6 +2,9 @@
 
 ## Overview
 
+> [!NOTE]
+> This script runs automatically before `azd provision` or `azd up`. Use `-ValidateOnly` to check prerequisites without making changes.
+
 This script performs comprehensive pre-provisioning tasks before Azure resources are provisioned using the Azure Developer CLI (azd). It ensures a clean state by clearing user secrets, validates the development environment, and optionally installs missing prerequisites.
 
 The script validates:
@@ -59,6 +62,9 @@ The script validates the following prerequisites:
 | iconv | Any | For Azure AD token encoding (Bash) |
 
 ### Required Azure Resource Providers
+
+> [!IMPORTANT]
+> These resource providers must be registered in your Azure subscription. The script validates and can register them automatically.
 
 | Provider | Description |
 |----------|-------------|
@@ -133,6 +139,9 @@ flowchart TD
 ```
 
 ## Usage
+
+> [!TIP]
+> For remote or headless environments, use `-UseDeviceCodeLogin` to authenticate via device code flow.
 
 ### PowerShell
 
@@ -303,6 +312,9 @@ azd provision
 | `Permission denied` | Ensure execute permissions on scripts |
 
 ### Auto-Installation Support
+
+> [!TIP]
+> Use `-AutoInstall` with `-Force` for unattended CI/CD pipelines to automatically install missing prerequisites.
 
 The `-AutoInstall` flag supports automatic installation of:
 

@@ -2,6 +2,9 @@
 
 ## Overview
 
+> [!NOTE]
+> This script runs automatically after `azd provision` or `azd up` completes. It can also be run manually.
+
 This script is automatically executed by Azure Developer CLI (azd) after infrastructure provisioning completes. It performs comprehensive post-deployment configuration to enable local development and Azure resource connectivity.
 
 The script handles:
@@ -40,6 +43,9 @@ The script is implemented in **both PowerShell and Bash** to support cross-platf
 | macOS | ✓ |
 
 ## Prerequisites
+
+> [!IMPORTANT]
+> Ensure you are authenticated to Azure CLI before running this script manually.
 
 | Prerequisite | Required | Description |
 |--------------|----------|-------------|
@@ -128,6 +134,9 @@ flowchart TD
 ```
 
 ## Usage
+
+> [!TIP]
+> Use `-WhatIf` (PowerShell) or `--dry-run` (Bash) to preview configuration changes.
 
 ### PowerShell
 
@@ -297,6 +306,10 @@ dotnet user-secrets set "ConnectionStrings:SqlDatabase" "Server=xxx;Database=xxx
 | Repository | [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring) |
 
 ## Related Links
+
+- [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+- [.NET User Secrets](https://learn.microsoft.com/dotnet/core/tools/dotnet-user-secrets)
+- [Azure Container Registry Authentication](https://learn.microsoft.com/azure/container-registry/container-registry-authentication)
 
 - [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
 - [.NET User Secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets)
