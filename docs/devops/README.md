@@ -1,15 +1,32 @@
+---
+title: DevOps Documentation Index
+description: Central index for all GitHub Actions workflow documentation in the Azure Logic Apps Monitoring repository
+author: DevOps Team
+date: 2026-01-26
+version: 1.0.0
+tags: [devops, github-actions, ci-cd, documentation, index]
+---
+
 # 📚 DevOps Documentation
 
 > Central index for all GitHub Actions workflow documentation in the Azure Logic Apps Monitoring repository.
 
+> [!NOTE]
+> **Audience:** DevOps Engineers, Platform Engineers, Developers  
+> **Reading time:** ~3 minutes
+
 ---
 
-## 📑 Table of Contents
+<details>
+<summary>📑 Table of Contents</summary>
 
 - [📄 Workflow Documentation](#-workflow-documentation)
 - [🔄 Workflow Relationships](#-workflow-relationships)
 - [📊 Quick Reference](#-quick-reference)
 - [🔧 Maintenance](#-maintenance)
+- [📚 Related Documents](#-related-documents)
+
+</details>
 
 ---
 
@@ -75,13 +92,24 @@ flowchart LR
 
 ## 🔧 Maintenance
 
-These documents should be updated when:
+> [!IMPORTANT]
+> These documents should be updated when:
+>
+> - Workflow triggers or conditions change
+> - New jobs or steps are added
+> - Permissions are modified
+> - Input/output parameters change
+> - Security-relevant configurations are updated
 
-- Workflow triggers or conditions change
-- New jobs or steps are added
-- Permissions are modified
-- Input/output parameters change
-- Security-relevant configurations are updated
+---
+
+## 📚 Related Documents
+
+| Document | Description |
+|:---------|:------------|
+| [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/) | Official azd documentation |
+| [GitHub Actions Reusable Workflows](https://docs.github.com/en/actions/sharing-automations/reusing-workflows) | GitHub documentation for reusable workflows |
+| [OIDC Federation Setup](../hooks/configure-federated-credential.md) | Instructions for setting up Azure AD federation |
 
 ---
 
@@ -89,4 +117,8 @@ These documents should be updated when:
 
 ---
 
+<div align="center">
+
 [⬆️ Back to Top](#-devops-documentation)
+
+</div>

@@ -1,10 +1,35 @@
+---
+title: CI - .NET Build and Test
+description: Orchestration workflow that triggers and configures the reusable CI workflow for .NET builds, testing, and security scanning
+author: DevOps Team
+date: 2026-01-26
+version: 1.0.0
+tags: [ci, dotnet, github-actions, build, test, codeql]
+---
+
 # 🛠️ CI - .NET Build and Test
 
 > Orchestration workflow that triggers and configures the reusable CI workflow for .NET builds, testing, and security scanning.
 
+> [!NOTE]
+> **Audience:** DevOps Engineers, Developers, Contributors  
+> **Reading time:** ~8 minutes
+
 ---
 
-## 📑 Table of Contents
+<details>
+<summary>🧭 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:------|:-----|
+| — | [📚 Documentation Index](README.md) | [🔄 CI Reusable Workflow](ci-dotnet-reusable.md) |
+
+</details>
+
+---
+
+<details>
+<summary>📑 Table of Contents</summary>
 
 - [📋 Overview and Purpose](#-overview-and-purpose)
 - [⚡ Triggers](#-triggers)
@@ -20,6 +45,8 @@
 - [⚠️ Known Limitations and Gotchas](#️-known-limitations-and-gotchas)
 - [👥 Ownership and Maintenance](#-ownership-and-maintenance)
 - [📝 Assumptions and Gaps](#-assumptions-and-gaps)
+
+</details>
 
 ---
 
