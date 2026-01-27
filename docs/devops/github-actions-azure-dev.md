@@ -1,24 +1,23 @@
 # CD - Azure Deployment Workflow
 
-> **File:** `.github/workflows/azure-dev.yml`  
-> **Last Updated:** 2026-01-26
+> **Workflow file:** [`.github/workflows/azure-dev.yml`](../../.github/workflows/azure-dev.yml)
 
 ---
 
-## 1. Overview and Purpose
+## 1. Overview & Purpose
 
 ### What This Workflow Does
 
 This workflow implements a complete Continuous Delivery (CD) pipeline that provisions Azure infrastructure and deploys a .NET application using **Azure Developer CLI (azd)** with **OpenID Connect (OIDC) federated credentials**. The pipeline integrates CI validation, infrastructure provisioning, SQL database configuration with Managed Identity, and application deployment.
 
-### When to Use This Workflow
+### When to Use
 
 - Deploying the application to the `dev` environment
 - Provisioning or updating Azure infrastructure via Bicep templates
 - Configuring SQL database access for Managed Identity authentication
 - Triggering deployments after code changes to `src/`, `app.*/`, `infra/`, or `azure.yaml`
 
-### When NOT to Use This Workflow
+### When NOT to Use
 
 - For production deployments (this targets `dev` environment only)
 - For running CI checks without deployment (use `ci-dotnet.yml` instead)
@@ -65,37 +64,32 @@ The CI job can be bypassed via manual dispatch (`skip-ci=true`) for emergency sc
 
 ```mermaid
 flowchart LR
-    subgraph ci-pipeline ["CI Pipeline"]
-        ci["ci<br/>Build, Test, Analyze, CodeQL"]
+    subgraph ci-stage["CI Stage"]
+        ci["ci"]
     end
     
-    subgraph deployment ["Deployment"]
-        deploy["deploy-dev<br/>Provision + Deploy"]
+    subgraph deploy-stage["Deploy Stage"]
+        deploy-dev["deploy-dev"]
     end
     
-    subgraph reporting ["Reporting"]
-        summary["summary<br/>Status Report"]
-        failure["on-failure<br/>Failure Handler"]
+    subgraph reporting["Reporting"]
+        summary["summary"]
+        on-failure["on-failure"]
     end
     
-    ci -->|success or skipped| deploy
-    deploy --> summary
-    ci --> summary
-    deploy --> failure
-    ci --> failure
-    
-    style ci fill:#4da6ff,stroke:#0066cc,color:#fff
-    style deploy fill:#66cc66,stroke:#339933,color:#fff
-    style summary fill:#9966ff,stroke:#6633cc,color:#fff
-    style failure fill:#ff6666,stroke:#cc3333,color:#fff
+    ci-stage --> deploy-stage
+    deploy-stage --> reporting
+    ci -->|success/skipped| deploy-dev
+    deploy-dev --> summary
+    ci & deploy-dev -->|failure| on-failure
 ```
 
 ### Interpretation Notes
 
-- **Sequential execution:** CI must complete (success or skip) before deployment begins
-- **Failure isolation:** The `on-failure` job runs only when `ci` or `deploy-dev` fails, providing targeted diagnostics
-- **Always-run summary:** The `summary` job executes regardless of previous job outcomes, ensuring visibility
-- **No parallel deployment:** Concurrency control prevents simultaneous deployments to the same environment
+- **Sequential execution**: CI must complete (success or skip) before deployment begins
+- **Failure isolation**: The `on-failure` job runs only when `ci` or `deploy-dev` fails
+- **Always-run summary**: The `summary` job executes regardless of previous job outcomes
+- **No parallel deployment**: Concurrency control prevents simultaneous deployments to the same environment
 
 ---
 
@@ -160,7 +154,7 @@ flowchart LR
 
 ---
 
-## 5. Inputs and Parameters
+## 5. Inputs & Parameters
 
 ### Manual Dispatch Inputs
 
@@ -180,7 +174,7 @@ flowchart LR
 
 ---
 
-## 6. Secrets and Variables
+## 6. Secrets & Variables
 
 ### Required Repository Variables
 
@@ -207,7 +201,7 @@ flowchart LR
 
 ---
 
-## 7. Permissions and Security Model
+## 7. Permissions & Security Model
 
 ### GitHub Actions Permissions
 
@@ -237,7 +231,7 @@ flowchart LR
 
 ---
 
-## 8. Environments and Deployment Strategy
+## 8. Environments & Deployment Strategy
 
 ### Supported Environments
 
@@ -263,7 +257,7 @@ The `deploy-dev` job uses the GitHub Environment `dev`, which enables:
 
 ---
 
-## 9. Failure Handling and Recovery
+## 9. Failure Handling & Recovery
 
 ### Automatic Retry Behavior
 
@@ -321,7 +315,7 @@ The workflow runs automatically on:
 
 ---
 
-## 11. Extensibility and Customization
+## 11. Extensibility & Customization
 
 ### Safe Extension Points
 
@@ -352,7 +346,7 @@ To add a staging environment:
 
 ---
 
-## 12. Known Limitations and Gotchas
+## 12. Known Limitations & Gotchas
 
 ### Limitations
 
@@ -374,7 +368,7 @@ To add a staging environment:
 
 ---
 
-## 13. Ownership and Maintenance
+## 13. Ownership & Maintenance
 
 ### Ownership
 
@@ -401,7 +395,7 @@ To add a staging environment:
 
 ---
 
-## 14. Assumptions and Gaps
+## 14. Assumptions & Gaps
 
 ### Assumptions
 
