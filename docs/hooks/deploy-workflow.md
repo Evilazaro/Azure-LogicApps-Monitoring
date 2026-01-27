@@ -2,9 +2,6 @@
 
 ## Overview
 
-> [!NOTE]
-> This script automatically runs as an `azd predeploy` hook. Manual execution is also supported.
-
 This script deploys workflow definitions from the OrdersManagement Logic App to Azure. It packages workflow files (`workflow.json`, `connections.json`, `parameters.json`, `host.json`), resolves environment variable placeholders, and deploys via zip deployment to Azure Logic Apps Standard.
 
 The script is designed to run as an **Azure Developer CLI (azd) predeploy hook**, where environment variables are automatically loaded from the azd environment.
@@ -12,6 +9,9 @@ The script is designed to run as an **Azure Developer CLI (azd) predeploy hook**
 The script is implemented in **both PowerShell and Bash** to support cross-platform deployment scenarios.
 
 ## Script Classification
+
+> [!NOTE]
+> This script automatically runs as an `azd predeploy` hook. Manual execution is also supported.
 
 | Attribute | Value |
 |-----------|-------|

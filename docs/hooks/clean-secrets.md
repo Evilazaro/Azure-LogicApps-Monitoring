@@ -2,10 +2,10 @@
 
 ## Overview
 
+This script clears all .NET user secrets from the configured projects in the Azure Logic Apps Monitoring solution to ensure a clean state. This is essential before re-provisioning Azure resources, when troubleshooting configuration issues, when rotating secrets or credentials, or when setting up a fresh development environment.
+
 > [!CAUTION]
 > This script permanently removes user secrets. Use `-WhatIf` or `--dry-run` to preview changes before execution.
-
-This script clears all .NET user secrets from the configured projects in the Azure Logic Apps Monitoring solution to ensure a clean state. This is essential before re-provisioning Azure resources, when troubleshooting configuration issues, when rotating secrets or credentials, or when setting up a fresh development environment.
 
 The script is implemented in **both PowerShell and Bash** to support cross-platform development environments.
 

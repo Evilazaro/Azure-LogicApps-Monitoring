@@ -2,10 +2,10 @@
 
 ## Overview
 
+This script generates randomized e-commerce orders containing products, customer information, and delivery addresses. The generated data is serialized to JSON format for use in testing, development, and demonstration scenarios with Azure Logic Apps workflows.
+
 > [!NOTE]
 > This script generates **synthetic test data only**. No real customer information is created or transmitted.
-
-This script generates randomized e-commerce orders containing products, customer information, and delivery addresses. The generated data is serialized to JSON format for use in testing, development, and demonstration scenarios with Azure Logic Apps workflows.
 
 Key features include GUID-based order IDs for uniqueness, configurable product counts, price variation simulation (±20%), a global delivery address pool, and random date generation within a defined range (2024-2025).
 

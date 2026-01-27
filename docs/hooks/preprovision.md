@@ -2,9 +2,6 @@
 
 ## Overview
 
-> [!NOTE]
-> This script runs automatically before `azd provision` or `azd up`. Use `-ValidateOnly` to check prerequisites without making changes.
-
 This script performs comprehensive pre-provisioning tasks before Azure resources are provisioned using the Azure Developer CLI (azd). It ensures a clean state by clearing user secrets, validates the development environment, and optionally installs missing prerequisites.
 
 The script validates:
@@ -21,6 +18,9 @@ The script validates:
 The script is implemented in **both PowerShell and Bash** to support cross-platform execution.
 
 ## Script Classification
+
+> [!NOTE]
+> This script runs automatically before `azd provision` or `azd up`. Use `-ValidateOnly` to check prerequisites without making changes.
 
 | Attribute | Value |
 |-----------|-------|

@@ -2,9 +2,6 @@
 
 ## Overview
 
-> [!IMPORTANT]
-> This script enables passwordless authentication between GitHub Actions and Azure using OIDC federation.
-
 This script configures federated identity credentials in an Azure AD App Registration to enable GitHub Actions workflows to authenticate using OpenID Connect (OIDC) without storing secrets. This enables secure, passwordless authentication between GitHub Actions and Azure resources.
 
 The script is implemented in **both PowerShell and Bash** to support cross-platform execution and can be run as an Azure Developer CLI (azd) hook or standalone utility.

@@ -2,9 +2,6 @@
 
 ## Overview
 
-> [!IMPORTANT]
-> The authenticated user **must be an Entra ID administrator** of the SQL Server to run this script.
-
 This script automates the configuration of Microsoft Entra ID (formerly Azure AD) managed identities for Azure SQL Database access. It creates contained database users from external providers and assigns specified database roles using token-based authentication.
 
 Key features include:
@@ -52,6 +49,9 @@ The script is implemented in **both PowerShell and Bash** to support cross-platf
 | AzureGermanCloud | `.database.cloudapi.de` |
 
 ## Prerequisites
+
+> [!IMPORTANT]
+> The authenticated user **must be an Entra ID administrator** of the SQL Server to run this script.
 
 | Prerequisite | Required | Description |
 |--------------|----------|-------------|
