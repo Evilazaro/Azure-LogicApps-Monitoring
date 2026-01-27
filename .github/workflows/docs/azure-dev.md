@@ -568,12 +568,40 @@ git checkout <previous-commit-sha>
 azd deploy --no-prompt
 ```
 
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
 ---
 
-## Related Documentation
+## 📚 Related Documentation
 
-- [CI - .NET Build and Test](ci-dotnet.md) - CI workflow documentation
-- [CI - .NET Reusable Workflow](ci-dotnet-reusable.md) - Reusable CI workflow
-- [Azure OIDC Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure) - Azure federated credentials
-- [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) - azd documentation
-- [go-sqlcmd](https://github.com/microsoft/go-sqlcmd) - SQL command-line tool
+### Internal Documentation
+
+| Document | Description |
+|----------|-------------|
+| [📚 Documentation Index](README.md) | Main documentation hub |
+| [🔨 CI - .NET Build and Test](ci-dotnet.md) | CI workflow documentation |
+| [🔄 CI - .NET Reusable Workflow](ci-dotnet-reusable.md) | Reusable CI workflow |
+
+### External Resources
+
+| Resource | Description |
+|----------|-------------|
+| [Azure OIDC Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure) | Azure federated credentials guide |
+| [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) | azd documentation |
+| [go-sqlcmd](https://github.com/microsoft/go-sqlcmd) | SQL command-line tool |
+
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
+---
+
+<div align="center">
+
+**🔗 Navigation**
+
+[⬅️ Previous: CI Reusable](ci-dotnet-reusable.md) • [📚 Documentation Index](README.md) • [➡️ Next: CI Workflow](ci-dotnet.md)
+
+---
+
+*Last updated: January 27, 2026*
+
+</div>

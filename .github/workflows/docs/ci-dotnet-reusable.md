@@ -1,11 +1,50 @@
-# CI - .NET Reusable Workflow
+---
+title: CI - .NET Reusable Workflow
+description: Comprehensive reusable CI workflow documentation for cross-platform .NET builds, testing, code analysis, and CodeQL security scanning
+author: DevOps Team
+last_updated: 2026-01-27
+tags: [ci, dotnet, reusable-workflow, cross-platform, codeql, testing]
+---
+
+# 🔄 CI - .NET Reusable Workflow
+
+<div align="center">
 
 ![Workflow](https://img.shields.io/badge/workflow-Reusable-green?style=flat-square)
 ![.NET](https://img.shields.io/badge/.NET-10.0-purple?style=flat-square)
 ![Cross-Platform](https://img.shields.io/badge/cross--platform-Ubuntu%20%7C%20Windows%20%7C%20macOS-orange?style=flat-square)
 ![CodeQL](https://img.shields.io/badge/security-CodeQL-red?style=flat-square)
 
-## Overview
+**[📚 Documentation Index](README.md)** • **[🔨 CI Caller](ci-dotnet.md)** • **[🚀 CD Workflow](azure-dev.md)**
+
+</div>
+
+---
+
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [⚡ Trigger Events](#-trigger-events)
+- [📥 Input Parameters](#-input-parameters)
+- [📤 Output Parameters](#-output-parameters)
+- [📝 Jobs Breakdown](#-jobs-breakdown)
+  - [🔨 Build Job](#-build-job-cross-platform-matrix)
+  - [🧪 Test Job](#-test-job-cross-platform-matrix)
+  - [🔍 Analyze Job](#-analyze-job-optional)
+  - [🛡️ CodeQL Job](#️-codeql-job-always-runs)
+  - [📊 Summary Job](#-summary-job)
+  - [❌ On-Failure Job](#-on-failure-job)
+- [🔐 Permissions](#-permissions)
+- [📦 Artifacts Generated](#-artifacts-generated)
+- [🔗 External Actions Used](#-external-actions-used)
+- [🌍 Environment Variables](#-environment-variables)
+- [💡 Usage Examples](#-usage-examples)
+- [📚 Related Documentation](#-related-documentation)
+
+---
+
+## 📋 Overview
 
 | Property | Value |
 |----------|-------|
@@ -21,9 +60,14 @@ This reusable workflow provides a complete CI pipeline that performs:
 - **Code formatting analysis** (.editorconfig compliance)
 - **CodeQL security scanning** (always enabled)
 
+> [!TIP]
+> This is a **reusable workflow** - call it from other workflows using `uses: ./.github/workflows/ci-dotnet-reusable.yml`.
+
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
-## Workflow Diagram
+## 📊 Workflow Diagram
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'fontSize': '14px', 'primaryColor': '#E3F2FD', 'lineColor': '#90A4AE', 'textColor': '#37474F', 'clusterBkg': '#FAFAFA'}}}%%
@@ -129,17 +173,21 @@ flowchart TB
     classDef node-macos fill:#ECEFF1,stroke:#78909C,stroke-width:2px,color:#455A64,font-weight:bold
 ```
 
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
-## Trigger Events
+## ⚡ Trigger Events
 
 | Trigger | Description |
 |---------|-------------|
 | **workflow_call** | Called by other workflows as a reusable workflow |
 
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
-## Input Parameters
+## 📥 Input Parameters
 
 | Input | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
@@ -154,9 +202,14 @@ flowchart TB
 | `enable-code-analysis` | `boolean` | No | `true` | Enable code formatting analysis |
 | `fail-on-format-issues` | `boolean` | No | `true` | Fail workflow on formatting issues |
 
+> [!NOTE]
+> All inputs have sensible defaults. You can call this workflow without any inputs for a standard CI pipeline.
+
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
-## Output Parameters
+## 📤 Output Parameters
 
 | Output | Description |
 |--------|-------------|
@@ -166,9 +219,11 @@ flowchart TB
 | `analyze-result` | Analysis job result |
 | `codeql-result` | CodeQL security scan result |
 
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
-## Jobs Breakdown
+## 📝 Jobs Breakdown
 
 ### 🔨 Build Job (Cross-Platform Matrix)
 
@@ -191,6 +246,8 @@ flowchart TB
 | 🔨 Build | `dotnet build` | Compile solution |
 | 📤 Upload artifacts | `actions/upload-artifact@v6.0.0` | Upload build artifacts per OS |
 | 📊 Summary | Shell | Generate build summary |
+
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
 
 ---
 
@@ -219,6 +276,8 @@ flowchart TB
 | 📤 Upload coverage | `actions/upload-artifact@v6.0.0` | Upload Cobertura XML per OS |
 | 📊 Summary | Shell | Generate test summary |
 
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
 ### 🔍 Analyze Job (Optional)
@@ -242,6 +301,11 @@ flowchart TB
 | 🎨 Verify formatting | `dotnet format --verify-no-changes` | Check .editorconfig compliance |
 | 📊 Summary | Shell | Generate analysis summary |
 | ❌ Fail on issues | Shell | Fail if formatting issues found |
+
+> [!TIP]
+> Use `.editorconfig` files to define your code style rules. The analyze job verifies compliance automatically.
+
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
 
 ---
 
@@ -274,6 +338,11 @@ flowchart TB
 | **Query Suites** | `security-extended`, `security-and-quality` |
 | **Paths Ignored** | `**/tests/**`, `**/test/**`, `**/*.test.cs`, `**/*.Tests.cs` |
 
+> [!IMPORTANT]
+> CodeQL is **always enabled** and cannot be disabled. Security scanning is mandatory for all builds.
+
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
 ### 📊 Summary Job
@@ -287,6 +356,8 @@ flowchart TB
 | **Condition** | `always()` |
 
 Aggregates results from all jobs into a comprehensive summary report.
+
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
 
 ---
 
@@ -302,9 +373,11 @@ Aggregates results from all jobs into a comprehensive summary report.
 
 Reports detailed failure information when any job fails.
 
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
-## Permissions
+## 🔐 Permissions
 
 | Permission | Level | Purpose |
 |------------|-------|---------|
@@ -313,9 +386,11 @@ Reports detailed failure information when any job fails.
 | `pull-requests` | `write` | Post comments on pull requests |
 | `security-events` | `write` | Upload CodeQL SARIF results to Security tab |
 
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
-## Artifacts Generated
+## 📦 Artifacts Generated
 
 | Artifact | Description | Retention |
 |----------|-------------|-----------|
@@ -330,9 +405,14 @@ Reports detailed failure information when any job fails.
 | `code-coverage-macos-latest` | Cobertura XML (macOS) | 30 days |
 | `codeql-sarif-results` | Security scan SARIF | 30 days |
 
+> [!NOTE]
+> Artifacts are generated per-OS for build outputs and test results, enabling cross-platform debugging.
+
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
-## External Actions Used
+## 🔗 External Actions Used
 
 | Action | Version | Purpose |
 |--------|---------|---------|
@@ -344,9 +424,14 @@ Reports detailed failure information when any job fails.
 | `github/codeql-action/autobuild` | `v3.28.0` (SHA pinned) | CodeQL autobuild |
 | `github/codeql-action/analyze` | `v3.28.0` (SHA pinned) | CodeQL analysis |
 
+> [!IMPORTANT]
+> All actions are **SHA-pinned** for supply chain security. Update versions carefully after verifying commit SHAs.
+
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
+
 ---
 
-## Environment Variables
+## 🌍 Environment Variables
 
 | Variable | Value | Description |
 |----------|-------|-------------|
