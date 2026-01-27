@@ -50,96 +50,68 @@ workflow_file: .github/workflows/ci-dotnet-reusable.yml
 ## Workflow Diagram
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#424242', 'secondaryColor': '#4CAF50', 'tertiaryColor': '#E3F2FD'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#616161', 'secondaryColor': '#E3F2FD', 'tertiaryColor': '#FAFAFA', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
 flowchart TB
-    subgraph workflow-reusable ["🔧 CI - .NET Reusable Workflow"]
-        direction TB
-
-        subgraph trigger-level ["🎯 Level 1: Workflow Trigger"]
-            direction LR
-            workflow-call["📞 workflow_call<br/>Called by ci-dotnet.yml"]
-        end
-
-        subgraph ci-stages ["📋 Level 2: CI Stages"]
-            direction TB
-            
-            subgraph build-stage ["🔨 Build Stage"]
-                direction LR
-                build-matrix["Matrix Build<br/>(fail-fast: false)"]
-            end
-
-            subgraph test-stage ["🧪 Test Stage"]
-                direction LR
-                test-matrix["Matrix Test<br/>(fail-fast: false)"]
-            end
-
-            subgraph analysis-stage ["🔍 Analysis Stage"]
-                direction LR
-                analyze-stage["Code Analysis"]
-                security-stage["Security Scan"]
-            end
-
-            subgraph summary-stage ["📊 Summary Stage"]
-                direction LR
-                summary-job["Results Summary"]
-            end
-        end
-
-        subgraph build-jobs ["🔨 Level 3: Build Jobs"]
-            direction LR
-            build-ubuntu["🐧 Build<br/>ubuntu-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>☁️ Workloads<br/>🏷️ Version<br/>📥 Restore<br/>🔨 Build<br/>📤 Upload"]
-            build-windows["🪟 Build<br/>windows-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>☁️ Workloads<br/>🏷️ Version<br/>📥 Restore<br/>🔨 Build<br/>📤 Upload"]
-            build-macos["🍎 Build<br/>macos-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>☁️ Workloads<br/>🏷️ Version<br/>📥 Restore<br/>🔨 Build<br/>📤 Upload"]
-        end
-
-        subgraph test-jobs ["🧪 Level 3: Test Jobs"]
-            direction LR
-            test-ubuntu["🐧 Test<br/>ubuntu-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>📥 Restore<br/>🔨 Build<br/>🧪 Test<br/>📋 Report<br/>📤 Upload"]
-            test-windows["🪟 Test<br/>windows-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>📥 Restore<br/>🔨 Build<br/>🧪 Test<br/>📋 Report<br/>📤 Upload"]
-            test-macos["🍎 Test<br/>macos-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>📥 Restore<br/>🔨 Build<br/>🧪 Test<br/>📋 Report<br/>📤 Upload"]
-        end
-
-        subgraph analysis-jobs ["🔍 Level 3: Analysis Jobs"]
-            direction LR
-            analyze-job["🎨 Analyze<br/>ubuntu-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>📥 Restore<br/>🎨 Format Check<br/>📊 Summary"]
-            codeql-job["🛡️ CodeQL<br/>ubuntu-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>🛡️ Init CodeQL<br/>🔨 Autobuild<br/>🛡️ Analyze<br/>📤 Upload SARIF"]
-        end
-
-        subgraph summary-jobs ["📊 Level 3: Summary Jobs"]
-            direction LR
-            summary-final["📊 Summary<br/>───────────<br/>Aggregate Results<br/>Generate Report<br/>Action Required"]
-            on-failure["❌ On Failure<br/>───────────<br/>Report Failure<br/>Job Status Table<br/>Next Steps"]
-        end
+    subgraph level1 ["🎯 Level 1: Trigger"]
+        call["📞 workflow_call"]
     end
 
-    workflow-call --> ci-stages
-    build-stage --> test-stage
-    test-stage --> analysis-stage
-    analysis-stage --> summary-stage
+    subgraph level2 ["📋 Level 2: Stages"]
+        direction LR
+        s-build["🔨 Build"]
+        s-test["🧪 Test"]
+        s-analyze["🔍 Analyze"]
+        s-summary["📊 Summary"]
+    end
 
-    build-matrix --> build-jobs
-    test-matrix --> test-jobs
-    analyze-stage --> analyze-job
-    security-stage --> codeql-job
-    summary-stage --> summary-jobs
+    subgraph level3 ["🔨 Level 3: Build Jobs"]
+        direction LR
+        build-ubuntu["🐧 Ubuntu<br/>───────<br/>Checkout<br/>Setup .NET<br/>Restore<br/>Build<br/>Upload"]
+        build-windows["🪟 Windows<br/>───────<br/>Checkout<br/>Setup .NET<br/>Restore<br/>Build<br/>Upload"]
+        build-macos["🍎 macOS<br/>───────<br/>Checkout<br/>Setup .NET<br/>Restore<br/>Build<br/>Upload"]
+    end
 
-    classDef trigger fill:#FF9800,stroke:#E65100,color:#FFFFFF
-    classDef stage fill:#1976D2,stroke:#0D47A1,color:#FFFFFF
-    classDef ubuntu fill:#E65100,stroke:#BF360C,color:#FFFFFF
-    classDef windows fill:#0277BD,stroke:#01579B,color:#FFFFFF
-    classDef macos fill:#424242,stroke:#212121,color:#FFFFFF
-    classDef analysis fill:#00BCD4,stroke:#00838F,color:#FFFFFF
-    classDef summary fill:#607D8B,stroke:#37474F,color:#FFFFFF
-    classDef failure fill:#F44336,stroke:#C62828,color:#FFFFFF
+    subgraph level3b ["🧪 Level 3: Test Jobs"]
+        direction LR
+        test-ubuntu["🐧 Ubuntu<br/>───────<br/>Checkout<br/>Setup .NET<br/>Build<br/>Test<br/>Coverage"]
+        test-windows["🪟 Windows<br/>───────<br/>Checkout<br/>Setup .NET<br/>Build<br/>Test<br/>Coverage"]
+        test-macos["🍎 macOS<br/>───────<br/>Checkout<br/>Setup .NET<br/>Build<br/>Test<br/>Coverage"]
+    end
 
-    class workflow-call trigger
-    class build-stage,test-stage,analysis-stage,summary-stage stage
-    class build-ubuntu,test-ubuntu ubuntu
-    class build-windows,test-windows windows
-    class build-macos,test-macos macos
-    class analyze-job,codeql-job analysis
-    class summary-final summary
-    class on-failure failure
+    subgraph level3c ["🔍 Level 3: Analysis Jobs"]
+        direction LR
+        analyze["🎨 Format Check<br/>───────<br/>dotnet format<br/>--verify-no-changes"]
+        codeql["🛡️ CodeQL Scan<br/>───────<br/>security-extended<br/>security-and-quality"]
+    end
+
+    subgraph level3d ["📊 Level 3: Summary"]
+        direction LR
+        summary["📊 Results<br/>Aggregation"]
+        failure["❌ Failure<br/>Handler"]
+    end
+
+    level1 --> level2
+    s-build --> s-test --> s-analyze --> s-summary
+    s-build -.-> level3
+    s-test -.-> level3b
+    s-analyze -.-> level3c
+    s-summary -.-> level3d
+
+    style call fill:#FF9800,stroke:#E65100,color:#fff
+    style s-build fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style s-test fill:#9C27B0,stroke:#6A1B9A,color:#fff
+    style s-analyze fill:#00BCD4,stroke:#00838F,color:#fff
+    style s-summary fill:#607D8B,stroke:#455A64,color:#fff
+    style build-ubuntu fill:#E65100,stroke:#BF360C,color:#fff
+    style build-windows fill:#0277BD,stroke:#01579B,color:#fff
+    style build-macos fill:#424242,stroke:#212121,color:#fff
+    style test-ubuntu fill:#E65100,stroke:#BF360C,color:#fff
+    style test-windows fill:#0277BD,stroke:#01579B,color:#fff
+    style test-macos fill:#424242,stroke:#212121,color:#fff
+    style analyze fill:#00BCD4,stroke:#00838F,color:#fff
+    style codeql fill:#00BCD4,stroke:#00838F,color:#fff
+    style summary fill:#607D8B,stroke:#455A64,color:#fff
+    style failure fill:#F44336,stroke:#C62828,color:#fff
 ```
 
 ---

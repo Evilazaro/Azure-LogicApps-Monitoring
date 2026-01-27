@@ -49,122 +49,62 @@ workflow_file: .github/workflows/azure-dev.yml
 ## Workflow Diagram
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#424242', 'secondaryColor': '#4CAF50', 'tertiaryColor': '#E3F2FD'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#616161', 'secondaryColor': '#E3F2FD', 'tertiaryColor': '#FAFAFA', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
 flowchart TB
-    subgraph workflow-cd ["🚀 CD - Azure Deployment Workflow"]
-        direction TB
-
-        subgraph triggers ["🎯 Level 1: Triggers"]
-            direction LR
-            trigger-dispatch["🖱️ workflow_dispatch<br/>skip-ci option"]
-            trigger-push["📤 Push<br/>paths: src/**, app.**/**, infra/**, azure.yaml"]
-        end
-
-        subgraph pipeline-stages ["📋 Level 2: Pipeline Stages"]
-            direction TB
-            
-            subgraph ci-stage ["🔄 CI Stage (Optional)"]
-                ci-check{"Skip CI?"}
-            end
-
-            subgraph deploy-stage ["🚀 Deploy Stage"]
-                deploy-check["Deploy Dev"]
-            end
-
-            subgraph reporting-stage ["📊 Reporting Stage"]
-                direction LR
-                summary-check["Summary"]
-                failure-check["Handle Failure"]
-            end
-        end
-
-        subgraph ci-job ["🔄 Level 3: CI Job"]
-            direction TB
-            ci-reusable["🔧 Call Reusable Workflow<br/>ci-dotnet-reusable.yml<br/>───────────<br/>🔨 Build (3 OS)<br/>🧪 Test (3 OS)<br/>🔍 Analyze<br/>🛡️ CodeQL"]
-        end
-
-        subgraph deploy-job ["🚀 Level 3: Deploy Dev Job"]
-            direction TB
-            
-            subgraph phase1 ["📥 Phase 1: Setup"]
-                setup-checkout["📥 Checkout"]
-                setup-prereqs["📦 Install Prerequisites<br/>(jq, dos2unix, go-sqlcmd)"]
-                setup-azd["🔧 Install Azure Developer CLI"]
-                setup-dotnet["🔧 Setup .NET SDK"]
-            end
-
-            subgraph phase2 ["🔐 Phase 2: Authentication"]
-                auth-azd["🔐 azd auth login<br/>(OIDC)"]
-                auth-cli["🔑 Azure CLI login<br/>(OIDC)"]
-            end
-
-            subgraph phase3 ["🏗️ Phase 3: Provision"]
-                provision-infra["🏗️ Provision Infrastructure<br/>(azd provision)"]
-            end
-
-            subgraph phase4 ["🔑 Phase 4: SQL Config"]
-                auth-refresh1["🔐 Refresh Credentials"]
-                sql-user["🔑 Create SQL User<br/>(Managed Identity)"]
-            end
-
-            subgraph phase5 ["🚀 Phase 5: Deploy"]
-                auth-refresh2["🔐 Refresh Credentials"]
-                deploy-app["🚀 Deploy Application<br/>(azd deploy)"]
-            end
-
-            subgraph phase6 ["📊 Phase 6: Summary"]
-                deploy-summary["📊 Generate Summary"]
-            end
-        end
-
-        subgraph summary-job ["📊 Level 3: Summary Job"]
-            direction TB
-            summary-generate["📊 Generate Workflow Summary<br/>───────────<br/>Pipeline Status<br/>Job Results<br/>Workflow Details"]
-        end
-
-        subgraph failure-job ["❌ Level 3: Failure Handler"]
-            direction TB
-            failure-report["❌ Report Failure<br/>───────────<br/>Job Status Table<br/>Next Steps"]
-        end
+    subgraph level1 ["🎯 Level 1: Triggers"]
+        direction LR
+        dispatch["🖱️ Manual<br/>skip-ci option"]
+        push["📤 Push<br/>src/**, infra/**"]
     end
 
-    triggers --> pipeline-stages
-    ci-stage --> deploy-stage
-    deploy-stage --> reporting-stage
+    subgraph level2 ["📋 Level 2: Pipeline"]
+        direction LR
+        ci-stage["🔄 CI<br/>(optional)"]
+        deploy-stage["🚀 Deploy"]
+        report-stage["📊 Report"]
+    end
 
-    ci-check -->|No| ci-reusable
-    ci-check -->|Yes| deploy-check
-    ci-reusable --> deploy-check
+    subgraph level3-ci ["🔄 Level 3: CI Job"]
+        ci-call["🔧 Reusable CI<br/>Build → Test → Analyze"]
+    end
 
-    deploy-check --> deploy-job
-    summary-check --> summary-job
-    failure-check --> failure-job
+    subgraph level3-deploy ["🚀 Level 3: Deploy Phases"]
+        direction TB
+        p1["📥 Setup<br/>Prerequisites"]
+        p2["🔐 Auth<br/>OIDC Login"]
+        p3["🏗️ Provision<br/>Infrastructure"]
+        p4["🔑 SQL<br/>Managed Identity"]
+        p5["🚀 Deploy<br/>Application"]
+        p6["📊 Summary"]
+    end
 
-    phase1 --> phase2
-    phase2 --> phase3
-    phase3 --> phase4
-    phase4 --> phase5
-    phase5 --> phase6
+    subgraph level3-report ["📊 Level 3: Reporting"]
+        direction LR
+        summary["📊 Summary"]
+        failure["❌ On Failure"]
+    end
 
-    classDef trigger fill:#FF9800,stroke:#E65100,color:#FFFFFF
-    classDef stage fill:#1976D2,stroke:#0D47A1,color:#FFFFFF
-    classDef ci fill:#9C27B0,stroke:#6A1B9A,color:#FFFFFF
-    classDef deploy fill:#4CAF50,stroke:#2E7D32,color:#FFFFFF
-    classDef auth fill:#00BCD4,stroke:#00838F,color:#FFFFFF
-    classDef provision fill:#FF5722,stroke:#E64A19,color:#FFFFFF
-    classDef sql fill:#795548,stroke:#5D4037,color:#FFFFFF
-    classDef summary fill:#607D8B,stroke:#37474F,color:#FFFFFF
-    classDef failure fill:#F44336,stroke:#C62828,color:#FFFFFF
+    level1 --> level2
+    ci-stage --> deploy-stage --> report-stage
+    ci-stage -.-> level3-ci
+    deploy-stage -.-> level3-deploy
+    report-stage -.-> level3-report
+    p1 --> p2 --> p3 --> p4 --> p5 --> p6
 
-    class trigger-dispatch,trigger-push trigger
-    class ci-stage,deploy-stage,reporting-stage stage
-    class ci-reusable,ci-check ci
-    class deploy-check,deploy-app deploy
-    class auth-azd,auth-cli,auth-refresh1,auth-refresh2 auth
-    class provision-infra provision
-    class sql-user sql
-    class summary-generate,deploy-summary summary
-    class failure-report failure
+    style dispatch fill:#FF9800,stroke:#E65100,color:#fff
+    style push fill:#FF9800,stroke:#E65100,color:#fff
+    style ci-stage fill:#9C27B0,stroke:#6A1B9A,color:#fff
+    style deploy-stage fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style report-stage fill:#607D8B,stroke:#455A64,color:#fff
+    style ci-call fill:#9C27B0,stroke:#6A1B9A,color:#fff
+    style p1 fill:#2196F3,stroke:#1565C0,color:#fff
+    style p2 fill:#00BCD4,stroke:#00838F,color:#fff
+    style p3 fill:#FF5722,stroke:#E64A19,color:#fff
+    style p4 fill:#795548,stroke:#5D4037,color:#fff
+    style p5 fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style p6 fill:#607D8B,stroke:#455A64,color:#fff
+    style summary fill:#607D8B,stroke:#455A64,color:#fff
+    style failure fill:#F44336,stroke:#C62828,color:#fff
 ```
 
 ---
