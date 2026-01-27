@@ -6,6 +6,24 @@ This script validates that a developer workstation has all required tools, softw
 
 The script is implemented in **both PowerShell and Bash** to support cross-platform development environments.
 
+## Table of Contents
+
+- [Script Classification](#script-classification)
+- [Supported Environments](#supported-environments)
+- [Prerequisites](#prerequisites)
+- [Files](#files)
+- [High-Level Script Flow](#high-level-script-flow)
+- [Usage](#usage)
+- [Parameters](#parameters)
+- [Examples](#examples)
+- [Error Handling and Exit Codes](#error-handling--exit-codes)
+- [Logging and Output](#logging--output)
+- [Security Considerations](#security-considerations)
+- [Troubleshooting](#troubleshooting)
+- [Development Notes](#development-notes)
+- [License and Ownership](#license--ownership)
+- [Related Links](#related-links)
+
 ## Script Classification
 
 | Attribute | Value |
@@ -215,6 +233,6 @@ flowchart TD
 
 ## Related Links
 
-- [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
-- [.NET SDK Installation](https://dotnet.microsoft.com/download)
-- [Azure CLI Installation](https://docs.microsoft.com/cli/azure/install-azure-cli)
+- See [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+- See [.NET SDK Installation](https://dotnet.microsoft.com/download)
+- See [Azure CLI Installation](https://docs.microsoft.com/cli/azure/install-azure-cli)

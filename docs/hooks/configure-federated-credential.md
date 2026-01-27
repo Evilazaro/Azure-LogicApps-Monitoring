@@ -6,6 +6,24 @@ This script configures federated identity credentials in an Azure AD App Registr
 
 The script is implemented in **both PowerShell and Bash** to support cross-platform execution and can be run as an Azure Developer CLI (azd) hook or standalone utility.
 
+## Table of Contents
+
+- [Script Classification](#script-classification)
+- [Supported Environments](#supported-environments)
+- [Prerequisites](#prerequisites)
+- [Files](#files)
+- [High-Level Script Flow](#high-level-script-flow)
+- [Usage](#usage)
+- [Parameters](#parameters)
+- [Examples](#examples)
+- [Error Handling and Exit Codes](#error-handling--exit-codes)
+- [Logging and Output](#logging--output)
+- [Security Considerations](#security-considerations)
+- [Troubleshooting](#troubleshooting)
+- [Development Notes](#development-notes)
+- [License and Ownership](#license--ownership)
+- [Related Links](#related-links)
+
 ## Script Classification
 
 | Attribute | Value |
@@ -266,5 +284,5 @@ permissions:
 
 ## Related Links
 
-- [Azure AD Workload Identity Federation](https://docs.microsoft.com/azure/active-directory/develop/workload-identity-federation)
-- [GitHub Actions OIDC in Azure](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-azure)
+- See [Azure AD Workload Identity Federation](https://docs.microsoft.com/azure/active-directory/develop/workload-identity-federation)
+- See [GitHub Actions OIDC in Azure](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-azure)

@@ -6,10 +6,25 @@ This script serves as a post-infrastructure-delete hook for the Azure Developer 
 
 When Azure Logic Apps Standard are deleted through normal infrastructure teardown, they enter a soft-delete state and remain recoverable for a retention period. This script permanently purges these soft-deleted resources to ensure complete cleanup of the Azure environment.
 
-> [!CAUTION]
-> This script **permanently purges** soft-deleted Logic Apps. Purged resources cannot be recovered.
-
 The script is implemented in **both PowerShell and Bash** to support cross-platform execution.
+
+## Table of Contents
+
+- [Script Classification](#script-classification)
+- [Supported Environments](#supported-environments)
+- [Prerequisites](#prerequisites)
+- [Files](#files)
+- [High-Level Script Flow](#high-level-script-flow)
+- [Usage](#usage)
+- [Parameters](#parameters)
+- [Examples](#examples)
+- [Error Handling and Exit Codes](#error-handling--exit-codes)
+- [Logging and Output](#logging--output)
+- [Security Considerations](#security-considerations)
+- [Troubleshooting](#troubleshooting)
+- [Development Notes](#development-notes)
+- [License and Ownership](#license--ownership)
+- [Related Links](#related-links)
 
 ## Script Classification
 
@@ -122,8 +137,8 @@ flowchart TD
 
 ## Usage
 
-> [!TIP]
-> Use `-WhatIf` (PowerShell) to preview which Logic Apps would be purged before executing.
+> [!CAUTION]
+> This script **permanently purges** soft-deleted Logic Apps. Purged resources cannot be recovered.
 
 ### PowerShell
 
@@ -284,5 +299,5 @@ DELETE https://management.azure.com{deletedSiteId}?api-version=2023-12-01
 
 ## Related Links
 
-- [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
-- [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+- See [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
+- See [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)

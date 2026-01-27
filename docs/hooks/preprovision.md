@@ -17,6 +17,24 @@ The script validates:
 
 The script is implemented in **both PowerShell and Bash** to support cross-platform execution.
 
+## Table of Contents
+
+- [Script Classification](#script-classification)
+- [Supported Environments](#supported-environments)
+- [Prerequisites](#prerequisites)
+- [Files](#files)
+- [High-Level Script Flow](#high-level-script-flow)
+- [Usage](#usage)
+- [Parameters](#parameters)
+- [Examples](#examples)
+- [Error Handling and Exit Codes](#error-handling--exit-codes)
+- [Logging and Output](#logging--output)
+- [Security Considerations](#security-considerations)
+- [Troubleshooting](#troubleshooting)
+- [Development Notes](#development-notes)
+- [License and Ownership](#license--ownership)
+- [Related Links](#related-links)
+
 ## Script Classification
 
 > [!NOTE]
@@ -344,6 +362,6 @@ The `-AutoInstall` flag supports automatic installation of:
 
 ## Related Links
 
-- [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
-- [.NET User Secrets](https://learn.microsoft.com/dotnet/core/tools/dotnet-user-secrets)
-- [Azure Resource Providers](https://learn.microsoft.com/azure/azure-resource-manager/management/resource-providers-and-types)
+- See [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+- See [.NET User Secrets](https://learn.microsoft.com/dotnet/core/tools/dotnet-user-secrets)
+- See [Azure Resource Providers](https://learn.microsoft.com/azure/azure-resource-manager/management/resource-providers-and-types)

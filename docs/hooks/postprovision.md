@@ -13,6 +13,25 @@ The script handles:
 
 The script is implemented in **both PowerShell and Bash** to support cross-platform execution.
 
+## Table of Contents
+
+- [Script Classification](#script-classification)
+- [Supported Environments](#supported-environments)
+- [Prerequisites](#prerequisites)
+- [Files](#files)
+- [High-Level Script Flow](#high-level-script-flow)
+- [Usage](#usage)
+- [Parameters](#parameters)
+- [Target Projects](#target-projects)
+- [Examples](#examples)
+- [Error Handling and Exit Codes](#error-handling--exit-codes)
+- [Logging and Output](#logging--output)
+- [Security Considerations](#security-considerations)
+- [Troubleshooting](#troubleshooting)
+- [Development Notes](#development-notes)
+- [License and Ownership](#license--ownership)
+- [Related Links](#related-links)
+
 ## Script Classification
 
 > [!NOTE]
@@ -307,7 +326,7 @@ dotnet user-secrets set "ConnectionStrings:SqlDatabase" "Server=xxx;Database=xxx
 
 ## Related Links
 
-- [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
-- [.NET User Secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets)
-- [Azure AD Authentication for SQL](https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure)
-- [Azure Container Registry Authentication](https://learn.microsoft.com/azure/container-registry/container-registry-authentication)
+- See [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+- See [.NET User Secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets)
+- See [Azure AD Authentication for SQL](https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure)
+- See [Azure Container Registry Authentication](https://learn.microsoft.com/azure/container-registry/container-registry-authentication)

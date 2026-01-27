@@ -4,12 +4,28 @@
 
 This script generates randomized e-commerce orders containing products, customer information, and delivery addresses. The generated data is serialized to JSON format for use in testing, development, and demonstration scenarios with Azure Logic Apps workflows.
 
-> [!NOTE]
-> This script generates **synthetic test data only**. No real customer information is created or transmitted.
-
 Key features include GUID-based order IDs for uniqueness, configurable product counts, price variation simulation (±20%), a global delivery address pool, and random date generation within a defined range (2024-2025).
 
 The script is implemented in **both PowerShell and Bash** to support cross-platform development environments.
+
+## Table of Contents
+
+- [Script Classification](#script-classification)
+- [Supported Environments](#supported-environments)
+- [Prerequisites](#prerequisites)
+- [Files](#files)
+- [High-Level Script Flow](#high-level-script-flow)
+- [Usage](#usage)
+- [Parameters](#parameters)
+- [Examples](#examples)
+- [Error Handling and Exit Codes](#error-handling--exit-codes)
+- [Logging and Output](#logging--output)
+- [Security Considerations](#security-considerations)
+- [Troubleshooting](#troubleshooting)
+- [Data Generation Details](#data-generation-details)
+- [Development Notes](#development-notes)
+- [License and Ownership](#license--ownership)
+- [Related Links](#related-links)
 
 ## Script Classification
 
@@ -251,6 +267,9 @@ flowchart TD
 
 ## Security Considerations
 
+> [!NOTE]
+> This script generates **synthetic test data only**. No real customer information is created or transmitted.
+
 - Generated data is synthetic and contains no real customer information
 - Order IDs use GUIDs to ensure uniqueness across runs
 - Output file is written to local filesystem only
@@ -309,5 +328,5 @@ The script includes 20 global delivery addresses from major cities worldwide (US
 
 ## Related Links
 
-- [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
-- [JSON Schema Specification](https://json-schema.org/)
+- See [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
+- See [JSON Schema Specification](https://json-schema.org/)

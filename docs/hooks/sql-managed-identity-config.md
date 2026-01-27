@@ -14,6 +14,24 @@ Key features include:
 
 The script is implemented in **both PowerShell and Bash** to support cross-platform execution.
 
+## Table of Contents
+
+- [Script Classification](#script-classification)
+- [Supported Environments](#supported-environments)
+- [Prerequisites](#prerequisites)
+- [Files](#files)
+- [High-Level Script Flow](#high-level-script-flow)
+- [Usage](#usage)
+- [Parameters](#parameters)
+- [Examples](#examples)
+- [Error Handling and Exit Codes](#error-handling--exit-codes)
+- [Logging and Output](#logging--output)
+- [Security Considerations](#security-considerations)
+- [Troubleshooting](#troubleshooting)
+- [Development Notes](#development-notes)
+- [License and Ownership](#license--ownership)
+- [Related Links](#related-links)
+
 ## Script Classification
 
 | Attribute | Value |
@@ -328,6 +346,6 @@ az sql server ad-admin create \
 
 ## Related Links
 
-- [Azure AD Authentication for SQL](https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure)
-- [Managed Identities Overview](https://learn.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview)
-- [go-sqlcmd Documentation](https://github.com/microsoft/go-sqlcmd)
+- See [Azure AD Authentication for SQL](https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure)
+- See [Managed Identities Overview](https://learn.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview)
+- See [go-sqlcmd Documentation](https://github.com/microsoft/go-sqlcmd)

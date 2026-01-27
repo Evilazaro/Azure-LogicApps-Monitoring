@@ -68,6 +68,6 @@ All scripts are implemented in both **PowerShell** and **Bash** to support cross
 
 ## Related Links
 
-- [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
-- [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
-- [Repository Root](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
+- See [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+- See [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
+- See [Repository Root](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
