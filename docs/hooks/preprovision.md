@@ -10,7 +10,7 @@ version: "2.3.0"
 
 [Home](../../README.md) > [Docs](..) > [Hooks](README.md) > preprovision
 
-> 🔍 Validates development environment prerequisites and prepares for Azure infrastructure provisioning
+> 🔍 **Summary**: Validates development environment prerequisites and prepares for Azure infrastructure provisioning.
 
 ---
 
@@ -46,7 +46,7 @@ The script performs comprehensive validation of:
 - Regional quotas for required Azure services
 - Optional tool installations (sqlcmd, zip)
 
-**Operations Performed:**
+**Operations Performed**:
 
 1. Validates shell runtime version (PowerShell 7.0+ or Bash 4.0+)
 2. Checks and optionally installs .NET SDK 10.0+
@@ -507,4 +507,4 @@ The script implements comprehensive error handling:
 
 ---
 
-[← Back to Hooks Documentation](README.md)
+[← Back to Hooks Documentation](README.md) | [↑ Back to Top](#preprovision)

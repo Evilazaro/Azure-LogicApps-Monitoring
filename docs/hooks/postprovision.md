@@ -10,7 +10,7 @@ version: "2.0.1"
 
 [Home](../../README.md) > [Docs](..) > [Hooks](README.md) > postprovision
 
-> ⚙️ Configures application secrets and post-deployment settings after Azure infrastructure provisioning
+> ⚙️ **Summary**: Configures application secrets and post-deployment settings after Azure infrastructure provisioning.
 
 ---
 
@@ -36,13 +36,13 @@ version: "2.0.1"
 
 This script is an Azure Developer CLI (`azd`) hook that runs after `azd provision` to configure local development environment settings. It sets up .NET user secrets with connection strings and configuration values from the newly provisioned Azure resources.
 
-**Target Projects:**
+**Target Projects**:
 
 1. `app.AppHost` — Aspire host orchestration project
 2. `eShop.Orders.API` — Orders API microservice
 3. `eShop.Web.App` — Blazor web application frontend
 
-**Operations Performed:**
+**Operations Performed**:
 
 1. Validates .NET SDK availability and version
 2. Retrieves Azure resource configuration from `azd` environment
@@ -411,4 +411,4 @@ The script implements comprehensive error handling:
 
 ---
 
-[← Back to Hooks Documentation](README.md)
+[← Back to Hooks Documentation](README.md) | [↑ Back to Top](#postprovision)

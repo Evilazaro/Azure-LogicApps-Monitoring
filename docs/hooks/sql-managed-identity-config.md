@@ -10,7 +10,7 @@ version: "1.0.0"
 
 [Home](../../README.md) > [Docs](..) > [Hooks](README.md) > sql-managed-identity-config
 
-> 🔐 Configures Azure SQL Database users and roles using Microsoft Entra ID managed identity authentication
+> 🔐 **Summary**: Configures Azure SQL Database users and roles using Microsoft Entra ID managed identity authentication.
 
 ---
 
