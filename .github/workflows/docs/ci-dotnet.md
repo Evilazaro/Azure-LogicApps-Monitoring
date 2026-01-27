@@ -216,9 +216,11 @@ This workflow calls the reusable workflow `ci-dotnet-reusable.yml`, which execut
 | `enable-code-analysis` | Dynamic | Enable code formatting analysis |
 | `fail-on-format-issues` | `true` | Fail on formatting issues |
 
+[⬆️ Back to Top](#-ci---net-build-and-test-workflow)
+
 ---
 
-## Permissions
+## 🔐 Permissions
 
 | Permission | Level | Purpose |
 |------------|-------|---------|
@@ -227,9 +229,14 @@ This workflow calls the reusable workflow `ci-dotnet-reusable.yml`, which execut
 | `pull-requests` | `write` | Post comments on pull requests |
 | `security-events` | `write` | Upload CodeQL SARIF results |
 
+> [!IMPORTANT]
+> These permissions are inherited by the reusable workflow. Ensure the caller workflow has all required permissions.
+
+[⬆️ Back to Top](#-ci---net-build-and-test-workflow)
+
 ---
 
-## Concurrency
+## ⚙️ Concurrency
 
 ```yaml
 concurrency:
@@ -240,9 +247,14 @@ concurrency:
 - Prevents duplicate workflow runs for the same branch/PR
 - Cancels in-progress runs when a new commit is pushed
 
+> [!TIP]
+> Concurrency groups prevent wasted runner minutes by canceling outdated workflow runs automatically.
+
+[⬆️ Back to Top](#-ci---net-build-and-test-workflow)
+
 ---
 
-## Dependencies
+## 📦 Dependencies
 
 ### Reusable Workflows Called
 
@@ -250,9 +262,11 @@ concurrency:
 |----------|---------|
 | [ci-dotnet-reusable.yml](ci-dotnet-reusable.md) | Comprehensive CI pipeline with cross-platform support |
 
+[⬆️ Back to Top](#-ci---net-build-and-test-workflow)
+
 ---
 
-## Usage Examples
+## 💡 Usage Examples
 
 ### Automatic Trigger
 
@@ -282,9 +296,39 @@ gh workflow run ci-dotnet.yml -f configuration=Debug
 gh workflow run ci-dotnet.yml -f enable-code-analysis=false
 ```
 
+[⬆️ Back to Top](#-ci---net-build-and-test-workflow)
+
 ---
 
-## Related Documentation
+## 📚 Related Documentation
 
-- [CI - .NET Reusable Workflow](ci-dotnet-reusable.md) - Detailed documentation of the reusable workflow
-- [CD - Azure Deployment](azure-dev.md) - Deployment workflow documentation
+### Internal Documentation
+
+| Document | Description |
+|----------|-------------|
+| [📚 Documentation Index](README.md) | Main documentation hub |
+| [🔄 CI - .NET Reusable Workflow](ci-dotnet-reusable.md) | Detailed documentation of the reusable workflow |
+| [🚀 CD - Azure Deployment](azure-dev.md) | Deployment workflow documentation |
+
+### External Resources
+
+| Resource | Description |
+|----------|-------------|
+| [GitHub Actions Documentation](https://docs.github.com/en/actions) | Official GitHub Actions documentation |
+| [.NET SDK Documentation](https://docs.microsoft.com/en-us/dotnet/) | Official .NET documentation |
+
+[⬆️ Back to Top](#-ci---net-build-and-test-workflow)
+
+---
+
+<div align="center">
+
+**🔗 Navigation**
+
+[📚 Documentation Index](README.md) • [🔄 Reusable CI](ci-dotnet-reusable.md) • [➡️ Next: CD Workflow](azure-dev.md)
+
+---
+
+*Last updated: January 27, 2026*
+
+</div>
