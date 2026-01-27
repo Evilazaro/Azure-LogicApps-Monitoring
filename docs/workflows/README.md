@@ -7,22 +7,22 @@ This directory contains comprehensive documentation for all GitHub Actions workf
 ## Workflow Overview
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': {'fontSize': '14px', 'primaryColor': '#1f6feb', 'lineColor': '#8b949e'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '14px', 'primaryColor': '#1976D2', 'lineColor': '#78909C', 'textColor': '#37474F'}}}%%
 flowchart LR
     subgraph workflows["🔄 GitHub Actions Workflows"]
         direction TB
-        style workflows fill:#0d1117,stroke:#30363d,stroke-width:3px,color:#e6edf3
+        style workflows fill:#263238,stroke:#455A64,stroke-width:3px,color:#ECEFF1
         
         subgraph ci-workflows["🔨 CI Workflows"]
             direction TB
-            style ci-workflows fill:#1c2128,stroke:#79c0ff,stroke-width:2px,color:#79c0ff
+            style ci-workflows fill:#37474F,stroke:#42A5F5,stroke-width:2px,color:#90CAF9
             ci["CI - .NET Build and Test"]:::node-build
             ci-reusable["CI - .NET Reusable"]:::node-build
         end
         
         subgraph cd-workflows["🚀 CD Workflows"]
             direction TB
-            style cd-workflows fill:#1c2128,stroke:#3fb950,stroke-width:2px,color:#3fb950
+            style cd-workflows fill:#37474F,stroke:#66BB6A,stroke-width:2px,color:#A5D6A7
             cd["CD - Azure Deployment"]:::node-production
         end
     end
@@ -30,10 +30,10 @@ flowchart LR
     ci -->|"calls"| ci-reusable
     ci-reusable -->|"feeds"| cd
     
-    classDef node-build fill:#1f6feb,stroke:#58a6ff,stroke-width:2px,color:#ffffff
-    classDef node-production fill:#238636,stroke:#3fb950,stroke-width:2px,color:#ffffff,font-weight:bold
+    classDef node-build fill:#1976D2,stroke:#42A5F5,stroke-width:2px,color:#FFFFFF
+    classDef node-production fill:#2E7D32,stroke:#66BB6A,stroke-width:2px,color:#FFFFFF,font-weight:bold
     
-    linkStyle default stroke:#8b949e,stroke-width:2px
+    linkStyle default stroke:#78909C,stroke-width:2px
 ```
 
 ---

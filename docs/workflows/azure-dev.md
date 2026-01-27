@@ -43,94 +43,116 @@ This workflow implements a complete CI/CD pipeline with:
 ## Workflow Diagram
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': {'fontSize': '14px', 'primaryColor': '#1f6feb', 'lineColor': '#8b949e'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': {'fontSize': '14px', 'primaryColor': '#1976D2', 'lineColor': '#78909C', 'textColor': '#37474F'}}}%%
 flowchart TB
     subgraph wf["🔄 Workflow: CD - Azure Deployment"]
         direction TB
-        style wf fill:#0d1117,stroke:#30363d,stroke-width:3px,color:#e6edf3
+        style wf fill:#263238,stroke:#455A64,stroke-width:3px,color:#ECEFF1
         
         subgraph triggers["⚡ Stage: Triggers"]
             direction LR
-            style triggers fill:#1c2128,stroke:#7ee787,stroke-width:2px,color:#7ee787
+            style triggers fill:#37474F,stroke:#66BB6A,stroke-width:2px,color:#A5D6A7
             subgraph events["Events"]
-                style events fill:#161b22,stroke:#30363d,stroke-width:1px,color:#c9d1d9
+                style events fill:#455A64,stroke:#78909C,stroke-width:1px,color:#CFD8DC
                 push(["🔔 push: docs987678"]):::node-trigger
                 manual(["🔔 workflow_dispatch"]):::node-trigger
             end
         end
         
         subgraph ci-stage["🔨 Stage: Continuous Integration"]
-            direction LR
-            style ci-stage fill:#1c2128,stroke:#79c0ff,stroke-width:2px,color:#79c0ff
-            subgraph ci-group["Reusable CI Workflow"]
-                style ci-group fill:#161b22,stroke:#30363d,stroke-width:1px,color:#c9d1d9
+            direction TB
+            style ci-stage fill:#37474F,stroke:#42A5F5,stroke-width:2px,color:#90CAF9
+            subgraph ci-group["Reusable CI"]
+                style ci-group fill:#455A64,stroke:#4FC3F7,stroke-width:1px,color:#B3E5FC
                 ci[["🔄 CI Workflow"]]:::node-build
             end
         end
         
         subgraph deploy-stage["🚀 Stage: Deploy Dev"]
             direction TB
-            style deploy-stage fill:#1c2128,stroke:#ffa657,stroke-width:2px,color:#ffa657
-            subgraph setup-group["Setup"]
-                style setup-group fill:#161b22,stroke:#30363d,stroke-width:1px,color:#c9d1d9
+            style deploy-stage fill:#37474F,stroke:#FFA726,stroke-width:2px,color:#FFCC80
+            subgraph setup-group["⚙️ Setup"]
+                direction LR
+                style setup-group fill:#455A64,stroke:#78909C,stroke-width:1px,color:#CFD8DC
                 checkout["📥 Checkout"]:::node-checkout
                 prereqs["📦 Prerequisites"]:::node-setup
-                azd-install["🔧 Install AZD CLI"]:::node-setup
+                azd-install["🔧 Install AZD"]:::node-setup
                 dotnet-setup["🔧 Setup .NET"]:::node-setup
             end
-            subgraph auth-group["Authentication"]
-                style auth-group fill:#161b22,stroke:#a371f7,stroke-width:1px,color:#d2a8ff
-                azd-auth["🔐 AZD Auth (OIDC)"]:::node-security
-                az-auth["🔑 Azure CLI Auth"]:::node-security
+            subgraph auth-group["🔐 Authentication"]
+                direction LR
+                style auth-group fill:#455A64,stroke:#EF5350,stroke-width:1px,color:#EF9A9A
+                azd-auth["🔐 AZD Auth"]:::node-security
+                az-auth["🔑 Azure CLI"]:::node-security
             end
-            subgraph provision-group["Infrastructure"]
-                style provision-group fill:#161b22,stroke:#79c0ff,stroke-width:1px,color:#79c0ff
-                provision["🏗️ Provision Infra"]:::node-build
+            subgraph provision-group["🏗️ Infrastructure"]
+                style provision-group fill:#455A64,stroke:#42A5F5,stroke-width:1px,color:#90CAF9
+                provision["🏗️ Provision"]:::node-build
             end
-            subgraph sql-group["SQL Configuration"]
-                style sql-group fill:#161b22,stroke:#d29922,stroke-width:1px,color:#d29922
+            subgraph sql-group["🔑 SQL Configuration"]
+                direction LR
+                style sql-group fill:#455A64,stroke:#FFA726,stroke-width:1px,color:#FFCC80
                 refresh-pre-sql["🔐 Refresh Creds"]:::node-security
                 sql-user["🔑 Create SQL User"]:::node-staging
             end
-            subgraph deploy-group["Application Deploy"]
-                style deploy-group fill:#161b22,stroke:#3fb950,stroke-width:1px,color:#3fb950
+            subgraph app-deploy-group["🚀 Application"]
+                direction LR
+                style app-deploy-group fill:#455A64,stroke:#66BB6A,stroke-width:1px,color:#C8E6C9
                 refresh-post-sql["🔐 Refresh Creds"]:::node-security
-                deploy-app["🚀 Deploy App"]:::node-production
+                deploy-app["🚀 Deploy"]:::node-production
             end
         end
         
         subgraph summary-stage["📊 Stage: Reporting"]
             direction LR
-            style summary-stage fill:#1c2128,stroke:#d2a8ff,stroke-width:2px,color:#d2a8ff
+            style summary-stage fill:#37474F,stroke:#66BB6A,stroke-width:2px,color:#A5D6A7
             subgraph reports["Reports"]
-                style reports fill:#161b22,stroke:#30363d,stroke-width:1px,color:#c9d1d9
-                summary["📊 Summary"]:::node-lint
+                style reports fill:#455A64,stroke:#66BB6A,stroke-width:1px,color:#C8E6C9
+                summary["📊 Summary"]:::node-production
                 failure["❌ On Failure"]:::node-error
             end
         end
     end
     
+    %% Trigger connections
     push & manual -->|"triggers"| ci
+    
+    %% CI to Deploy
     ci -->|"success/skipped"| checkout
+    
+    %% Setup flow
     checkout --> prereqs --> azd-install --> dotnet-setup
+    
+    %% Auth flow
     dotnet-setup --> azd-auth --> az-auth
+    
+    %% Provision flow
     az-auth --> provision
+    
+    %% SQL config flow
     provision --> refresh-pre-sql --> sql-user
+    
+    %% Deploy flow
     sql-user --> refresh-post-sql --> deploy-app
+    
+    %% Summary
     deploy-app --> summary
-    ci & deploy-app -.->|"if: failure()"| failure
     
-    classDef node-trigger fill:#238636,stroke:#2ea043,stroke-width:2px,color:#ffffff,font-weight:bold
-    classDef node-checkout fill:#1f6feb,stroke:#388bfd,stroke-width:2px,color:#ffffff
-    classDef node-setup fill:#6e7681,stroke:#8b949e,stroke-width:2px,color:#ffffff
-    classDef node-build fill:#1f6feb,stroke:#58a6ff,stroke-width:2px,color:#ffffff
-    classDef node-security fill:#da3633,stroke:#f85149,stroke-width:2px,color:#ffffff
-    classDef node-staging fill:#9e6a03,stroke:#d29922,stroke-width:2px,color:#ffffff
-    classDef node-production fill:#238636,stroke:#3fb950,stroke-width:2px,color:#ffffff,font-weight:bold
-    classDef node-lint fill:#a371f7,stroke:#d2a8ff,stroke-width:2px,color:#ffffff
-    classDef node-error fill:#da3633,stroke:#f85149,stroke-width:2px,color:#ffffff
+    %% Failure handling
+    ci -.->|"if: failure()"| failure
+    deploy-app -.->|"if: failure()"| failure
     
-    linkStyle default stroke:#8b949e,stroke-width:2px
+    %% Material Design Node Classes
+    classDef node-trigger fill:#43A047,stroke:#66BB6A,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    classDef node-checkout fill:#1E88E5,stroke:#42A5F5,stroke-width:2px,color:#FFFFFF
+    classDef node-setup fill:#546E7A,stroke:#78909C,stroke-width:2px,color:#FFFFFF
+    classDef node-build fill:#1976D2,stroke:#42A5F5,stroke-width:2px,color:#FFFFFF
+    classDef node-security fill:#C62828,stroke:#EF5350,stroke-width:2px,color:#FFFFFF
+    classDef node-staging fill:#EF6C00,stroke:#FFA726,stroke-width:2px,color:#FFFFFF
+    classDef node-production fill:#2E7D32,stroke:#66BB6A,stroke-width:2px,color:#FFFFFF,font-weight:bold
+    classDef node-error fill:#C62828,stroke:#EF5350,stroke-width:2px,color:#FFFFFF
+    
+    linkStyle default stroke:#78909C,stroke-width:2px
 ```
 
 ---
