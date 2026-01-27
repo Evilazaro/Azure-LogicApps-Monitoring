@@ -1,0 +1,413 @@
+---
+title: CI - .NET Reusable Workflow
+description: Comprehensive reusable CI workflow with cross-platform build, test, and security analysis
+author: Documentation Team
+last_updated: 2025-01-15
+workflow_file: .github/workflows/ci-dotnet-reusable.yml
+---
+
+# 🔧 CI - .NET Reusable Workflow
+
+> 📚 **Summary**: This reusable workflow provides comprehensive CI capabilities including cross-platform builds, testing with coverage, code formatting analysis, and CodeQL security scanning.
+
+---
+
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Workflow Diagram](#workflow-diagram)
+- [Inputs](#inputs)
+- [Outputs](#outputs)
+- [Job Details](#job-details)
+- [OS Matrix Configuration](#os-matrix-configuration)
+- [Artifacts](#artifacts)
+- [Best Practices](#best-practices)
+- [See Also](#see-also)
+
+---
+
+## Overview
+
+| Property | Value |
+|----------|-------|
+| **Workflow Name** | `CI - .NET Reusable Workflow` |
+| **File Location** | `.github/workflows/ci-dotnet-reusable.yml` |
+| **Type** | Reusable (workflow_call) |
+| **Total Jobs** | 6 |
+| **Timeout** | Varies by job (15-45 minutes) |
+
+### Key Features
+
+- ✅ **Cross-platform matrix builds** - Ubuntu, Windows, macOS
+- ✅ **Comprehensive testing** - With code coverage (Cobertura format)
+- ✅ **Code formatting** - .editorconfig compliance verification
+- ✅ **Security scanning** - CodeQL with extended security queries
+- ✅ **Rich summaries** - Detailed GitHub step summaries
+- ✅ **Configurable inputs** - Extensive customization options
+
+---
+
+## Workflow Diagram
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#424242', 'secondaryColor': '#4CAF50', 'tertiaryColor': '#E3F2FD'}}}%%
+flowchart TB
+    subgraph workflow-reusable ["🔧 CI - .NET Reusable Workflow"]
+        direction TB
+
+        subgraph trigger-level ["🎯 Level 1: Workflow Trigger"]
+            direction LR
+            workflow-call["📞 workflow_call<br/>Called by ci-dotnet.yml"]
+        end
+
+        subgraph ci-stages ["📋 Level 2: CI Stages"]
+            direction TB
+            
+            subgraph build-stage ["🔨 Build Stage"]
+                direction LR
+                build-matrix["Matrix Build<br/>(fail-fast: false)"]
+            end
+
+            subgraph test-stage ["🧪 Test Stage"]
+                direction LR
+                test-matrix["Matrix Test<br/>(fail-fast: false)"]
+            end
+
+            subgraph analysis-stage ["🔍 Analysis Stage"]
+                direction LR
+                analyze-stage["Code Analysis"]
+                security-stage["Security Scan"]
+            end
+
+            subgraph summary-stage ["📊 Summary Stage"]
+                direction LR
+                summary-job["Results Summary"]
+            end
+        end
+
+        subgraph build-jobs ["🔨 Level 3: Build Jobs"]
+            direction LR
+            build-ubuntu["🐧 Build<br/>ubuntu-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>☁️ Workloads<br/>🏷️ Version<br/>📥 Restore<br/>🔨 Build<br/>📤 Upload"]
+            build-windows["🪟 Build<br/>windows-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>☁️ Workloads<br/>🏷️ Version<br/>📥 Restore<br/>🔨 Build<br/>📤 Upload"]
+            build-macos["🍎 Build<br/>macos-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>☁️ Workloads<br/>🏷️ Version<br/>📥 Restore<br/>🔨 Build<br/>📤 Upload"]
+        end
+
+        subgraph test-jobs ["🧪 Level 3: Test Jobs"]
+            direction LR
+            test-ubuntu["🐧 Test<br/>ubuntu-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>📥 Restore<br/>🔨 Build<br/>🧪 Test<br/>📋 Report<br/>📤 Upload"]
+            test-windows["🪟 Test<br/>windows-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>📥 Restore<br/>🔨 Build<br/>🧪 Test<br/>📋 Report<br/>📤 Upload"]
+            test-macos["🍎 Test<br/>macos-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>📥 Restore<br/>🔨 Build<br/>🧪 Test<br/>📋 Report<br/>📤 Upload"]
+        end
+
+        subgraph analysis-jobs ["🔍 Level 3: Analysis Jobs"]
+            direction LR
+            analyze-job["🎨 Analyze<br/>ubuntu-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>📥 Restore<br/>🎨 Format Check<br/>📊 Summary"]
+            codeql-job["🛡️ CodeQL<br/>ubuntu-latest<br/>───────────<br/>📥 Checkout<br/>🔧 Setup .NET<br/>🛡️ Init CodeQL<br/>🔨 Autobuild<br/>🛡️ Analyze<br/>📤 Upload SARIF"]
+        end
+
+        subgraph summary-jobs ["📊 Level 3: Summary Jobs"]
+            direction LR
+            summary-final["📊 Summary<br/>───────────<br/>Aggregate Results<br/>Generate Report<br/>Action Required"]
+            on-failure["❌ On Failure<br/>───────────<br/>Report Failure<br/>Job Status Table<br/>Next Steps"]
+        end
+    end
+
+    workflow-call --> ci-stages
+    build-stage --> test-stage
+    test-stage --> analysis-stage
+    analysis-stage --> summary-stage
+
+    build-matrix --> build-jobs
+    test-matrix --> test-jobs
+    analyze-stage --> analyze-job
+    security-stage --> codeql-job
+    summary-stage --> summary-jobs
+
+    classDef trigger fill:#FF9800,stroke:#E65100,color:#FFFFFF
+    classDef stage fill:#1976D2,stroke:#0D47A1,color:#FFFFFF
+    classDef ubuntu fill:#E65100,stroke:#BF360C,color:#FFFFFF
+    classDef windows fill:#0277BD,stroke:#01579B,color:#FFFFFF
+    classDef macos fill:#424242,stroke:#212121,color:#FFFFFF
+    classDef analysis fill:#00BCD4,stroke:#00838F,color:#FFFFFF
+    classDef summary fill:#607D8B,stroke:#37474F,color:#FFFFFF
+    classDef failure fill:#F44336,stroke:#C62828,color:#FFFFFF
+
+    class workflow-call trigger
+    class build-stage,test-stage,analysis-stage,summary-stage stage
+    class build-ubuntu,test-ubuntu ubuntu
+    class build-windows,test-windows windows
+    class build-macos,test-macos macos
+    class analyze-job,codeql-job analysis
+    class summary-final summary
+    class on-failure failure
+```
+
+---
+
+## Inputs
+
+### Required Inputs
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `configuration` | `string` | `Release` | Build configuration (Debug/Release) |
+| `dotnet-version` | `string` | `10.0.x` | .NET SDK version to use |
+| `solution-file` | `string` | `app.sln` | Solution file path |
+
+### Optional Inputs
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `runs-on` | `string` | `ubuntu-latest` | Default runner for non-matrix jobs |
+| `enable-code-analysis` | `boolean` | `true` | Enable code formatting analysis |
+| `fail-on-format-issues` | `boolean` | `true` | Fail on formatting issues |
+| `build-artifacts-name` | `string` | `build-artifacts` | Build artifacts name prefix |
+| `test-results-artifact-name` | `string` | `test-results` | Test results artifacts name prefix |
+| `coverage-artifact-name` | `string` | `code-coverage` | Coverage artifacts name prefix |
+| `artifact-retention-days` | `number` | `5` | Artifact retention period |
+
+---
+
+## Outputs
+
+| Output | Source | Description |
+|--------|--------|-------------|
+| `build-version` | `jobs.build.outputs.build-version` | Generated build version (1.0.{run_number}) |
+| `build-result` | `jobs.build.result` | Build job result |
+| `test-result` | `jobs.test.result` | Test job result |
+| `analyze-result` | `jobs.analyze.result` | Analysis job result |
+| `codeql-result` | `jobs.codeql.result` | CodeQL scan result |
+
+---
+
+## Job Details
+
+### 🔨 Build Job
+
+**Purpose**: Cross-platform compilation with artifact generation
+
+| Property | Value |
+|----------|-------|
+| **Name** | `🔨 Build (${{ matrix.os }})` |
+| **Timeout** | 15 minutes |
+| **Matrix** | `ubuntu-latest`, `windows-latest`, `macos-latest` |
+| **Fail-fast** | `false` |
+
+**Steps**:
+
+1. 📥 Checkout repository (full history)
+2. 🔧 Setup .NET SDK
+3. ☁️ Update .NET workloads
+4. 🏷️ Generate build version
+5. 📥 Restore dependencies
+6. 🔨 Build solution
+7. 📤 Upload build artifacts
+8. 📊 Generate build summary
+
+---
+
+### 🧪 Test Job
+
+**Purpose**: Cross-platform testing with code coverage
+
+| Property | Value |
+|----------|-------|
+| **Name** | `🧪 Test (${{ matrix.os }})` |
+| **Timeout** | 30 minutes |
+| **Matrix** | `ubuntu-latest`, `windows-latest`, `macos-latest` |
+| **Fail-fast** | `false` |
+| **Needs** | `build` |
+
+**Steps**:
+
+1. 📥 Checkout repository
+2. 🔧 Setup .NET SDK
+3. ☁️ Update .NET workloads
+4. 📥 Restore dependencies
+5. 🔨 Build solution
+6. 🧪 Run tests with coverage
+7. 📋 Publish test results (dorny/test-reporter)
+8. 📤 Upload test results
+9. 📤 Upload code coverage
+10. 📊 Generate test summary
+
+---
+
+### 🔍 Analyze Job
+
+**Purpose**: Code formatting verification
+
+| Property | Value |
+|----------|-------|
+| **Name** | `🔍 Analyze` |
+| **Timeout** | 15 minutes |
+| **Runner** | `${{ inputs.runs-on }}` |
+| **Needs** | `build` |
+| **Condition** | `${{ inputs.enable-code-analysis }}` |
+
+**Steps**:
+
+1. 📥 Checkout repository
+2. 🔧 Setup .NET SDK
+3. ☁️ Update .NET workloads
+4. 📥 Restore dependencies
+5. 🎨 Verify code formatting (`dotnet format --verify-no-changes`)
+6. 📊 Generate analysis summary
+7. ❌ Fail on format issues (if configured)
+
+---
+
+### 🛡️ CodeQL Job
+
+**Purpose**: Security vulnerability scanning
+
+| Property | Value |
+|----------|-------|
+| **Name** | `🛡️ CodeQL Security Scan` |
+| **Timeout** | 45 minutes |
+| **Runner** | `${{ inputs.runs-on }}` |
+| **Needs** | `build` |
+
+**Steps**:
+
+1. 📥 Checkout repository (full history)
+2. 🔧 Setup .NET SDK
+3. 🛡️ Initialize CodeQL (csharp, security-extended, security-and-quality)
+4. 🔨 Autobuild for CodeQL
+5. 🛡️ Perform CodeQL analysis
+6. 📤 Upload CodeQL SARIF results
+7. 📊 Generate CodeQL summary
+
+---
+
+### 📊 Summary Job
+
+**Purpose**: Aggregate workflow results
+
+| Property | Value |
+|----------|-------|
+| **Name** | `📊 Summary` |
+| **Timeout** | 5 minutes |
+| **Runner** | `${{ inputs.runs-on }}` |
+| **Needs** | `build`, `test`, `analyze`, `codeql` |
+| **Condition** | `always()` |
+
+---
+
+### ❌ On Failure Job
+
+**Purpose**: Visual failure indication and reporting
+
+| Property | Value |
+|----------|-------|
+| **Name** | `❌ Failed` |
+| **Timeout** | 5 minutes |
+| **Runner** | `${{ inputs.runs-on }}` |
+| **Needs** | `build`, `test`, `analyze`, `codeql` |
+| **Condition** | `failure()` |
+
+---
+
+## OS Matrix Configuration
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#424242'}}}%%
+flowchart LR
+    subgraph matrix-config ["🖥️ OS Matrix Configuration"]
+        direction TB
+        
+        subgraph ubuntu-runner ["🐧 Ubuntu Runner"]
+            ubuntu-os["ubuntu-latest"]
+            ubuntu-shell["Shell: bash"]
+            ubuntu-arch["Arch: x64"]
+        end
+
+        subgraph windows-runner ["🪟 Windows Runner"]
+            windows-os["windows-latest"]
+            windows-shell["Shell: bash"]
+            windows-arch["Arch: x64"]
+        end
+
+        subgraph macos-runner ["🍎 macOS Runner"]
+            macos-os["macos-latest"]
+            macos-shell["Shell: bash"]
+            macos-arch["Arch: arm64"]
+        end
+    end
+
+    classDef ubuntu fill:#E65100,stroke:#BF360C,color:#FFFFFF
+    classDef windows fill:#0277BD,stroke:#01579B,color:#FFFFFF
+    classDef macos fill:#424242,stroke:#212121,color:#FFFFFF
+
+    class ubuntu-os,ubuntu-shell,ubuntu-arch ubuntu
+    class windows-os,windows-shell,windows-arch windows
+    class macos-os,macos-shell,macos-arch macos
+```
+
+### Matrix Strategy
+
+```yaml
+strategy:
+  fail-fast: false
+  matrix:
+    os: [ubuntu-latest, windows-latest, macos-latest]
+```
+
+> ⚠️ **Note**: `fail-fast: false` ensures all platform builds complete even if one fails.
+
+---
+
+## Artifacts
+
+### Build Artifacts
+
+| Artifact | Pattern | Description |
+|----------|---------|-------------|
+| `build-artifacts-ubuntu-latest` | `**/bin/{config}/**` | Ubuntu build output |
+| `build-artifacts-windows-latest` | `**/bin/{config}/**` | Windows build output |
+| `build-artifacts-macos-latest` | `**/bin/{config}/**` | macOS build output |
+
+### Test Artifacts
+
+| Artifact | Pattern | Description |
+|----------|---------|-------------|
+| `test-results-{os}` | `**/TestResults/**/*.trx` | Test execution results |
+| `code-coverage-{os}` | `**/coverage.cobertura.xml` | Code coverage reports |
+| `codeql-sarif-results` | `codeql-results/` | CodeQL SARIF results |
+
+---
+
+## Best Practices
+
+### Security Best Practices Applied
+
+| Practice | Status | Description |
+|----------|--------|-------------|
+| Pinned action versions (SHA) | ✅ | All actions use commit SHA |
+| Least privilege permissions | ✅ | Only required permissions granted |
+| Secret inheritance | ✅ | `secrets: inherit` for secure passing |
+| CodeQL on every run | ✅ | No conditional skipping |
+| SARIF upload | ✅ | Security results in Security tab |
+
+### CI Best Practices Applied
+
+| Practice | Status | Description |
+|----------|--------|-------------|
+| Cross-platform testing | ✅ | Ubuntu, Windows, macOS |
+| Full git history | ✅ | `fetch-depth: 0` for blame info |
+| Code coverage | ✅ | Cobertura format for compatibility |
+| Rich summaries | ✅ | GitHub step summaries for visibility |
+
+---
+
+## See Also
+
+- [ci-dotnet.md](ci-dotnet.md) - CI orchestrator workflow
+- [azure-dev.md](azure-dev.md) - CD workflow documentation
+- [README.md](README.md) - Workflows overview
+- [CodeQL Documentation](https://codeql.github.com/docs/)
+- [dorny/test-reporter](https://github.com/dorny/test-reporter)
+
+---
+
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
