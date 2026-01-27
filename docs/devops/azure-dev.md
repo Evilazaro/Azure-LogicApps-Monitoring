@@ -1,10 +1,41 @@
 # CD - Azure Deployment Workflow Documentation
 
-## 1. Overview & Purpose
+## Table of Contents
 
-### Primary Purpose
+- [Overview](#-overview)
+- [Triggers](#-triggers)
+- [Pipeline Flow](#-pipeline-flow)
+- [Jobs Breakdown](#-jobs-breakdown)
+- [Inputs and Parameters](#-inputs-and-parameters)
+- [Secrets and Variables](#-secrets-and-variables)
+- [Permissions and Security Model](#-permissions-and-security-model)
+- [Environments and Deployment Strategy](#-environments-and-deployment-strategy)
+- [Failure Handling and Recovery](#-failure-handling-and-recovery)
+- [How to Run This Workflow](#-how-to-run-this-workflow)
+- [Extensibility and Customization](#-extensibility-and-customization)
+- [Known Limitations and Gotchas](#-known-limitations-and-gotchas)
+- [Ownership and Maintenance](#-ownership-and-maintenance)
+- [Assumptions and Gaps](#-assumptions-and-gaps)
 
-This workflow implements a **complete Continuous Delivery (CD) pipeline** that provisions Azure infrastructure and deploys a .NET application using Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
+## 🧭 Overview
+
+This workflow implements a complete Continuous Delivery (CD) pipeline that provisions Azure infrastructure and deploys a .NET application using Azure Developer CLI (`azd`) with OpenID Connect (OIDC) authentication.
+
+### In-Scope Responsibilities
+
+- Execute the reusable CI pipeline (build, test, analyze, CodeQL security scanning)
+- Provision Azure infrastructure via Bicep templates using `azd provision`
+- Configure Azure SQL Database with Managed Identity authentication
+- Deploy application code using `azd deploy`
+- Generate deployment summaries and failure reports
+- Handle OIDC token refresh during long-running operations
+
+### Out-of-Scope Responsibilities
+
+- Multi-environment promotion (only deploys to `dev` environment)
+- Manual approval gates (can be configured at environment level)
+- Rollback automation (provides instructions only)
+- Infrastructure teardown or cleanup
 
 ### In-Scope Responsibilities
 
@@ -24,7 +55,7 @@ This workflow implements a **complete Continuous Delivery (CD) pipeline** that p
 
 ---
 
-## 2. Triggers
+## ⚙️ Triggers
 
 | Trigger Type | Configuration | Description |
 |-------------|---------------|-------------|
@@ -52,11 +83,11 @@ concurrency:
 ```
 
 - Prevents simultaneous deployments to the same environment
-- Does **not** cancel in-progress deployments (preserves running deployments)
+- Does not cancel in-progress deployments (preserves running deployments)
 
 ---
 
-## 3. Pipeline Flow
+## 🔄 Pipeline Flow
 
 ### Mermaid Diagram
 
@@ -126,7 +157,7 @@ flowchart TD
 
 ---
 
-## 4. Jobs Breakdown
+## 🛠 Jobs Breakdown
 
 | Job | Responsibility | Key Outputs | Conditions |
 |-----|---------------|-------------|------------|
@@ -160,7 +191,7 @@ The CI job calls the reusable workflow `.github/workflows/ci-dotnet-reusable.yml
 
 ---
 
-## 5. Inputs & Parameters
+## ⚙️ Inputs and Parameters
 
 ### Workflow Dispatch Inputs
 
@@ -168,9 +199,12 @@ The CI job calls the reusable workflow `.github/workflows/ci-dotnet-reusable.yml
 |-------|------|----------|---------|-------------|
 | `skip-ci` | boolean | No | `false` | Skip CI checks (use with caution) |
 
+> [!WARNING]
+> Skipping CI checks allows untested code to be deployed. Use only for emergency fixes.
+
 ---
 
-## 6. Secrets & Variables
+## 🔐 Secrets and Variables
 
 ### Required Repository Variables
 
@@ -200,7 +234,7 @@ The CI job calls the reusable workflow `.github/workflows/ci-dotnet-reusable.yml
 
 ---
 
-## 7. Permissions & Security Model
+## 🔐 Permissions and Security Model
 
 ### GitHub Actions Permissions
 
@@ -214,8 +248,11 @@ The CI job calls the reusable workflow `.github/workflows/ci-dotnet-reusable.yml
 
 ### Authentication Approach
 
+> [!NOTE]
+> OIDC tokens expire approximately every 5 minutes. The workflow refreshes tokens before SQL and deploy operations to prevent AADSTS700024 errors.
+
 - **OIDC/Federated Credentials**: No long-lived secrets stored in GitHub
-- **Token refresh**: OIDC tokens refresh before SQL and deploy operations (tokens expire ~5 minutes)
+- **Token refresh**: OIDC tokens refresh before SQL and deploy operations
 - **Dual authentication**: Both `azd` and Azure CLI authenticate via OIDC
 
 ### Least-Privilege Analysis
@@ -229,7 +266,7 @@ The CI job calls the reusable workflow `.github/workflows/ci-dotnet-reusable.yml
 
 ---
 
-## 8. Environments & Deployment Strategy
+## 🌐 Environments and Deployment Strategy
 
 ### Configured Environments
 
@@ -245,7 +282,7 @@ The CI job calls the reusable workflow `.github/workflows/ci-dotnet-reusable.yml
 
 ---
 
-## 9. Failure Handling & Recovery
+## ⚠️ Failure Handling and Recovery
 
 ### Retry Mechanisms
 
@@ -278,7 +315,7 @@ azd deploy --no-prompt
 
 ---
 
-## 10. How to Run This Workflow
+## 🚀 How to Run This Workflow
 
 ### Automatic Triggers
 
@@ -303,7 +340,7 @@ azd deploy --no-prompt
 
 ---
 
-## 11. Extensibility & Customization
+## 🧩 Extensibility and Customization
 
 ### Safe Extension Points
 
@@ -336,7 +373,7 @@ deploy-staging:
 
 ---
 
-## 12. Known Limitations & Gotchas
+## ⚠️ Known Limitations and Gotchas
 
 ### Limitations
 
@@ -349,14 +386,17 @@ deploy-staging:
 
 ### Non-Obvious Behavior
 
-- **SID calculation**: SQL user SID derived from **Client ID** (Application ID), not Object ID
+> [!IMPORTANT]
+> The SQL user SID is derived from the Client ID (Application ID), not the Object ID. Changing this calculation breaks authentication.
+
+- **SID calculation**: SQL user SID derived from Client ID (Application ID), not Object ID
 - **ODBC sqlcmd removal**: Workflow removes existing ODBC sqlcmd to prevent PATH conflicts
 - **Token refresh**: Tokens refreshed twice: before SQL operations and before deployment
 - **CI skip propagation**: Skipping CI allows deployment to proceed without validation
 
 ---
 
-## 13. Ownership & Maintenance
+## 👥 Ownership and Maintenance
 
 ### Owning Team
 
@@ -383,7 +423,7 @@ deploy-staging:
 
 ---
 
-## 14. Assumptions & Gaps
+## 📋 Assumptions and Gaps
 
 ### Assumptions Made
 
@@ -406,3 +446,10 @@ deploy-staging:
 - Deployment phases shown at high level; individual steps grouped for clarity
 - Error handling flows indicated with dotted lines
 - Token refresh operations not shown individually in main flow diagram
+
+---
+
+## 📚 See Also
+
+- [CI - .NET Build and Test Workflow](ci-dotnet.md) - Entry point for CI operations
+- [CI - .NET Reusable Workflow](ci-dotnet-reusable.md) - Detailed CI implementation
