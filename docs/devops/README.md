@@ -43,19 +43,39 @@ tags: [devops, github-actions, ci-cd, documentation, index]
 ## 🔄 Workflow Relationships
 
 ```mermaid
+---
+title: Workflow Relationships Overview
+---
 flowchart LR
-    subgraph ci[Continuous Integration]
-        caller[ci-dotnet.yml]
-        reusable[ci-dotnet-reusable.yml]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+
+    %% ===== CONTINUOUS INTEGRATION =====
+    subgraph ci["Continuous Integration"]
+        caller["ci-dotnet.yml"]
+        reusable[["ci-dotnet-reusable.yml"]]
     end
 
-    subgraph cd[Continuous Deployment]
-        deploy[azure-dev.yml]
+    %% ===== CONTINUOUS DEPLOYMENT =====
+    subgraph cd["Continuous Deployment"]
+        deploy["azure-dev.yml"]
     end
 
-    caller -->|calls| reusable
-    deploy -->|calls| reusable
-    reusable -->|success| deploy
+    %% ===== CONNECTIONS =====
+    caller -->|invokes| reusable
+    deploy -->|invokes| reusable
+    reusable -->|triggers on success| deploy
+
+    %% ===== APPLY CLASSES =====
+    class caller primary
+    class reusable external
+    class deploy secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style ci fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style cd fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
 ```
 
 ---

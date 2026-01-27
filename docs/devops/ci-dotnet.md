@@ -112,48 +112,79 @@ Concurrency is controlled at the workflow level using a group identifier based o
 ### Mermaid Diagram
 
 ```mermaid
+---
+title: CI Orchestration Workflow Flow
+---
 flowchart LR
-    subgraph triggers[Triggers]
-        push([push])
-        pr([pull_request])
-        manual([workflow_dispatch])
+    %% ===== CLASS DEFINITIONS =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+
+    %% ===== TRIGGERS SECTION =====
+    subgraph triggers["Triggers"]
+        push(["push"])
+        pr(["pull_request"])
+        manual(["workflow_dispatch"])
     end
 
-    subgraph orchestration[Orchestration]
-        ci[ci]
+    %% ===== ORCHESTRATION SECTION =====
+    subgraph orchestration["Orchestration Layer"]
+        ciJob["ci"]
     end
 
-    subgraph reusable[Reusable Workflow]
+    %% ===== REUSABLE WORKFLOW SECTION =====
+    subgraph reusable["Reusable Workflow Jobs"]
         direction TB
-        build[build]
-        test[test]
-        analyze[analyze]
-        codeql[codeql]
-        summary[summary]
-        onfailure[on-failure]
+        build["build"]
+        testJob["test"]
+        analyze["analyze"]
+        codeql["codeql"]
+        summaryJob["summary"]
+        onfailure["on-failure"]
     end
 
-    push --> ci
-    pr --> ci
-    manual --> ci
+    %% ===== TRIGGER CONNECTIONS =====
+    push -->|triggers| ciJob
+    pr -->|triggers| ciJob
+    manual -->|triggers| ciJob
 
-    ci --> build
-    ci --> test
-    ci --> analyze
-    ci --> codeql
+    %% ===== ORCHESTRATION TO REUSABLE =====
+    ciJob ==>|calls workflow| build
+    ciJob -->|delegates to| testJob
+    ciJob -->|delegates to| analyze
+    ciJob -->|delegates to| codeql
 
-    build --> test
-    build --> analyze
-    build --> codeql
+    %% ===== JOB DEPENDENCIES =====
+    build -->|completes before| testJob
+    build -->|completes before| analyze
+    build -->|completes before| codeql
 
-    test --> summary
-    analyze --> summary
-    codeql --> summary
+    %% ===== REPORTING CONNECTIONS =====
+    testJob -->|reports to| summaryJob
+    analyze -->|reports to| summaryJob
+    codeql -->|reports to| summaryJob
 
-    build -.->|failure| onfailure
-    test -.->|failure| onfailure
-    analyze -.->|failure| onfailure
-    codeql -.->|failure| onfailure
+    %% ===== FAILURE PATHS =====
+    build -.->|on failure| onfailure
+    testJob -.->|on failure| onfailure
+    analyze -.->|on failure| onfailure
+    codeql -.->|on failure| onfailure
+
+    %% ===== APPLY CLASSES =====
+    class push,pr,manual trigger
+    class ciJob primary
+    class build,testJob,analyze,codeql secondary
+    class summaryJob datastore
+    class onfailure failed
+
+    %% ===== SUBGRAPH STYLES =====
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style orchestration fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style reusable fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ### Interpretation Notes
