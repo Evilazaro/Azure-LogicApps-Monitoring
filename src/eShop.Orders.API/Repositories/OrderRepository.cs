@@ -15,6 +15,44 @@ namespace eShop.Orders.API.Repositories;
 /// Provides Entity Framework Core-based persistence for order data with async operations.
 /// Implements the repository pattern for order management with SQL Azure Database.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This repository provides a comprehensive data access layer for managing orders using Entity Framework Core.
+/// It implements the <see cref="IOrderRepository"/> interface and supports CRUD operations with optimized
+/// query patterns including pagination, split queries, and no-tracking for read-only operations.
+/// </para>
+/// <para>
+/// Key features include:
+/// <list type="bullet">
+///   <item><description>Asynchronous operations with cancellation token support</description></item>
+///   <item><description>Internal timeout handling to prevent HTTP cancellation from interrupting database transactions</description></item>
+///   <item><description>Distributed tracing integration via <see cref="Activity"/> for observability</description></item>
+///   <item><description>Structured logging with trace context correlation</description></item>
+///   <item><description>Optimized queries using split queries and no-tracking for performance</description></item>
+///   <item><description>Pagination support for handling large datasets efficiently</description></item>
+///   <item><description>Duplicate key violation detection and meaningful error handling</description></item>
+/// </list>
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// // Register in DI container
+/// services.AddScoped&lt;IOrderRepository, OrderRepository&gt;();
+/// 
+/// // Usage in a service
+/// public class OrderService
+/// {
+///     private readonly IOrderRepository _repository;
+///     
+///     public async Task&lt;Order?&gt; GetOrderAsync(string id, CancellationToken ct)
+///     {
+///         return await _repository.GetOrderByIdAsync(id, ct);
+///     }
+/// }
+/// </code>
+/// </example>
+/// <seealso cref="IOrderRepository"/>
+/// <seealso cref="OrderDbContext"/>
 public sealed class OrderRepository : IOrderRepository
 {
     private readonly ILogger<OrderRepository> _logger;
