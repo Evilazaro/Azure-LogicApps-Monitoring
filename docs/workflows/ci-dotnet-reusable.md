@@ -53,7 +53,7 @@ workflow_file: .github/workflows/ci-dotnet-reusable.yml
 %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#616161', 'secondaryColor': '#E3F2FD', 'tertiaryColor': '#FAFAFA', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
 flowchart TB
     subgraph level1 ["🎯 Level 1: Trigger"]
-        call["📞 workflow_call"]
+        wf-call["📞 workflow_call"]
     end
 
     subgraph level2 ["📋 Level 2: Stages"]
@@ -97,7 +97,7 @@ flowchart TB
     s-analyze -.-> level3c
     s-summary -.-> level3d
 
-    style call fill:#FF9800,stroke:#E65100,color:#fff
+    style wf-call fill:#FF9800,stroke:#E65100,color:#fff
     style s-build fill:#4CAF50,stroke:#2E7D32,color:#fff
     style s-test fill:#9C27B0,stroke:#6A1B9A,color:#fff
     style s-analyze fill:#00BCD4,stroke:#00838F,color:#fff
