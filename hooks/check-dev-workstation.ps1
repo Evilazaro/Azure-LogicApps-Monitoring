@@ -4,7 +4,7 @@
 
 <#
 .SYNOPSIS
-    Validates developer workstation prerequisites for Azure Logic Apps Monitoring solution.
+    Validates developer workstation prerequisites for the Azure Logic Apps Monitoring solution.
 
 .DESCRIPTION
     This script performs comprehensive validation of the development environment to ensure
@@ -23,29 +23,46 @@
     - Bicep CLI (0.30.0+)
     - Azure Resource Provider registrations
     - Azure subscription quota requirements
-    
+
+    The script spawns a child PowerShell process to execute preprovision.ps1, ensuring
+    that any exit calls in the validation script do not terminate the wrapper process
+    and that exit codes are reliably captured.
+
 .PARAMETER Verbose
-    Displays detailed diagnostic information during validation.
+    Displays detailed diagnostic information during validation, including the pwsh
+    executable path, script arguments, and stack traces on errors.
 
 .EXAMPLE
     .\check-dev-workstation.ps1
-    Performs standard workstation validation with normal output.
+    
+    Performs standard workstation validation with normal output. Returns exit code 0
+    on success or a non-zero exit code if validation issues are detected.
 
 .EXAMPLE
     .\check-dev-workstation.ps1 -Verbose
-    Performs validation with detailed diagnostic output for troubleshooting.
+    
+    Performs validation with detailed diagnostic output for troubleshooting, including
+    information about script paths, command execution, and validation progress.
+
+.INPUTS
+    None. This script does not accept pipeline input.
 
 .OUTPUTS
-    System.String
-    Formatted output string containing validation results.
+    System.Void
+    This script produces console output and returns an exit code but does not output objects.
 
 .NOTES
     File Name      : check-dev-workstation.ps1
     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
     Version        : 1.0.0
     Last Modified  : 2026-01-07
-    Prerequisite   : PowerShell 7.0+, preprovision.ps1
+    Prerequisite   : PowerShell 7.0+, preprovision.ps1 in the same directory
     Purpose        : Development environment validation wrapper
+    
+    Exit Codes:
+    - 0: All validations passed successfully
+    - 1: Script execution error (e.g., missing preprovision.ps1)
+    - Other: Exit code from preprovision.ps1 indicating specific validation failures
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

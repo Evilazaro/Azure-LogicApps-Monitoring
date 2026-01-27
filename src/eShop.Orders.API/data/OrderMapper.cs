@@ -9,8 +9,14 @@ using eShop.Orders.API.Data.Entities;
 namespace eShop.Orders.API.Data;
 
 /// <summary>
-/// Provides mapping functionality between domain models and database entities.
+/// Provides extension methods for mapping between Order domain models and their corresponding database entities.
+/// This static class enables bidirectional conversion between <see cref="Order"/> and <see cref="OrderEntity"/>,
+/// as well as between <see cref="OrderProduct"/> and <see cref="OrderProductEntity"/>.
 /// </summary>
+/// <remarks>
+/// All mapping methods are implemented as extension methods to provide a fluent API for conversions.
+/// Null checks are performed on all input parameters to ensure safe mapping operations.
+/// </remarks>
 public static class OrderMapper
 {
     /// <summary>

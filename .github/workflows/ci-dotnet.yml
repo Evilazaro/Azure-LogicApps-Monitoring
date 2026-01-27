@@ -27,8 +27,15 @@
 #   - Pull requests targeting main branch
 #   - Manual workflow dispatch for ad-hoc runs
 #
+# Prerequisites:
+#   - The reusable workflow file must exist at:
+#     .github/workflows/ci-dotnet-reusable.yml
+#   - This workflow must be on the default branch (main) or the same branch
+#     for the reusable workflow reference to resolve correctly.
+#
 # Documentation:
 #   https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+#   https://docs.github.com/en/actions/using-workflows/reusing-workflows
 #
 # ============================================================================
 

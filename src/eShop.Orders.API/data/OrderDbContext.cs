@@ -12,15 +12,22 @@ namespace eShop.Orders.API.Data;
 /// Database context for order management system using Entity Framework Core.
 /// Provides access to orders and order products with configured relationships.
 /// </summary>
-public sealed class OrderDbContext : DbContext
+/// <remarks>
+/// <para>
+/// This context manages two main entities:
+/// <list type="bullet">
+///   <item><description><see cref="OrderEntity"/> - Represents customer orders with delivery information and totals.</description></item>
+///   <item><description><see cref="OrderProductEntity"/> - Represents individual products within an order.</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// The context configures cascade delete behavior for order-product relationships,
+/// ensuring that when an order is deleted, all associated products are also removed.
+/// </para>
+/// </remarks>
+/// <param name="options">The options to be used by the DbContext, typically configured via dependency injection.</param>
+public sealed class OrderDbContext(DbContextOptions<OrderDbContext> options) : DbContext(options)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OrderDbContext"/> class.
-    /// </summary>
-    /// <param name="options">The options to be used by the DbContext.</param>
-    public OrderDbContext(DbContextOptions<OrderDbContext> options) : base(options)
-    {
-    }
 
     /// <summary>
     /// Gets or sets the DbSet for Order entities.

@@ -3,9 +3,19 @@
 # ============================================================================
 # Automated dependency updates for security patches and version upgrades.
 #
+# Repository: Azure-LogicApps-Monitoring
+#
+# This configuration enables Dependabot to automatically:
+#   - Check for outdated dependencies on a weekly schedule
+#   - Create pull requests with version updates
+#   - Group related packages to reduce PR noise
+#   - Apply consistent labels for easy filtering
+#
 # Ecosystems monitored:
 #   - NuGet (.NET packages)
 #   - GitHub Actions (workflow actions)
+#
+# Schedule: Every Monday at 06:00 UTC
 #
 # Documentation:
 #   https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file

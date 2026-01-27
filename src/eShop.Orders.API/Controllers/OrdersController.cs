@@ -188,6 +188,17 @@ public sealed class OrdersController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Processes an order and returns the created order result.
+    /// </summary>
+    /// <param name="order">The order to process.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The processed order with a created action result.</returns>
+    /// <response code="201">Returns the processed order.</response>
+    /// <response code="204">If no content is returned.</response>
+    /// <response code="400">If the order data is invalid.</response>
+    /// <response code="409">If a conflict occurs during processing.</response>
+    /// <response code="500">If an internal server error occurs.</response>
     [HttpPost("process")]
     [ProducesResponseType(typeof(Order), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

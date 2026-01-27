@@ -43,11 +43,15 @@
 # EXIT CODES
 #     0    Validation successful - all prerequisites met
 #     1    General error - missing script or invalid arguments
+#     130  Script interrupted by user (SIGINT)
 #     >1   Validation failed - see preprovision.sh exit codes
 #
 # OUTPUTS
 #     Formatted output string containing validation results to stdout.
 #     Verbose diagnostic messages to stderr when --verbose flag is used.
+#
+# DEPENDENCIES
+#     preprovision.sh - Must exist in the same directory as this script
 #
 # NOTES
 #     File Name      : check-dev-workstation.sh

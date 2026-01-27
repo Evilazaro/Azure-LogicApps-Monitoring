@@ -1,17 +1,52 @@
 /*
   Data Infrastructure Module
   ==========================
-  Deploys storage infrastructure for Logic Apps and Container Apps.
+  Deploys comprehensive data storage infrastructure for Logic Apps and Container Apps,
+  including Azure SQL Database with Entra ID authentication and private networking.
   
   Components:
   1. Storage account for Logic Apps runtime (Standard tier requirement)
-  2. Blob containers for processed orders (success/error segregation)
-  3. Azure Files storage for Container Apps persistent volumes
+  2. Blob containers for processed orders (success/error/completed segregation)
+  3. Azure Files storage for Logic App workflow state persistence
+  4. Azure SQL Server with Entra ID-only authentication
+  5. Azure SQL Database for application data storage
+  6. Private endpoints for secure connectivity (blob, file, table, queue, SQL)
+  7. Private DNS zones for name resolution
   
   Key Features:
-  - Separate containers for success and error order processing
-  - Azure Files share for orders-api persistent data
-  - Integrated diagnostic logging
+  - Separate containers for success, error, and completed order processing
+  - Azure Files share for Logic App workflow state
+  - Integrated diagnostic logging for storage and SQL resources
+  - Entra ID-only authentication for enhanced SQL security
+  - Private endpoint connectivity for all storage services and SQL
+  - TLS 1.2 enforcement across all resources
+  
+  Security:
+  - Private endpoints isolate traffic within virtual network
+  - Entra ID-only authentication eliminates SQL password exposure
+  - Minimum TLS 1.2 enforced for all connections
+  - User-assigned managed identity for resource access
+  
+  Parameters Required:
+  - name: Base name for resource naming
+  - envName: Environment identifier (dev/test/staging/prod)
+  - location: Azure region for deployment
+  - userAssignedIdentityId: Managed identity for SQL and storage access
+  - workspaceId: Log Analytics workspace for diagnostics
+  - storageAccountId: Storage account for diagnostic logs
+  - dataSubnetId: Subnet for private endpoints
+  - vnetId: Virtual network for DNS zone linking
+  - logsSettings: Log configuration for diagnostics
+  - metricsSettings: Metrics configuration for diagnostics
+  - tags: Resource tags
+  - deployerPrincipalType: User or ServicePrincipal for SQL admin setup
+  
+  Outputs:
+  - AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW: Storage account name
+  - AZURE_STORAGE_ACCOUNT_ID_WORKFLOW: Storage account resource ID
+  - ORDERSDATABASE_SQLSERVERFQDN: SQL Server fully qualified domain name
+  - AZURE_SQL_SERVER_NAME: SQL Server name
+  - AZURE_SQL_DATABASE_NAME: SQL Database name
 */
 
 metadata name = 'Data Infrastructure'

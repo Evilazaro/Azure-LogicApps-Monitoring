@@ -2,43 +2,82 @@
 # Azure Developer CLI - Continuous Delivery Workflow
 # ============================================================================
 #
-# Purpose:
-#   Provisions Azure infrastructure and deploys the .NET application using
-#   Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
+# PURPOSE
+# -------
+# This workflow provisions Azure infrastructure and deploys the .NET application
+# using Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
+# It implements a complete CI/CD pipeline with security scanning, infrastructure
+# provisioning, SQL database configuration, and application deployment.
 #
-# Pipeline Flow:
-#   CI → Deploy Dev → Summary
+# PIPELINE FLOW
+# -------------
+#   ┌─────────┐     ┌────────────┐     ┌─────────┐     ┌────────────┐
+#   │   CI    │ ──► │ Deploy Dev │ ──► │ Summary │ ──► │ On Failure │
+#   └─────────┘     └────────────┘     └─────────┘     └────────────┘
 #
-# Jobs:
-#   1. ci          - Reusable CI workflow (Build, Test, Analyze, CodeQL)
-#   2. deploy-dev  - Provision infrastructure, configure SQL, deploy application
-#   3. summary     - Generate workflow summary report
-#   4. on-failure  - Handle and report pipeline failures
+# JOBS
+# ----
+#   Job            Description
+#   ─────────────  ─────────────────────────────────────────────────────
+#   ci             Reusable CI workflow (Build, Test, Analyze, CodeQL)
+#   deploy-dev     Provision infrastructure, configure SQL, deploy app
+#   summary        Generate workflow summary report
+#   on-failure     Handle and report pipeline failures
 #
-# Deployment Phases:
-#   Phase 1: Setup         - Checkout, install prerequisites (go-sqlcmd), .NET SDK, azd
-#   Phase 2: Auth          - OIDC authentication with Azure (azd + az CLI)
-#   Phase 3: Provision     - Infrastructure provisioning via azd provision
-#   Phase 4a: Re-auth      - Re-authenticate before SQL operations (token refresh)
-#   Phase 4b: SQL Config   - Create managed identity user in SQL database
-#   Phase 5: Re-auth       - Re-authenticate after SQL operations (token refresh)
-#   Phase 6: Deploy        - Application deployment via azd deploy
-#   Phase 7: Summary       - Generate deployment summary report
+# DEPLOYMENT PHASES
+# -----------------
+#   Phase   Name         Description
+#   ──────  ───────────  ─────────────────────────────────────────────────
+#   1       Setup        Checkout, install go-sqlcmd, .NET SDK, azd CLI
+#   2       Auth         OIDC authentication with Azure (azd + az CLI)
+#   3       Provision    Infrastructure provisioning via azd provision
+#   4a      Re-auth      Re-authenticate before SQL (token refresh)
+#   4b      SQL Config   Create managed identity user in SQL database
+#   5       Re-auth      Re-authenticate after SQL (token refresh)
+#   6       Deploy       Application deployment via azd deploy
+#   7       Summary      Generate deployment summary report
 #
-# Features:
-#   - Integrated CI pipeline with security scanning (CodeQL)
-#   - OIDC/Federated Credentials authentication (no stored secrets)
-#   - Environment-based deployment with protection rules
-#   - SQL Managed Identity configuration with go-sqlcmd
-#   - Deployment summaries and observability
+# FEATURES
+# --------
+#   • Integrated CI pipeline with security scanning (CodeQL)
+#   • OIDC/Federated Credentials authentication (no stored secrets)
+#   • Environment-based deployment with protection rules
+#   • SQL Managed Identity configuration with go-sqlcmd
+#   • Automatic retry logic for transient failures
+#   • Comprehensive deployment summaries and observability
+#   • Rollback instructions on failure
 #
-# Prerequisites:
-#   - Federated credentials configured in Azure Entra ID
-#   - GitHub Environment: dev
-#   - Repository variables: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+# PREREQUISITES
+# -------------
+#   • Federated credentials configured in Azure Entra ID
+#   • GitHub Environment: dev (with protection rules if desired)
+#   • Repository variables:
+#       - AZURE_CLIENT_ID      (Service Principal/App Registration Client ID)
+#       - AZURE_TENANT_ID      (Azure AD Tenant ID)
+#       - AZURE_SUBSCRIPTION_ID (Target Azure Subscription)
+#   • Optional repository variables:
+#       - AZURE_ENV_NAME       (defaults to 'dev')
+#       - AZURE_LOCATION       (defaults to 'eastus2')
+#       - DEPLOYER_PRINCIPAL_TYPE (defaults to 'ServicePrincipal')
+#       - DEPLOY_HEALTH_MODEL
 #
-# Documentation:
-#   https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure
+# TRIGGERS
+# --------
+#   • workflow_dispatch: Manual trigger with optional skip-ci flag
+#   • push: Automatic on changes to src/**, app.**/**, infra/**, azure.yaml
+#
+# SECURITY
+# --------
+#   • Uses OIDC federated credentials (no long-lived secrets)
+#   • Least-privilege permissions model
+#   • CodeQL security scanning enabled
+#   • Token refresh before sensitive operations
+#
+# DOCUMENTATION
+# -------------
+#   Azure OIDC Setup: https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure
+#   Azure Developer CLI: https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/
+#   go-sqlcmd: https://github.com/microsoft/go-sqlcmd
 #
 # ============================================================================
 
