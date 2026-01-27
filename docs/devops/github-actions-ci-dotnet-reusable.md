@@ -1,11 +1,10 @@
 # CI - .NET Reusable Workflow
 
-> **File:** `.github/workflows/ci-dotnet-reusable.yml`  
-> **Last Updated:** 2026-01-26
+> **Workflow file:** [`.github/workflows/ci-dotnet-reusable.yml`](../../.github/workflows/ci-dotnet-reusable.yml)
 
 ---
 
-## 1. Overview and Purpose
+## 1. Overview & Purpose
 
 ### What This Workflow Does
 
@@ -17,14 +16,14 @@ This is a comprehensive reusable CI workflow for .NET solutions that performs:
 - **CodeQL security scanning** for vulnerability detection
 - **Comprehensive reporting** with job summaries and artifacts
 
-### When to Use This Workflow
+### When to Use
 
 - As a called workflow from other CI pipelines
 - When needing standardized .NET CI across multiple repositories
 - For comprehensive cross-platform validation
 - When security scanning is required on every CI run
 
-### When NOT to Use This Workflow
+### When NOT to Use
 
 - As a standalone workflow (must be called via `workflow_call`)
 - For non-.NET projects
@@ -61,65 +60,40 @@ The workflow executes six jobs with dependencies:
 
 ```mermaid
 flowchart LR
-    subgraph build-phase ["Build Phase (Parallel Matrix)"]
-        build-ubuntu["build<br/>Ubuntu"]
-        build-windows["build<br/>Windows"]
-        build-macos["build<br/>macOS"]
+    subgraph build-stage["Build Stage"]
+        build-ubuntu["build (ubuntu)"]
+        build-windows["build (windows)"]
+        build-macos["build (macos)"]
     end
     
-    subgraph test-phase ["Test Phase (Parallel Matrix)"]
-        test-ubuntu["test<br/>Ubuntu"]
-        test-windows["test<br/>Windows"]
-        test-macos["test<br/>macOS"]
+    subgraph test-stage["Test Stage"]
+        test-ubuntu["test (ubuntu)"]
+        test-windows["test (windows)"]
+        test-macos["test (macos)"]
     end
     
-    subgraph analysis-phase ["Analysis Phase (Parallel)"]
-        analyze["analyze<br/>Code Formatting"]
-        codeql["codeql<br/>Security Scan"]
+    subgraph analysis-stage["Analysis Stage"]
+        analyze["analyze"]
+        codeql["codeql"]
     end
     
-    subgraph reporting-phase ["Reporting Phase"]
-        summary["summary<br/>Results Aggregation"]
-        failure["on-failure<br/>Failure Handler"]
+    subgraph reporting["Reporting"]
+        summary["summary"]
+        on-failure["on-failure"]
     end
     
-    build-ubuntu --> test-ubuntu
-    build-windows --> test-windows
-    build-macos --> test-macos
-    
-    build-ubuntu --> analyze
-    build-ubuntu --> codeql
-    
-    test-ubuntu --> summary
-    test-windows --> summary
-    test-macos --> summary
-    analyze --> summary
-    codeql --> summary
-    
-    test-ubuntu --> failure
-    test-windows --> failure
-    test-macos --> failure
-    analyze --> failure
-    codeql --> failure
-    
-    style build-ubuntu fill:#66cc66,stroke:#339933,color:#fff
-    style build-windows fill:#66cc66,stroke:#339933,color:#fff
-    style build-macos fill:#66cc66,stroke:#339933,color:#fff
-    style test-ubuntu fill:#ffcc66,stroke:#cc9933,color:#fff
-    style test-windows fill:#ffcc66,stroke:#cc9933,color:#fff
-    style test-macos fill:#ffcc66,stroke:#cc9933,color:#fff
-    style analyze fill:#cc99ff,stroke:#9966cc,color:#fff
-    style codeql fill:#ff9999,stroke:#cc6666,color:#fff
-    style summary fill:#9966ff,stroke:#6633cc,color:#fff
-    style failure fill:#ff6666,stroke:#cc3333,color:#fff
+    build-stage --> test-stage
+    build-stage --> analysis-stage
+    test-stage --> reporting
+    analysis-stage --> reporting
 ```
 
 ### Interpretation Notes
 
-- **Maximum parallelism:** Build runs on 3 platforms simultaneously; Test, Analyze, and CodeQL run in parallel after Build
-- **Matrix isolation:** Each platform builds and tests independently; failure on one does not stop others (`fail-fast: false`)
-- **Conditional analysis:** Analyze job only runs if `enable-code-analysis` input is true
-- **Failure propagation:** A single job failure triggers the On-Failure job while Summary still runs
+- **Maximum parallelism**: Build runs on 3 platforms simultaneously; Test, Analyze, and CodeQL run after Build completes
+- **Matrix isolation**: Each platform builds and tests independently; failure on one does not stop others (`fail-fast: false`)
+- **Conditional analysis**: Analyze job only runs if `enable-code-analysis` input is true
+- **Failure propagation**: A single job failure triggers `on-failure` while `summary` still runs (`always()` condition)
 
 ---
 
@@ -237,7 +211,7 @@ flowchart LR
 
 ---
 
-## 5. Inputs and Parameters
+## 5. Inputs & Parameters
 
 ### Input Parameters
 
@@ -266,7 +240,7 @@ flowchart LR
 
 ---
 
-## 6. Secrets and Variables
+## 6. Secrets & Variables
 
 ### Secrets
 
@@ -282,7 +256,7 @@ No secrets are directly defined by this workflow. Secrets are inherited from cal
 
 ---
 
-## 7. Permissions and Security Model
+## 7. Permissions & Security Model
 
 ### GitHub Actions Permissions
 
@@ -310,13 +284,13 @@ No secrets are directly defined by this workflow. Secrets are inherited from cal
 
 ---
 
-## 8. Environments and Deployment Strategy
+## 8. Environments & Deployment Strategy
 
 This workflow does not perform deployments. It is a CI-only workflow.
 
 ---
 
-## 9. Failure Handling and Recovery
+## 9. Failure Handling & Recovery
 
 ### Failure Behavior
 
@@ -360,7 +334,7 @@ This workflow cannot be triggered directly from the GitHub Actions UI. It must b
 
 ---
 
-## 11. Extensibility and Customization
+## 11. Extensibility & Customization
 
 ### Safe Extension Points
 
@@ -382,7 +356,7 @@ This workflow cannot be triggered directly from the GitHub Actions UI. It must b
 
 ---
 
-## 12. Known Limitations and Gotchas
+## 12. Known Limitations & Gotchas
 
 ### Limitations
 
@@ -403,7 +377,7 @@ This workflow cannot be triggered directly from the GitHub Actions UI. It must b
 
 ---
 
-## 13. Ownership and Maintenance
+## 13. Ownership & Maintenance
 
 ### Ownership
 
@@ -423,7 +397,7 @@ This workflow cannot be triggered directly from the GitHub Actions UI. It must b
 
 ---
 
-## 14. Assumptions and Gaps
+## 14. Assumptions & Gaps
 
 ### Assumptions
 

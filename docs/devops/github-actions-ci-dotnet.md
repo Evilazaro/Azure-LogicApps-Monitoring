@@ -1,24 +1,23 @@
 # CI - .NET Build and Test Workflow
 
-> **File:** `.github/workflows/ci-dotnet.yml`  
-> **Last Updated:** 2026-01-26
+> **Workflow file:** [`.github/workflows/ci-dotnet.yml`](../../.github/workflows/ci-dotnet.yml)
 
 ---
 
-## 1. Overview and Purpose
+## 1. Overview & Purpose
 
 ### What This Workflow Does
 
 This workflow orchestrates the Continuous Integration (CI) pipeline for the .NET application by calling the reusable CI workflow. It handles trigger configuration, path filters, and passes configuration parameters to the comprehensive reusable workflow that performs cross-platform builds, testing, code analysis, and security scanning.
 
-### When to Use This Workflow
+### When to Use
 
 - Validating code changes on push to any development branch
 - Running CI checks on pull requests targeting the `main` branch
 - Manually triggering CI for ad-hoc validation
 - Verifying build compatibility across Ubuntu, Windows, and macOS
 
-### When NOT to Use This Workflow
+### When NOT to Use
 
 - For deployment operations (use `azure-dev.yml` instead)
 - When only documentation changes are made (workflow skips via path filters)
@@ -69,51 +68,15 @@ The reusable workflow handles all complexity, including cross-platform matrix bu
 
 ```mermaid
 flowchart LR
-    subgraph entry ["Entry Point"]
-        ci["ci<br/>Workflow Orchestrator"]
-    end
-    
-    subgraph reusable ["Reusable Workflow (ci-dotnet-reusable.yml)"]
-        build["build<br/>Cross-Platform Build"]
-        test["test<br/>Cross-Platform Test"]
-        analyze["analyze<br/>Code Analysis"]
-        codeql["codeql<br/>Security Scan"]
-        summary["summary<br/>Results Aggregation"]
-        failure["on-failure<br/>Failure Handler"]
-    end
-    
-    ci --> build
-    ci --> test
-    ci --> analyze
-    ci --> codeql
-    ci --> summary
-    ci --> failure
-    
-    build --> test
-    build --> analyze
-    build --> codeql
-    test --> summary
-    analyze --> summary
-    codeql --> summary
-    test --> failure
-    analyze --> failure
-    codeql --> failure
-    
-    style ci fill:#4da6ff,stroke:#0066cc,color:#fff
-    style build fill:#66cc66,stroke:#339933,color:#fff
-    style test fill:#ffcc66,stroke:#cc9933,color:#fff
-    style analyze fill:#cc99ff,stroke:#9966cc,color:#fff
-    style codeql fill:#ff9999,stroke:#cc6666,color:#fff
-    style summary fill:#9966ff,stroke:#6633cc,color:#fff
-    style failure fill:#ff6666,stroke:#cc3333,color:#fff
+    caller["ci-dotnet.yml"] -->|calls| reusable["ci-dotnet-reusable.yml"]
 ```
 
 ### Interpretation Notes
 
-- **Delegation pattern:** The entry workflow only calls the reusable workflow; all execution logic is centralized
-- **Matrix parallelism:** Build and Test jobs run on Ubuntu, Windows, and macOS in parallel
-- **Sequential dependencies:** Test, Analyze, and CodeQL jobs depend on Build completion
-- **Always-run jobs:** Summary runs regardless of outcomes; On-Failure runs only on failures
+- **Delegation pattern**: This workflow contains a single job that calls the reusable workflow
+- **All execution logic is centralized**: The reusable workflow handles all build, test, analysis, and reporting
+- **Secret inheritance**: All repository secrets are passed to the called workflow
+- **For detailed flow**: See the reusable workflow documentation for internal job dependencies
 
 ---
 
@@ -131,7 +94,7 @@ flowchart LR
 
 ---
 
-## 5. Inputs and Parameters
+## 5. Inputs & Parameters
 
 ### Parameters Passed to Reusable Workflow
 
@@ -150,7 +113,7 @@ flowchart LR
 
 ---
 
-## 6. Secrets and Variables
+## 6. Secrets & Variables
 
 ### Secrets
 
@@ -164,7 +127,7 @@ No repository variables are directly used by this workflow.
 
 ---
 
-## 7. Permissions and Security Model
+## 7. Permissions & Security Model
 
 ### GitHub Actions Permissions
 
@@ -183,13 +146,13 @@ No repository variables are directly used by this workflow.
 
 ---
 
-## 8. Environments and Deployment Strategy
+## 8. Environments & Deployment Strategy
 
 This workflow does not perform deployments. It focuses exclusively on CI validation.
 
 ---
 
-## 9. Failure Handling and Recovery
+## 9. Failure Handling & Recovery
 
 ### On Failure
 
@@ -236,7 +199,7 @@ The workflow runs automatically on:
 
 ---
 
-## 11. Extensibility and Customization
+## 11. Extensibility & Customization
 
 ### Safe Extension Points
 
@@ -256,7 +219,7 @@ The workflow runs automatically on:
 
 ---
 
-## 12. Known Limitations and Gotchas
+## 12. Known Limitations & Gotchas
 
 ### Limitations
 
@@ -274,7 +237,7 @@ The workflow runs automatically on:
 
 ---
 
-## 13. Ownership and Maintenance
+## 13. Ownership & Maintenance
 
 ### Ownership
 
@@ -292,7 +255,7 @@ The workflow runs automatically on:
 
 ---
 
-## 14. Assumptions and Gaps
+## 14. Assumptions & Gaps
 
 ### Assumptions
 
