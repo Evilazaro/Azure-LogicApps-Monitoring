@@ -46,73 +46,60 @@ workflow_file: .github/workflows/ci-dotnet.yml
 ## Workflow Diagram
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#424242', 'secondaryColor': '#4CAF50', 'tertiaryColor': '#E3F2FD'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#616161', 'secondaryColor': '#E3F2FD', 'tertiaryColor': '#FAFAFA', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
 flowchart TB
-    subgraph workflow-ci ["🔄 CI - .NET Build and Test Workflow"]
-        direction TB
-        
-        subgraph triggers ["🎯 Level 1: Triggers"]
-            direction LR
-            trigger-push["📤 Push<br/>(main, feature/**, bugfix/**, release/**, hotfix/**)"]
-            trigger-pr["🔀 Pull Request<br/>(all branches)"]
-            trigger-dispatch["🖱️ workflow_dispatch<br/>(manual)"]
-        end
-
-        subgraph orchestration ["📋 Level 2: Orchestration"]
-            direction TB
-            call-reusable["🔧 Call Reusable Workflow<br/>ci-dotnet-reusable.yml"]
-        end
-
-        subgraph reusable-jobs ["🔨 Level 3: Reusable Workflow Jobs"]
-            direction TB
-            
-            subgraph build-group ["🔨 Build Job Group"]
-                direction LR
-                build-ubuntu["🐧 Build<br/>ubuntu-latest"]
-                build-windows["🪟 Build<br/>windows-latest"]
-                build-macos["🍎 Build<br/>macos-latest"]
-            end
-
-            subgraph test-group ["🧪 Test Job Group"]
-                direction LR
-                test-ubuntu["🐧 Test<br/>ubuntu-latest"]
-                test-windows["🪟 Test<br/>windows-latest"]
-                test-macos["🍎 Test<br/>macos-latest"]
-            end
-
-            subgraph analysis-group ["🔍 Analysis Job Group"]
-                direction LR
-                analyze["🎨 Analyze<br/>Code Format"]
-                codeql["🛡️ CodeQL<br/>Security Scan"]
-            end
-
-            summary["📊 Summary"]
-            on-failure["❌ On Failure"]
-        end
+    subgraph level1 ["🎯 Level 1: Triggers"]
+        direction LR
+        push["📤 Push<br/>main, feature/**, bugfix/**"]
+        pr["🔀 Pull Request"]
+        dispatch["🖱️ Manual"]
     end
 
-    triggers --> orchestration
-    orchestration --> reusable-jobs
-    build-group --> test-group
-    test-group --> analysis-group
-    analysis-group --> summary
-    analysis-group -.->|failure| on-failure
+    subgraph level2 ["📋 Level 2: Orchestration"]
+        orchestrator["🔧 ci-dotnet.yml<br/>calls reusable workflow"]
+    end
 
-    classDef trigger fill:#FF9800,stroke:#E65100,color:#FFFFFF
-    classDef orchestration fill:#1976D2,stroke:#0D47A1,color:#FFFFFF
-    classDef build fill:#4CAF50,stroke:#2E7D32,color:#FFFFFF
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#FFFFFF
-    classDef analysis fill:#00BCD4,stroke:#00838F,color:#FFFFFF
-    classDef summary fill:#607D8B,stroke:#37474F,color:#FFFFFF
-    classDef failure fill:#F44336,stroke:#C62828,color:#FFFFFF
+    subgraph level3 ["🔨 Level 3: Jobs"]
+        direction TB
+        subgraph build-group ["🔨 Build Matrix"]
+            direction LR
+            build-ubuntu["🐧 Ubuntu"]
+            build-windows["🪟 Windows"]
+            build-macos["🍎 macOS"]
+        end
+        subgraph test-group ["🧪 Test Matrix"]
+            direction LR
+            test-ubuntu["🐧 Ubuntu"]
+            test-windows["🪟 Windows"]
+            test-macos["🍎 macOS"]
+        end
+        subgraph analysis-group ["🔍 Analysis"]
+            direction LR
+            analyze["🎨 Format"]
+            codeql["🛡️ CodeQL"]
+        end
+        summary["📊 Summary"]
+        failure["❌ On Failure"]
+    end
 
-    class trigger-push,trigger-pr,trigger-dispatch trigger
-    class call-reusable orchestration
-    class build-ubuntu,build-windows,build-macos build
-    class test-ubuntu,test-windows,test-macos test
-    class analyze,codeql analysis
-    class summary summary
-    class on-failure failure
+    level1 --> level2 --> level3
+    build-group --> test-group --> analysis-group --> summary
+    analysis-group -.-> failure
+
+    style push fill:#FF9800,stroke:#E65100,color:#fff
+    style pr fill:#FF9800,stroke:#E65100,color:#fff
+    style dispatch fill:#FF9800,stroke:#E65100,color:#fff
+    style orchestrator fill:#1976D2,stroke:#0D47A1,color:#fff
+    style build-ubuntu fill:#E65100,stroke:#BF360C,color:#fff
+    style build-windows fill:#0277BD,stroke:#01579B,color:#fff
+    style build-macos fill:#424242,stroke:#212121,color:#fff
+    style test-ubuntu fill:#E65100,stroke:#BF360C,color:#fff
+    style test-windows fill:#0277BD,stroke:#01579B,color:#fff
+    style test-macos fill:#424242,stroke:#212121,color:#fff
+    style analyze fill:#00BCD4,stroke:#00838F,color:#fff
+    style codeql fill:#00BCD4,stroke:#00838F,color:#fff
+    style summary fill:#607D8B,stroke:#455A64,color:#fff
+    style failure fill:#F44336,stroke:#C62828,color:#fff
 ```
 
 ---

@@ -38,61 +38,63 @@ This project implements a modern CI/CD pipeline using GitHub Actions with the fo
 ## Workflow Architecture
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#424242', 'secondaryColor': '#F5F5F5', 'tertiaryColor': '#E3F2FD'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#1976D2', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#616161', 'secondaryColor': '#E3F2FD', 'tertiaryColor': '#FAFAFA', 'clusterBkg': '#E3F2FD', 'clusterBorder': '#1976D2'}}}%%
 flowchart TB
-    subgraph workflow-trigger ["🎯 Workflow Triggers"]
+    subgraph triggers ["🎯 Triggers"]
         direction LR
-        trigger-push["📤 Push"]
-        trigger-pr["🔀 Pull Request"]
-        trigger-dispatch["🖱️ Manual Dispatch"]
+        push["📤 Push"]
+        pr["🔀 PR"]
+        manual["🖱️ Manual"]
     end
 
-    subgraph ci-workflow ["🔄 CI - .NET Build and Test"]
+    subgraph ci ["🔄 CI Pipeline"]
         direction TB
-        ci-orchestrator["📋 ci-dotnet.yml<br/>Orchestrator"]
-    end
-
-    subgraph ci-reusable ["🔧 CI - .NET Reusable Workflow"]
-        direction TB
-        subgraph build-stage ["🔨 Build Stage"]
+        subgraph build ["🔨 Build"]
             direction LR
-            build-ubuntu["🐧 Ubuntu"]
-            build-windows["🪟 Windows"]
-            build-macos["🍎 macOS"]
+            b-ubuntu["🐧 Ubuntu"]
+            b-windows["🪟 Windows"]
+            b-macos["🍎 macOS"]
         end
-        subgraph test-stage ["🧪 Test Stage"]
+        subgraph test ["🧪 Test"]
             direction LR
-            test-ubuntu["🐧 Ubuntu"]
-            test-windows["🪟 Windows"]
-            test-macos["🍎 macOS"]
+            t-ubuntu["🐧 Ubuntu"]
+            t-windows["🪟 Windows"]
+            t-macos["🍎 macOS"]
         end
-        subgraph analysis-stage ["🔍 Analysis Stage"]
-            analyze-job["🎨 Code Format"]
-            codeql-job["🛡️ CodeQL Security"]
+        subgraph analyze ["🔍 Analyze"]
+            format["🎨 Format"]
+            codeql["🛡️ CodeQL"]
         end
-        ci-summary["📊 Summary"]
     end
 
-    subgraph cd-workflow ["🚀 CD - Azure Deployment"]
+    subgraph cd ["🚀 CD Pipeline"]
         direction TB
-        cd-ci["🔄 CI Check"]
-        cd-deploy["🚀 Deploy Dev"]
-        cd-summary["📊 Summary"]
+        provision["🏗️ Provision"]
+        deploy["🚀 Deploy"]
     end
 
-    trigger-push --> ci-workflow
-    trigger-pr --> ci-workflow
-    trigger-dispatch --> ci-workflow
-    trigger-push --> cd-workflow
-    trigger-dispatch --> cd-workflow
+    summary["📊 Summary"]
 
-    ci-orchestrator --> ci-reusable
-    build-stage --> test-stage
-    test-stage --> analysis-stage
-    analysis-stage --> ci-summary
+    triggers --> ci
+    triggers --> cd
+    build --> test --> analyze
+    ci --> summary
+    provision --> deploy --> summary
 
-    cd-ci --> cd-deploy
-    cd-deploy --> cd-summary
+    style push fill:#FF9800,stroke:#E65100,color:#fff
+    style pr fill:#FF9800,stroke:#E65100,color:#fff
+    style manual fill:#FF9800,stroke:#E65100,color:#fff
+    style b-ubuntu fill:#E65100,stroke:#BF360C,color:#fff
+    style b-windows fill:#0277BD,stroke:#01579B,color:#fff
+    style b-macos fill:#424242,stroke:#212121,color:#fff
+    style t-ubuntu fill:#E65100,stroke:#BF360C,color:#fff
+    style t-windows fill:#0277BD,stroke:#01579B,color:#fff
+    style t-macos fill:#424242,stroke:#212121,color:#fff
+    style format fill:#00BCD4,stroke:#00838F,color:#fff
+    style codeql fill:#00BCD4,stroke:#00838F,color:#fff
+    style provision fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style deploy fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style summary fill:#607D8B,stroke:#455A64,color:#fff
 ```
 
 ---
