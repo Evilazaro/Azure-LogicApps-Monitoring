@@ -236,7 +236,7 @@ sequenceDiagram
 |:---------|:--------|
 | `Write-Log` | Writes formatted log messages with levels |
 | `Get-EnvironmentValue` | Gets environment variable with default |
-| `Set-WorkflowEnvironmentAliases` | Maps WORKFLOWS_* to AZURE_* variables |
+| `Set-WorkflowEnvironmentAliases` | Maps WORKFLOWS_*to AZURE_* variables |
 | `Resolve-Placeholders` | Resolves ${VARIABLE} placeholders in content |
 | `Get-ConnectionRuntimeUrl` | Fetches connection runtime URL from Azure |
 
