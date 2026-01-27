@@ -167,8 +167,8 @@ block-beta
     columns 4
     
     block:strategic["🎯 Strategic Capabilities"]:4
-        columns 4
         direction TB
+        columns 4
         SC1["Customer\nEngagement"]
         SC2["Order\nIntelligence"]
         SC3["Business Process\nAutomation"]
