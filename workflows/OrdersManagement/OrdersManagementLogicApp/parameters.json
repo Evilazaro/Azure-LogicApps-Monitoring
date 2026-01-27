@@ -1,4 +1,7 @@
 {
+  // Parameters configuration for OrdersManagement Logic App
+  // Contains connection runtime URLs and authentication settings for Azure services
+  // Service Bus connection configuration
   "servicebus-ConnectionRuntimeUrl": {
     "type": "String",
     "value": "@appsetting('servicebus-ConnectionRuntimeUrl')"
