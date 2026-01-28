@@ -647,6 +647,22 @@ output AZURE_SQL_DATABASE_NAME string = sqlDb.name
 
 // ========== SQL User Configuration ==========
 
+// Role assignment for deployment script to use storage account with managed identity
+// Required when key-based authentication is disabled by Azure Policy
+@description('Storage Blob Data Contributor role assignment for deployment script')
+resource storageBlobContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(managedIdentityName) && !empty(managedIdentityClientId)) {
+  name: guid(wfSA.id, userAssignedIdentityId, 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
+  scope: wfSA
+  properties: {
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+    ) // Storage Blob Data Contributor
+    principalId: reference(userAssignedIdentityId, '2023-01-31').principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 // Configure managed identity user in SQL Database using a deployment script
 // This runs INSIDE Azure's network, bypassing public access restrictions
 @description('Deployment script to configure managed identity user in SQL Database')
@@ -659,11 +675,13 @@ module sqlUserConfig 'sql-user-config.bicep' = if (!empty(managedIdentityName) &
     managedIdentityName: managedIdentityName
     managedIdentityClientId: managedIdentityClientId
     userAssignedIdentityId: userAssignedIdentityId
+    storageAccountName: wfSA.name
     location: location
     tags: tags
   }
   dependsOn: [
     entraOnlyAuth
+    storageBlobContributorRole // Wait for role assignment to propagate
   ]
 }
 

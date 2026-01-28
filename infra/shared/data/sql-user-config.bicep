@@ -71,6 +71,9 @@ param tags object = {}
 @description('Timestamp for force update (defaults to current UTC time)')
 param forceUpdateTag string = utcNow()
 
+@description('Name of the storage account for deployment script artifacts')
+param storageAccountName string
+
 // ========== Variables ==========
 
 // Unique name for the deployment script
@@ -99,6 +102,10 @@ resource sqlUserConfigScript 'Microsoft.Resources/deploymentScripts@2023-08-01' 
     retentionInterval: 'PT1H' // Retain logs for 1 hour
     timeout: 'PT30M' // 30 minute timeout
     cleanupPreference: 'OnSuccess'
+    // Use managed identity authentication for storage account (required when key-based auth is disabled by policy)
+    storageAccountSettings: {
+      storageAccountName: storageAccountName
+    }
     arguments: '-SqlServerFqdn "${sqlServerFqdn}" -DatabaseName "${databaseName}" -ManagedIdentityName "${managedIdentityName}" -ManagedIdentityClientId "${managedIdentityClientId}" -SqlResourceUrl "${sqlDatabaseResourceUrl}"'
     scriptContent: '''
       param(
