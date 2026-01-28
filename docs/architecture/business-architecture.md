@@ -127,6 +127,7 @@ The solution provides business capabilities organized across three tiers that su
 flowchart BT
     subgraph businesscap["Business Capabilities"]
         subgraph strategic["🎯 Strategic Capabilities"]
+            direction BT
             SC1["Customer Engagement"]
             SC2["Order Fulfillment Excellence"]
             SC3["Business Performance Monitoring"]
