@@ -126,7 +126,7 @@ The solution provides business capabilities organized across three tiers that su
 ```mermaid
 flowchart TD
     subgraph businesscap["Business Capabilities"]
-        direction LR
+        direction TD
         subgraph strategic["🎯 Strategic Capabilities"]
             direction LR
             SC1["Customer Engagement"]
