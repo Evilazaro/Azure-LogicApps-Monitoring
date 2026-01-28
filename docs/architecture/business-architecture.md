@@ -147,7 +147,7 @@ flowchart TD
         end
     end
     
-    strategic --> core
+    <!-- strategic --> core
     core --> enabling
     
     style strategic fill:#E3F2FD,stroke:#1565C0,stroke-width:3px
@@ -165,7 +165,7 @@ flowchart TD
     style EC1 fill:#FFE0B2,stroke:#EF6C00
     style EC2 fill:#FFE0B2,stroke:#EF6C00
     style EC3 fill:#FFE0B2,stroke:#EF6C00
-    style EC4 fill:#FFE0B2,stroke:#EF6C00
+    style EC4 fill:#FFE0B2,stroke:#EF6C00 -->
 ```
 
 ### 3.2 Capability Descriptions
