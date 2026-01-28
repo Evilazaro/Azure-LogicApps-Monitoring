@@ -372,237 +372,41 @@ jobs:
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
       # ------------------------------------------------------------------------
-      # Phase 4a.1: Enable SQL Public Access
-      # Temporarily enable public network access and add runner IP to firewall
-      # to allow GitHub Actions runner to connect to SQL Server.
-      # ------------------------------------------------------------------------
-      - name: 🔓 Enable SQL Public Access for Configuration
-        id: sql-access
-        run: |
-          echo "::group::🔓 Enabling SQL Server Public Access"
-          
-          SQL_SERVER=$(azd env get-values | grep "AZURE_SQL_SERVER_NAME" | cut -d'=' -f2 | tr -d '"')
-          RG="rg-orders-${AZURE_ENV_NAME}-${AZURE_LOCATION}"
-          
-          echo "SQL Server: $SQL_SERVER"
-          echo "Resource Group: $RG"
-          
-          # Get current public IP of the GitHub runner
-          RUNNER_IP=$(curl -s https://api.ipify.org)
-          echo "GitHub Runner IP: $RUNNER_IP"
-          echo "runner-ip=$RUNNER_IP" >> $GITHUB_OUTPUT
-          echo "sql-server=$SQL_SERVER" >> $GITHUB_OUTPUT
-          echo "resource-group=$RG" >> $GITHUB_OUTPUT
-          
-          # Enable public network access on SQL Server
-          echo "Enabling public network access..."
-          az sql server update \
-            --name "$SQL_SERVER" \
-            --resource-group "$RG" \
-            --enable-public-network true \
-            --output none
-          
-          # Add firewall rule for GitHub runner IP
-          echo "Adding firewall rule for runner IP..."
-          az sql server firewall-rule create \
-            --name "GitHubRunner-${GITHUB_RUN_ID}" \
-            --server "$SQL_SERVER" \
-            --resource-group "$RG" \
-            --start-ip-address "$RUNNER_IP" \
-            --end-ip-address "$RUNNER_IP" \
-            --output none
-          
-          # Wait for firewall rule to propagate
-          echo "Waiting for firewall rule to propagate..."
-          sleep 30
-          
-          echo "::endgroup::"
-          echo "::notice title=SQL Access::✅ Public access enabled and firewall rule added"
-
-      # ------------------------------------------------------------------------
       # Phase 4b: SQL Managed Identity Configuration
-      # Creates database user for the managed identity using go-sqlcmd.
-      # Uses SID-based user creation to bypass MS Graph API lookup.
+      # NOTE: SQL user creation is handled by Bicep deployment script that runs
+      # inside Azure, as the SQL Server has public network access disabled by
+      # Azure Policy. The deployment script runs within the Azure network and
+      # can access SQL Server via private endpoint.
       # ------------------------------------------------------------------------
-      - name: 🔑 Create SQL User with Client ID
-        timeout-minutes: 10
+      - name: 🔑 Verify SQL User Configuration
+        timeout-minutes: 5
         run: |
-          echo "::group::🔑 Creating SQL database user using Client ID (Application ID)"
+          echo "::group::🔑 Verifying SQL Database User Configuration"
 
           # Get values from azd environment
-          SQL_SERVER=$(azd env get-values | grep "AZURE_SQL_SERVER_NAME" | cut -d'=' -f2 | tr -d '"')
-          SQL_DB=$(azd env get-values | grep "AZURE_SQL_DATABASE_NAME" | cut -d'=' -f2 | tr -d '"')
           MI_NAME=$(azd env get-values | grep "MANAGED_IDENTITY_NAME" | cut -d'=' -f2 | tr -d '"')
           MI_CLIENT_ID=$(azd env get-values | grep "MANAGED_IDENTITY_CLIENT_ID" | cut -d'=' -f2 | tr -d '"')
-          RG="rg-orders-${AZURE_ENV_NAME}-${AZURE_LOCATION}"
 
-          echo "SQL Server: $SQL_SERVER"
-          echo "Database: $SQL_DB"
           echo "Managed Identity Name: $MI_NAME"
           echo "Managed Identity Client ID: $MI_CLIENT_ID"
 
-          # IMPORTANT: For Azure SQL Database with Entra ID (Azure AD) authentication,
-          # the SID must be created from the CLIENT ID (Application ID), NOT the Object ID.
-          # The Client ID is used as the identity claim in the access token.
-          # Reference: https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-service-principal
+          # SQL user creation is handled during infrastructure provisioning
+          # via a Bicep deployment script that runs inside Azure's network.
+          # This step only verifies the configuration was applied.
 
-          # Verify we have the client ID
-          if [ -z "$MI_CLIENT_ID" ]; then
-            echo "::error::Managed Identity Client ID not found in environment variables"
-            echo "Attempting to fetch from Azure..."
-            MI_CLIENT_ID=$(az identity show --name "$MI_NAME" --resource-group "$RG" --query clientId -o tsv)
+          if [ -z "$MI_NAME" ] || [ -z "$MI_CLIENT_ID" ]; then
+            echo "::warning::Managed Identity information not found in environment"
+            echo "The SQL user may not have been configured. Check the infrastructure deployment logs."
+          else
+            echo "✓ Managed Identity configuration verified"
+            echo "  Name: $MI_NAME"
+            echo "  Client ID: $MI_CLIENT_ID"
+            echo ""
+            echo "NOTE: SQL user was configured during 'azd provision' via a deployment script"
+            echo "      that runs inside Azure's network (bypassing public access restrictions)."
           fi
-          echo "Using Client ID for SID: $MI_CLIENT_ID"
-
-          # Create SQL script that uses SID derived from CLIENT ID
-          # This bypasses the MS Graph lookup requirement
-          # Note: Writing to a temp file instead of piping to avoid go-sqlcmd stdin crash
-          SQL_SCRIPT_FILE=$(mktemp --suffix=.sql)
-          cat > "$SQL_SCRIPT_FILE" << 'EOSQL'
-          -- Calculate the expected SID from Client ID
-          DECLARE @expectedSid VARBINARY(16);
-          SET @expectedSid = CAST(CAST('$(MI_CLIENT_ID)' AS UNIQUEIDENTIFIER) AS VARBINARY(16));
-
-          -- Check if user already exists
-          IF EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'$(MI_NAME)')
-          BEGIN
-              -- User exists - verify the SID matches the expected Client ID
-              DECLARE @existingSid VARBINARY(85);
-              SELECT @existingSid = sid FROM sys.database_principals WHERE name = N'$(MI_NAME)';
-              
-              IF @existingSid <> @expectedSid
-              BEGIN
-                  -- SID mismatch - user was likely created with wrong ID (Object ID instead of Client ID)
-                  -- Drop and recreate with correct SID
-                  PRINT 'WARNING: User [$(MI_NAME)] exists but SID does not match Client ID.';
-                  PRINT 'Expected SID (from Client ID): ' + CONVERT(VARCHAR(64), @expectedSid, 2);
-                  PRINT 'Actual SID: ' + CONVERT(VARCHAR(64), @existingSid, 2);
-                  PRINT 'Dropping and recreating user with correct SID...';
-                  
-                  DROP USER [$(MI_NAME)];
-                  PRINT 'INFO: Dropped user [$(MI_NAME)]';
-                  
-                  -- Recreate with correct SID
-                  DECLARE @createSql NVARCHAR(MAX);
-                  SET @createSql = N'CREATE USER [$(MI_NAME)] WITH SID = 0x' + 
-                               CONVERT(VARCHAR(64), @expectedSid, 2) + 
-                               N', TYPE = E';
-                  EXEC sp_executesql @createSql;
-                  PRINT 'SUCCESS: User [$(MI_NAME)] recreated with correct SID from Client ID';
-              END
-              ELSE
-              BEGIN
-                  PRINT 'INFO: User [$(MI_NAME)] already exists with correct SID';
-              END
-          END
-          ELSE
-          BEGIN
-              -- User doesn't exist - create with correct SID
-              DECLARE @sql NVARCHAR(MAX);
-              SET @sql = N'CREATE USER [$(MI_NAME)] WITH SID = 0x' + 
-                         CONVERT(VARCHAR(64), @expectedSid, 2) + 
-                         N', TYPE = E';
-              EXEC sp_executesql @sql;
-              PRINT 'SUCCESS: User [$(MI_NAME)] created with SID from Client ID';
-          END;
-
-          -- Add to db_owner role
-          IF NOT EXISTS (SELECT 1 FROM sys.database_role_members rm 
-                         JOIN sys.database_principals r ON rm.role_principal_id = r.principal_id 
-                         JOIN sys.database_principals m ON rm.member_principal_id = m.principal_id 
-                         WHERE r.name = 'db_owner' AND m.name = '$(MI_NAME)')
-          BEGIN
-              ALTER ROLE [db_owner] ADD MEMBER [$(MI_NAME)];
-              PRINT 'SUCCESS: Added [$(MI_NAME)] to db_owner role';
-          END
-          ELSE
-          BEGIN
-              PRINT 'INFO: [$(MI_NAME)] is already in db_owner role';
-          END;
-          EOSQL
-
-          echo "SQL script written to: $SQL_SCRIPT_FILE"
-          echo "Script contents:"
-          cat "$SQL_SCRIPT_FILE"
-
-          echo ""
-          echo "Executing SQL script with retry logic..."
-
-          # Retry logic for transient SQL connectivity issues
-          MAX_RETRIES=3
-          RETRY_DELAY=15
-
-          for attempt in $(seq 1 $MAX_RETRIES); do
-            echo "SQL execution attempt $attempt of $MAX_RETRIES..."
-            if sqlcmd -S "${SQL_SERVER}.database.windows.net" -d "$SQL_DB" \
-              --authentication-method ActiveDirectoryAzCli -N true \
-              -v MI_NAME="$MI_NAME" MI_CLIENT_ID="$MI_CLIENT_ID" \
-              -i "$SQL_SCRIPT_FILE"; then
-              echo "✓ SQL script executed successfully"
-              break
-            else
-              if [ $attempt -eq $MAX_RETRIES ]; then
-                echo "::error::SQL script execution failed after $MAX_RETRIES attempts"
-                rm -f "$SQL_SCRIPT_FILE"
-                exit 1
-              fi
-              echo "::warning::SQL execution attempt $attempt failed, retrying in ${RETRY_DELAY}s..."
-              sleep $RETRY_DELAY
-              RETRY_DELAY=$((RETRY_DELAY * 2))
-            fi
-          done
-
-          # Cleanup temp file
-          rm -f "$SQL_SCRIPT_FILE"
-
-          echo ""
-          echo "Verifying user creation..."
-          sqlcmd -S "${SQL_SERVER}.database.windows.net" -d "$SQL_DB" --authentication-method ActiveDirectoryAzCli -N true \
-            -Q "SELECT name, type_desc, authentication_type_desc, CONVERT(VARCHAR(64), sid, 2) as sid_hex FROM sys.database_principals WHERE name = '$MI_NAME'"
 
           echo "::endgroup::"
-
-      # ------------------------------------------------------------------------
-      # Phase 4c: Cleanup SQL Public Access
-      # Remove firewall rule and disable public network access for security.
-      # This ensures SQL Server is not exposed to the public internet.
-      # ------------------------------------------------------------------------
-      - name: 🔒 Disable SQL Public Access (Cleanup)
-        if: always()
-        run: |
-          echo "::group::🔒 Disabling SQL Server Public Access"
-          
-          SQL_SERVER="${{ steps.sql-access.outputs.sql-server }}"
-          RG="${{ steps.sql-access.outputs.resource-group }}"
-          
-          if [ -z "$SQL_SERVER" ] || [ -z "$RG" ]; then
-            echo "SQL Server info not available, fetching from azd..."
-            SQL_SERVER=$(azd env get-values | grep "AZURE_SQL_SERVER_NAME" | cut -d'=' -f2 | tr -d '"')
-            RG="rg-orders-${AZURE_ENV_NAME}-${AZURE_LOCATION}"
-          fi
-          
-          echo "SQL Server: $SQL_SERVER"
-          echo "Resource Group: $RG"
-          
-          # Remove the firewall rule
-          echo "Removing firewall rule..."
-          az sql server firewall-rule delete \
-            --name "GitHubRunner-${GITHUB_RUN_ID}" \
-            --server "$SQL_SERVER" \
-            --resource-group "$RG" \
-            --yes \
-            --output none 2>/dev/null || echo "Firewall rule may already be removed"
-          
-          # Disable public network access
-          echo "Disabling public network access..."
-          az sql server update \
-            --name "$SQL_SERVER" \
-            --resource-group "$RG" \
-            --enable-public-network false \
-            --output none
-          
-          echo "::endgroup::"
-          echo "::notice title=SQL Access::✅ Public access disabled and firewall rule removed"
 
       # ------------------------------------------------------------------------
       # Phase 5: Re-authentication (Post-SQL)

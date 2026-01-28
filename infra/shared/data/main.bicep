@@ -132,6 +132,12 @@ param tags tagsType
 ])
 param deployerPrincipalType string = 'User'
 
+@description('Name of the managed identity for SQL user configuration')
+param managedIdentityName string = ''
+
+@description('Client ID of the managed identity for SQL user configuration')
+param managedIdentityClientId string = ''
+
 // ========== Variables ==========
 
 // Remove special characters for naming compliance
@@ -638,6 +644,28 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
 
 @description('Name of the deployed SQL Database')
 output AZURE_SQL_DATABASE_NAME string = sqlDb.name
+
+// ========== SQL User Configuration ==========
+
+// Configure managed identity user in SQL Database using a deployment script
+// This runs INSIDE Azure's network, bypassing public access restrictions
+@description('Deployment script to configure managed identity user in SQL Database')
+module sqlUserConfig 'sql-user-config.bicep' = if (!empty(managedIdentityName) && !empty(managedIdentityClientId)) {
+  name: 'sqlUserConfiguration'
+  params: {
+    sqlServerName: sqlServer.name
+    sqlServerFqdn: sqlServer.properties.fullyQualifiedDomainName
+    databaseName: sqlDb.name
+    managedIdentityName: managedIdentityName
+    managedIdentityClientId: managedIdentityClientId
+    userAssignedIdentityId: userAssignedIdentityId
+    location: location
+    tags: tags
+  }
+  dependsOn: [
+    entraOnlyAuth
+  ]
+}
 
 // ========== Diagnostic Settings ==========
 
