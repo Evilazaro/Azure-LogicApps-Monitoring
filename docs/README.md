@@ -52,6 +52,9 @@ The eShop Orders Management solution is a cloud-native distributed application b
 This documentation covers the following core capabilities:
 
 ```mermaid
+---
+title: Documentation Structure
+---
 mindmap
   root((Documentation))
     Architecture
@@ -170,7 +173,11 @@ The architecture documentation includes **15+ Mermaid diagrams** with Material D
 ### Diagram Preview
 
 ```mermaid
+---
+title: Documentation Index
+---
 flowchart LR
+    %% ===== DOCUMENTATION STRUCTURE =====
     subgraph docs["📚 Documentation"]
         readme["README.md"]
         subgraph arch["Architecture"]
@@ -179,12 +186,22 @@ flowchart LR
         end
     end
 
-    readme --> arch
-    app <--> data
+    %% ===== CONNECTIONS =====
+    readme -->|"links to"| arch
+    app <-->|"cross-references"| data
 
-    style readme fill:#C8E6C9,stroke:#2E7D32,color:#1B5E20
-    style app fill:#BBDEFB,stroke:#1565C0,color:#0D47A1
-    style data fill:#FFE0B2,stroke:#EF6C00,color:#E65100
+    %% ===== STYLING: NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+
+    class readme primary
+    class app secondary
+    class data datastore
+
+    %% ===== STYLING: SUBGRAPH BACKGROUNDS =====
+    style docs fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style arch fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ---

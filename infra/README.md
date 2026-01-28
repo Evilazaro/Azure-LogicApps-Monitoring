@@ -263,9 +263,15 @@ The deployment produces the following outputs for application configuration:
 ## 🏛️ Architecture Diagram
 
 ```mermaid
+---
+title: Azure Infrastructure Architecture
+---
 flowchart TB
+    %% ===== AZURE SUBSCRIPTION =====
     subgraph subscription["Azure Subscription"]
+        %% ===== RESOURCE GROUP =====
         subgraph rg["Resource Group (rg-orders-{env}-{location})"]
+            %% ===== SHARED INFRASTRUCTURE =====
             subgraph shared["Shared Infrastructure"]
                 identity["🔐 Managed Identity"]
                 monitoring["📊 Log Analytics<br/>Application Insights"]
@@ -273,6 +279,7 @@ flowchart TB
                 data["💾 Storage Accounts<br/>Azure SQL"]
             end
 
+            %% ===== WORKLOAD INFRASTRUCTURE =====
             subgraph workload["Workload Infrastructure"]
                 messaging["📨 Service Bus<br/>ordersplaced topic"]
                 services["📦 Container Registry<br/>Container Apps"]
@@ -281,18 +288,36 @@ flowchart TB
         end
     end
 
-    identity --> data
-    identity --> messaging
-    identity --> logicapp
-    monitoring --> services
-    monitoring --> logicapp
-    network --> data
-    network --> services
-    network --> logicapp
-    messaging --> logicapp
+    %% ===== CONNECTIONS WITH LABELS =====
+    identity -->|"RBAC access"| data
+    identity -->|"RBAC access"| messaging
+    identity -->|"RBAC access"| logicapp
+    monitoring -->|"collect metrics"| services
+    monitoring -->|"collect logs"| logicapp
+    network -->|"private endpoints"| data
+    network -->|"VNet integration"| services
+    network -->|"VNet integration"| logicapp
+    messaging -->|"trigger events"| logicapp
 
-    style shared fill:#E3F2FD,stroke:#1565C0
-    style workload fill:#FFF3E0,stroke:#EF6C00
+    %% ===== STYLING: NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+
+    class identity primary
+    class monitoring secondary
+    class network primary
+    class data datastore
+    class messaging trigger
+    class services secondary
+    class logicapp primary
+
+    %% ===== STYLING: SUBGRAPH BACKGROUNDS =====
+    style subscription fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style rg fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style shared fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style workload fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ---

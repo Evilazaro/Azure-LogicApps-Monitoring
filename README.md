@@ -51,50 +51,76 @@ The eShop Orders Management solution implements a modern distributed architectur
 ## 🏗️ Architecture
 
 ```mermaid
+---
+title: eShop Orders Management Architecture
+---
 flowchart TB
+    %% ===== CLIENT LAYER =====
     subgraph client["👤 Client"]
         browser["Browser"]
     end
 
+    %% ===== AZURE CLOUD =====
     subgraph azure["☁️ Azure"]
+        %% ===== CONTAINER APPS =====
         subgraph aca["Container Apps Environment"]
             webapp["eShop.Web.App<br/>Blazor Server"]
             api["eShop.Orders.API<br/>ASP.NET Core"]
         end
 
+        %% ===== DATA SERVICES =====
         subgraph data["Data Services"]
             sql[("Azure SQL<br/>OrderDb")]
             sb{{"Service Bus<br/>ordersplaced"}}
             storage["Azure Storage"]
         end
 
+        %% ===== WORKFLOW ENGINE =====
         subgraph workflow["Workflow Engine"]
             logicapp["Logic Apps<br/>OrdersPlacedProcess"]
         end
 
+        %% ===== OBSERVABILITY =====
         subgraph monitoring["Observability"]
             insights["Application Insights"]
             logs["Log Analytics"]
         end
     end
 
-    browser --> webapp
-    webapp --> api
-    api --> sql
-    api -.-> sb
-    sb -.-> logicapp
-    logicapp --> api
-    logicapp --> storage
-    api -.-> insights
-    webapp -.-> insights
-    logicapp -.-> logs
-    insights --> logs
+    %% ===== CONNECTIONS WITH LABELS =====
+    browser -->|"HTTP requests"| webapp
+    webapp -->|"REST API calls"| api
+    api -->|"persist orders"| sql
+    api -.->|"publish events"| sb
+    sb -.->|"trigger workflow"| logicapp
+    logicapp -->|"update status"| api
+    logicapp -->|"archive data"| storage
+    api -.->|"emit telemetry"| insights
+    webapp -.->|"emit telemetry"| insights
+    logicapp -.->|"diagnostics"| logs
+    insights -->|"aggregate"| logs
 
-    style webapp fill:#C8E6C9,stroke:#2E7D32
-    style api fill:#BBDEFB,stroke:#1565C0
-    style logicapp fill:#E1BEE7,stroke:#6A1B9A
-    style sql fill:#FFE0B2,stroke:#EF6C00
-    style sb fill:#FFE082,stroke:#FFB300
+    %% ===== STYLING: NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+
+    class browser external
+    class webapp,api primary
+    class sql,storage datastore
+    class sb trigger
+    class logicapp secondary
+    class insights,logs secondary
+
+    %% ===== STYLING: SUBGRAPH BACKGROUNDS =====
+    style client fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style azure fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style aca fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style data fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style workflow fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style monitoring fill:#D1FAE5,stroke:#059669,stroke-width:1px
 ```
 
 ---
