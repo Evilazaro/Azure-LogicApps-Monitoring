@@ -469,10 +469,14 @@ jobs:
           done
 
           # Extract outputs for summary
-          RESOURCE_GROUP="${AZURE_ENV_NAME}-rg"
-          AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN="${AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN}"
+          RESOURCE_GROUP="rg-orders-${AZURE_ENV_NAME}-${AZURE_LOCATION}"
+          DOMAIN=$(azd env get-values | grep "AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN" | cut -d'=' -f2 | tr -d '"' || echo "")
           echo "resource-group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
-          echo "webapp-url=https://aspire-dashboard.ext.$AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN" >> $GITHUB_OUTPUT
+          if [ -n "$DOMAIN" ]; then
+            echo "webapp-url=https://aspire-dashboard.ext.$DOMAIN" >> $GITHUB_OUTPUT
+          else
+            echo "webapp-url=" >> $GITHUB_OUTPUT
+          fi
 
       # ------------------------------------------------------------------------
       # Phase 7: Summary
