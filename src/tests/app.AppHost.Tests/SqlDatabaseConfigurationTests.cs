@@ -142,7 +142,8 @@ public sealed class SqlDatabaseConfigurationTests
         Assert.IsNotNull(ordersApiResource, "orders-api should exist as ProjectResource");
 
         // The presence of WaitForAnnotation indicates dependency waiting is configured
-        var waitAnnotations = ordersApiResource.Annotations
+        // Use ToList() first to avoid collection modification during enumeration
+        var waitAnnotations = ordersApiResource.Annotations.ToList()
             .Where(a => a.GetType().Name.Contains("Wait"))
             .ToList();
 
