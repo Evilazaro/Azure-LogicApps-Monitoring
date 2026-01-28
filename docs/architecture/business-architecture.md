@@ -128,21 +128,18 @@ flowchart BT
     subgraph businesscap["Business Capabilities"]
         direction LR
         subgraph strategic["🎯 Strategic Capabilities"]
-            direction BT
             SC1["Customer Engagement"]
             SC2["Order Fulfillment Excellence"]
             SC3["Business Performance Monitoring"]
             SC4["Operational Scalability"]        
         end
         subgraph core["⚙️ Core Business Capabilities"]
-            direction BT
             CC1["Order Management"]
             CC2["Order Processing Automation"]
             CC3["Customer Communication"]
             CC4["Order Tracking & Status"]
         end
         subgraph enabling["🔧 Enabling Capabilities"]
-            direction BT
             EC1["Order Information Storage"]
             EC2["Notification Delivery"]
             EC3["Performance Analytics"]
