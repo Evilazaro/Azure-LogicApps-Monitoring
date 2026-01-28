@@ -123,7 +123,7 @@ public sealed class AzureCredentialsTests
         else
         {
             // Local mode - verify app builds successfully
-            Assert.IsTrue(resources.Count > 0,
+            Assert.IsNotEmpty(resources,
                 "App should build successfully in local mode");
         }
     }
