@@ -119,8 +119,9 @@ public sealed class EnvironmentTests
         // Assert - In local development mode, no parameter resources are created
         // When Azure is configured, we'd have: resourceGroup, app-insights, service-bus, sql-server
         // The number of parameters depends on which Azure services are configured
-        Assert.IsTrue(parameterResources.Count >= 0,
-            $"Parameter count should be 0 in local mode or 4+ in Azure mode. Found: {string.Join(", ", parameterResources.Select(p => p.Name))}");
+        // Note: parameterResources.Count is always >= 0, so just verify the collection was created
+        Assert.IsNotNull(parameterResources,
+            $"Parameter resources should be available. Found: {string.Join(", ", parameterResources.Select(p => p.Name))}");
     }
 
     #endregion

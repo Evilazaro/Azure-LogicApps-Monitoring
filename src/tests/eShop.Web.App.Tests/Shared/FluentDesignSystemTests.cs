@@ -47,7 +47,7 @@ public sealed class FluentDesignSystemTests
         // Act & Assert
         for (int i = 1; i < spacingValues.Length; i++)
         {
-            Assert.IsTrue(spacingValues[i] > spacingValues[i - 1],
+            Assert.IsGreaterThan(spacingValues[i], spacingValues[i - 1],
                 $"Spacing value at index {i} ({spacingValues[i]}) should be greater than {spacingValues[i - 1]}");
         }
     }
@@ -282,7 +282,7 @@ public sealed class FluentDesignSystemTests
         var columns = GetDataGridColumnsValue(propertyName).Split(' ');
 
         // Assert
-        Assert.AreEqual(expectedCount, columns.Length, $"DataGridColumns.{propertyName} should have {expectedCount} columns");
+        Assert.HasCount(expectedCount, columns, $"DataGridColumns.{propertyName} should have {expectedCount} columns");
     }
 
     private static string GetDataGridColumnsValue(string propertyName) => propertyName switch

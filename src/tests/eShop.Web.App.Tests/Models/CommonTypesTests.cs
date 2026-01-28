@@ -26,7 +26,7 @@ public sealed class OrderTests
         Assert.AreEqual("123 Main St", order.DeliveryAddress);
         Assert.AreEqual(99.99m, order.Total);
         Assert.IsNotNull(order.Products);
-        Assert.AreEqual(1, order.Products.Count);
+        Assert.HasCount(1, order.Products);
     }
 
     [TestMethod]
@@ -108,7 +108,7 @@ public sealed class OrderTests
         };
 
         // Assert
-        Assert.AreEqual(3, order.Products.Count);
+        Assert.HasCount(3, order.Products);
     }
 
     #endregion

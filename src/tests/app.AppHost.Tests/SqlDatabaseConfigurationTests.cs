@@ -48,7 +48,8 @@ public sealed class SqlDatabaseConfigurationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Database should be configured
-        var databaseResource = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var databaseResource = model.Resources.ToList().FirstOrDefault(r =>
             r.Name.Contains("OrderDb", StringComparison.OrdinalIgnoreCase));
 
         Assert.IsNotNull(databaseResource, "Database 'OrderDb' should be configured");
@@ -95,7 +96,8 @@ public sealed class SqlDatabaseConfigurationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Verify default server name
-        var serverResource = model.Resources.FirstOrDefault(r => r.Name == "OrdersDatabase");
+        // Use ToList() to avoid collection modification during enumeration
+        var serverResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "OrdersDatabase");
         Assert.IsNotNull(serverResource, "Default server name should be 'OrdersDatabase'");
     }
 

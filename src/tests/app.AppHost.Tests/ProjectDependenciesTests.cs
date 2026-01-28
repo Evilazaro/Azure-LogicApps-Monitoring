@@ -210,7 +210,8 @@ public sealed class ProjectDependenciesTests
         Assert.IsNotNull(webAppResource, "web-app should exist");
 
         // Check for health check annotation
-        var healthAnnotations = webAppResource.Annotations
+        // Use ToArray() to avoid collection modification issues during enumeration
+        var healthAnnotations = webAppResource.Annotations.ToArray()
             .Where(a => a.GetType().Name.Contains("Health"))
             .ToList();
 

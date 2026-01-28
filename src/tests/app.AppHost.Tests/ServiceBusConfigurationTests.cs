@@ -126,7 +126,8 @@ public sealed class ServiceBusConfigurationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Verify default subscription name
-        var subscriptionResource = model.Resources.FirstOrDefault(r => r.Name == "orderprocessingsub");
+        // Use ToList() to avoid collection modification during enumeration
+        var subscriptionResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orderprocessingsub");
         Assert.IsNotNull(subscriptionResource, "Default subscription name should be 'orderprocessingsub'");
     }
 

@@ -265,7 +265,8 @@ public sealed class AzureCredentialsTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - All resources should have valid types
-        foreach (var resource in model.Resources)
+        // Use ToList() to avoid collection modification during enumeration
+        foreach (var resource in model.Resources.ToList())
         {
             Assert.IsNotNull(resource.GetType(),
                 $"Resource '{resource.Name}' should have a valid type");
@@ -284,7 +285,8 @@ public sealed class AzureCredentialsTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert
-        foreach (var resource in model.Resources)
+        // Use ToList() to avoid collection modification during enumeration
+        foreach (var resource in model.Resources.ToList())
         {
             Assert.IsInstanceOfType<IResource>(resource,
                 $"Resource '{resource.Name}' should implement IResource");

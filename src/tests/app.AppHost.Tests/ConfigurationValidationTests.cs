@@ -114,7 +114,8 @@ public sealed class ConfigurationValidationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - sql-server parameter is only created in Azure mode
-        var sqlServerParam = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var sqlServerParam = model.Resources.ToList().FirstOrDefault(r =>
             r.Name == "sql-server");
 
         if (sqlServerParam != null)

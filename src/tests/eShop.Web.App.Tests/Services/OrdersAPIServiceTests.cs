@@ -263,7 +263,7 @@ public sealed class OrdersAPIServiceTests
             () => _sut.PlaceOrdersBatchAsync(orders));
 
         Assert.AreEqual("orders", exception.ParamName);
-        Assert.IsTrue(exception.Message.Contains("Orders collection cannot be empty"));
+        Assert.Contains(exception.Message, "Orders collection cannot be empty");
     }
 
     /// <summary>
@@ -337,7 +337,7 @@ public sealed class OrdersAPIServiceTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Count());
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]
@@ -378,7 +378,7 @@ public sealed class OrdersAPIServiceTests
 
         // Assert
         var resultList = result.ToList();
-        Assert.AreEqual(2, resultList.Count);
+        Assert.HasCount(2, resultList);
     }
 
     [TestMethod]
@@ -393,7 +393,7 @@ public sealed class OrdersAPIServiceTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Count());
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]
@@ -408,7 +408,7 @@ public sealed class OrdersAPIServiceTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Count());
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]
@@ -823,7 +823,7 @@ public sealed class OrdersAPIServiceTests
             () => _sut.DeleteOrdersBatchAsync(orderIds));
 
         Assert.AreEqual("orderIds", exception.ParamName);
-        Assert.IsTrue(exception.Message.Contains("Order IDs collection cannot be empty"));
+        Assert.Contains(exception.Message, "Order IDs collection cannot be empty");
     }
 
     [TestMethod]
