@@ -29,7 +29,8 @@ public sealed class SqlDatabaseConfigurationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - SQL Server should be configured
-        var sqlResource = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var sqlResource = model.Resources.ToList().FirstOrDefault(r =>
             r.Name.Contains("OrdersDatabase", StringComparison.OrdinalIgnoreCase) ||
             r.Name.Contains("OrderDb", StringComparison.OrdinalIgnoreCase));
 
@@ -70,7 +71,8 @@ public sealed class SqlDatabaseConfigurationTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api");
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api");
 
         // Assert
         Assert.IsNotNull(ordersApiResource, "orders-api should exist");
@@ -113,7 +115,8 @@ public sealed class SqlDatabaseConfigurationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Verify default database name
-        var databaseResource = model.Resources.FirstOrDefault(r => r.Name == "OrderDb");
+        // Use ToList() to avoid collection modification during enumeration
+        var databaseResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "OrderDb");
         Assert.IsNotNull(databaseResource, "Default database name should be 'OrderDb'");
     }
 
@@ -132,7 +135,8 @@ public sealed class SqlDatabaseConfigurationTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
 
         // Assert - Verify WaitFor annotation exists
         Assert.IsNotNull(ordersApiResource, "orders-api should exist as ProjectResource");

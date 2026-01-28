@@ -28,7 +28,8 @@ public sealed class ProjectDependenciesTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var webAppResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(webAppResource, "web-app should exist");
@@ -53,7 +54,8 @@ public sealed class ProjectDependenciesTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var webAppResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(webAppResource, "web-app should exist");
@@ -82,13 +84,15 @@ public sealed class ProjectDependenciesTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(ordersApiResource, "orders-api should exist");
 
         // Verify WaitFor annotations exist
-        var waitAnnotations = ordersApiResource.Annotations
+        // Use ToList() to avoid collection modification during enumeration
+        var waitAnnotations = ordersApiResource.Annotations.ToList()
             .Where(a => a.GetType().Name.Contains("Wait"))
             .ToList();
 
@@ -127,7 +131,8 @@ public sealed class ProjectDependenciesTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(ordersApiResource, "orders-api should exist");
@@ -152,13 +157,15 @@ public sealed class ProjectDependenciesTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(ordersApiResource, "orders-api should exist");
 
         // Check for endpoint annotations
-        var endpointAnnotations = ordersApiResource.Annotations
+        // Use ToArray() to avoid collection modification during enumeration
+        var endpointAnnotations = ordersApiResource.Annotations.ToArray()
             .Where(a => a.GetType().Name.Contains("Endpoint"))
             .ToList();
 
@@ -176,13 +183,15 @@ public sealed class ProjectDependenciesTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var webAppResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(webAppResource, "web-app should exist");
 
         // Check for endpoint annotations
-        var endpointAnnotations = webAppResource.Annotations
+        // Use ToList() to avoid collection modification during enumeration
+        var endpointAnnotations = webAppResource.Annotations.ToList()
             .Where(a => a.GetType().Name.Contains("Endpoint"))
             .ToList();
 
@@ -204,7 +213,8 @@ public sealed class ProjectDependenciesTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var webAppResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(webAppResource, "web-app should exist");

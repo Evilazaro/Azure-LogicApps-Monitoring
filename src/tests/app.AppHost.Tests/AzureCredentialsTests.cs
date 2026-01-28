@@ -30,14 +30,16 @@ public sealed class AzureCredentialsTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Look for telemetry resource
-        var telemetryResource = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var resources = model.Resources.ToList();
+        var telemetryResource = resources.FirstOrDefault(r =>
             r.Name.Contains("telemetry", StringComparison.OrdinalIgnoreCase));
 
         // Note: In local mode without Azure:ApplicationInsights:Name configured,
         // telemetry resource is not created. This test verifies the configuration path.
         // When Azure is configured, this resource will exist.
         // For local development mode (default test mode), we verify the app builds successfully.
-        Assert.IsTrue(telemetryResource != null || model.Resources.Any(),
+        Assert.IsTrue(telemetryResource != null || resources.Count > 0,
             "App should build successfully; telemetry resource is created only when Azure is configured");
     }
 
@@ -54,12 +56,14 @@ public sealed class AzureCredentialsTests
 
         // Assert - Check for app-insights parameter resource
         // This parameter is only created when Azure:ApplicationInsights:Name is configured
-        var appInsightsParam = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var resources = model.Resources.ToList();
+        var appInsightsParam = resources.FirstOrDefault(r =>
             r.Name == "app-insights");
 
         // In local development mode, app-insights parameter is not created
         // Verify that the app builds successfully regardless
-        Assert.IsTrue(appInsightsParam != null || model.Resources.Any(),
+        Assert.IsTrue(appInsightsParam != null || resources.Count > 0,
             "App should build successfully; app-insights parameter is created only when Azure is configured");
     }
 
@@ -80,12 +84,14 @@ public sealed class AzureCredentialsTests
 
         // Assert - Check for resourceGroup parameter
         // This parameter is only created when Azure:ResourceGroup is configured
-        var resourceGroupParam = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var resources = model.Resources.ToList();
+        var resourceGroupParam = resources.FirstOrDefault(r =>
             r.Name == "resourceGroup");
 
         // In local development mode, resourceGroup parameter is not created
         // Verify that the app builds successfully regardless
-        Assert.IsTrue(resourceGroupParam != null || model.Resources.Any(),
+        Assert.IsTrue(resourceGroupParam != null || resources.Count > 0,
             "App should build successfully; resourceGroup parameter is created only when Azure is configured");
     }
 
@@ -102,7 +108,9 @@ public sealed class AzureCredentialsTests
 
         // Assert - Check for resourceGroup parameter
         // This parameter is only created when Azure:ResourceGroup is configured
-        var resourceGroupParam = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var resources = model.Resources.ToList();
+        var resourceGroupParam = resources.FirstOrDefault(r =>
             r.Name == "resourceGroup");
 
         // In local development mode, resourceGroup parameter is not created
@@ -115,7 +123,7 @@ public sealed class AzureCredentialsTests
         else
         {
             // Local mode - verify app builds successfully
-            Assert.IsTrue(model.Resources.Any(),
+            Assert.IsTrue(resources.Count > 0,
                 "App should build successfully in local mode");
         }
     }
@@ -135,7 +143,8 @@ public sealed class AzureCredentialsTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(ordersApiResource, "orders-api should exist");
@@ -160,7 +169,8 @@ public sealed class AzureCredentialsTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(ordersApiResource, "orders-api should exist");
@@ -186,7 +196,8 @@ public sealed class AzureCredentialsTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var webAppResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(webAppResource, "web-app should exist");
@@ -211,13 +222,14 @@ public sealed class AzureCredentialsTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
+        var webAppResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(webAppResource, "web-app should exist");
 
         // Check for health check annotation
-        var hasHealthCheckAnnotation = webAppResource.Annotations
+        // Use ToList() to avoid collection modification during enumeration
+        var hasHealthCheckAnnotation = webAppResource.Annotations.ToList()
             .Any(a => a.GetType().Name.Contains("HealthCheck", StringComparison.OrdinalIgnoreCase));
 
         Assert.IsTrue(hasHealthCheckAnnotation,

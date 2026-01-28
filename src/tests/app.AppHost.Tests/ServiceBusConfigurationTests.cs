@@ -29,7 +29,8 @@ public sealed class ServiceBusConfigurationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert
-        var messagingResource = model.Resources.FirstOrDefault(r => r.Name == "messaging");
+        // Use ToList() to avoid collection modification during enumeration
+        var messagingResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "messaging");
         Assert.IsNotNull(messagingResource, "messaging resource should be configured");
     }
 
@@ -45,7 +46,8 @@ public sealed class ServiceBusConfigurationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Look for topic resource (ordersplaced)
-        var topicResource = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var topicResource = model.Resources.ToList().FirstOrDefault(r =>
             r.Name.Contains("ordersplaced", StringComparison.OrdinalIgnoreCase));
 
         Assert.IsNotNull(topicResource, "Service Bus topic 'ordersplaced' should be configured");
@@ -63,7 +65,8 @@ public sealed class ServiceBusConfigurationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Look for subscription resource
-        var subscriptionResource = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var subscriptionResource = model.Resources.ToList().FirstOrDefault(r =>
             r.Name.Contains("orderprocessingsub", StringComparison.OrdinalIgnoreCase));
 
         Assert.IsNotNull(subscriptionResource, "Service Bus subscription 'orderprocessingsub' should be configured");
@@ -84,7 +87,8 @@ public sealed class ServiceBusConfigurationTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api");
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api");
 
         // Assert
         Assert.IsNotNull(ordersApiResource, "orders-api should exist");
@@ -110,7 +114,8 @@ public sealed class ServiceBusConfigurationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Verify default topic name
-        var topicResource = model.Resources.FirstOrDefault(r => r.Name == "ordersplaced");
+        // Use ToList() to avoid collection modification during enumeration
+        var topicResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "ordersplaced");
         Assert.IsNotNull(topicResource, "Default topic name should be 'ordersplaced'");
     }
 

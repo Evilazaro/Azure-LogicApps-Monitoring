@@ -32,12 +32,14 @@ public sealed class ConfigurationValidationTests
 
         // Assert - Check for service-bus parameter
         // This parameter is only created when Azure:ServiceBus:HostName is configured
-        var serviceBusParam = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var resources = model.Resources.ToList();
+        var serviceBusParam = resources.FirstOrDefault(r =>
             r.Name == "service-bus");
 
         // In local development mode, service-bus parameter is not created (emulator is used)
         // Verify that the messaging resource exists instead
-        var messagingResource = model.Resources.FirstOrDefault(r =>
+        var messagingResource = resources.FirstOrDefault(r =>
             r.Name == "messaging");
 
         Assert.IsTrue(serviceBusParam != null || messagingResource != null,
@@ -56,7 +58,9 @@ public sealed class ConfigurationValidationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - service-bus parameter is only created in Azure mode
-        var serviceBusParam = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var resources = model.Resources.ToList();
+        var serviceBusParam = resources.FirstOrDefault(r =>
             r.Name == "service-bus");
 
         if (serviceBusParam != null)
@@ -67,7 +71,7 @@ public sealed class ConfigurationValidationTests
         else
         {
             // Local mode - verify messaging resource exists (emulator mode)
-            var messagingResource = model.Resources.FirstOrDefault(r =>
+            var messagingResource = resources.FirstOrDefault(r =>
                 r.Name == "messaging");
             Assert.IsNotNull(messagingResource, "messaging resource should exist in local mode");
         }
@@ -90,12 +94,14 @@ public sealed class ConfigurationValidationTests
 
         // Assert - Check for sql-server parameter
         // This parameter is only created when Azure:SqlServer:Name is configured
-        var sqlServerParam = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var resources = model.Resources.ToList();
+        var sqlServerParam = resources.FirstOrDefault(r =>
             r.Name == "sql-server");
 
         // In local development mode, sql-server parameter is not created (container is used)
         // Verify that the database resource exists instead
-        var orderDbResource = model.Resources.FirstOrDefault(r =>
+        var orderDbResource = resources.FirstOrDefault(r =>
             r.Name == "OrderDb");
 
         Assert.IsTrue(sqlServerParam != null || orderDbResource != null,
@@ -126,7 +132,7 @@ public sealed class ConfigurationValidationTests
         else
         {
             // Local mode - verify database resource exists (container mode)
-            var orderDbResource = model.Resources.FirstOrDefault(r =>
+            var orderDbResource = model.Resources.ToList().FirstOrDefault(r =>
                 r.Name == "OrderDb");
             Assert.IsNotNull(orderDbResource, "OrderDb resource should exist in local mode");
         }
@@ -148,7 +154,8 @@ public sealed class ConfigurationValidationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert
-        var messagingResource = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var messagingResource = model.Resources.ToList().FirstOrDefault(r =>
             r.Name == "messaging");
 
         Assert.IsNotNull(messagingResource, "messaging resource should exist");
@@ -168,7 +175,8 @@ public sealed class ConfigurationValidationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert
-        var topicResource = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var topicResource = model.Resources.ToList().FirstOrDefault(r =>
             r.Name == "ordersplaced");
 
         Assert.IsNotNull(topicResource, "ordersplaced topic should exist");
@@ -186,7 +194,8 @@ public sealed class ConfigurationValidationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert
-        var subscriptionResource = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var subscriptionResource = model.Resources.ToList().FirstOrDefault(r =>
             r.Name == "orderprocessingsub");
 
         Assert.IsNotNull(subscriptionResource, "orderprocessingsub subscription should exist");
@@ -208,7 +217,8 @@ public sealed class ConfigurationValidationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert
-        var sqlServerResource = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var sqlServerResource = model.Resources.ToList().FirstOrDefault(r =>
             r.Name == "OrdersDatabase");
 
         Assert.IsNotNull(sqlServerResource, "OrdersDatabase resource should exist");
@@ -226,7 +236,8 @@ public sealed class ConfigurationValidationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert
-        var databaseResource = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var databaseResource = model.Resources.ToList().FirstOrDefault(r =>
             r.Name == "OrderDb");
 
         Assert.IsNotNull(databaseResource, "OrderDb database resource should exist");
@@ -247,13 +258,15 @@ public sealed class ConfigurationValidationTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(ordersApiResource, "orders-api should exist");
 
         // Check for WaitFor annotation
-        var hasWaitAnnotation = ordersApiResource.Annotations
+        // Use ToList() to avoid collection modification during enumeration
+        var hasWaitAnnotation = ordersApiResource.Annotations.ToList()
             .Any(a => a.GetType().Name.Contains("Wait", StringComparison.OrdinalIgnoreCase));
 
         Assert.IsTrue(hasWaitAnnotation,
@@ -271,7 +284,8 @@ public sealed class ConfigurationValidationTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(ordersApiResource, "orders-api should exist");
@@ -297,7 +311,8 @@ public sealed class ConfigurationValidationTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
+        // Use ToList() to avoid collection modification during enumeration
+        var webAppResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "web-app") as ProjectResource;
 
         // Assert
         Assert.IsNotNull(webAppResource, "web-app should exist");
@@ -319,14 +334,16 @@ public sealed class ConfigurationValidationTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
-        var telemetryResource = model.Resources.FirstOrDefault(r => r.Name == "telemetry");
+        // Use ToList() to avoid collection modification during enumeration
+        var resources = model.Resources.ToList();
+        var ordersApiResource = resources.FirstOrDefault(r => r.Name == "orders-api") as ProjectResource;
+        var telemetryResource = resources.FirstOrDefault(r => r.Name == "telemetry");
 
         // Assert
         Assert.IsNotNull(ordersApiResource, "orders-api should exist");
         // Telemetry resource is only created when Azure:ApplicationInsights:Name is configured
         // In local development mode, telemetry resource is not created
-        Assert.IsTrue(telemetryResource != null || model.Resources.Any(),
+        Assert.IsTrue(telemetryResource != null || resources.Count > 0,
             "App should build successfully; telemetry resource is created only when Azure is configured");
     }
 

@@ -47,7 +47,7 @@ public sealed class FluentDesignSystemTests
         // Act & Assert
         for (int i = 1; i < spacingValues.Length; i++)
         {
-            Assert.IsGreaterThan(spacingValues[i], spacingValues[i - 1],
+            Assert.IsGreaterThan(spacingValues[i - 1], spacingValues[i],
                 $"Spacing value at index {i} ({spacingValues[i]}) should be greater than {spacingValues[i - 1]}");
         }
     }

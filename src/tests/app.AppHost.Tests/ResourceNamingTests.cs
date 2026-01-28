@@ -29,7 +29,8 @@ public sealed class ResourceNamingTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api");
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api");
         Assert.IsNotNull(ordersApiResource, "Resource should be named 'orders-api'");
     }
 
@@ -45,7 +46,8 @@ public sealed class ResourceNamingTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert
-        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app");
+        // Use ToList() to avoid collection modification during enumeration
+        var webAppResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "web-app");
         Assert.IsNotNull(webAppResource, "Resource should be named 'web-app'");
     }
 
@@ -65,7 +67,8 @@ public sealed class ResourceNamingTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert
-        var messagingResource = model.Resources.FirstOrDefault(r => r.Name == "messaging");
+        // Use ToList() to avoid collection modification during enumeration
+        var messagingResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "messaging");
         Assert.IsNotNull(messagingResource, "Service Bus resource should be named 'messaging'");
     }
 
@@ -81,7 +84,8 @@ public sealed class ResourceNamingTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - In local mode, database is named OrderDb
-        var databaseResource = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var databaseResource = model.Resources.ToList().FirstOrDefault(r =>
             r.Name.Contains("OrderDb", StringComparison.OrdinalIgnoreCase) ||
             r.Name.Contains("Database", StringComparison.OrdinalIgnoreCase));
 

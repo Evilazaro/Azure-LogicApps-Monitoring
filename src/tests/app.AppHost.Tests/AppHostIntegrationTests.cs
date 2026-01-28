@@ -31,7 +31,8 @@ public sealed class AppHostIntegrationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Verify orders-api resource exists
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api");
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api");
 
         Assert.IsNotNull(ordersApiResource, "orders-api resource should be configured");
     }
@@ -48,7 +49,8 @@ public sealed class AppHostIntegrationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Verify web-app resource exists
-        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app");
+        // Use ToList() to avoid collection modification during enumeration
+        var webAppResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "web-app");
 
         Assert.IsNotNull(webAppResource, "web-app resource should be configured");
     }
@@ -65,7 +67,8 @@ public sealed class AppHostIntegrationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Verify messaging (Service Bus) resource exists
-        var messagingResource = model.Resources.FirstOrDefault(r => r.Name == "messaging");
+        // Use ToList() to avoid collection modification during enumeration
+        var messagingResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "messaging");
 
         Assert.IsNotNull(messagingResource, "messaging resource should be configured for Service Bus");
     }
@@ -82,7 +85,8 @@ public sealed class AppHostIntegrationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Verify database resource exists (either OrdersDatabase or OrderDb)
-        var databaseResource = model.Resources.FirstOrDefault(r =>
+        // Use ToList() to avoid collection modification during enumeration
+        var databaseResource = model.Resources.ToList().FirstOrDefault(r =>
             r.Name.Contains("Database", StringComparison.OrdinalIgnoreCase) ||
             r.Name.Contains("OrderDb", StringComparison.OrdinalIgnoreCase));
 
@@ -125,7 +129,8 @@ public sealed class AppHostIntegrationTests
         // Act
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api");
+        // Use ToList() to avoid collection modification during enumeration
+        var ordersApiResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "orders-api");
 
         // Assert
         Assert.IsNotNull(ordersApiResource);
@@ -143,7 +148,8 @@ public sealed class AppHostIntegrationTests
         // Act
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app");
+        // Use ToList() to avoid collection modification during enumeration
+        var webAppResource = model.Resources.ToList().FirstOrDefault(r => r.Name == "web-app");
 
         // Assert
         Assert.IsNotNull(webAppResource);
@@ -166,8 +172,10 @@ public sealed class AppHostIntegrationTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app");
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api");
+        // Use ToList() to avoid collection modification during enumeration
+        var resources = model.Resources.ToList();
+        var webAppResource = resources.FirstOrDefault(r => r.Name == "web-app");
+        var ordersApiResource = resources.FirstOrDefault(r => r.Name == "orders-api");
 
         // Assert
         Assert.IsNotNull(webAppResource, "web-app resource should exist");
@@ -189,8 +197,10 @@ public sealed class AppHostIntegrationTests
         await using var app = await appHost.BuildAsync();
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
-        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api");
-        var messagingResource = model.Resources.FirstOrDefault(r => r.Name == "messaging");
+        // Use ToList() to avoid collection modification during enumeration
+        var resources = model.Resources.ToList();
+        var ordersApiResource = resources.FirstOrDefault(r => r.Name == "orders-api");
+        var messagingResource = resources.FirstOrDefault(r => r.Name == "messaging");
 
         // Assert
         Assert.IsNotNull(ordersApiResource, "orders-api resource should exist");
@@ -229,7 +239,8 @@ public sealed class AppHostIntegrationTests
         var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert
-        foreach (var resource in model.Resources)
+        // Use ToList() to avoid collection modification during enumeration
+        foreach (var resource in model.Resources.ToList())
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(resource.Name),
                 "All resources should have non-empty names");
