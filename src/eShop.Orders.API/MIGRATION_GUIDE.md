@@ -3,34 +3,35 @@ title: Entity Framework Core Migration Guide
 description: Guide for migrating eShop.Orders.API from file-based storage to Entity Framework Core with Azure SQL Database
 author: Evilazaro
 version: 1.0
+last_updated: 2026-01-28
 tags: [ef-core, migration, sql-azure, database]
 ---
 
-# 🔄 Entity Framework Core Migration Guide
+# Entity Framework Core Migration Guide
 
 ![EF Core](https://img.shields.io/badge/EF%20Core-9.0-512BD4?logo=dotnet)
 ![SQL Azure](https://img.shields.io/badge/SQL-Azure-0078D4?logo=microsoftazure)
 ![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)
 
-> [!NOTE]
-> 🎯 **For Developers**: This guide documents the migration from file-based storage to Entity Framework Core.
-> ⏱️ **Estimated time:** 15-30 minutes for new setup
+> ℹ️ **Note**: This guide documents the migration from file-based storage to Entity Framework Core.
+>
+> ⏱️ **Estimated time**: 15-30 minutes for new setup
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-- [📋 Overview](#-overview)
-- [📝 Changes Made](#-changes-made)
-- [🗄️ Database Configuration](#️-database-configuration)
-- [🔄 Database Migration](#-database-migration)
-- [📊 Database Schema](#-database-schema)
-- [🔐 Authentication Requirements](#-authentication-requirements)
-- [💻 Local Development](#-local-development)
-- [🧪 Testing the Changes](#-testing-the-changes)
-- [⏪ Rollback Instructions](#-rollback-instructions)
-- [✅ Benefits of EF Core](#-benefits-of-ef-core)
-- [📚 Additional Resources](#-additional-resources)
+- [Overview](#-overview)
+- [Changes Made](#-changes-made)
+- [Database Configuration](#️-database-configuration)
+- [Database Migration](#-database-migration)
+- [Database Schema](#-database-schema)
+- [Authentication Requirements](#-authentication-requirements)
+- [Local Development](#-local-development)
+- [Testing the Changes](#-testing-the-changes)
+- [Rollback Instructions](#-rollback-instructions)
+- [Benefits of EF Core](#-benefits-of-ef-core)
+- [Additional Resources](#-additional-resources)
 
 ---
 
@@ -238,8 +239,7 @@ The API endpoints remain unchanged:
 
 ## ⏪ Rollback Instructions
 
-> [!WARNING]
-> Only use rollback if absolutely necessary. This will revert to the less scalable file-based storage.
+> ⚠️ **Warning**: Only use rollback if absolutely necessary. This will revert to the less scalable file-based storage.
 
 If you need to rollback to file-based storage:
 

@@ -4,6 +4,20 @@ This folder contains the architectural documentation for the **Azure Logic Apps 
 
 ---
 
+## Table of Contents
+
+- [Overview](#-overview)
+- [Documents](#-documents)
+- [Key Topics Covered](#-key-topics-covered)
+- [Diagrams Included](#-diagrams-included)
+- [Architecture Framework](#-architecture-framework)
+- [Technology Stack](#-technology-stack)
+- [Related Documentation](#-related-documentation)
+- [How to Use This Documentation](#-how-to-use-this-documentation)
+- [Document Standards](#-document-standards)
+
+---
+
 ## 📋 Overview
 
 The architecture documentation follows the [TOGAF (The Open Group Architecture Framework)](https://www.opengroup.org/togaf) methodology, providing a structured approach to enterprise architecture. This folder contains **Phase C** artifacts covering **Application Architecture** and **Data Architecture** domains within the TOGAF BDAT (Business, Data, Application, Technology) framework.

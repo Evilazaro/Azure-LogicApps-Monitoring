@@ -11,6 +11,24 @@ A cloud-native distributed application for **eShop Order Management** built on M
 
 ---
 
+## Table of Contents
+
+- [Overview](#-overview)
+- [Architecture](#%EF%B8%8F-architecture)
+- [Quick Start](#-quick-start)
+- [Project Structure](#-project-structure)
+- [Technology Stack](#-technology-stack)
+- [Projects](#-projects)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
+- [Documentation](#-documentation)
+- [Security](#-security)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Resources](#-resources)
+
+---
+
 ## 📋 Overview
 
 The eShop Orders Management solution implements a modern distributed architecture using .NET Aspire for service orchestration. The system features a Blazor Server frontend, ASP.NET Core Web API backend, and Azure Logic Apps workflows for asynchronous order processing—all with comprehensive monitoring and observability.
@@ -95,6 +113,8 @@ flowchart TB
 
 ### Option 1: Deploy to Azure (Recommended)
 
+> 📋 **Prerequisites**: Ensure you have Azure CLI and Azure Developer CLI installed before proceeding.
+
 ```powershell
 # Clone the repository
 git clone https://github.com/Evilazaro/Azure-LogicApps-Monitoring.git
@@ -107,6 +127,8 @@ azd auth login
 azd env new dev
 azd up
 ```
+
+> ✅ **Success**: After deployment completes, the Azure Portal URL and application endpoints are displayed in the terminal.
 
 ### Option 2: Run Locally with .NET Aspire
 
@@ -132,7 +154,7 @@ The Aspire Dashboard will open automatically, providing access to:
 
 ## 📁 Project Structure
 
-```
+```text
 Azure-LogicApps-Monitoring/
 ├── .github/                      # GitHub Actions workflows and configuration
 │   ├── workflows/                # CI/CD pipeline definitions
@@ -211,6 +233,8 @@ Azure-LogicApps-Monitoring/
 
 ## 🧪 Testing
 
+Run the test suite to verify application functionality:
+
 ```powershell
 # Run all tests
 dotnet test
@@ -221,6 +245,8 @@ dotnet test --collect:"XPlat Code Coverage"
 # Run specific test project
 dotnet test src/tests/eShop.Orders.API.Tests
 ```
+
+> 💡 **Tip**: Use `dotnet test --verbosity detailed` for more comprehensive test output.
 
 ---
 
@@ -248,7 +274,7 @@ dotnet test src/tests/eShop.Orders.API.Tests
 
 The `infra/` folder contains modular Bicep templates:
 
-```
+```text
 infra/
 ├── main.bicep                    # Entry point
 ├── shared/                       # Shared resources
@@ -293,9 +319,9 @@ infra/
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
 ### Development Guidelines

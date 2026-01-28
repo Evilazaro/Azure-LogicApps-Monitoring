@@ -6,6 +6,19 @@
 
 ---
 
+## Table of Contents
+
+- [Application Architecture Overview](#311-application-architecture-overview)
+- [Application Services](#312-application-services)
+- [Application Interfaces](#313-application-interfaces)
+- [Application Components](#314-application-components)
+- [Data Access Layer](#315-data-access-layer)
+- [Integration Points](#316-integration-points)
+- [Security Components](#317-security-components)
+- [Dependency Map](#318-dependency-map)
+
+---
+
 ## 3.1.1 Application Architecture Overview
 
 ### TOGAF BDAT Framework

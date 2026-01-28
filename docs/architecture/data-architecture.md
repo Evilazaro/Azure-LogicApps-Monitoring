@@ -1,22 +1,22 @@
 # Data Architecture Documentation
 
-> **Repository:** Evilazaro/Azure-LogicApps-Monitoring
-> **Document Version:** 1.0
-> **Date:** 2026-01-28
+> **Repository:** Evilazaro/Azure-LogicApps-Monitoring  
+> **Document Version:** 1.0  
+> **Date:** 2026-01-28  
 > **Classification:** TOGAF ADM Phase C - Data Architecture
 
 ---
 
 ## Table of Contents
 
-- [3.1.1 Data Architecture Overview](#311-data-architecture-overview)
-- [3.1.2 Data Entities & Models](#312-data-entities--models)
-- [3.1.3 Data Stores Landscape](#313-data-stores-landscape)
-- [3.1.4 Data Flow Architecture](#314-data-flow-architecture)
-- [3.1.5 Monitoring Data Flow Architecture](#315-monitoring-data-flow-architecture)
-- [3.1.6 Data State Management](#316-data-state-management)
-- [3.1.7 Data Security & Governance](#317-data-security--governance)
-- [3.1.8 Data Infrastructure (IaC)](#318-data-infrastructure-iac)
+- [Data Architecture Overview](#311-data-architecture-overview)
+- [Data Entities & Models](#312-data-entities--models)
+- [Data Stores Landscape](#313-data-stores-landscape)
+- [Data Flow Architecture](#314-data-flow-architecture)
+- [Monitoring Data Flow Architecture](#315-monitoring-data-flow-architecture)
+- [Data State Management](#316-data-state-management)
+- [Data Security & Governance](#317-data-security--governance)
+- [Data Infrastructure (IaC)](#318-data-infrastructure-iac)
 
 ---
 

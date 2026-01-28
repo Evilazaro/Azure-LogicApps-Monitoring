@@ -9,6 +9,24 @@ This folder contains the technical documentation for the **Azure Logic Apps Moni
 
 ---
 
+## Table of Contents
+
+- [Overview](#-overview)
+- [Key Capabilities](#-key-capabilities)
+- [Quick Start](#-quick-start)
+- [Folder Structure](#-folder-structure)
+- [Documentation Index](#-documentation-index)
+- [Architecture Framework](#%EF%B8%8F-architecture-framework)
+- [Technology Stack](#-technology-stack)
+- [Diagrams](#-diagrams)
+- [How to Use This Documentation](#-how-to-use-this-documentation)
+- [Document Standards](#%EF%B8%8F-document-standards)
+- [Related Resources](#-related-resources)
+- [FAQ](#-faq)
+- [Contributing](#-contributing)
+
+---
+
 ## 📋 Overview
 
 The documentation follows industry-standard frameworks and best practices, providing comprehensive coverage of the solution's architecture, design decisions, and implementation details. All documents are maintained in Markdown format with Mermaid diagrams for visual representations.
@@ -69,7 +87,7 @@ mindmap
 
 ## 📁 Folder Structure
 
-```
+```text
 docs/
 ├── README.md                         # This file - Documentation entry point
 ├── .gitignore                        # Git ignore rules for documentation

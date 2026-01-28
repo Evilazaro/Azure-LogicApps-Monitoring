@@ -8,6 +8,23 @@ This folder contains Bicep templates for deploying the **Azure Logic Apps Monito
 
 ---
 
+## Table of Contents
+
+- [Overview](#-overview)
+- [Folder Structure](#-folder-structure)
+- [Quick Start](#-quick-start)
+- [Parameters](#️-parameters)
+- [Module Reference](#-module-reference)
+- [Resource Details](#-resource-details)
+- [Outputs](#-outputs)
+- [Architecture Diagram](#️-architecture-diagram)
+- [Security Features](#-security-features)
+- [Resource Tagging](#️-resource-tagging)
+- [Related Documentation](#-related-documentation)
+- [Troubleshooting](#️-troubleshooting)
+
+---
+
 ## 📋 Overview
 
 The infrastructure is organized into modular Bicep templates following Azure best practices for enterprise-grade deployments. The architecture deploys a comprehensive monitoring solution for Azure Logic Apps Standard, including networking, identity, monitoring, data services, messaging, and container workloads.
@@ -28,7 +45,7 @@ The infrastructure is organized into modular Bicep templates following Azure bes
 
 ## 📁 Folder Structure
 
-```
+```text
 infra/
 ├── main.bicep                    # Root deployment template (subscription scope)
 ├── main.parameters.json          # Parameter file for Azure Developer CLI (azd)
@@ -62,6 +79,8 @@ infra/
 
 ### Prerequisites
 
+> 📋 **Prerequisites**: Ensure the following tools are installed before deployment.
+
 | Requirement         | Version | Purpose                        |
 | :------------------ | :------ | :----------------------------- |
 | Azure CLI           | ≥ 2.50  | Azure resource management      |
@@ -70,6 +89,8 @@ infra/
 | Azure Subscription  | —       | Target deployment environment  |
 
 ### Deploy with Azure Developer CLI (Recommended)
+
+> 💡 **Tip**: Azure Developer CLI provides the simplest deployment experience with automatic parameter handling.
 
 ```powershell
 # Initialize and deploy the entire solution
