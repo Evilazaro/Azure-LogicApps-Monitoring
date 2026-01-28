@@ -372,6 +372,54 @@ jobs:
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
       # ------------------------------------------------------------------------
+      # Phase 4a.1: Enable SQL Public Access
+      # Temporarily enable public network access and add runner IP to firewall
+      # to allow GitHub Actions runner to connect to SQL Server.
+      # ------------------------------------------------------------------------
+      - name: 🔓 Enable SQL Public Access for Configuration
+        id: sql-access
+        run: |
+          echo "::group::🔓 Enabling SQL Server Public Access"
+          
+          SQL_SERVER=$(azd env get-values | grep "AZURE_SQL_SERVER_NAME" | cut -d'=' -f2 | tr -d '"')
+          RG="rg-orders-${AZURE_ENV_NAME}-${AZURE_LOCATION}"
+          
+          echo "SQL Server: $SQL_SERVER"
+          echo "Resource Group: $RG"
+          
+          # Get current public IP of the GitHub runner
+          RUNNER_IP=$(curl -s https://api.ipify.org)
+          echo "GitHub Runner IP: $RUNNER_IP"
+          echo "runner-ip=$RUNNER_IP" >> $GITHUB_OUTPUT
+          echo "sql-server=$SQL_SERVER" >> $GITHUB_OUTPUT
+          echo "resource-group=$RG" >> $GITHUB_OUTPUT
+          
+          # Enable public network access on SQL Server
+          echo "Enabling public network access..."
+          az sql server update \
+            --name "$SQL_SERVER" \
+            --resource-group "$RG" \
+            --enable-public-network true \
+            --output none
+          
+          # Add firewall rule for GitHub runner IP
+          echo "Adding firewall rule for runner IP..."
+          az sql server firewall-rule create \
+            --name "GitHubRunner-${GITHUB_RUN_ID}" \
+            --server "$SQL_SERVER" \
+            --resource-group "$RG" \
+            --start-ip-address "$RUNNER_IP" \
+            --end-ip-address "$RUNNER_IP" \
+            --output none
+          
+          # Wait for firewall rule to propagate
+          echo "Waiting for firewall rule to propagate..."
+          sleep 30
+          
+          echo "::endgroup::"
+          echo "::notice title=SQL Access::✅ Public access enabled and firewall rule added"
+
+      # ------------------------------------------------------------------------
       # Phase 4b: SQL Managed Identity Configuration
       # Creates database user for the managed identity using go-sqlcmd.
       # Uses SID-based user creation to bypass MS Graph API lookup.
@@ -513,6 +561,48 @@ jobs:
             -Q "SELECT name, type_desc, authentication_type_desc, CONVERT(VARCHAR(64), sid, 2) as sid_hex FROM sys.database_principals WHERE name = '$MI_NAME'"
 
           echo "::endgroup::"
+
+      # ------------------------------------------------------------------------
+      # Phase 4c: Cleanup SQL Public Access
+      # Remove firewall rule and disable public network access for security.
+      # This ensures SQL Server is not exposed to the public internet.
+      # ------------------------------------------------------------------------
+      - name: 🔒 Disable SQL Public Access (Cleanup)
+        if: always()
+        run: |
+          echo "::group::🔒 Disabling SQL Server Public Access"
+          
+          SQL_SERVER="${{ steps.sql-access.outputs.sql-server }}"
+          RG="${{ steps.sql-access.outputs.resource-group }}"
+          
+          if [ -z "$SQL_SERVER" ] || [ -z "$RG" ]; then
+            echo "SQL Server info not available, fetching from azd..."
+            SQL_SERVER=$(azd env get-values | grep "AZURE_SQL_SERVER_NAME" | cut -d'=' -f2 | tr -d '"')
+            RG="rg-orders-${AZURE_ENV_NAME}-${AZURE_LOCATION}"
+          fi
+          
+          echo "SQL Server: $SQL_SERVER"
+          echo "Resource Group: $RG"
+          
+          # Remove the firewall rule
+          echo "Removing firewall rule..."
+          az sql server firewall-rule delete \
+            --name "GitHubRunner-${GITHUB_RUN_ID}" \
+            --server "$SQL_SERVER" \
+            --resource-group "$RG" \
+            --yes \
+            --output none 2>/dev/null || echo "Firewall rule may already be removed"
+          
+          # Disable public network access
+          echo "Disabling public network access..."
+          az sql server update \
+            --name "$SQL_SERVER" \
+            --resource-group "$RG" \
+            --enable-public-network false \
+            --output none
+          
+          echo "::endgroup::"
+          echo "::notice title=SQL Access::✅ Public access disabled and firewall rule removed"
 
       # ------------------------------------------------------------------------
       # Phase 5: Re-authentication (Post-SQL)
