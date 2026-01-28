@@ -364,48 +364,46 @@ jobs:
             --tenant-id "$AZURE_TENANT_ID"
           echo "::endgroup::"
 
-      - name: 🔑 Refresh Azure CLI (Pre-SQL)
-        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.4.0
-        with:
-          client-id: ${{ env.AZURE_CLIENT_ID }}
-          tenant-id: ${{ env.AZURE_TENANT_ID }}
-          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
-
       # ------------------------------------------------------------------------
-      # Phase 4b: SQL Managed Identity Configuration
-      # NOTE: SQL user creation is handled by Bicep deployment script that runs
-      # inside Azure, as the SQL Server has public network access disabled by
-      # Azure Policy. The deployment script runs within the Azure network and
-      # can access SQL Server via private endpoint.
+      # Phase 4b: SQL Managed Identity Configuration (SKIPPED)
       # ------------------------------------------------------------------------
-      - name: 🔑 Verify SQL User Configuration
-        timeout-minutes: 5
+      # NOTE: Automated SQL user creation is disabled due to Azure Policy constraints:
+      # - Public network access to SQL Server is blocked
+      # - Key-based storage authentication is blocked (affects deployment scripts)
+      #
+      # The SQL database user for the managed identity must be configured through:
+      # 1. Azure Portal Cloud Shell (one-time manual setup)
+      # 2. Self-hosted runner in the VNet with private endpoint access
+      #
+      # Run this SQL in Cloud Shell (connected to your VNet):
+      #   DECLARE @sid VARBINARY(16) = CAST(CAST('<MANAGED_IDENTITY_CLIENT_ID>' AS UNIQUEIDENTIFIER) AS VARBINARY(16));
+      #   DECLARE @sql NVARCHAR(MAX) = N'CREATE USER [<MANAGED_IDENTITY_NAME>] WITH SID = 0x' + CONVERT(VARCHAR(64), @sid, 2) + N', TYPE = E';
+      #   EXEC sp_executesql @sql;
+      #   ALTER ROLE [db_owner] ADD MEMBER [<MANAGED_IDENTITY_NAME>];
+      # ------------------------------------------------------------------------
+      - name: 🔑 SQL User Configuration Status
         run: |
-          echo "::group::🔑 Verifying SQL Database User Configuration"
-
-          # Get values from azd environment
+          echo "::group::🔑 SQL Database User Configuration"
+          
           MI_NAME=$(azd env get-values | grep "MANAGED_IDENTITY_NAME" | cut -d'=' -f2 | tr -d '"')
           MI_CLIENT_ID=$(azd env get-values | grep "MANAGED_IDENTITY_CLIENT_ID" | cut -d'=' -f2 | tr -d '"')
-
-          echo "Managed Identity Name: $MI_NAME"
-          echo "Managed Identity Client ID: $MI_CLIENT_ID"
-
-          # SQL user creation is handled during infrastructure provisioning
-          # via a Bicep deployment script that runs inside Azure's network.
-          # This step only verifies the configuration was applied.
-
-          if [ -z "$MI_NAME" ] || [ -z "$MI_CLIENT_ID" ]; then
-            echo "::warning::Managed Identity information not found in environment"
-            echo "The SQL user may not have been configured. Check the infrastructure deployment logs."
-          else
-            echo "✓ Managed Identity configuration verified"
-            echo "  Name: $MI_NAME"
-            echo "  Client ID: $MI_CLIENT_ID"
-            echo ""
-            echo "NOTE: SQL user was configured during 'azd provision' via a deployment script"
-            echo "      that runs inside Azure's network (bypassing public access restrictions)."
-          fi
-
+          
+          echo "╔══════════════════════════════════════════════════════════════════╗"
+          echo "║  SQL User Creation - Manual Step Required                        ║"
+          echo "╠══════════════════════════════════════════════════════════════════╣"
+          echo "║  Azure Policy blocks automated SQL user creation:                ║"
+          echo "║  • Public network access to SQL is disabled                      ║"
+          echo "║  • Key-based storage auth is disabled (blocks deployment scripts)║"
+          echo "╠══════════════════════════════════════════════════════════════════╣"
+          echo "║  Managed Identity: $MI_NAME"
+          echo "║  Client ID: $MI_CLIENT_ID"
+          echo "╠══════════════════════════════════════════════════════════════════╣"
+          echo "║  To configure manually, run in Azure Cloud Shell:                ║"
+          echo "║  (Cloud Shell has VNet access to SQL Server)                     ║"
+          echo "╚══════════════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "If SQL user already exists, this step can be ignored."
+          echo ""
           echo "::endgroup::"
 
       # ------------------------------------------------------------------------

@@ -132,12 +132,6 @@ param tags tagsType
 ])
 param deployerPrincipalType string = 'User'
 
-@description('Name of the managed identity for SQL user configuration')
-param managedIdentityName string = ''
-
-@description('Client ID of the managed identity for SQL user configuration')
-param managedIdentityClientId string = ''
-
 // ========== Variables ==========
 
 // Remove special characters for naming compliance
@@ -646,27 +640,17 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
 output AZURE_SQL_DATABASE_NAME string = sqlDb.name
 
 // ========== SQL User Configuration ==========
-
-// Configure managed identity user in SQL Database using a deployment script
-// This runs INSIDE Azure's network, bypassing public access restrictions
-// Note: Azure will auto-provision a managed storage account for the script
-@description('Deployment script to configure managed identity user in SQL Database')
-module sqlUserConfig 'sql-user-config.bicep' = if (!empty(managedIdentityName) && !empty(managedIdentityClientId)) {
-  name: 'sqlUserConfiguration'
-  params: {
-    sqlServerName: sqlServer.name
-    sqlServerFqdn: sqlServer.properties.fullyQualifiedDomainName
-    databaseName: sqlDb.name
-    managedIdentityName: managedIdentityName
-    managedIdentityClientId: managedIdentityClientId
-    userAssignedIdentityId: userAssignedIdentityId
-    location: location
-    tags: tags
-  }
-  dependsOn: [
-    entraOnlyAuth
-  ]
-}
+// NOTE: SQL user creation via deployment script is disabled due to Azure Policy constraints:
+// - Key-based storage authentication is blocked (affects deployment scripts)
+// - Public network access to SQL is blocked (affects GitHub Actions)
+//
+// The SQL database user for the managed identity must be configured through one of:
+// 1. Application startup (Orders API auto-creates user via EF Core)
+// 2. Manual one-time configuration via Azure Portal Cloud Shell
+// 3. Self-hosted runner in the VNet with private endpoint access
+//
+// The application uses Entra ID authentication, so database access will work once
+// the managed identity user is created in the database.
 
 // ========== Diagnostic Settings ==========
 

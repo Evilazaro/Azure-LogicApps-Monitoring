@@ -203,8 +203,6 @@ module data 'data/main.bicep' = {
     vnetId: network.outputs.VNET_ID
     tags: tags
     deployerPrincipalType: deployerPrincipalType
-    managedIdentityName: identity.outputs.MANAGED_IDENTITY_NAME
-    managedIdentityClientId: identity.outputs.MANAGED_IDENTITY_CLIENT_ID
   }
 }
 
