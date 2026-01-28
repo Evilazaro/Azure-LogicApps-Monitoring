@@ -11,10 +11,17 @@ using RichardSzalay.MockHttp;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
 
 namespace eShop.Web.App.Tests.Services;
 
+/// <summary>
+/// Unit tests for <see cref="OrdersAPIService"/> covering HTTP client operations
+/// for order management including CRUD operations, batch processing, and error handling.
+/// </summary>
+/// <remarks>
+/// These tests use <see cref="MockHttpMessageHandler"/> to simulate HTTP responses
+/// and <see cref="NSubstitute"/> for mocking the logger dependency.
+/// </remarks>
 [TestClass]
 public sealed class OrdersAPIServiceTests
 {
@@ -25,7 +32,6 @@ public sealed class OrdersAPIServiceTests
     private OrdersAPIService _sut = null!;
 
     private static readonly Uri BaseAddress = new("https://orders-api.test/");
-    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     [TestInitialize]
     public void Setup()
@@ -217,6 +223,10 @@ public sealed class OrdersAPIServiceTests
             () => _sut.PlaceOrderAsync(order, cts.Token));
     }
 
+    /// <summary>
+    /// Verifies that <see cref="OrdersAPIService.PlaceOrderAsync"/> throws an
+    /// <see cref="InvalidOperationException"/> when the API returns a null response body.
+    /// </summary>
     [TestMethod]
     public async Task PlaceOrderAsync_ApiReturnsNullBody_ThrowsInvalidOperationException()
     {
@@ -256,6 +266,10 @@ public sealed class OrdersAPIServiceTests
         Assert.IsTrue(exception.Message.Contains("Orders collection cannot be empty"));
     }
 
+    /// <summary>
+    /// Verifies that <see cref="OrdersAPIService.PlaceOrdersBatchAsync"/> successfully
+    /// submits multiple orders and returns the collection of created orders with correct IDs.
+    /// </summary>
     [TestMethod]
     public async Task PlaceOrdersBatchAsync_ValidOrders_ReturnsPlacedOrders()
     {

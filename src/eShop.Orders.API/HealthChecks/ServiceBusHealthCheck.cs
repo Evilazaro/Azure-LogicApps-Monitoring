@@ -10,9 +10,31 @@ using System.Diagnostics;
 namespace eShop.Orders.API.HealthChecks;
 
 /// <summary>
-/// Health check for Azure Service Bus connectivity.
-/// Verifies actual connectivity by checking topic properties.
+/// Implements health check functionality for Azure Service Bus connectivity.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This health check verifies actual connectivity to Azure Service Bus by attempting
+/// to create a sender and message batch for the configured topic. This approach ensures
+/// that the connection is not only configured correctly but also has proper permissions
+/// and can communicate with the Service Bus namespace.
+/// </para>
+/// <para>
+/// The health check returns:
+/// <list type="bullet">
+///   <item><description><see cref="HealthCheckResult.Healthy"/> - When connection succeeds within timeout.</description></item>
+///   <item><description><see cref="HealthCheckResult.Degraded"/> - When timeout occurs or transient errors are encountered.</description></item>
+///   <item><description>Failure status from registration - When non-transient errors occur.</description></item>
+/// </list>
+/// </para>
+/// </remarks>
+/// <example>
+/// Register the health check in your service configuration:
+/// <code>
+/// services.AddHealthChecks()
+///     .AddCheck&lt;ServiceBusHealthCheck&gt;("servicebus", tags: new[] { "ready" });
+/// </code>
+/// </example>
 public sealed class ServiceBusHealthCheck : IHealthCheck
 {
     private readonly ServiceBusClient _serviceBusClient;

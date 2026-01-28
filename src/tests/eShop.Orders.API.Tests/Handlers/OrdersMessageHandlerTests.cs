@@ -1,7 +1,7 @@
-// =============================================================================
-// Unit Tests for OrdersMessageHandler
-// Tests Service Bus message publishing with mocked dependencies
-// =============================================================================
+
+
+// Copyright (c) Evilazaro. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using app.ServiceDefaults.CommonTypes;
 using Azure.Messaging.ServiceBus;
@@ -68,6 +68,9 @@ public sealed class OrdersMessageHandlerTests
 
     #region Constructor Tests
 
+    /// <summary>
+    /// Verifies that the constructor throws an <see cref="ArgumentNullException"/> when a null logger is provided.
+    /// </summary>
     [TestMethod]
     public void Constructor_NullLogger_ThrowsArgumentNullException()
     {
@@ -82,6 +85,9 @@ public sealed class OrdersMessageHandlerTests
         Assert.AreEqual("logger", exception.ParamName);
     }
 
+    /// <summary>
+    /// Verifies that the constructor throws an <see cref="ArgumentNullException"/> when a null Service Bus client is provided.
+    /// </summary>
     [TestMethod]
     public void Constructor_NullServiceBusClient_ThrowsArgumentNullException()
     {
@@ -93,6 +99,9 @@ public sealed class OrdersMessageHandlerTests
                 _configuration,
                 _activitySource));
 
+        /// <summary>
+        /// Verifies that the constructor throws an <see cref="ArgumentNullException"/> when a null configuration is provided.
+        /// </summary>
         Assert.AreEqual("serviceBusClient", exception.ParamName);
     }
 
@@ -104,6 +113,9 @@ public sealed class OrdersMessageHandlerTests
             new OrdersMessageHandler(
                 _logger,
                 _serviceBusClient,
+                /// <summary>
+                /// Verifies that the constructor throws an <see cref="ArgumentNullException"/> when a null activity source is provided.
+                /// </summary>
                 null!,
                 _activitySource));
 
@@ -115,6 +127,9 @@ public sealed class OrdersMessageHandlerTests
     {
         // Arrange & Act & Assert
         var exception = Assert.ThrowsExactly<ArgumentNullException>(() =>
+            /// <summary>
+            /// Verifies that the constructor uses a default topic name when an empty topic name is configured.
+            /// </summary>
             new OrdersMessageHandler(
                 _logger,
                 _serviceBusClient,
@@ -138,6 +153,9 @@ public sealed class OrdersMessageHandlerTests
         // Act - Should not throw, uses default topic name
         var handler = new OrdersMessageHandler(
             _logger,
+            /// <summary>
+            /// Verifies that a valid order is successfully sent as a Service Bus message with correct properties.
+            /// </summary>
             _serviceBusClient,
             emptyConfig,
             _activitySource);
@@ -156,6 +174,9 @@ public sealed class OrdersMessageHandlerTests
         // Arrange
         var order = CreateTestOrder();
 
+        /// <summary>
+        /// Verifies that sending a null order throws an <see cref="ArgumentNullException"/>.
+        /// </summary>
         // Act
         await _handler.SendOrderMessageAsync(order, CancellationToken.None);
 
@@ -163,6 +184,9 @@ public sealed class OrdersMessageHandlerTests
         await _serviceBusSender.Received(1).SendMessageAsync(
             Arg.Is<ServiceBusMessage>(m =>
                 m.MessageId == order.Id &&
+                /// <summary>
+                /// Verifies that Service Bus exceptions are propagated to the caller when sending fails.
+                /// </summary>
                 m.Subject == "OrderPlaced" &&
                 m.ContentType == "application/json"),
             Arg.Any<CancellationToken>());
@@ -178,6 +202,9 @@ public sealed class OrdersMessageHandlerTests
         Assert.AreEqual("order", exception.ParamName);
     }
 
+    /// <summary>
+    /// Verifies that transient errors trigger retry behavior before eventual success.
+    /// </summary>
     [TestMethod]
     public async Task SendOrderMessageAsync_ServiceBusException_PropagatesException()
     {
@@ -208,6 +235,9 @@ public sealed class OrdersMessageHandlerTests
             innerException: null);
 
         _serviceBusSender
+            /// <summary>
+            /// Verifies that the order is correctly serialized to JSON in the Service Bus message body.
+            /// </summary>
             .SendMessageAsync(Arg.Any<ServiceBusMessage>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -235,6 +265,9 @@ public sealed class OrdersMessageHandlerTests
 
         _serviceBusSender
             .SendMessageAsync(Arg.Do<ServiceBusMessage>(m => capturedMessage = m), Arg.Any<CancellationToken>())
+            /// <summary>
+            /// Verifies that multiple orders are successfully sent as a batch of Service Bus messages.
+            /// </summary>
             .Returns(Task.CompletedTask);
 
         // Act
@@ -255,6 +288,9 @@ public sealed class OrdersMessageHandlerTests
     #endregion
 
     #region SendOrdersBatchMessageAsync Tests
+    /// <summary>
+    /// Verifies that sending a null orders collection throws an <see cref="ArgumentNullException"/>.
+    /// </summary>
 
     [TestMethod]
     public async Task SendOrdersBatchMessageAsync_ValidOrders_SendsBatchSuccessfully()
@@ -262,6 +298,9 @@ public sealed class OrdersMessageHandlerTests
         // Arrange
         var orders = new List<Order>
         {
+    /// <summary>
+    /// Verifies that an empty orders collection returns without sending any messages.
+    /// </summary>
             CreateTestOrder("order-1"),
             CreateTestOrder("order-2"),
             CreateTestOrder("order-3")
@@ -277,6 +316,9 @@ public sealed class OrdersMessageHandlerTests
     }
 
     [TestMethod]
+    /// <summary>
+    /// Verifies that cancellation requests are honored and throw <see cref="OperationCanceledException"/>.
+    /// </summary>
     public async Task SendOrdersBatchMessageAsync_NullOrders_ThrowsArgumentNullException()
     {
         // Arrange & Act & Assert
@@ -291,6 +333,9 @@ public sealed class OrdersMessageHandlerTests
     {
         // Arrange
         var emptyOrders = Enumerable.Empty<Order>();
+        /// <summary>
+        /// Verifies that Service Bus exceptions are propagated to the caller when batch sending fails.
+        /// </summary>
 
         // Act
         await _handler.SendOrdersBatchMessageAsync(emptyOrders, CancellationToken.None);
@@ -309,6 +354,9 @@ public sealed class OrdersMessageHandlerTests
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
+        /// <summary>
+        /// Verifies that a single order is correctly sent as a batch containing one message.
+        /// </summary>
         _serviceBusSender
             .SendMessagesAsync(Arg.Any<IEnumerable<ServiceBusMessage>>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new OperationCanceledException());
@@ -329,6 +377,9 @@ public sealed class OrdersMessageHandlerTests
             .SendMessagesAsync(Arg.Any<IEnumerable<ServiceBusMessage>>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(serviceBusException);
 
+        /// <summary>
+        /// Verifies that an empty collection is returned when no messages are available.
+        /// </summary>
         // Act & Assert
         var exception = await Assert.ThrowsExactlyAsync<ServiceBusException>(
             () => _handler.SendOrdersBatchMessageAsync(orders, CancellationToken.None));
@@ -342,6 +393,9 @@ public sealed class OrdersMessageHandlerTests
         // Arrange
         var orders = new List<Order> { CreateTestOrder() };
         IEnumerable<ServiceBusMessage>? capturedMessages = null;
+        /// <summary>
+        /// Verifies that cancellation requests are honored and throw <see cref="OperationCanceledException"/>.
+        /// </summary>
 
         _serviceBusSender
             .SendMessagesAsync(Arg.Do<IEnumerable<ServiceBusMessage>>(m => capturedMessages = m.ToList()), Arg.Any<CancellationToken>())
@@ -358,6 +412,9 @@ public sealed class OrdersMessageHandlerTests
     #endregion
 
     #region ListMessagesAsync Tests
+    /// <summary>
+    /// Verifies that Service Bus exceptions are propagated to the caller when listing messages fails.
+    /// </summary>
 
     [TestMethod]
     public async Task ListMessagesAsync_NoMessages_ReturnsEmptyCollection()
@@ -376,6 +433,11 @@ public sealed class OrdersMessageHandlerTests
     }
 
     [TestMethod]
+    /// <summary>
+    /// Creates a test order with optional custom order ID for use in unit tests.
+    /// </summary>
+    /// <param name="orderId">Optional order ID. If null, a new GUID-based ID is generated.</param>
+    /// <returns>A new <see cref="Order"/> instance populated with test data.</returns>
     public async Task ListMessagesAsync_CancellationRequested_ThrowsOperationCanceledException()
     {
         // Arrange

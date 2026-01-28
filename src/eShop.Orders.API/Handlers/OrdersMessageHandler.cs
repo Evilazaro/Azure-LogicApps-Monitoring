@@ -2,6 +2,14 @@
 // Orders Message Handler - Messaging Layer
 // Handles publishing order messages to Azure Service Bus with distributed tracing
 // =============================================================================
+// This handler provides methods for:
+// - Sending single order messages with retry logic and independent timeout handling
+// - Sending batch order messages for improved throughput
+// - Listing/peeking messages from subscriptions for testing and debugging
+//
+// All operations include distributed tracing support via ActivitySource and
+// structured logging for observability.
+// =============================================================================
 
 using app.ServiceDefaults.CommonTypes;
 using Azure.Messaging.ServiceBus;
