@@ -125,14 +125,7 @@ The solution provides business capabilities organized across three tiers that su
 
 ```mermaid
 flowchart TD
-    subgraph businesscap["Business Capabilities"]
-        subgraph strategic["🎯 Strategic Capabilities"]
-            direction TB
-            SC1["Customer Engagement"]
-            SC2["Order Fulfillment Excellence"]
-            SC3["Business Performance Monitoring"]
-            SC4["Operational Scalability"]        
-        end
+    subgraph businesscap["Business Capabilities"]        
         subgraph core["⚙️ Core Business Capabilities"]
             CC1["Order Management"]
             CC2["Order Processing Automation"]
@@ -144,7 +137,13 @@ flowchart TD
             EC2["Notification Delivery"]
             EC3["Performance Analytics"]
             EC4["Process Orchestration"]
-        end      
+        end     
+        subgraph strategic["🎯 Strategic Capabilities"]
+            SC1["Customer Engagement"]
+            SC2["Order Fulfillment Excellence"]
+            SC3["Business Performance Monitoring"]
+            SC4["Operational Scalability"]        
+        end 
     end
     
 
