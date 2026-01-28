@@ -128,10 +128,6 @@ flowchart TD
     subgraph businesscap["Business Capabilities"]
         direction TB
         subgraph strategic["Strategic Capabilities"]
-            SC1["Customer Engagement"]
-            SC2["Order Fulfillment Excellence"]
-            SC3["Business Performance Monitoring"]
-            SC4["Operational Scalability"]
             subgraph core["Core Business Capabilities"]
                 direction TB
                 CC1["Order Management"]
@@ -146,6 +142,11 @@ flowchart TD
                 EC3["Performance Analytics"]
                 EC4["Process Orchestration"]
             end        
+            SC1["Customer Engagement"]
+            SC2["Order Fulfillment Excellence"]
+            SC3["Business Performance Monitoring"]
+            SC4["Operational Scalability"]
+            
         end
         
     end
