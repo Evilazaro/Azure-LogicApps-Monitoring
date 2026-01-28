@@ -34,7 +34,8 @@ public sealed class ProjectDependenciesTests
         Assert.IsNotNull(webAppResource, "web-app should exist");
 
         // Verify WaitFor annotations exist (web-app waits for orders-api)
-        var waitAnnotations = webAppResource.Annotations
+        // Use ToArray() to avoid collection modification issues during enumeration
+        var waitAnnotations = webAppResource.Annotations.ToArray()
             .Where(a => a.GetType().Name.Contains("Wait"))
             .ToList();
 
@@ -58,7 +59,8 @@ public sealed class ProjectDependenciesTests
         Assert.IsNotNull(webAppResource, "web-app should exist");
 
         // The presence of environment variable annotations indicates references are configured
-        var envAnnotations = webAppResource.Annotations
+        // Use ToArray() to avoid collection modification during enumeration
+        var envAnnotations = webAppResource.Annotations.ToArray()
             .Where(a => a.GetType().Name.Contains("Environment"))
             .ToList();
 
