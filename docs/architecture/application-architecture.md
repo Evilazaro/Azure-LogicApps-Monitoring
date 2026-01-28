@@ -47,28 +47,49 @@ Integration follows an event-driven approach using Azure Service Bus for asynchr
 ### Application Landscape
 
 ```mermaid
-architecture-beta
-    group presentation(cloud)[🖥️ Presentation Layer]
-    group business(cloud)[⚙️ Business Layer]
-    group data(cloud)[💾 Data Layer]
-    group integration(cloud)[🔌 Integration Layer]
-    group infrastructure(cloud)[🏗️ Infrastructure Layer]
+%%{init: {'theme': 'base', 'themeVariables': {'fontFamily': 'Segoe UI, sans-serif', 'fontSize': '13px'}}}%%
+flowchart TB
+    subgraph presentation["Presentation Layer"]
+        svc_webapp["eShop.Web.App<br/>Blazor Server"]
+    end
 
-    service svc_webapp(server)[eShop.Web.App<br/>Blazor Server] in presentation
-    service svc_ordersapi(server)[eShop.Orders.API<br/>ASP.NET Core] in business
-    service svc_orderservice(server)[OrderService] in business
-    service repo_order(database)[OrderRepository] in data
-    service db_sql(database)[Azure SQL<br/>OrderDb] in data
-    service int_servicebus(internet)[Azure Service Bus<br/>ordersplaced] in integration
-    service int_appinsights(internet)[Application Insights] in infrastructure
+    subgraph business["Business Layer"]
+        svc_ordersapi["eShop.Orders.API<br/>ASP.NET Core"]
+        svc_orderservice["OrderService"]
+    end
 
-    svc_webapp:B --> T:svc_ordersapi
-    svc_ordersapi:B --> T:svc_orderservice
-    svc_orderservice:B --> T:repo_order
-    repo_order:B --> T:db_sql
-    svc_orderservice:R --> L:int_servicebus
-    svc_ordersapi:R --> L:int_appinsights
-    svc_webapp:R --> L:int_appinsights
+    subgraph data["Data Layer"]
+        repo_order[("OrderRepository")]
+        db_sql[("Azure SQL<br/>OrderDb")]
+    end
+
+    subgraph integration["Integration Layer"]
+        int_servicebus{{"Azure Service Bus<br/>ordersplaced"}}
+    end
+
+    subgraph infrastructure["Infrastructure Layer"]
+        int_appinsights{{"Application Insights"}}
+    end
+
+    svc_webapp --> svc_ordersapi
+    svc_ordersapi --> svc_orderservice
+    svc_orderservice --> repo_order
+    repo_order --> db_sql
+    svc_orderservice -.-> int_servicebus
+    svc_ordersapi -.-> int_appinsights
+    svc_webapp -.-> int_appinsights
+
+    classDef presentation fill:#C8E6C9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20
+    classDef business fill:#BBDEFB,stroke:#1565C0,stroke-width:2px,color:#0D47A1
+    classDef data fill:#FFE0B2,stroke:#EF6C00,stroke-width:2px,color:#E65100
+    classDef integration fill:#E1BEE7,stroke:#6A1B9A,stroke-width:2px,color:#4A148C
+    classDef infrastructure fill:#CFD8DC,stroke:#37474F,stroke-width:2px,color:#263238
+
+    class svc_webapp presentation
+    class svc_ordersapi,svc_orderservice business
+    class repo_order,db_sql data
+    class int_servicebus integration
+    class int_appinsights infrastructure
 ```
 
 ### Communication Flows
@@ -95,38 +116,37 @@ architecture-beta
 }}%%
 sequenceDiagram
     autonumber
-    box rgba(76, 175, 80, 0.15) 🖥️ Presentation Layer
-        participant webapp as eShop.Web.App<br/>(Blazor Server)
+    box rgba(76, 175, 80, 0.15) Presentation Layer
+        participant webapp as eShop.Web.App
     end
-    box rgba(33, 150, 243, 0.15) ⚙️ Business Layer
-        participant api as OrdersController<br/>(ASP.NET Core)
+    box rgba(33, 150, 243, 0.15) Business Layer
+        participant api as OrdersController
         participant svc as OrderService
         participant handler as OrdersMessageHandler
     end
-    box rgba(255, 152, 0, 0.15) 💾 Data Layer
+    box rgba(255, 152, 0, 0.15) Data Layer
         participant repo as OrderRepository
-        participant db as OrderDbContext<br/>(Azure SQL)
+        participant db as OrderDbContext
     end
-    box rgba(156, 39, 176, 0.15) 🔌 Integration Layer
-        participant sb as Azure Service Bus<br/>(ordersplaced topic)
+    box rgba(156, 39, 176, 0.15) Integration Layer
+        participant sb as Azure Service Bus
     end
 
-    webapp->>+api: POST /api/orders<br/>Order
+    webapp->>+api: POST /api/orders
     api->>+svc: PlaceOrderAsync(order)
     svc->>svc: ValidateOrder(order)
     svc->>+repo: GetOrderByIdAsync(id)
     repo->>+db: SELECT order
-    db-->>-repo: null (not exists)
+    db-->>-repo: null
     repo-->>-svc: null
     svc->>+repo: SaveOrderAsync(order)
     repo->>+db: INSERT order
     db-->>-repo: Order saved
     repo-->>-svc: void
-    svc->>+handler: SendOrderMessageAsync(order)
-    handler-)-sb: Publish OrderPlaced
-    handler-->>-svc: void
+    svc->>handler: SendOrderMessageAsync(order)
+    handler-)sb: Publish OrderPlaced
     svc-->>-api: Order
-    api-->>-webapp: 201 Created<br/>Order
+    api-->>-webapp: 201 Created
 ```
 
 ---
@@ -184,21 +204,21 @@ The application follows a domain-driven service organization with three primary 
 ```mermaid
 block-beta
     columns 3
-    block:domain_orders["📦 Orders Domain"]:1
+    block:domain_orders["Orders Domain"]:1
         columns 1
-        svc_ordersctrl["OrdersController<br/>📡 REST API"]
-        svc_orderservice["OrderService<br/>⚙️ Business Logic"]
-        svc_orderrepo["OrderRepository<br/>💾 Data Access"]
+        svc_ordersctrl["OrdersController<br/>REST API"]
+        svc_orderservice["OrderService<br/>Business Logic"]
+        svc_orderrepo["OrderRepository<br/>Data Access"]
     end
-    block:domain_messaging["📨 Messaging Domain"]:1
+    block:domain_messaging["Messaging Domain"]:1
         columns 1
-        svc_msghandler["OrdersMessageHandler<br/>🔌 Service Bus Publisher"]
-        svc_noopmsg["NoOpOrdersMessageHandler<br/>🔧 Dev Stub"]
+        svc_msghandler["OrdersMessageHandler<br/>Service Bus Publisher"]
+        svc_noopmsg["NoOpOrdersMessageHandler<br/>Dev Stub"]
     end
-    block:domain_webclient["🌐 Web Client Domain"]:1
+    block:domain_webclient["Web Client Domain"]:1
         columns 1
-        svc_apiservice["OrdersAPIService<br/>📡 HTTP Client"]
-        svc_blazorpages["Blazor Pages<br/>🖥️ UI Components"]
+        svc_apiservice["OrdersAPIService<br/>HTTP Client"]
+        svc_blazorpages["Blazor Pages<br/>UI Components"]
     end
 ```
 
@@ -254,7 +274,7 @@ The application exposes synchronous REST APIs through ASP.NET Core controllers a
   }
 }}%%
 flowchart LR
-    subgraph api_orders["📡 OrdersController - /api/orders"]
+    subgraph api_orders["OrdersController - /api/orders"]
         api_post_order[/"POST /api/orders"/]
         api_post_batch[/"POST /api/orders/batch"/]
         api_get_orders[/"GET /api/orders"/]
@@ -262,23 +282,23 @@ flowchart LR
         api_delete_order[/"DELETE /api/orders/{id}"/]
     end
 
-    subgraph api_weather["📡 WeatherForecastController"]
+    subgraph api_weather["WeatherForecastController"]
         api_get_weather[/"GET /weatherforecast"/]
     end
 
-    subgraph api_health["🏥 Health Endpoints"]
+    subgraph api_health["Health Endpoints"]
         api_health_check[/"GET /health"/]
         api_alive_check[/"GET /alive"/]
     end
 
-    subgraph handlers["⚙️ Request Handlers"]
+    subgraph handlers["Request Handlers"]
         handler_orders["OrdersController"]
         handler_weather["WeatherForecastController"]
-        handler_health["Extensions<br/>MapDefaultEndpoints"]
+        handler_health["Extensions MapDefaultEndpoints"]
     end
 
-    subgraph messaging["📨 Message Contracts"]
-        msg_ordersplaced[["ordersplaced<br/>Topic"]]
+    subgraph messaging["Message Contracts"]
+        msg_ordersplaced[["ordersplaced Topic"]]
     end
 
     api_post_order --> handler_orders
@@ -549,23 +569,40 @@ The solution integrates with Azure services for messaging, persistence, and obse
 ### Integration Points Diagram
 
 ```mermaid
-architecture-beta
-    group internal(cloud)[🏠 Internal Systems]
-    group ext_messaging(cloud)[📨 Azure Messaging]
-    group ext_data(cloud)[💾 Azure Data Services]
-    group ext_monitoring(cloud)[📊 Azure Monitoring]
+%%{init: {'theme': 'base', 'themeVariables': {'fontFamily': 'Segoe UI, sans-serif', 'fontSize': '13px'}}}%%
+flowchart LR
+    subgraph internal["Internal Systems"]
+        svc_webapp["eShop.Web.App<br/>Blazor Server"]
+        svc_ordersapi["eShop.Orders.API<br/>ASP.NET Core"]
+    end
 
-    service svc_webapp(server)[eShop.Web.App<br/>Blazor Server] in internal
-    service svc_ordersapi(server)[eShop.Orders.API<br/>ASP.NET Core] in internal
-    service int_servicebus(internet)[Azure Service Bus<br/>ordersplaced topic<br/>AMQP WebSockets] in ext_messaging
-    service int_sql(database)[Azure SQL Database<br/>OrderDb<br/>TDS Protocol] in ext_data
-    service int_appinsights(internet)[Application Insights<br/>OpenTelemetry<br/>OTLP/HTTP] in ext_monitoring
+    subgraph ext_messaging["Azure Messaging"]
+        int_servicebus{{"Azure Service Bus<br/>ordersplaced topic"}}
+    end
 
-    svc_webapp:R --> L:svc_ordersapi
-    svc_ordersapi:R --> L:int_servicebus
-    svc_ordersapi:B --> T:int_sql
-    svc_ordersapi:R --> L:int_appinsights
-    svc_webapp:R --> L:int_appinsights
+    subgraph ext_data["Azure Data Services"]
+        int_sql[("Azure SQL Database<br/>OrderDb")]
+    end
+
+    subgraph ext_monitoring["Azure Monitoring"]
+        int_appinsights{{"Application Insights<br/>OpenTelemetry"}}
+    end
+
+    svc_webapp --> svc_ordersapi
+    svc_ordersapi -.-> int_servicebus
+    svc_ordersapi --> int_sql
+    svc_ordersapi -.-> int_appinsights
+    svc_webapp -.-> int_appinsights
+
+    classDef internal fill:#C8E6C9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20
+    classDef messaging fill:#E1BEE7,stroke:#6A1B9A,stroke-width:2px,color:#4A148C
+    classDef data fill:#FFE0B2,stroke:#EF6C00,stroke-width:2px,color:#E65100
+    classDef monitoring fill:#CFD8DC,stroke:#37474F,stroke-width:2px,color:#263238
+
+    class svc_webapp,svc_ordersapi internal
+    class int_servicebus messaging
+    class int_sql data
+    class int_appinsights monitoring
 ```
 
 ---
@@ -640,40 +677,40 @@ The security architecture implements defense-in-depth with managed identity auth
   }
 }}%%
 flowchart TB
-    subgraph layer_edge["🛡️ Layer 1: Edge Security"]
-        sec_infra["Azure Infrastructure<br/>(Not in codebase)"]
+    subgraph layer_edge["Layer 1: Edge Security"]
+        sec_infra["Azure Infrastructure"]
     end
 
-    subgraph layer_gateway["🚧 Layer 2: Gateway Security"]
-        sec_gateway["Azure Container Apps<br/>(Not in codebase)"]
+    subgraph layer_gateway["Layer 2: Gateway Security"]
+        sec_gateway["Azure Container Apps"]
     end
 
-    subgraph layer_authn["🔑 Layer 3: Authentication"]
-        sec_credential["DefaultAzureCredential<br/>Managed Identity Chain"]
-        sec_session["Session Cookie<br/>HttpOnly, Secure, SameSite=Strict"]
+    subgraph layer_authn["Layer 3: Authentication"]
+        sec_credential["DefaultAzureCredential"]
+        sec_session["Session Cookie"]
     end
 
-    subgraph layer_authz["✅ Layer 4: Authorization"]
-        sec_authz["Not Implemented<br/>(No RBAC/Policies)"]
+    subgraph layer_authz["Layer 4: Authorization"]
+        sec_authz["Not Implemented"]
     end
 
-    subgraph layer_app["🔒 Layer 5: Application Security"]
-        sec_validation["Data Validation<br/>[Required], [Range], [StringLength]"]
-        sec_timeout["Internal Timeout Handling<br/>CancellationTokenSource"]
+    subgraph layer_app["Layer 5: Application Security"]
+        sec_validation["Data Validation"]
+        sec_timeout["Internal Timeout Handling"]
     end
 
-    subgraph layer_audit["📋 Layer 6: Audit & Logging"]
-        sec_otel["OpenTelemetry Tracing<br/>ActivitySource"]
-        sec_logging["Structured Logging<br/>ILogger with Scopes"]
+    subgraph layer_audit["Layer 6: Audit and Logging"]
+        sec_otel["OpenTelemetry Tracing"]
+        sec_logging["Structured Logging"]
     end
 
-    Request([🌐 Request]) --> layer_edge
+    Request([Request]) --> layer_edge
     layer_edge --> layer_gateway
     layer_gateway --> layer_authn
     layer_authn --> layer_authz
     layer_authz --> layer_app
     layer_app --> layer_audit
-    layer_audit --> App([⚙️ Application])
+    layer_audit --> App([Application])
 
     classDef edge fill:#FFCDD2,stroke:#C62828,stroke-width:2px,color:#B71C1C,rx:6,ry:6
     classDef gateway fill:#FFE0B2,stroke:#EF6C00,stroke-width:2px,color:#E65100,rx:6,ry:6
@@ -743,34 +780,34 @@ The dependency structure follows a layered architecture with clear boundaries. T
   }
 }}%%
 flowchart TB
-    subgraph layer_orchestration["🎛️ Orchestration Layer"]
-        comp_apphost["app.AppHost<br/>.NET Aspire 13.1.0"]
+    subgraph layer_orchestration["Orchestration Layer"]
+        comp_apphost["app.AppHost"]
     end
 
-    subgraph layer_presentation["🖥️ Presentation Layer"]
-        comp_webapp["eShop.Web.App<br/>Blazor Server + Fluent UI"]
-        comp_apiservice["OrdersAPIService<br/>HTTP Client"]
+    subgraph layer_presentation["Presentation Layer"]
+        comp_webapp["eShop.Web.App"]
+        comp_apiservice["OrdersAPIService"]
     end
 
-    subgraph layer_business["⚙️ Business Layer"]
-        comp_ordersapi["eShop.Orders.API<br/>ASP.NET Core"]
+    subgraph layer_business["Business Layer"]
+        comp_ordersapi["eShop.Orders.API"]
         comp_ordersctrl["OrdersController"]
         comp_orderservice["OrderService"]
         comp_msghandler["OrdersMessageHandler"]
     end
 
-    subgraph layer_data["💾 Data Layer"]
+    subgraph layer_data["Data Layer"]
         comp_orderrepo[("OrderRepository")]
         comp_dbcontext[("OrderDbContext")]
         comp_mapper["OrderMapper"]
     end
 
-    subgraph layer_shared["📦 Shared Layer"]
-        comp_servicedefaults["app.ServiceDefaults<br/>Extensions + CommonTypes"]
-        comp_healthchecks["Health Checks<br/>DB + ServiceBus"]
+    subgraph layer_shared["Shared Layer"]
+        comp_servicedefaults["app.ServiceDefaults"]
+        comp_healthchecks["Health Checks"]
     end
 
-    subgraph layer_external["🔌 External Services"]
+    subgraph layer_external["External Services"]
         ext_servicebus{{"Azure Service Bus"}}
         ext_sql{{"Azure SQL"}}
         ext_appinsights{{"Application Insights"}}
