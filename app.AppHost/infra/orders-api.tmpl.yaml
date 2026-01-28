@@ -5,7 +5,7 @@
 # Purpose:
 #   Defines the Azure Container Apps deployment configuration for the Orders API
 #   service. This template is processed by Azure Developer CLI (azd) during
-#   deployment, with Go template variables ({{ .Env.* }}) resolved at runtime.
+#   deployment, with Go template variables resolved at runtime.
 #
 # Usage:
 #   This template is automatically processed by azd during deployment:
@@ -22,9 +22,9 @@
 #   - Application Insights - Telemetry and monitoring
 #
 # Template Variables:
-#   {{ .Env.* }}              - Environment variables from azd environment
-#   {{ .Image }}              - Container image URI (resolved by azd)
-#   {{ targetPortOrDefault }} - Port helper function (default: 8080)
+#   .Env.VAR_NAME             - Environment variables from azd environment
+#   .Image                    - Container image URI (resolved by azd)
+#   targetPortOrDefault       - Port helper function (default: 8080)
 #
 # Security:
 #   - Uses User-Assigned Managed Identity for Azure resource access

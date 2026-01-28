@@ -10,8 +10,8 @@
 #
 # Processing:
 #   This template is processed by Azure Developer CLI (azd) during deployment,
-#   with Go template variables ({{ .Env.* }}) resolved at runtime from the
-#   azd environment configuration.
+#   with Go template variables resolved at runtime from the azd environment
+#   configuration.
 #
 # Service:
 #   eShop.Web.App - Blazor Server frontend for the eShop application
@@ -22,9 +22,9 @@
 #   - Application Insights - Telemetry and monitoring
 #
 # Template Variables:
-#   {{ .Env.* }}              - Environment variables from azd environment
-#   {{ .Image }}              - Container image URI (resolved by azd)
-#   {{ targetPortOrDefault }} - Port helper function (default: 8080)
+#   .Env.VAR_NAME             - Environment variables from azd environment
+#   .Image                    - Container image URI (resolved by azd)
+#   targetPortOrDefault       - Port helper function (default: 8080)
 #
 # Security:
 #   - Uses User-Assigned Managed Identity for Azure resource access
