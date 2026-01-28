@@ -146,26 +146,7 @@ flowchart TD
             EC4["Process Orchestration"]
         end
     end
-    
-    <!-- strategic --> core
-    core --> enabling
-    
-    style strategic fill:#E3F2FD,stroke:#1565C0,stroke-width:3px
-    style core fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px
-    style enabling fill:#FFF3E0,stroke:#EF6C00,stroke-width:3px
-    
-    style SC1 fill:#BBDEFB,stroke:#1565C0
-    style SC2 fill:#BBDEFB,stroke:#1565C0
-    style SC3 fill:#BBDEFB,stroke:#1565C0
-    style SC4 fill:#BBDEFB,stroke:#1565C0
-    style CC1 fill:#C8E6C9,stroke:#2E7D32
-    style CC2 fill:#C8E6C9,stroke:#2E7D32
-    style CC3 fill:#C8E6C9,stroke:#2E7D32
-    style CC4 fill:#C8E6C9,stroke:#2E7D32
-    style EC1 fill:#FFE0B2,stroke:#EF6C00
-    style EC2 fill:#FFE0B2,stroke:#EF6C00
-    style EC3 fill:#FFE0B2,stroke:#EF6C00
-    style EC4 fill:#FFE0B2,stroke:#EF6C00 -->
+
 ```
 
 ### 3.2 Capability Descriptions
