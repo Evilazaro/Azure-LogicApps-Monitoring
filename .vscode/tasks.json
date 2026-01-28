@@ -17,9 +17,7 @@
       "label": "generateDebugSymbols",
       "type": "process",
       "command": "${config:azureLogicAppsStandard.dotnetBinaryPath}",
-      "args": [
-        "${input:getDebugSymbolDll}"
-      ],
+      "args": ["${input:getDebugSymbolDll}"],
       "problemMatcher": "$msCompile"
     },
     // Task: Start Azure Functions Host
@@ -29,10 +27,7 @@
       "label": "func: host start",
       "type": "shell",
       "command": "${config:azureLogicAppsStandard.funcCoreToolsBinaryPath}",
-      "args": [
-        "host",
-        "start"
-      ],
+      "args": ["host", "start"],
       "options": {
         "env": {
           "PATH": "${config:azureLogicAppsStandard.autoRuntimeDependenciesPath}\\NodeJs;${config:azureLogicAppsStandard.autoRuntimeDependenciesPath}\\DotNetSDK;$env:PATH"
