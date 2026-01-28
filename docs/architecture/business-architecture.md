@@ -132,22 +132,23 @@ flowchart TD
             SC1["Customer Engagement"]
             SC2["Order Fulfillment Excellence"]
             SC3["Business Performance Monitoring"]
-            SC4["Operational Scalability"]        
+            SC4["Operational Scalability"]
+            subgraph core["Core Business Capabilities"]
+                direction LR
+                CC1["Order Management"]
+                CC2["Order Processing Automation"]
+                CC3["Customer Communication"]
+                CC4["Order Tracking & Status"]
+            end
+            subgraph enabling["Enabling Capabilities"]
+                direction LR
+                EC1["Order Information Storage"]
+                EC2["Notification Delivery"]
+                EC3["Performance Analytics"]
+                EC4["Process Orchestration"]
+            end        
         end
-        subgraph core["Core Business Capabilities"]
-            direction LR
-            CC1["Order Management"]
-            CC2["Order Processing Automation"]
-            CC3["Customer Communication"]
-            CC4["Order Tracking & Status"]
-        end
-        subgraph enabling["Enabling Capabilities"]
-            direction LR
-            EC1["Order Information Storage"]
-            EC2["Notification Delivery"]
-            EC3["Performance Analytics"]
-            EC4["Process Orchestration"]
-        end
+        
     end
     
     strategic --> core --> enabling
