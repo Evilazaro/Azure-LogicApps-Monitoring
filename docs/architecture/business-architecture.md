@@ -128,7 +128,6 @@ flowchart TD
     subgraph businesscap["Business Capabilities"]
         direction TB
         subgraph strategic["Strategic Capabilities"]
-            direction LR
             SC1["Customer Engagement"]
             SC2["Order Fulfillment Excellence"]
             SC3["Business Performance Monitoring"]
