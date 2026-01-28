@@ -134,12 +134,14 @@ flowchart BT
             SC4["Operational Scalability"]        
         end
         subgraph core["⚙️ Core Business Capabilities"]
+            direction BT
             CC1["Order Management"]
             CC2["Order Processing Automation"]
             CC3["Customer Communication"]
             CC4["Order Tracking & Status"]
         end
         subgraph enabling["🔧 Enabling Capabilities"]
+            direction BT
             EC1["Order Information Storage"]
             EC2["Notification Delivery"]
             EC3["Performance Analytics"]
