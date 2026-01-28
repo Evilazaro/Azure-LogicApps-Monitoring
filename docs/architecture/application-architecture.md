@@ -16,6 +16,7 @@
 - [Integration Points](#316-integration-points)
 - [Security Components](#317-security-components)
 - [Dependency Map](#318-dependency-map)
+- [Gaps & Observations](#319-gaps--observations)
 
 ---
 
@@ -184,19 +185,19 @@ The application follows a domain-driven service organization with three primary 
 
 ### Domain Boundaries
 
-**📦 Orders Domain**
+#### 📦 Orders Domain
 
 - `OrdersController`: Exposes REST endpoints for CRUD operations
 - `OrderService`: Validates orders, orchestrates persistence and messaging
 - `OrderRepository`: Handles database operations via EF Core
 
-**📨 Messaging Domain**
+#### 📨 Messaging Domain
 
 - `OrdersMessageHandler`: Publishes order events to Service Bus
 - `NoOpOrdersMessageHandler`: Development stub when Service Bus unavailable
 - `IOrdersMessageHandler`: Abstraction for handler implementations
 
-**🌐 Web Client Domain**
+#### 🌐 Web Client Domain
 
 - `OrdersAPIService`: HTTP client wrapper for API calls
 - Blazor Pages: Home, PlaceOrder, ListAllOrders, ViewOrder
@@ -239,13 +240,13 @@ block-beta
 
 ## 3.1.3 Application Interfaces
 
-### Overview
+### Interfaces Overview
 
 The application exposes synchronous REST APIs through ASP.NET Core controllers and asynchronous messaging via Azure Service Bus. The `OrdersController` provides CRUD operations for orders, while health endpoints enable container orchestration. No gRPC or GraphQL interfaces are implemented.
 
 ### API Inventory by Type
 
-**📡 REST APIs**
+#### 📡 REST APIs
 
 | Endpoint            | Method | Controller                | Request Type         | Response Type                  | Source                             |
 | ------------------- | ------ | ------------------------- | -------------------- | ------------------------------ | ---------------------------------- |
@@ -258,13 +259,13 @@ The application exposes synchronous REST APIs through ASP.NET Core controllers a
 | `/health`           | GET    | Extensions                | -                    | `HealthCheckResult`            | `Extensions.cs#L331`               |
 | `/alive`            | GET    | Extensions                | -                    | `HealthCheckResult`            | `Extensions.cs#L333`               |
 
-**📨 Message Handlers**
+#### 📨 Message Handlers
 
 | Topic/Queue    | Message Type | Direction | Handler                | Source                        |
 | -------------- | ------------ | --------- | ---------------------- | ----------------------------- |
 | `ordersplaced` | `Order`      | Publish   | `OrdersMessageHandler` | `OrdersMessageHandler.cs#L89` |
 
-**🔗 gRPC/GraphQL**
+#### 🔗 gRPC/GraphQL
 
 > Not implemented in this solution.
 
@@ -341,31 +342,31 @@ flowchart LR
 
 ## 3.1.4 Application Components
 
-### Overview
+### Components Overview
 
 The solution employs reusable components centralized in `app.ServiceDefaults` for cross-cutting concerns. Health checks monitor database and Service Bus connectivity. Utility classes handle domain-entity mapping and UI design constants. No custom middleware is implemented.
 
 ### Component Inventory by Category
 
-**🔧 Utilities**
+#### 🔧 Utilities
 
 | Component            | Purpose                    | Used By           | Source                                           |
 | -------------------- | -------------------------- | ----------------- | ------------------------------------------------ |
 | `OrderMapper`        | Domain ↔ Entity mapping    | `OrderRepository` | `src/eShop.Orders.API/data/OrderMapper.cs`       |
 | `FluentDesignSystem` | Fluent UI design constants | Blazor pages      | `src/eShop.Web.App/Shared/FluentDesignSystem.cs` |
 
-**🔌 Middleware**
+#### 🔌 Middleware
 
 > No custom middleware implemented.
 
-**📦 Shared Libraries**
+#### 📦 Shared Libraries
 
 | Library               | Purpose                                            | Consumers    | Source                               |
 | --------------------- | -------------------------------------------------- | ------------ | ------------------------------------ |
 | `app.ServiceDefaults` | OpenTelemetry, health checks, resilience           | All services | `app.ServiceDefaults/Extensions.cs`  |
 | `CommonTypes`         | Shared DTOs (Order, OrderProduct, WeatherForecast) | All services | `app.ServiceDefaults/CommonTypes.cs` |
 
-**🏥 Health Checks**
+#### 🏥 Health Checks
 
 | Component               | Purpose                             | Source                                                       |
 | ----------------------- | ----------------------------------- | ------------------------------------------------------------ |
@@ -433,7 +434,7 @@ classDiagram
 
 ## 3.1.5 Data Access Layer
 
-### Overview
+### Data Access Overview
 
 Data access follows the Repository pattern with `OrderRepository` abstracting Entity Framework Core operations. The `OrderDbContext` manages `OrderEntity` and `OrderProductEntity` with async operations and `CancellationToken` support throughout. Internal timeout handling prevents HTTP cancellation from interrupting database transactions.
 
@@ -542,13 +543,13 @@ classDiagram
 
 ## 3.1.6 Integration Points
 
-### Overview
+### Integration Overview
 
 The solution integrates with Azure services for messaging, persistence, and observability. Internal communication between Web App and Orders API uses HTTP. Azure Service Bus enables asynchronous order event publishing. All Azure integrations use `DefaultAzureCredential` for managed identity authentication.
 
 ### Integration Inventory by Type
 
-**☁️ Azure Services**
+#### ☁️ Azure Services
 
 | Service              | Purpose                     | Protocol        | Configuration                           | Source               |
 | -------------------- | --------------------------- | --------------- | --------------------------------------- | -------------------- |
@@ -557,17 +558,17 @@ The solution integrates with Azure services for messaging, persistence, and obse
 | Application Insights | Distributed tracing/metrics | OTLP/HTTP       | `APPLICATIONINSIGHTS_CONNECTION_STRING` | `Extensions.cs#L189` |
 | Azure Container Apps | Application hosting         | -               | Via .NET Aspire                         | `AppHost.cs`         |
 
-**🌐 External APIs**
+#### 🌐 External APIs
 
 > No external third-party APIs integrated.
 
-**📨 Messaging**
+#### 📨 Messaging
 
 | Topic/Queue    | Direction | Message Types | Source                        |
 | -------------- | --------- | ------------- | ----------------------------- |
 | `ordersplaced` | Publish   | `Order`       | `OrdersMessageHandler.cs#L89` |
 
-**🔗 Internal APIs**
+#### 🔗 Internal APIs
 
 | API Name   | Base URL                      | Authentication  | Source                             |
 | ---------- | ----------------------------- | --------------- | ---------------------------------- |
@@ -622,45 +623,45 @@ flowchart LR
 
 ## 3.1.7 Security Components
 
-### Overview
+### Security Overview
 
 The security architecture implements defense-in-depth with managed identity authentication via `DefaultAzureCredential`. Application-level security includes data validation attributes and secure session cookie configuration. Edge and gateway security are handled by Azure infrastructure outside the codebase. Authorization policies are not implemented.
 
 ### Security Layers
 
-**🛡️ Layer 1: Edge Security**
+#### 🛡️ Layer 1: Edge Security
 
 | Component            | Type     | Configuration   | Source           |
 | -------------------- | -------- | --------------- | ---------------- |
 | Azure Infrastructure | WAF/DDoS | Not in codebase | Handled by Azure |
 
-**🚧 Layer 2: Gateway Security**
+#### 🚧 Layer 2: Gateway Security
 
 | Component            | Type    | Configuration   | Source           |
 | -------------------- | ------- | --------------- | ---------------- |
 | Azure Container Apps | Ingress | Not in codebase | Handled by Azure |
 
-**🔑 Layer 3: Authentication**
+#### 🔑 Layer 3: Authentication
 
 | Component                | Type             | Configuration                     | Source                         |
 | ------------------------ | ---------------- | --------------------------------- | ------------------------------ |
 | `DefaultAzureCredential` | Managed Identity | 3 retries, 30s timeout            | `Extensions.cs#L286`           |
 | Session Cookie           | Cookie Auth      | HttpOnly, Secure, SameSite=Strict | `eShop.Web.App/Program.cs#L24` |
 
-**✅ Layer 4: Authorization**
+#### ✅ Layer 4: Authorization
 
 | Component         | Type | Configuration    | Source |
 | ----------------- | ---- | ---------------- | ------ |
 | _Not Implemented_ | -    | No RBAC/Policies | -      |
 
-**🔒 Layer 5: Application Security**
+#### 🔒 Layer 5: Application Security
 
 | Component        | Type              | Configuration                             | Source               |
 | ---------------- | ----------------- | ----------------------------------------- | -------------------- |
 | Data Validation  | Attributes        | `[Required]`, `[Range]`, `[StringLength]` | `CommonTypes.cs`     |
 | Internal Timeout | CancellationToken | CancellationTokenSource                   | `OrderRepository.cs` |
 
-**📋 Layer 6: Audit**
+#### 📋 Layer 6: Audit
 
 | Component             | Type           | Configuration      | Source               |
 | --------------------- | -------------- | ------------------ | -------------------- |
@@ -745,7 +746,7 @@ flowchart TB
 
 ## 3.1.8 Dependency Map
 
-### Overview
+### Dependency Overview
 
 The dependency structure follows a layered architecture with clear boundaries. The `app.AppHost` orchestrates all services, `app.ServiceDefaults` provides shared infrastructure, and each application layer depends only on layers below it. External dependencies flow through integration abstractions.
 
@@ -869,7 +870,7 @@ flowchart TB
 
 ## 3.1.9 Gaps & Observations
 
-### Overview
+### Gaps Overview
 
 This section documents architectural gaps, anti-patterns, and recommendations identified during the discovery phase. These findings inform future improvements and technical debt remediation priorities.
 

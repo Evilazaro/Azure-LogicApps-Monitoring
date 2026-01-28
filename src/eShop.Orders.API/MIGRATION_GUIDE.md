@@ -1,5 +1,4 @@
 ---
-title: Entity Framework Core Migration Guide
 description: Guide for migrating eShop.Orders.API from file-based storage to Entity Framework Core with Azure SQL Database
 author: Evilazaro
 version: 1.0
@@ -275,8 +274,4 @@ If you need to rollback to file-based storage:
 
 ---
 
-<div align="center">
-
-**[⬆ Back to Top](#-entity-framework-core-migration-guide)**
-
-</div>
+**[⬆ Back to Top](#entity-framework-core-migration-guide)**

@@ -10,11 +10,11 @@ This folder contains the architectural documentation for the **Azure Logic Apps 
 - [Documents](#-documents)
 - [Key Topics Covered](#-key-topics-covered)
 - [Diagrams Included](#-diagrams-included)
-- [Architecture Framework](#-architecture-framework)
+- [Architecture Framework](#%EF%B8%8F-architecture-framework)
 - [Technology Stack](#-technology-stack)
 - [Related Documentation](#-related-documentation)
 - [How to Use This Documentation](#-how-to-use-this-documentation)
-- [Document Standards](#-document-standards)
+- [Document Standards](#%EF%B8%8F-document-standards)
 
 ---
 
