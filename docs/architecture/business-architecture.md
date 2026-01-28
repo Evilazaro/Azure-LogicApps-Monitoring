@@ -151,7 +151,6 @@ flowchart TD
         
     end
     
-    strategic --> core --> enabling
 ```
 
 ### 3.2 Capability Descriptions
