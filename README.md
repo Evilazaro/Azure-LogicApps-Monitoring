@@ -37,47 +37,47 @@ This solution provides a complete reference implementation for monitoring Azure 
 flowchart TB
     subgraph AzureResourceGroup["☁️ Azure Resource Group"]
         direction TB
-        
+
         subgraph Frontend["🖥️ Frontend Layer"]
             WebApp["📱 Web App<br/>(Blazor / Fluent UI)"]
         end
-        
+
         subgraph Backend["⚙️ Backend Services"]
             OrdersAPI["🔌 Orders API<br/>(ASP.NET Core)"]
             SQLDatabase[("🗄️ Azure SQL<br/>Database")]
         end
-        
+
         subgraph Messaging["📨 Messaging Layer"]
             ServiceBus["📬 Azure Service Bus<br/>(Topics/Subscriptions)"]
         end
-        
+
         subgraph Workflows["🔄 Workflow Engine"]
             LogicApps["⚡ Logic Apps Standard<br/>(Order Processing)"]
             BlobStorage["📦 Azure Blob Storage<br/>(Order Archives)"]
         end
-        
+
         subgraph Monitoring["📊 Observability"]
             AppInsights["🔍 Application Insights"]
             LogAnalytics["📈 Log Analytics Workspace"]
         end
     end
-    
+
     subgraph Orchestration["🎯 Local Development"]
         Aspire["🚀 .NET Aspire<br/>(Service Discovery)"]
     end
-    
+
     WebApp -->|"HTTP/REST"| OrdersAPI
     OrdersAPI -->|"Persist Orders"| SQLDatabase
     OrdersAPI -->|"Publish Events"| ServiceBus
     ServiceBus -->|"Trigger Workflows"| LogicApps
     LogicApps -->|"Process Orders"| OrdersAPI
     LogicApps -->|"Archive Results"| BlobStorage
-    
+
     WebApp -.->|"Telemetry"| AppInsights
     OrdersAPI -.->|"Telemetry"| AppInsights
     LogicApps -.->|"Diagnostics"| LogAnalytics
     AppInsights -.->|"Logs"| LogAnalytics
-    
+
     Aspire -.->|"Orchestrates"| WebApp
     Aspire -.->|"Orchestrates"| OrdersAPI
 
@@ -88,7 +88,7 @@ flowchart TB
     style Workflows fill:#E0F7FA,stroke:#00838F,stroke-width:2px
     style Monitoring fill:#FFEBEE,stroke:#C62828,stroke-width:2px
     style Orchestration fill:#FAFAFA,stroke:#616161,stroke-width:2px
-    
+
     style WebApp fill:#C8E6C9,stroke:#2E7D32
     style OrdersAPI fill:#FFE0B2,stroke:#EF6C00
     style SQLDatabase fill:#FFE0B2,stroke:#EF6C00
@@ -102,15 +102,15 @@ flowchart TB
 
 ### Key Components
 
-| Component | Technology | Description |
-|-----------|------------|-------------|
-| **Web App** | Blazor / Fluent UI | Order management dashboard with real-time tracking |
-| **Orders API** | ASP.NET Core Minimal API | RESTful API with Entity Framework Core |
-| **Message Broker** | Azure Service Bus | Asynchronous order processing with topics |
-| **Workflow Engine** | Logic Apps Standard | Automated order processing workflows |
-| **Database** | Azure SQL Database | Order persistence with managed identity auth |
-| **Monitoring** | Application Insights | Distributed tracing and telemetry |
-| **Orchestration** | .NET Aspire | Local development and service discovery |
+| Component           | Technology               | Description                                        |
+| ------------------- | ------------------------ | -------------------------------------------------- |
+| **Web App**         | Blazor / Fluent UI       | Order management dashboard with real-time tracking |
+| **Orders API**      | ASP.NET Core Minimal API | RESTful API with Entity Framework Core             |
+| **Message Broker**  | Azure Service Bus        | Asynchronous order processing with topics          |
+| **Workflow Engine** | Logic Apps Standard      | Automated order processing workflows               |
+| **Database**        | Azure SQL Database       | Order persistence with managed identity auth       |
+| **Monitoring**      | Application Insights     | Distributed tracing and telemetry                  |
+| **Orchestration**   | .NET Aspire              | Local development and service discovery            |
 
 ## Features
 
@@ -126,13 +126,13 @@ flowchart TB
 
 ### Required Tools
 
-| Tool | Minimum Version | Installation |
-|------|-----------------|--------------|
-| .NET SDK | 10.0+ | [Download](https://dotnet.microsoft.com/download/dotnet/10.0) |
-| Azure CLI | 2.60.0+ | [Install](https://docs.microsoft.com/cli/azure/install-azure-cli) |
-| Azure Developer CLI (azd) | Latest | [Install](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) |
-| Bicep CLI | 0.30.0+ | [Install](https://learn.microsoft.com/azure/azure-resource-manager/bicep/install) |
-| PowerShell | 7.0+ | [Install](https://docs.microsoft.com/powershell/scripting/install/installing-powershell) |
+| Tool                      | Minimum Version | Installation                                                                             |
+| ------------------------- | --------------- | ---------------------------------------------------------------------------------------- |
+| .NET SDK                  | 10.0+           | [Download](https://dotnet.microsoft.com/download/dotnet/10.0)                            |
+| Azure CLI                 | 2.60.0+         | [Install](https://docs.microsoft.com/cli/azure/install-azure-cli)                        |
+| Azure Developer CLI (azd) | Latest          | [Install](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)   |
+| Bicep CLI                 | 0.30.0+         | [Install](https://learn.microsoft.com/azure/azure-resource-manager/bicep/install)        |
+| PowerShell                | 7.0+            | [Install](https://docs.microsoft.com/powershell/scripting/install/installing-powershell) |
 
 ### Optional Tools
 
@@ -220,15 +220,15 @@ This command will:
 
 The solution uses Azure Developer CLI environment variables. Key variables set during provisioning:
 
-| Variable | Description |
-|----------|-------------|
-| `AZURE_SUBSCRIPTION_ID` | Azure subscription GUID |
-| `AZURE_RESOURCE_GROUP` | Resource group name |
-| `AZURE_LOCATION` | Azure region |
-| `MANAGED_IDENTITY_CLIENT_ID` | Managed identity for authentication |
-| `APPLICATIONINSIGHTS_CONNECTION_STRING` | App Insights connection |
-| `MESSAGING_SERVICEBUSHOSTNAME` | Service Bus hostname |
-| `ORDERSDATABASE_SQLSERVERFQDN` | SQL Server FQDN |
+| Variable                                | Description                         |
+| --------------------------------------- | ----------------------------------- |
+| `AZURE_SUBSCRIPTION_ID`                 | Azure subscription GUID             |
+| `AZURE_RESOURCE_GROUP`                  | Resource group name                 |
+| `AZURE_LOCATION`                        | Azure region                        |
+| `MANAGED_IDENTITY_CLIENT_ID`            | Managed identity for authentication |
+| `APPLICATIONINSIGHTS_CONNECTION_STRING` | App Insights connection             |
+| `MESSAGING_SERVICEBUSHOSTNAME`          | Service Bus hostname                |
+| `ORDERSDATABASE_SQLSERVERFQDN`          | SQL Server FQDN                     |
 
 ### User Secrets
 
@@ -268,11 +268,11 @@ az deployment sub create \
 
 ### Deployment Options
 
-| Environment | Command | Description |
-|-------------|---------|-------------|
-| Development | `azd up --environment dev` | Development environment |
-| Staging | `azd up --environment staging` | Pre-production testing |
-| Production | `azd up --environment prod` | Production deployment |
+| Environment | Command                        | Description             |
+| ----------- | ------------------------------ | ----------------------- |
+| Development | `azd up --environment dev`     | Development environment |
+| Staging     | `azd up --environment staging` | Pre-production testing  |
+| Production  | `azd up --environment prod`    | Production deployment   |
 
 ## Local Development
 
@@ -332,12 +332,12 @@ Access the .NET Aspire Dashboard for local development:
 
 ## API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/orders` | GET | List all orders |
-| `/api/orders` | POST | Create new order |
-| `/api/orders/{id}` | GET | Get order by ID |
-| `/api/orders/{id}` | DELETE | Delete order |
+| Endpoint           | Method | Description      |
+| ------------------ | ------ | ---------------- |
+| `/api/orders`      | GET    | List all orders  |
+| `/api/orders`      | POST   | Create new order |
+| `/api/orders/{id}` | GET    | Get order by ID  |
+| `/api/orders/{id}` | DELETE | Delete order     |
 
 ## Contributing
 
