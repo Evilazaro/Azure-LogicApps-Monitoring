@@ -1,4 +1,9 @@
-# Documentation
+# 📚 Documentation
+
+[![TOGAF](https://img.shields.io/badge/Framework-TOGAF%20ADM-blue?style=flat-square)](https://www.opengroup.org/togaf)
+[![.NET](https://img.shields.io/badge/.NET-10.0-purple?style=flat-square)](https://dotnet.microsoft.com/)
+[![Azure](https://img.shields.io/badge/Platform-Azure-0078D4?style=flat-square)](https://azure.microsoft.com/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](../LICENSE)
 
 This folder contains the technical documentation for the **Azure Logic Apps Monitoring Solution — eShop Orders Management** platform.
 
@@ -24,14 +29,52 @@ The eShop Orders Management solution is a cloud-native distributed application b
 
 ---
 
+## 🎯 Key Capabilities
+
+This documentation covers the following core capabilities:
+
+```mermaid
+mindmap
+  root((Documentation))
+    Architecture
+      Application Services
+      Data Entities
+      Integration Patterns
+      Security Patterns
+    Data Management
+      TOGAF BDAT Classification
+      Data Flows
+      State Management
+    Infrastructure
+      Bicep Templates
+      Deployment Topology
+    Observability
+      OpenTelemetry
+      Application Insights
+```
+
+---
+
+## 🚀 Quick Start
+
+| Goal                      | Action                                                                      |
+| :------------------------ | :-------------------------------------------------------------------------- |
+| **Understand the system** | Read [Architecture Overview](architecture/README.md)                        |
+| **Learn about services**  | Review [Application Architecture](architecture/application-architecture.md) |
+| **Understand data flows** | Explore [Data Architecture](architecture/data-architecture.md)              |
+| **Deploy the solution**   | See [Infrastructure Code](../infra/) and [Azure Config](../azure.yaml)      |
+| **Run locally**           | Follow [Project README](../README.md)                                       |
+
+---
+
 ## 📁 Folder Structure
 
 ```
 docs/
-├── README.md                 # This file - Documentation entry point
-├── .gitignore                # Git ignore rules for documentation
-└── architecture/             # Architecture documentation (TOGAF Phase C)
-    ├── README.md             # Architecture folder overview
+├── README.md                         # This file - Documentation entry point
+├── .gitignore                        # Git ignore rules for documentation
+└── architecture/                     # Architecture documentation (TOGAF Phase C)
+    ├── README.md                     # Architecture folder overview
     ├── application-architecture.md   # Application layer documentation
     └── data-architecture.md          # Data layer documentation
 ```
@@ -47,6 +90,15 @@ docs/
 | [Architecture Overview](architecture/README.md)                      | Entry point for architecture documentation with TOGAF framework alignment     |   181 |   ✅   |
 | [Application Architecture](architecture/application-architecture.md) | Services, interfaces, components, data access, integration points, deployment |   904 |   ✅   |
 | [Data Architecture](architecture/data-architecture.md)               | Data entities, stores, flows, state management, security, IaC definitions     |   931 |   ✅   |
+
+### Documentation Metrics
+
+| Metric               | Value   |
+| :------------------- | :------ |
+| **Total Documents**  | 3       |
+| **Combined Lines**   | ~2,000  |
+| **Mermaid Diagrams** | 15+     |
+| **TOGAF Compliance** | Phase C |
 
 ---
 
@@ -96,6 +148,26 @@ The architecture documentation includes **15+ Mermaid diagrams** with Material D
 | :--------------------------- | :------------------------------------------------------------------------- |
 | **Application Architecture** | Flowcharts, Sequence Diagrams, Class Diagrams, ER Diagrams, Block Diagrams |
 | **Data Architecture**        | Flowcharts, ER Diagrams, Sequence Diagrams, State Diagrams                 |
+
+### Diagram Preview
+
+```mermaid
+flowchart LR
+    subgraph docs["📚 Documentation"]
+        readme["README.md"]
+        subgraph arch["Architecture"]
+            app["Application<br/>Architecture"]
+            data["Data<br/>Architecture"]
+        end
+    end
+
+    readme --> arch
+    app <--> data
+
+    style readme fill:#C8E6C9,stroke:#2E7D32,color:#1B5E20
+    style app fill:#BBDEFB,stroke:#1565C0,color:#0D47A1
+    style data fill:#FFE0B2,stroke:#EF6C00,color:#E65100
+```
 
 ---
 
@@ -147,6 +219,53 @@ All documentation follows these standards:
 
 ---
 
+## ❓ FAQ
+
+<details>
+<summary><strong>What framework does this documentation follow?</strong></summary>
+
+The documentation follows **TOGAF (The Open Group Architecture Framework)** ADM Phase C, specifically covering Application and Data Architecture domains within the BDAT framework.
+
+</details>
+
+<details>
+<summary><strong>How are the diagrams rendered?</strong></summary>
+
+All diagrams use **Mermaid.js** syntax with Material Design color palettes. They render natively in GitHub, GitLab, Azure DevOps, and most modern documentation platforms.
+
+</details>
+
+<details>
+<summary><strong>Where can I find infrastructure deployment details?</strong></summary>
+
+Infrastructure-as-Code (IaC) details are documented in the [Data Architecture](architecture/data-architecture.md) document under section 3.1.8, with actual Bicep templates in the [infra/](../infra/) folder.
+
+</details>
+
+<details>
+<summary><strong>How do I contribute to this documentation?</strong></summary>
+
+1. Follow the existing document standards (Markdown, Mermaid diagrams, TOGAF compliance)
+2. Ensure all source citations are verified against the codebase
+3. Include metadata headers with version and date tracking
+4. Submit changes via pull request for review
+
+</details>
+
+---
+
+## 📝 Contributing
+
+When contributing to this documentation:
+
+1. **Follow Standards**: Use Markdown with GFM extensions and Mermaid.js for diagrams
+2. **Verify Sources**: All code references must be validated against the actual codebase
+3. **Maintain Consistency**: Follow the existing structure and formatting conventions
+4. **Update Metadata**: Include version tracking and update dates in headers
+
+---
+
 **Last Updated**: 2026-01-28  
 **Maintainer**: Platform Team  
+**Document Version**: 1.0  
 **Repository**: [Evilazaro/Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
