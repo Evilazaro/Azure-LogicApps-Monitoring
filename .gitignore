@@ -21,6 +21,8 @@ orders.json
 
 # Mono auto generated files
 mono_crash.*
+# Prompts
+[Pp]rompts/
 
 # Build results
 [Dd]ebug/
