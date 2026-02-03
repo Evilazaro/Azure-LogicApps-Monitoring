@@ -1,0 +1,129 @@
+{
+  "session_id": "b9f0c4e3-8a21-4b15-9c72-1e5d3a6f7b89",
+  "timestamp": "2026-02-03T00:00:00Z",
+  "inputs": {
+    "folder_paths": ["z:\\LogicApp"],
+    "target_layer": "Business",
+    "quality_level": "standard",
+    "output_sections": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "include_diagrams": true
+  },
+  "statistics": {
+    "components_discovered": 7,
+    "relationships_mapped": 18,
+    "diagrams_generated": 6,
+    "execution_time_seconds": 180,
+    "total_files_scanned": 45,
+    "relevant_files": 12
+  },
+  "components": [
+    {
+      "id": "BIZ-CAP-001",
+      "name": "Order Management Capability",
+      "type": "Business Capability",
+      "status": "Active",
+      "maturity": 4,
+      "source_file": "README.md",
+      "description": "Core business capability for order lifecycle management"
+    },
+    {
+      "id": "BIZ-SVC-001",
+      "name": "Order Business Service",
+      "type": "Business Service",
+      "status": "Active",
+      "maturity": 4,
+      "source_file": "src/eShop.Orders.API/Services/OrderService.cs",
+      "description": "Implements order management business logic with comprehensive observability"
+    },
+    {
+      "id": "BIZ-WF-001",
+      "name": "OrdersManagement Workflow",
+      "type": "Business Process",
+      "status": "Active",
+      "maturity": 4,
+      "source_file": "workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json",
+      "description": "Event-driven workflow for asynchronous order processing"
+    },
+    {
+      "id": "BIZ-ENT-001",
+      "name": "Order Domain Entity",
+      "type": "Business Entity",
+      "status": "Active",
+      "maturity": 5,
+      "source_file": "app.ServiceDefaults/CommonTypes.cs",
+      "description": "Core domain entity representing customer orders"
+    },
+    {
+      "id": "BIZ-ENT-002",
+      "name": "OrderProduct Domain Entity",
+      "type": "Business Entity",
+      "status": "Active",
+      "maturity": 5,
+      "source_file": "app.ServiceDefaults/CommonTypes.cs",
+      "description": "Domain entity representing order line items"
+    },
+    {
+      "id": "BIZ-IF-001",
+      "name": "IOrderService Interface",
+      "type": "Business Service Contract",
+      "status": "Active",
+      "maturity": 4,
+      "source_file": "src/eShop.Orders.API/Interfaces/",
+      "description": "Business service contract for order operations"
+    },
+    {
+      "id": "BIZ-MSG-001",
+      "name": "Orders Message Handler",
+      "type": "Integration Component",
+      "status": "Active",
+      "maturity": 4,
+      "source_file": "src/eShop.Orders.API/Handlers/",
+      "description": "Event publisher for order lifecycle events"
+    }
+  ],
+  "validation_scores": {
+    "completeness": 0.95,
+    "togaf_compliance": 0.98,
+    "quality": 0.92
+  },
+  "validation_details": {
+    "completeness": {
+      "passed": true,
+      "score": 0.95,
+      "threshold": 0.85,
+      "missing_elements": []
+    },
+    "togaf_compliance": {
+      "passed": true,
+      "score": 0.98,
+      "threshold": 0.85,
+      "violations": []
+    },
+    "quality": {
+      "passed": true,
+      "score": 0.92,
+      "threshold": 0.85,
+      "issues": []
+    }
+  },
+  "warnings": [],
+  "recommendations": [
+    "Consider implementing business process monitoring dashboard for real-time visibility",
+    "Enhance business rules engine to externalize business logic",
+    "Expand order management capabilities to support cancellations and returns"
+  ],
+  "diagrams_generated": [
+    "C4 Context - Business Architecture Landscape",
+    "Capability Map - Order Management",
+    "Process Flow - Order-to-Cash",
+    "Sequence Diagram - Component Interaction",
+    "ER Diagram - Business Data Model",
+    "Dependency Map - Cross-Layer Dependencies"
+  ],
+  "phase_durations": {
+    "phase1_discovery": 30,
+    "phase2_analysis": 25,
+    "phase3_generation": 105,
+    "phase4_validation": 20
+  }
+}
