@@ -41,6 +41,7 @@ This solution addresses the challenge of building scalable, observable microserv
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
+- [Additional Resources](#additional-resources)
 
 ---
 
@@ -126,26 +127,32 @@ flowchart TB
     style monitoring fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
+[↑ Back to Top](#table-of-contents)
+
 ---
 
 ## Prerequisites
 
-| Requirement                   | Version        | Purpose                                    |
-| ----------------------------- | -------------- | ------------------------------------------ |
-| **.NET SDK**                  | 10.0.100+      | Application runtime and build tools        |
-| **Azure CLI**                 | 2.60.0+        | Azure resource management                  |
-| **Azure Developer CLI (azd)** | 1.11.0+        | Infrastructure provisioning and deployment |
-| **Docker Desktop**            | 20.10+         | Local development with service emulators   |
+| Requirement                   |    Version     | Purpose                                    |
+| :---------------------------- | :------------: | :----------------------------------------- |
+| **.NET SDK**                  |   10.0.100+    | Application runtime and build tools        |
+| **Azure CLI**                 |    2.60.0+     | Azure resource management                  |
+| **Azure Developer CLI (azd)** |    1.11.0+     | Infrastructure provisioning and deployment |
+| **Docker Desktop**            |     20.10+     | Local development with service emulators   |
 | **PowerShell**                | 7.0+ (Windows) | Deployment hooks execution                 |
-| **Azure Subscription**        | Active         | Deployment target with Contributor role    |
+| **Azure Subscription**        |     Active     | Deployment target with Contributor role    |
 
 ### Azure Resource Requirements
 
-- **Azure SQL Database** – Basic tier or higher
-- **Azure Service Bus** – Standard tier (required for topics/subscriptions)
-- **Azure Storage Account** – Standard LRS or higher
-- **Azure Logic Apps Standard** – Workflow Standard plan
-- **Azure Application Insights** – For telemetry collection
+| Resource                       |      Minimum Tier      | Purpose                     |
+| :----------------------------- | :--------------------: | :-------------------------- |
+| **Azure SQL Database**         |         Basic          | Order data persistence      |
+| **Azure Service Bus**          |  Standard (required)   | Async messaging with topics |
+| **Azure Storage Account**      |      Standard LRS      | Logic Apps runtime storage  |
+| **Azure Logic Apps Standard**  | Workflow Standard plan | Order workflow processing   |
+| **Azure Application Insights** |     Pay-as-you-go      | Telemetry collection        |
+
+[↑ Back to Top](#table-of-contents)
 
 ---
 
@@ -170,6 +177,8 @@ az account set --subscription "YOUR_SUBSCRIPTION_ID"
 # Authenticate Azure Developer CLI
 azd auth login
 ```
+
+> ℹ️ **Note**: Replace `YOUR_SUBSCRIPTION_ID` with your actual Azure subscription ID.
 
 ### 3. Initialize Azure Developer Environment
 
@@ -207,6 +216,8 @@ azd env get-values
 curl https://orders-api.YOUR_ENV.REGION.azurecontainerapps.io/health
 ```
 
+[↑ Back to Top](#table-of-contents)
+
 ---
 
 ## Usage
@@ -230,6 +241,8 @@ The web application provides:
 - Integration with Orders API via service discovery
 
 ### Common Scenarios
+
+> 💡 **Tip**: Replace `YOUR_ENV.REGION` with your actual environment name and Azure region.
 
 #### Placing an Order via API
 
@@ -286,6 +299,8 @@ Available endpoints:
 - `DELETE /api/orders` – Delete all orders (with confirmation)
 - `GET /health` – Health check with dependencies
 - `GET /alive` – Liveness probe
+
+[↑ Back to Top](#table-of-contents)
 
 ---
 
@@ -373,6 +388,8 @@ Azure-LogicApps-Monitoring/
         └── ci-dotnet-reusable.yml    # Reusable CI workflow (build, test, CodeQL)
 ```
 
+[↑ Back to Top](#table-of-contents)
+
 ---
 
 ## Configuration
@@ -396,10 +413,10 @@ dotnet user-secrets set "ConnectionStrings:messaging" "Endpoint=sb://localhost;.
 
 ### Azure Resource Configuration
 
-Configured via azure.yaml and provisioned automatically:
+Configured via [azure.yaml](./azure.yaml) and provisioned automatically:
 
 | Resource                 | Configuration Key             | Purpose                           |
-| ------------------------ | ----------------------------- | --------------------------------- |
+| :----------------------- | :---------------------------- | :-------------------------------- |
 | **SQL Server**           | `OrderDb` connection string   | Order data persistence            |
 | **Service Bus**          | `messaging` connection string | Async order processing            |
 | **Application Insights** | Auto-configured by Aspire     | Distributed tracing and telemetry |
@@ -413,6 +430,8 @@ Edit AppHost.cs to modify:
 - Azure resource connections (SQL, Service Bus, Application Insights)
 - Health check configurations
 - Environment-specific settings
+
+[↑ Back to Top](#table-of-contents)
 
 ---
 
@@ -490,6 +509,8 @@ Hot reload is enabled by default for local development:
 dotnet watch --project src/eShop.Orders.API
 ```
 
+[↑ Back to Top](#table-of-contents)
+
 ---
 
 ## Testing
@@ -535,6 +556,8 @@ The solution includes integration tests that:
 - Spin up in-memory databases via WebApplicationFactory
 - Mock Azure Service Bus connections
 - Verify controller endpoints, service logic, and health checks
+
+[↑ Back to Top](#table-of-contents)
 
 ---
 
@@ -605,21 +628,25 @@ azd env select prod
 azd env get-values
 ```
 
+[↑ Back to Top](#table-of-contents)
+
 ---
 
 ## Architecture
 
 ### Technology Stack
 
-- **Orchestration:** .NET Aspire 13.1
-- **API Framework:** ASP.NET Core 10.0 (Minimal APIs + Controllers)
-- **Frontend:** Blazor Server with FluentUI Components 4.13
-- **Data Access:** Entity Framework Core 10.0 (SQL Server provider)
-- **Messaging:** Azure Service Bus with Managed Identity
-- **Workflows:** Azure Logic Apps Standard
-- **Observability:** OpenTelemetry (OTLP + Azure Monitor)
-- **Infrastructure:** Bicep (Azure Resource Manager)
-- **CI/CD:** GitHub Actions with OIDC authentication
+| Category           | Technology                                | Version |
+| :----------------- | :---------------------------------------- | :-----: |
+| **Orchestration**  | .NET Aspire                               |  13.1   |
+| **API Framework**  | ASP.NET Core (Minimal APIs + Controllers) |  10.0   |
+| **Frontend**       | Blazor Server with FluentUI Components    |  4.13   |
+| **Data Access**    | Entity Framework Core (SQL Server)        |  10.0   |
+| **Messaging**      | Azure Service Bus with Managed Identity   | Latest  |
+| **Workflows**      | Azure Logic Apps Standard                 | Latest  |
+| **Observability**  | OpenTelemetry (OTLP + Azure Monitor)      | Latest  |
+| **Infrastructure** | Bicep (Azure Resource Manager)            | Latest  |
+| **CI/CD**          | GitHub Actions with OIDC authentication   | Latest  |
 
 ### Design Patterns
 
@@ -632,23 +659,25 @@ azd env get-values
 
 ### Azure Services Used
 
-| Service                       | Purpose                     | Tier              |
-| ----------------------------- | --------------------------- | ----------------- |
-| **Azure Container Apps**      | Microservices hosting       | Consumption       |
-| **Azure SQL Database**        | Relational data storage     | Basic/Standard    |
-| **Azure Service Bus**         | Async messaging             | Standard          |
-| **Azure Storage Account**     | Blob storage (Logic Apps)   | Standard LRS      |
+| Service                       | Purpose                     |       Tier        |
+| :---------------------------- | :-------------------------- | :---------------: |
+| **Azure Container Apps**      | Microservices hosting       |    Consumption    |
+| **Azure SQL Database**        | Relational data storage     |  Basic/Standard   |
+| **Azure Service Bus**         | Async messaging             |     Standard      |
+| **Azure Storage Account**     | Blob storage (Logic Apps)   |   Standard LRS    |
 | **Azure Logic Apps Standard** | Workflow orchestration      | Workflow Standard |
-| **Application Insights**      | APM and distributed tracing | Pay-as-you-go     |
-| **Log Analytics**             | Centralized logging         | Pay-as-you-go     |
-| **Azure Container Registry**  | Private container images    | Basic             |
-| **Managed Identity**          | Service authentication      | N/A (free)        |
+| **Application Insights**      | APM and distributed tracing |   Pay-as-you-go   |
+| **Log Analytics**             | Centralized logging         |   Pay-as-you-go   |
+| **Azure Container Registry**  | Private container images    |       Basic       |
+| **Managed Identity**          | Service authentication      |    N/A (free)     |
 
----
+## [↑ Back to Top](#table-of-contents)
 
 ## Troubleshooting
 
 ### Local Development Issues
+
+> 🔧 **Troubleshooting**: Common issues encountered during local development.
 
 **Problem:** Service Bus connection fails locally
 
@@ -705,13 +734,13 @@ az monitor app-insights query \
 
 ### Common Error Messages
 
-| Error                                           | Cause                      | Solution                                  |
-| ----------------------------------------------- | -------------------------- | ----------------------------------------- |
-| `NU1301: Unable to load service index`          | NuGet feed authentication  | Run `azd auth login`                      |
-| `Connection string 'OrderDb' is not configured` | Missing database reference | Verify `WithReference()` in AppHost.cs    |
-| `HTTP 503 Service Unavailable`                  | Container Apps scaling     | Check Container Apps logs in Azure Portal |
+| Error                                           | Cause                      | Solution                                                           |
+| :---------------------------------------------- | :------------------------- | :----------------------------------------------------------------- |
+| `NU1301: Unable to load service index`          | NuGet feed authentication  | Run `azd auth login`                                               |
+| `Connection string 'OrderDb' is not configured` | Missing database reference | Verify `WithReference()` in [AppHost.cs](./app.AppHost/AppHost.cs) |
+| `HTTP 503 Service Unavailable`                  | Container Apps scaling     | Check Container Apps logs in Azure Portal                          |
 
----
+## [↑ Back to Top](#table-of-contents)
 
 ## Contributing
 
@@ -726,6 +755,8 @@ Contributions are welcome! Please follow these guidelines:
 
 For detailed contribution guidelines, see CONTRIBUTING.md (if available).
 
+[↑ Back to Top](#table-of-contents)
+
 ---
 
 ## License
@@ -733,6 +764,8 @@ For detailed contribution guidelines, see CONTRIBUTING.md (if available).
 This project is licensed under the **MIT License** – see LICENSE file for details.
 
 **Copyright © 2025 Evilázaro Alves**
+
+[↑ Back to Top](#table-of-contents)
 
 ---
 
@@ -743,15 +776,21 @@ This project is licensed under the **MIT License** – see LICENSE file for deta
 - **Microsoft Identity Team** – For Managed Identity and zero-secrets architecture
 - **OpenTelemetry Contributors** – For standardized observability
 
+[↑ Back to Top](#table-of-contents)
+
 ---
 
 ## Additional Resources
 
-- **Azure Developer CLI Documentation:** https://learn.microsoft.com/azure/developer/azure-developer-cli/
-- **.NET Aspire Documentation:** https://learn.microsoft.com/dotnet/aspire/
-- **Azure Logic Apps Standard:** https://learn.microsoft.com/azure/logic-apps/logic-apps-overview
-- **Azure Container Apps:** https://learn.microsoft.com/azure/container-apps/
-- **OpenTelemetry .NET:** https://opentelemetry.io/docs/instrumentation/net/
+| Resource                              | Link                                                                                                                        |
+| :------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------- |
+| **Azure Developer CLI Documentation** | [learn.microsoft.com/azure/developer/azure-developer-cli](https://learn.microsoft.com/azure/developer/azure-developer-cli/) |
+| **.NET Aspire Documentation**         | [learn.microsoft.com/dotnet/aspire](https://learn.microsoft.com/dotnet/aspire/)                                             |
+| **Azure Logic Apps Standard**         | [learn.microsoft.com/azure/logic-apps](https://learn.microsoft.com/azure/logic-apps/logic-apps-overview)                    |
+| **Azure Container Apps**              | [learn.microsoft.com/azure/container-apps](https://learn.microsoft.com/azure/container-apps/)                               |
+| **OpenTelemetry .NET**                | [opentelemetry.io/docs/instrumentation/net](https://opentelemetry.io/docs/instrumentation/net/)                             |
+
+[↑ Back to Top](#table-of-contents)
 
 ---
 
