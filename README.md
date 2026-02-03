@@ -94,8 +94,6 @@ graph TB
     AppInsights -->|Logs| LogAnalytics
 ```
 
-````
-
 ---
 
 ## Prerequisites
@@ -728,4 +726,7 @@ This project is licensed under the **MIT License** – see LICENSE file for deta
 **Repository:** https://github.com/Evilazaro/Azure-LogicApps-Monitoring
 **Issues:** https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues
 **Author:** Evilazaro ([@Evilazaro](https://github.com/Evilazaro))
-````
+
+```
+
+```
