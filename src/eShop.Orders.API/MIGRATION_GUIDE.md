@@ -38,6 +38,16 @@ tags: [ef-core, migration, sql-azure, database]
 
 The eShop.Orders.API project has been refactored to use **Entity Framework Core** with **Azure SQL Database** instead of file-based storage. This migration provides improved scalability, reliability, and data integrity for production workloads.
 
+### Migration Benefits
+
+| Benefit            | Impact                                             |
+| :----------------- | :------------------------------------------------- |
+| **Scalability**    | SQL Azure Database scales better than file storage |
+| **Data Integrity** | ACID transactions with rollback capabilities       |
+| **Performance**    | Indexed queries and query optimization             |
+| **Security**       | Azure AD authentication and encryption at rest     |
+| **Reliability**    | Database-level backup and disaster recovery        |
+
 [↑ Back to Top](#entity-framework-core-migration-guide)
 
 ---
@@ -46,9 +56,13 @@ The eShop.Orders.API project has been refactored to use **Entity Framework Core*
 
 ### 1. 📦 NuGet Packages Added
 
-- `Microsoft.EntityFrameworkCore.SqlServer` (v9.0.0)
-- `Microsoft.EntityFrameworkCore.Design` (v9.0.0)
-- `Microsoft.EntityFrameworkCore.Tools` (v9.0.0)
+> ℹ️ **Note**: These packages provide EF Core functionality for SQL Server and development tools.
+
+| Package                                   | Version | Purpose                       |
+| :---------------------------------------- | :-----: | :---------------------------- |
+| `Microsoft.EntityFrameworkCore.SqlServer` |  9.0.0  | SQL Server database provider  |
+| `Microsoft.EntityFrameworkCore.Design`    |  9.0.0  | Design-time EF Core tools     |
+| `Microsoft.EntityFrameworkCore.Tools`     |  9.0.0  | Package Manager Console tools |
 
 ### 2. 📁 New Files Created
 
@@ -67,23 +81,25 @@ The eShop.Orders.API project has been refactored to use **Entity Framework Core*
 
 ### 3. ⚙️ Configuration Changes
 
-#### Program.cs
+#### Program.cs Updates
 
-- Removed file-based storage configuration (`OrderStorageOptions`)
-- Added `AddDbContext<OrderDbContext>` with SQL Server provider
-- Configured retry strategy for transient failures
-- Enabled sensitive data logging and detailed errors in development
+| Change                    | Description                                |
+| :------------------------ | :----------------------------------------- |
+| **Removed**               | File-based storage configuration           |
+| **Added**                 | `AddDbContext<OrderDbContext>` with SQL    |
+| **Configured**            | Retry strategy for transient failures      |
+| **Enabled (Development)** | Sensitive data logging and detailed errors |
 
-#### appsettings.json
+#### appsettings.json Updates
 
-- Removed `OrderStorage` section
-- Added `ConnectionStrings:OrdersDatabase` configuration
-- Added EF Core logging configuration
+- ❌ Removed `OrderStorage` section
+- ✅ Added `ConnectionStrings:OrdersDatabase` configuration
+- ✅ Added EF Core logging configuration
 
-#### appsettings.Development.json
+#### appsettings.Development.json Updates
 
-- Added connection string for development environment
-- Enabled detailed EF Core command logging
+- ✅ Added development connection string
+- ✅ Enabled detailed EF Core command logging
 
 [↑ Back to Top](#entity-framework-core-migration-guide)
 
@@ -101,10 +117,14 @@ Server=tcp:{SQL_SERVER_FQDN},1433;Initial Catalog={DATABASE_NAME};Encrypt=True;T
 
 ### 📋 Configuration Placeholders
 
-Replace the following placeholders in `appsettings.json` and `appsettings.Development.json`:
+> ℹ️ **Note**: Replace these placeholders in `appsettings.json` and `appsettings.Development.json`:
 
-- `{SQL_SERVER_FQDN}`: Your SQL Server's fully qualified domain name (from Bicep output: `ORDERSDATABASE_SQLSERVERFQDN`)
-- `{DATABASE_NAME}`: Your database name (e.g., `ordersdb`)
+| Placeholder         | Description                            | Example                                |
+| :------------------ | :------------------------------------- | :------------------------------------- |
+| `{SQL_SERVER_FQDN}` | SQL Server fully qualified domain name | `ordersserver123.database.windows.net` |
+| `{DATABASE_NAME}`   | Database name                          | `ordersdb123`                          |
+
+> 💡 **Tip**: Retrieve the SQL Server FQDN from Bicep output: `ORDERSDATABASE_SQLSERVERFQDN`.
 
 ### 💡 Example Configuration
 
@@ -124,11 +144,15 @@ Replace the following placeholders in `appsettings.json` and `appsettings.Develo
 
 ## 🔄 Database Migration
 
-### 1. 🛠️ Install EF Core Tools (if not already installed)
+### 1. 🛠️ Install EF Core Tools
+
+> 📋 **Prerequisites**: Install the EF Core CLI tools if not already available.
 
 ```powershell
 dotnet tool install --global dotnet-ef
 ```
+
+> ✅ **Success**: Expected output: "Tool 'dotnet-ef' was successfully installed."
 
 ### 2. 📝 Create Initial Migration
 
@@ -144,7 +168,7 @@ Create the initial migration:
 dotnet ef migrations add InitialCreate
 ```
 
-This will create a `Migrations` folder with the migration files.
+> ✅ **Success**: This creates a `Migrations` folder with the migration files.
 
 ### 3. 🚀 Update Database Schema
 
@@ -154,15 +178,19 @@ Apply the migration to create the database tables:
 dotnet ef database update
 ```
 
+> ✅ **Success**: Expected output: "Done. Applying migration 'InitialCreate'."
+
 ### 📄 Alternative: Create Migration Script
 
-To generate a SQL script instead of applying directly:
+> 💡 **Tip**: Use SQL scripts for controlled production deployments.
+
+Generate a SQL script instead of applying directly:
 
 ```powershell
 dotnet ef migrations script -o migration.sql
 ```
 
-> 💡 **Tip**: Use the SQL script approach for controlled deployments to production environments.
+This creates a `migration.sql` file that can be reviewed and executed by a DBA.
 
 [↑ Back to Top](#entity-framework-core-migration-guide)
 
@@ -206,14 +234,20 @@ dotnet ef migrations script -o migration.sql
 
 ## 🔐 Authentication Requirements
 
-The application uses **Azure AD authentication** to connect to SQL Azure Database. Ensure:
-
 > 🔒 **Security**: The application uses passwordless authentication via Azure Active Directory for enhanced security.
 
-1. **Managed Identity** is assigned to the application (Container App or App Service)
-2. **Managed Identity** has been granted permissions on the SQL Database:
-   - The Bicep deployment already configures this with `azureADOnlyAuthentication: true`
-   - The managed identity is set as the Entra admin for the SQL Server
+The application uses **Azure AD authentication** to connect to SQL Azure Database. Ensure:
+
+### Required Configuration
+
+| Requirement                 | Configuration                                             |
+| :-------------------------- | :-------------------------------------------------------- |
+| **Managed Identity**        | Assigned to the application (Container App)               |
+| **Database Permissions**    | Managed Identity granted SQL Database access              |
+| **Azure AD Authentication** | Enabled on SQL Server (`azureADOnlyAuthentication: true`) |
+| **Entra Admin**             | Managed Identity set as SQL Server admin                  |
+
+> ℹ️ **Note**: The Bicep deployment automatically configures all required authentication settings.
 
 [↑ Back to Top](#entity-framework-core-migration-guide)
 
@@ -221,9 +255,9 @@ The application uses **Azure AD authentication** to connect to SQL Azure Databas
 
 ## 💻 Local Development
 
-For local development with Azure AD authentication:
+> 💡 **Tip**: Azure CLI authentication is recommended for development over SQL authentication.
 
-> 💡 **Tip**: For development, Azure CLI authentication is recommended over SQL authentication.
+### Authentication Setup
 
 1. Ensure you're logged in with Azure CLI:
 
@@ -231,9 +265,21 @@ For local development with Azure AD authentication:
    az login
    ```
 
-2. Your account must have permissions on the SQL Database
+2. Verify your account has permissions on the SQL Database
 
-3. Alternatively, update [appsettings.Development.json](./appsettings.Development.json) to use a connection string with SQL authentication (not recommended for production)
+### Alternative: SQL Authentication (Not Recommended)
+
+> ⚠️ **Warning**: SQL authentication is not recommended for production environments.
+
+Update [appsettings.Development.json](./appsettings.Development.json) to use SQL authentication:
+
+```json
+{
+  "ConnectionStrings": {
+    "OrdersDatabase": "Server=tcp:<SERVER>.database.windows.net,1433;Initial Catalog=<DATABASE>;User ID=<USERNAME>;Password=<PASSWORD>;Encrypt=True;"
+  }
+}
+```
 
 [↑ Back to Top](#entity-framework-core-migration-guide)
 
@@ -247,24 +293,28 @@ For local development with Azure AD authentication:
 dotnet build
 ```
 
+> ✅ **Success**: Expected output: "Build succeeded. 0 Warning(s) 0 Error(s)".
+
 ### 2. ▶️ Run the Application
 
 ```powershell
 dotnet run
 ```
 
+> ✅ **Success**: The application should start and display: "Now listening on: http://localhost:5000".
+
 ### 3. 🌐 Test Endpoints
 
 The API endpoints remain unchanged:
 
-| Method     | Endpoint           | Description          |
-| :--------- | :----------------- | :------------------- |
-| **POST**   | `/api/orders`      | Create a new order   |
-| **GET**    | `/api/orders`      | Get all orders       |
-| **GET**    | `/api/orders/{id}` | Get a specific order |
-| **DELETE** | `/api/orders/{id}` | Delete an order      |
+| Method     | Endpoint           | Description          | Expected Response   |
+| :--------- | :----------------- | :------------------- | :------------------ |
+| **POST**   | `/api/orders`      | Create a new order   | HTTP 201 Created    |
+| **GET**    | `/api/orders`      | Get all orders       | HTTP 200 OK         |
+| **GET**    | `/api/orders/{id}` | Get a specific order | HTTP 200 OK         |
+| **DELETE** | `/api/orders/{id}` | Delete an order      | HTTP 204 No Content |
 
-> ✅ **Success**: If the application starts successfully and responds to API requests, the migration is complete.
+> ✅ **Success**: If the application responds to API requests successfully, the migration is complete.
 
 [↑ Back to Top](#entity-framework-core-migration-guide)
 
@@ -272,17 +322,39 @@ The API endpoints remain unchanged:
 
 ## ⏪ Rollback Instructions
 
-> ⚠️ **Warning**: Only use rollback if absolutely necessary. This will revert to the less scalable file-based storage.
-
-If you need to rollback to file-based storage:
+> ⚠️ **Warning**: Only use rollback if absolutely necessary. This reverts to the less scalable file-based storage.
 
 > 🔧 **Troubleshooting**: Follow these steps in order to safely revert to the previous storage implementation.
 
-1. Restore the original [OrderRepository.cs](./Repositories/OrderRepository.cs) from git history
-2. Restore original [appsettings.json](./appsettings.json) files
-3. Restore original [Program.cs](./Program.cs) configuration
+### Rollback Steps
+
+1. Restore the original [OrderRepository.cs](./Repositories/OrderRepository.cs) from git history:
+
+   ```powershell
+   git checkout HEAD~1 -- Repositories/OrderRepository.cs
+   ```
+
+2. Restore original [appsettings.json](./appsettings.json) files:
+
+   ```powershell
+   git checkout HEAD~1 -- appsettings.json appsettings.Development.json
+   ```
+
+3. Restore original [Program.cs](./Program.cs) configuration:
+
+   ```powershell
+   git checkout HEAD~1 -- Program.cs
+   ```
+
 4. Remove EF Core packages from [eShop.Orders.API.csproj](./eShop.Orders.API.csproj)
-5. Delete the `Data` folder
+
+5. Delete the `Data` folder:
+
+   ```powershell
+   Remove-Item -Recurse -Force Data
+   ```
+
+> ℹ️ **Note**: After rollback, rebuild the project with `dotnet build`.
 
 [↑ Back to Top](#entity-framework-core-migration-guide)
 
@@ -306,14 +378,10 @@ If you need to rollback to file-based storage:
 
 ## 📚 Additional Resources
 
-| Resource                                |                                                    Link                                                    |
-| :-------------------------------------- | :--------------------------------------------------------------------------------------------------------: |
-| **Entity Framework Core Documentation** |                     [docs.microsoft.com/ef/core](https://docs.microsoft.com/ef/core/)                      |
-| **SQL Azure Documentation**             |             [docs.microsoft.com/azure/azure-sql](https://docs.microsoft.com/azure/azure-sql/)              |
+| Resource                                | Link                                                                                                       |
+| :-------------------------------------- | :--------------------------------------------------------------------------------------------------------- |
+| **Entity Framework Core Documentation** | [docs.microsoft.com/ef/core](https://docs.microsoft.com/ef/core/)                                          |
+| **SQL Azure Documentation**             | [docs.microsoft.com/azure/azure-sql](https://docs.microsoft.com/azure/azure-sql/)                          |
 | **Azure AD Authentication for SQL**     | [Authentication Overview](https://docs.microsoft.com/azure/azure-sql/database/authentication-aad-overview) |
 
 [↑ Back to Top](#entity-framework-core-migration-guide)
-
----
-
-**[⬆ Back to Top](#entity-framework-core-migration-guide)**

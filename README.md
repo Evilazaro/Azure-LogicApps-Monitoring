@@ -15,14 +15,16 @@ The **Azure Logic Apps Monitoring Solution** is a cloud-native, distributed appl
 
 This solution addresses the challenge of building scalable, observable microservices with secure Azure integration. It eliminates the complexity of manual infrastructure configuration by using Infrastructure as Code (Bicep), automated deployment pipelines (GitHub Actions), and managed identities for zero-secret authentication across Azure services.
 
-**Key differentiators:**
+> ℹ️ **Note**: This solution is designed for cloud architects, DevOps engineers, and .NET developers building distributed systems on Azure with Logic Apps integration.
 
-- **Zero-secrets architecture** using Azure Managed Identity for all service-to-service authentication
-- **Full-stack observability** with OpenTelemetry, Application Insights, and distributed tracing
-- **Production-ready patterns** including health checks, resilience policies, and automated database migrations
-- **Developer-friendly** with local development support via Azure service emulators and .NET Aspire dashboard
+### Key Differentiators
 
-**Target audience:** Cloud architects, DevOps engineers, and .NET developers building distributed systems on Azure with Logic Apps integration.
+| Feature                | Description                                                                     |
+| :--------------------- | :------------------------------------------------------------------------------ |
+| **Zero-Secrets**       | Azure Managed Identity for all service-to-service authentication                |
+| **Full Observability** | OpenTelemetry, Application Insights, and distributed tracing                    |
+| **Production-Ready**   | Health checks, resilience policies, and automated database migrations           |
+| **Developer-Friendly** | Local development support via Azure service emulators and .NET Aspire dashboard |
 
 ---
 
@@ -167,18 +169,20 @@ cd Azure-LogicApps-Monitoring
 
 ### 2. Authenticate with Azure
 
+> 📋 **Prerequisites**: You must have an active Azure subscription with Contributor role access.
+
 ```bash
 # Login to Azure
 az login
 
 # Set default subscription
-az account set --subscription "YOUR_SUBSCRIPTION_ID"
+az account set --subscription "<YOUR_SUBSCRIPTION_ID>"
 
 # Authenticate Azure Developer CLI
 azd auth login
 ```
 
-> ℹ️ **Note**: Replace `YOUR_SUBSCRIPTION_ID` with your actual Azure subscription ID.
+> ℹ️ **Note**: Replace `<YOUR_SUBSCRIPTION_ID>` with your actual Azure subscription ID.
 
 ### 3. Initialize Azure Developer Environment
 
@@ -230,24 +234,26 @@ Once deployed, access the web application:
 # Get web app URL
 azd env get-values | grep AZURE_CONTAINER_APPS_WEB_URL
 
-# Open in browser
-start https://web-app.YOUR_ENV.REGION.azurecontainerapps.io
+# Open in browser (Windows)
+start https://web-app.<YOUR_ENV>.<REGION>.azurecontainerapps.io
 ```
 
-The web application provides:
+> 💡 **Tip**: Replace `<YOUR_ENV>` and `<REGION>` with your actual environment name and Azure region.
 
-- Order browsing and search
-- Real-time order status updates
-- Integration with Orders API via service discovery
+### Web Application Features
+
+| Feature               | Description                                     |
+| :-------------------- | :---------------------------------------------- |
+| **Order Browsing**    | Search and filter orders by status and customer |
+| **Real-Time Updates** | Live order status updates via SignalR           |
+| **Service Discovery** | Automatic integration with Orders API           |
 
 ### Common Scenarios
-
-> 💡 **Tip**: Replace `YOUR_ENV.REGION` with your actual environment name and Azure region.
 
 #### Placing an Order via API
 
 ```bash
-curl -X POST https://orders-api.YOUR_ENV.REGION.azurecontainerapps.io/api/orders \
+curl -X POST https://orders-api.<YOUR_ENV>.<REGION>.azurecontainerapps.io/api/orders \
   -H "Content-Type: application/json" \
   -d '{
     "id": "00000000-0000-0000-0000-000000000001",
@@ -265,40 +271,50 @@ curl -X POST https://orders-api.YOUR_ENV.REGION.azurecontainerapps.io/api/orders
   }'
 ```
 
+> ✅ **Success**: Expected response: HTTP 201 Created with the created order in the response body.
+
+````
+
 #### Retrieving All Orders
 
 ```bash
-curl https://orders-api.YOUR_ENV.REGION.azurecontainerapps.io/api/orders \
+curl https://orders-api.<YOUR_ENV>.<REGION>.azurecontainerapps.io/api/orders \
   -H "Accept: application/json"
-```
+````
+
+> ✅ **Success**: Returns a JSON array of all orders with HTTP 200 OK status.
 
 #### Checking Application Health
 
 ```bash
 # Health check with dependency status
-curl https://orders-api.YOUR_ENV.REGION.azurecontainerapps.io/health
+curl https://orders-api.<YOUR_ENV>.<REGION>.azurecontainerapps.io/health
 
 # Liveness probe (minimal check)
-curl https://orders-api.YOUR_ENV.REGION.azurecontainerapps.io/alive
+curl https://orders-api.<YOUR_ENV>.<REGION>.azurecontainerapps.io/alive
 ```
+
+> ℹ️ **Note**: The `/health` endpoint checks database and Service Bus connectivity. The `/alive` endpoint performs a minimal health check without dependencies.
 
 ### API Documentation
 
 Access interactive Swagger UI at:
 
-```
-https://orders-api.YOUR_ENV.REGION.azurecontainerapps.io/swagger
+```text
+https://orders-api.<YOUR_ENV>.<REGION>.azurecontainerapps.io/swagger
 ```
 
-Available endpoints:
+### Available Endpoints
 
-- `POST /api/orders` – Create new order
-- `GET /api/orders` – List all orders
-- `GET /api/orders/{id}` – Get order by ID
-- `DELETE /api/orders/{id}` – Delete order
-- `DELETE /api/orders` – Delete all orders (with confirmation)
-- `GET /health` – Health check with dependencies
-- `GET /alive` – Liveness probe
+| Method     | Endpoint           | Description                           |
+| :--------- | :----------------- | :------------------------------------ |
+| **POST**   | `/api/orders`      | Create new order                      |
+| **GET**    | `/api/orders`      | List all orders                       |
+| **GET**    | `/api/orders/{id}` | Get order by ID                       |
+| **DELETE** | `/api/orders/{id}` | Delete specific order                 |
+| **DELETE** | `/api/orders`      | Delete all orders (with confirmation) |
+| **GET**    | `/health`          | Health check with dependencies        |
+| **GET**    | `/alive`           | Liveness probe                        |
 
 [↑ Back to Top](#table-of-contents)
 
@@ -447,14 +463,16 @@ cd app.AppHost
 dotnet run
 ```
 
-Open **Aspire Dashboard**: `http://localhost:15888` (URL shown in console)
+> ℹ️ **Note**: The Aspire Dashboard URL (typically `http://localhost:15888`) will be displayed in the console output.
 
-The dashboard provides:
+### Aspire Dashboard Features
 
-- Real-time service status
-- Distributed tracing visualization
-- Logs aggregation
-- Metrics explorer
+| Feature                 | Description                           |
+| :---------------------- | :------------------------------------ |
+| **Service Status**      | Real-time monitoring of all services  |
+| **Distributed Tracing** | Visual trace exploration and analysis |
+| **Logs Aggregation**    | Centralized logs from all services    |
+| **Metrics Explorer**    | Performance metrics and dashboards    |
 
 #### Option 2: Individual Services
 
@@ -468,11 +486,11 @@ cd src/eShop.Web.App
 dotnet run
 ```
 
-**Note:** This mode requires manual service discovery configuration.
+> ⚠️ **Warning**: Running individual services requires manual service discovery configuration.
 
 ### Local Prerequisites
 
-To run locally without Azure, start emulators:
+> 📋 **Prerequisites**: To run locally without Azure, start the required emulators:
 
 ```bash
 # Service Bus emulator (Docker)
@@ -677,11 +695,9 @@ azd env get-values
 
 ### Local Development Issues
 
-> 🔧 **Troubleshooting**: Common issues encountered during local development.
+#### Service Bus Connection Fails Locally
 
-**Problem:** Service Bus connection fails locally
-
-**Solution:** Ensure Service Bus emulator is running or update connection string:
+> 🔧 **Troubleshooting**: Verify the Service Bus emulator is running.
 
 ```bash
 docker ps | grep servicebus-emulator
@@ -689,9 +705,9 @@ docker ps | grep servicebus-emulator
 docker start servicebus-emulator
 ```
 
-**Problem:** SQL Server connection refused
+#### SQL Server Connection Refused
 
-**Solution:** Verify LocalDB or Docker SQL Server is running:
+> 🔧 **Troubleshooting**: Verify LocalDB or Docker SQL Server is running.
 
 ```bash
 # LocalDB
@@ -704,41 +720,43 @@ docker start sql-server
 
 ### Azure Deployment Issues
 
-**Problem:** `azd provision` fails with "Managed Identity not found"
+#### `azd provision` Fails with "Managed Identity not found"
 
-**Solution:** Ensure preprovision hook completed successfully. Check output:
+> 🔧 **Troubleshooting**: Ensure the preprovision hook completed successfully.
 
 ```bash
 azd provision --debug
 ```
 
-**Problem:** Logic Apps workflows not triggering
+> ℹ️ **Note**: Check the debug output for specific errors related to identity creation.
 
-**Solution:** Verify Service Bus connection authentication:
+#### Logic Apps Workflows Not Triggering
+
+> 🔧 **Troubleshooting**: Verify Service Bus connection authentication.
 
 ```bash
-az logicapp show --name YOUR_LOGIC_APP --resource-group YOUR_RG
+az logicapp show --name <YOUR_LOGIC_APP> --resource-group <YOUR_RG>
 ```
 
-Check `parameters.json` has correct runtime URLs.
+> ℹ️ **Note**: Verify that `parameters.json` contains the correct runtime URLs.
 
-**Problem:** Container Apps crash on startup
+#### Container Apps Crash on Startup
 
-**Solution:** Check Application Insights logs:
+> 🔧 **Troubleshooting**: Check Application Insights logs for error details.
 
 ```bash
 az monitor app-insights query \
-  --app YOUR_APP_INSIGHTS \
+  --app <YOUR_APP_INSIGHTS> \
   --analytics-query "traces | where severityLevel >= 3 | order by timestamp desc | take 50"
 ```
 
 ### Common Error Messages
 
-| Error                                           | Cause                      | Solution                                                           |
-| :---------------------------------------------- | :------------------------- | :----------------------------------------------------------------- |
-| `NU1301: Unable to load service index`          | NuGet feed authentication  | Run `azd auth login`                                               |
-| `Connection string 'OrderDb' is not configured` | Missing database reference | Verify `WithReference()` in [AppHost.cs](./app.AppHost/AppHost.cs) |
-| `HTTP 503 Service Unavailable`                  | Container Apps scaling     | Check Container Apps logs in Azure Portal                          |
+| Error Message                                   | Cause                         | Solution                                                           |
+| :---------------------------------------------- | :---------------------------- | :----------------------------------------------------------------- |
+| `NU1301: Unable to load service index`          | NuGet feed authentication     | Run `azd auth login`                                               |
+| `Connection string 'OrderDb' is not configured` | Missing database reference    | Verify `WithReference()` in [AppHost.cs](./app.AppHost/AppHost.cs) |
+| `HTTP 503 Service Unavailable`                  | Container Apps scaling issues | Check Container Apps logs in Azure Portal                          |
 
 ## [↑ Back to Top](#table-of-contents)
 
