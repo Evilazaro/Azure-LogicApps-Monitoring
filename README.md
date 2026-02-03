@@ -60,38 +60,70 @@ This solution addresses the challenge of building scalable, observable microserv
 ### Architecture Diagram
 
 ```mermaid
-graph TB
-    subgraph "Azure Container Apps"
-        WebApp[eShop.Web.App<br/>Blazor Server]
-        OrdersAPI[eShop.Orders.API<br/>REST API]
+---
+title: Azure Logic Apps Monitoring Solution Architecture
+---
+flowchart TB
+    %% ===== AZURE CONTAINER APPS =====
+    subgraph containerApps["Azure Container Apps"]
+        direction TB
+        webApp["eShop.Web.App<br/>Blazor Server"]
+        ordersAPI["eShop.Orders.API<br/>REST API"]
     end
 
-    subgraph "Azure Logic Apps Standard"
-        LogicApp[OrdersManagement<br/>Workflow]
+    %% ===== AZURE LOGIC APPS =====
+    subgraph logicApps["Azure Logic Apps Standard"]
+        direction TB
+        logicApp[["OrdersManagement<br/>Workflow"]]
     end
 
-    subgraph "Azure Data & Messaging"
-        SQL[(Azure SQL<br/>Order Database)]
-        ServiceBus[Azure Service Bus<br/>orders-placed queue]
-        Blob[Azure Blob Storage]
+    %% ===== DATA & MESSAGING LAYER =====
+    subgraph dataLayer["Azure Data & Messaging"]
+        direction TB
+        sqlDb[("Azure SQL<br/>Order Database")]
+        serviceBus["Azure Service Bus<br/>orders-placed queue"]
+        blobStorage[("Azure Blob Storage")]
     end
 
-    subgraph "Monitoring"
-        AppInsights[Application Insights<br/>Telemetry]
-        LogAnalytics[Log Analytics<br/>Workspace]
+    %% ===== MONITORING & OBSERVABILITY =====
+    subgraph monitoring["Monitoring & Observability"]
+        direction TB
+        appInsights["Application Insights<br/>Telemetry"]
+        logAnalytics[("Log Analytics<br/>Workspace")]
     end
 
-    WebApp -->|HTTP/Service Discovery| OrdersAPI
-    OrdersAPI -->|EF Core + Managed Identity| SQL
-    OrdersAPI -->|Publish Messages| ServiceBus
-    LogicApp -->|Consume Messages| ServiceBus
-    LogicApp -->|Store Files| Blob
+    %% ===== PRIMARY FLOW CONNECTIONS =====
+    webApp ==>|HTTP Request via Service Discovery| ordersAPI
+    ordersAPI ==>|EF Core Query with Managed Identity| sqlDb
+    ordersAPI ==>|Publish Order Event| serviceBus
+    logicApp ==>|Consume Order Event| serviceBus
+    logicApp ==>|Store Order Files| blobStorage
 
-    WebApp -.->|OpenTelemetry| AppInsights
-    OrdersAPI -.->|OpenTelemetry| AppInsights
-    LogicApp -.->|Diagnostics| LogAnalytics
+    %% ===== TELEMETRY CONNECTIONS =====
+    webApp -.->|Export OpenTelemetry Traces| appInsights
+    ordersAPI -.->|Export OpenTelemetry Traces| appInsights
+    logicApp -.->|Send Diagnostics Logs| logAnalytics
 
-    AppInsights -->|Logs| LogAnalytics
+    %% ===== LOG AGGREGATION =====
+    appInsights -->|Aggregate Logs| logAnalytics
+
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-width:2px,stroke-dasharray:5 5
+
+    %% ===== APPLY STYLES TO NODES =====
+    class webApp,ordersAPI primary
+    class logicApp external
+    class sqlDb,blobStorage,logAnalytics datastore
+    class serviceBus,appInsights secondary
+
+    %% ===== APPLY STYLES TO SUBGRAPHS =====
+    style containerApps fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style logicApps fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style dataLayer fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style monitoring fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ---
