@@ -43,6 +43,7 @@ This solution addresses the challenge of building scalable, observable microserv
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
+- [Acknowledgments](#acknowledgments)
 - [Additional Resources](#additional-resources)
 
 ---
@@ -129,7 +130,7 @@ flowchart TB
     style monitoring fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
-[↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
 
 ---
 
@@ -154,11 +155,13 @@ flowchart TB
 | **Azure Logic Apps Standard**  | Workflow Standard plan | Order workflow processing   |
 | **Azure Application Insights** |     Pay-as-you-go      | Telemetry collection        |
 
-[↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
 
 ---
 
 ## Installation
+
+> 📋 **Prerequisites**: Before proceeding, ensure you have completed all requirements listed in the [Prerequisites](#prerequisites) section.
 
 ### 1. Clone the Repository
 
@@ -220,6 +223,8 @@ azd env get-values
 curl https://orders-api.YOUR_ENV.REGION.azurecontainerapps.io/health
 ```
 
+> ✅ **Success**: A successful health check should return HTTP 200 with status "Healthy".
+
 [↑ Back to Top](#table-of-contents)
 
 ---
@@ -238,7 +243,7 @@ azd env get-values | grep AZURE_CONTAINER_APPS_WEB_URL
 start https://web-app.<YOUR_ENV>.<REGION>.azurecontainerapps.io
 ```
 
-> 💡 **Tip**: Replace `<YOUR_ENV>` and `<REGION>` with your actual environment name and Azure region.
+> 💡 **Tip**: Replace `<YOUR_ENV>` and `<REGION>` with your actual environment name and Azure region from `azd env get-values` output.
 
 ### Web Application Features
 
@@ -316,7 +321,7 @@ https://orders-api.<YOUR_ENV>.<REGION>.azurecontainerapps.io/swagger
 | **GET**    | `/health`          | Health check with dependencies        |
 | **GET**    | `/alive`           | Liveness probe                        |
 
-[↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
 
 ---
 
@@ -404,14 +409,7 @@ Azure-LogicApps-Monitoring/
         └── ci-dotnet-reusable.yml    # Reusable CI workflow (build, test, CodeQL)
 ```
 
-[↑ Back to Top](#table-of-contents)
-
----
-
-## Configuration
-
-### Environment Variables
-
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
 The application uses .NET Aspire's automatic configuration via `AddServiceDefaults()`. No manual environment variables required for deployed apps (managed by AppHost).
 
 ### Local Development Configuration
@@ -447,7 +445,7 @@ Edit AppHost.cs to modify:
 - Health check configurations
 - Environment-specific settings
 
-[↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
 
 ---
 
@@ -486,7 +484,7 @@ cd src/eShop.Web.App
 dotnet run
 ```
 
-> ⚠️ **Warning**: Running individual services requires manual service discovery configuration.
+> ⚠️ **Warning**: Running individual services requires manual service discovery configuration. Use the Aspire Dashboard for automatic service resolution.
 
 ### Local Prerequisites
 
@@ -527,7 +525,7 @@ Hot reload is enabled by default for local development:
 dotnet watch --project src/eShop.Orders.API
 ```
 
-[↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
 
 ---
 
@@ -575,7 +573,7 @@ The solution includes integration tests that:
 - Mock Azure Service Bus connections
 - Verify controller endpoints, service logic, and health checks
 
-[↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
 
 ---
 
@@ -584,6 +582,8 @@ The solution includes integration tests that:
 ### Automated Deployment (CI/CD)
 
 The repository includes GitHub Actions workflows:
+
+> 🔄 **CI/CD Pipeline**: Automated workflows handle building, testing, and deploying your application.
 
 1. **CI Pipeline** (ci-dotnet-reusable.yml)
    - Triggers on PR and push
@@ -596,6 +596,8 @@ The repository includes GitHub Actions workflows:
    - Deploys containers to Azure Container Apps
    - Configures SQL Managed Identity
    - Deploys Logic Apps workflows
+
+> 🔒 **Security**: The following GitHub secrets must be configured in your repository settings.
 
 **Required GitHub Secrets:**
 
@@ -646,7 +648,7 @@ azd env select prod
 azd env get-values
 ```
 
-[↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
 
 ---
 
@@ -689,7 +691,9 @@ azd env get-values
 | **Azure Container Registry**  | Private container images    |       Basic       |
 | **Managed Identity**          | Service authentication      |    N/A (free)     |
 
-## [↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
+
+---
 
 ## Troubleshooting
 
@@ -758,7 +762,9 @@ az monitor app-insights query \
 | `Connection string 'OrderDb' is not configured` | Missing database reference    | Verify `WithReference()` in [AppHost.cs](./app.AppHost/AppHost.cs) |
 | `HTTP 503 Service Unavailable`                  | Container Apps scaling issues | Check Container Apps logs in Azure Portal                          |
 
-## [↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
+
+---
 
 ## Contributing
 
@@ -773,7 +779,7 @@ Contributions are welcome! Please follow these guidelines:
 
 For detailed contribution guidelines, see CONTRIBUTING.md (if available).
 
-[↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
 
 ---
 
@@ -783,7 +789,7 @@ This project is licensed under the **MIT License** – see LICENSE file for deta
 
 **Copyright © 2025 Evilázaro Alves**
 
-[↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
 
 ---
 
@@ -794,7 +800,7 @@ This project is licensed under the **MIT License** – see LICENSE file for deta
 - **Microsoft Identity Team** – For Managed Identity and zero-secrets architecture
 - **OpenTelemetry Contributors** – For standardized observability
 
-[↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
 
 ---
 
@@ -808,7 +814,7 @@ This project is licensed under the **MIT License** – see LICENSE file for deta
 | **Azure Container Apps**              | [learn.microsoft.com/azure/container-apps](https://learn.microsoft.com/azure/container-apps/)                               |
 | **OpenTelemetry .NET**                | [opentelemetry.io/docs/instrumentation/net](https://opentelemetry.io/docs/instrumentation/net/)                             |
 
-[↑ Back to Top](#table-of-contents)
+[↑ Back to Top](#azure-logic-apps-monitoring-solution)
 
 ---
 

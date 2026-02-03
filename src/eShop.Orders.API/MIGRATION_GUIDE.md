@@ -56,7 +56,7 @@ The eShop.Orders.API project has been refactored to use **Entity Framework Core*
 
 ### 1. 📦 NuGet Packages Added
 
-> ℹ️ **Note**: These packages provide EF Core functionality for SQL Server and development tools.
+> ℹ️ **Note**: These packages provide EF Core functionality and design-time tooling for SQL Server.
 
 | Package                                   | Version | Purpose                       |
 | :---------------------------------------- | :-----: | :---------------------------- |
@@ -107,6 +107,8 @@ The eShop.Orders.API project has been refactored to use **Entity Framework Core*
 
 ## 🗄️ Database Configuration
 
+> 🔒 **Security**: This configuration uses Azure AD authentication for passwordless, secure database access.
+
 ### 🔗 Connection String Format
 
 The connection string uses **Azure AD authentication** (passwordless):
@@ -143,6 +145,8 @@ Server=tcp:{SQL_SERVER_FQDN},1433;Initial Catalog={DATABASE_NAME};Encrypt=True;T
 ---
 
 ## 🔄 Database Migration
+
+> 📋 **Prerequisites**: Ensure the connection string is properly configured in `appsettings.json` before running migrations.
 
 ### 1. 🛠️ Install EF Core Tools
 
@@ -234,7 +238,7 @@ This creates a `migration.sql` file that can be reviewed and executed by a DBA.
 
 ## 🔐 Authentication Requirements
 
-> 🔒 **Security**: The application uses passwordless authentication via Azure Active Directory for enhanced security.
+> 🔒 **Security**: The application uses passwordless authentication via Azure Active Directory for enhanced security and compliance.
 
 The application uses **Azure AD authentication** to connect to SQL Azure Database. Ensure:
 
@@ -255,7 +259,7 @@ The application uses **Azure AD authentication** to connect to SQL Azure Databas
 
 ## 💻 Local Development
 
-> 💡 **Tip**: Azure CLI authentication is recommended for development over SQL authentication.
+> 💡 **Tip**: Azure CLI authentication is recommended for development. SQL authentication should only be used for testing purposes.
 
 ### Authentication Setup
 
@@ -269,7 +273,7 @@ The application uses **Azure AD authentication** to connect to SQL Azure Databas
 
 ### Alternative: SQL Authentication (Not Recommended)
 
-> ⚠️ **Warning**: SQL authentication is not recommended for production environments.
+> ⚠️ **Warning**: SQL authentication is not recommended for production environments. Use Azure AD authentication for enhanced security.
 
 Update [appsettings.Development.json](./appsettings.Development.json) to use SQL authentication:
 
@@ -322,9 +326,9 @@ The API endpoints remain unchanged:
 
 ## ⏪ Rollback Instructions
 
-> ⚠️ **Warning**: Only use rollback if absolutely necessary. This reverts to the less scalable file-based storage.
+> ⚠️ **Warning**: Only use rollback if absolutely necessary. This reverts to the less scalable file-based storage and should be considered a temporary measure.
 
-> 🔧 **Troubleshooting**: Follow these steps in order to safely revert to the previous storage implementation.
+> 🔧 **Troubleshooting**: Follow these steps in the exact order shown to safely revert to the previous storage implementation.
 
 ### Rollback Steps
 
@@ -354,7 +358,7 @@ The API endpoints remain unchanged:
    Remove-Item -Recurse -Force Data
    ```
 
-> ℹ️ **Note**: After rollback, rebuild the project with `dotnet build`.
+> ℹ️ **Note**: After rollback, rebuild the project with `dotnet build` and verify all endpoints work correctly.
 
 [↑ Back to Top](#entity-framework-core-migration-guide)
 
