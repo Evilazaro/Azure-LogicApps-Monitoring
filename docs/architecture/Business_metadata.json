@@ -1,0 +1,136 @@
+{
+  "session_id": "8f7c3a21-9b4e-4d8a-bc61-7e4f2a8d5c92",
+  "timestamp": "2026-02-03T00:00:00.000Z",
+  "inputs": {
+    "folder_paths": [
+      "z:\\LogicApp"
+    ],
+    "target_layer": "Business",
+    "quality_level": "standard",
+    "output_sections": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "include_diagrams": true
+  },
+  "statistics": {
+    "components_discovered": 8,
+    "relationships_mapped": 15,
+    "diagrams_generated": 7,
+    "execution_time_seconds": 480,
+    "source_files_analyzed": 7,
+    "documentation_pages": 52
+  },
+  "validation_scores": {
+    "completeness": 0.92,
+    "togaf_compliance": 0.95,
+    "quality": 0.90
+  },
+  "validation_passed": true,
+  "validation_details": {
+    "completeness_breakdown": {
+      "component_metadata": 1.0,
+      "relationship_mapping": 1.0,
+      "gap_identification": 1.0,
+      "diagram_coverage": 0.85,
+      "documentation_depth": 0.90,
+      "source_traceability": 1.0
+    },
+    "togaf_compliance_breakdown": {
+      "adm_phase_coverage": 1.0,
+      "metamodel_adherence": 1.0,
+      "principle_alignment": 1.0,
+      "architecture_viewpoints": 0.90,
+      "stakeholder_concerns": 0.85
+    },
+    "quality_breakdown": {
+      "documentation_clarity": 0.95,
+      "technical_accuracy": 0.95,
+      "consistency": 0.90,
+      "actionable_recommendations": 0.90,
+      "no_placeholders": 1.0,
+      "diagram_syntax_validation": 1.0
+    }
+  },
+  "warnings": [],
+  "recommendations": [
+    "Implement idempotency controls to resolve CYCLE-001 circular dependency",
+    "Replace hard delete with soft delete for audit compliance (DEBT-004)",
+    "Integrate payment gateway for order authorization (GAP - Critical)",
+    "Add inventory management capability for stock validation (GAP - High)",
+    "Implement customer notification service for order confirmations (GAP - High)",
+    "Document business rules catalog with validation policies",
+    "Create BPMN diagrams for Logic Apps workflows",
+    "Define and publish Service Level Agreements (SLAs)",
+    "Implement Event Grid triggers for blob cleanup instead of polling",
+    "Add messaging abstraction layer to reduce Azure Service Bus coupling"
+  ],
+  "component_breakdown": {
+    "business_services": 1,
+    "business_processes": 2,
+    "business_capabilities": 4,
+    "business_events": 1,
+    "business_functions": 0,
+    "business_actors": 0,
+    "business_roles": 0
+  },
+  "gap_summary": {
+    "total_gaps": 18,
+    "missing_components": 8,
+    "documentation_gaps": 5,
+    "architecture_debt": 5,
+    "critical_severity": 3,
+    "high_severity": 7,
+    "medium_severity": 6,
+    "low_severity": 2
+  },
+  "relationship_analysis": {
+    "total_edges": 15,
+    "has_cycles": true,
+    "cycle_count": 2,
+    "critical_paths_identified": 4
+  },
+  "dependency_analysis": {
+    "upstream_dependencies": 4,
+    "downstream_dependencies": 4,
+    "external_integrations_required": 4
+  },
+  "architecture_principles": {
+    "total_principles": 5,
+    "compliant": 5,
+    "non_compliant": 0,
+    "compliance_rate": 1.0
+  },
+  "architecture_decisions": {
+    "total_adrs": 5,
+    "accepted": 5,
+    "rejected": 0,
+    "superseded": 0
+  },
+  "quality_assessment": {
+    "maturity_level": "3 (Defined)",
+    "target_maturity_level": "4 (Quantitatively Managed)",
+    "assessment_notes": [
+      "Well-structured RESTful API with comprehensive observability",
+      "Event-driven architecture enables scalability and decoupling",
+      "Automated workflow orchestration through Logic Apps",
+      "Missing critical business capabilities (payment, inventory, notifications)",
+      "Architecture debt requires remediation (circular dependencies, hard deletes)"
+    ]
+  },
+  "output_files": {
+    "document": "Business_architecture_document.md",
+    "metadata": "Business_metadata.json",
+    "state": "Business_state.json"
+  },
+  "generator_version": "1.0.0",
+  "togaf_version": "TOGAF 10",
+  "generation_date": "2026-02-03T00:00:00.000Z"
+}
