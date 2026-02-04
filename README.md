@@ -37,58 +37,57 @@ Each layer communicates through well-defined interfaces: HTTP/REST for synchrono
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}} }%%
-flowchart LR
-    %% Color Classes
-    classDef blue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
-    classDef green fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
-    classDef orange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
-    classDef purple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#000
-    classDef teal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#000
+flowchart TB
+    classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
+    classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
+    classDef mdOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
+    classDef mdPurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#000
+    classDef mdYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#000
 
-    subgraph presentation["Presentation"]
-        webApp["🌐 eShop Web App<br/>(Blazor Server)"]:::blue
-    end
-
-    subgraph services["Services"]
+    subgraph system["Azure Logic Apps Monitoring Solution"]
         direction TB
-        ordersApi["⚙️ Orders API<br/>(ASP.NET Core)"]:::green
-        logicApp["🔄 Logic App Standard<br/>(OrdersManagement)"]:::purple
+
+        subgraph presentation["Presentation Layer"]
+            webApp["🌐 eShop Web App<br/>(Blazor Server)"]:::mdBlue
+        end
+
+        subgraph services["Services Layer"]
+            ordersApi["⚙️ Orders API<br/>(ASP.NET Core)"]:::mdGreen
+            logicApp["🔄 Logic App Standard<br/>(OrdersManagement)"]:::mdPurple
+        end
+
+        subgraph messaging["Messaging Layer"]
+            serviceBus["📨 Azure Service Bus<br/>(Orders Queue)"]:::mdOrange
+        end
+
+        subgraph data["Data Layer"]
+            sqlDb[("🗄️ Azure SQL<br/>Database")]:::mdYellow
+            blobStorage[("📦 Blob Storage<br/>(Order Files)")]:::mdYellow
+        end
+
+        subgraph observability["Observability"]
+            appInsights["📊 Application Insights"]:::mdOrange
+            logAnalytics["📋 Log Analytics"]:::mdOrange
+        end
+
+        webApp -->|"HTTP/REST"| ordersApi
+        ordersApi -->|"Publish Orders"| serviceBus
+        serviceBus -->|"Trigger"| logicApp
+        logicApp -->|"Process Order"| ordersApi
+        logicApp -->|"Store Results"| blobStorage
+        ordersApi -->|"CRUD"| sqlDb
+
+        webApp -.->|"Telemetry"| appInsights
+        ordersApi -.->|"Telemetry"| appInsights
+        logicApp -.->|"Logs"| logAnalytics
     end
 
-    subgraph messaging["Messaging"]
-        serviceBus["📨 Azure Service Bus<br/>(Orders Queue)"]:::orange
-    end
-
-    subgraph storage["Data"]
-        direction TB
-        sqlDb[("🗄️ Azure SQL")]:::teal
-        blobStorage[("📦 Blob Storage")]:::teal
-    end
-
-    subgraph observability["Observability"]
-        direction TB
-        appInsights["📊 App Insights"]:::purple
-        logAnalytics["📋 Log Analytics"]:::purple
-    end
-
-    %% Main Flow
-    webApp -->|"REST"| ordersApi
-    ordersApi -->|"Publish"| serviceBus
-    serviceBus -->|"Trigger"| logicApp
-    logicApp -->|"Process"| ordersApi
-    ordersApi -->|"CRUD"| sqlDb
-    logicApp -->|"Store"| blobStorage
-
-    %% Telemetry
-    webApp -.-> appInsights
-    ordersApi -.-> appInsights
-    logicApp -.-> logAnalytics
-
+    style system fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px
     style presentation fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
     style services fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
     style messaging fill:#FFF3E0,stroke:#E64A19,stroke-width:2px
-    style storage fill:#B2DFDB,stroke:#00796B,stroke-width:2px
-    style observability fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px
+    style data fill:#FFFDE7,stroke:#F57F17,stroke-width:2px
+    style observability fill:#FCE4EC,stroke:#C2185B,stroke-width:2px
 ```
 
 ## ✨ Features
