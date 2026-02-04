@@ -45,14 +45,14 @@ flowchart TD
     classDef mdYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#000
 
     subgraph system["Azure Logic Apps Monitoring Solution"]
-
+        direction BT
         subgraph presentation["Presentation Layer"]
-            direction TB
+            direction BT
             webApp["🌐 eShop Web App<br/>(Blazor Server)"]:::mdBlue
         end
 
         subgraph services["Services Layer"]
-            direction TB
+            direction BT
             ordersApi["⚙️ Orders API<br/>(ASP.NET Core)"]:::mdGreen
             logicApp["🔄 Logic App Standard<br/>(OrdersManagement)"]:::mdPurple
         end
