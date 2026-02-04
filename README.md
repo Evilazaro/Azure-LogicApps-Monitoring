@@ -52,7 +52,7 @@ flowchart TD
         end
 
         subgraph services["Services Layer"]
-            direction LR
+            direction TB
             ordersApi["⚙️ Orders API<br/>(ASP.NET Core)"]:::mdGreen
             logicApp["🔄 Logic App Standard<br/>(OrdersManagement)"]:::mdPurple
         end
