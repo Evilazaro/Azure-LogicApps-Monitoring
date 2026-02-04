@@ -36,81 +36,79 @@ The solution implements a multi-tier, event-driven architecture that separates c
 Each layer communicates through well-defined interfaces: HTTP/REST for synchronous operations, Azure Service Bus for asynchronous event processing, and managed identity for secure service-to-service authentication. The architecture ensures that failures in one component don't cascade to others while maintaining full observability through Application Insights and Log Analytics.
 
 ```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}} }%%
+%%{init: {"flowchart": {"htmlLabels": false, "nodeSpacing": 60, "rankSpacing": 50}} }%%
 flowchart TB
     %% ============================================
-    %% COLOR SCHEME DOCUMENTATION (v2.1)
+    %% MATERIAL DESIGN COLOR SCHEME v2.1
     %% ============================================
-    %% Level 1 (Main Container): Indigo 50 (#E8EAF6)
-    %%   - system: Top-level solution boundary
-    %%   - Stroke: Indigo 500 (#3F51B5), 3px
-    %%
-    %% Level 2 (Functional Siblings - Semantic Colors):
-    %%   - presentation: Blue (#E3F2FD) - UI/Frontend
-    %%   - services: Green (#E8F5E9) - Workload/Backend
-    %%   - messaging: Orange (#FFF3E0) - Async Processing
-    %%   - data: Yellow (#FFFDE7) - Data Storage
-    %%   - observability: Pink (#FCE4EC) - Monitoring
-    %%
-    %% Level 3 (Content Nodes): Material Design semantic colors
-    %%   - mdBlue: Info/Neutral components
-    %%   - mdGreen: Success/Active services
-    %%   - mdOrange: Process/Messaging
-    %%   - mdPurple: Workflow/Orchestration
-    %%   - mdYellow: Data/Storage
+    %% Container: Indigo 50 (#E8EAF6) - Solution boundary
+    %% Functional Layers (semantic colors):
+    %%   - Presentation: Blue - UI/Frontend
+    %%   - Services: Green - Workload/Backend
+    %%   - Messaging: Orange - Async Processing
+    %%   - Data: Teal - Storage
+    %%   - Observability: Purple - Monitoring
     %% ============================================
 
-    classDef mainGroup fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px,color:#000
+    %% Content Node Classes
     classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
     classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
     classDef mdOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
     classDef mdPurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#000
-    classDef mdYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#000
+    classDef mdTeal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#000
 
     subgraph system["Azure Logic Apps Monitoring Solution"]
         direction TB
 
         subgraph presentation["Presentation Layer"]
+            direction LR
             webApp["🌐 eShop Web App<br/>(Blazor Server)"]:::mdBlue
         end
 
         subgraph services["Services Layer"]
+            direction LR
             ordersApi["⚙️ Orders API<br/>(ASP.NET Core)"]:::mdGreen
             logicApp["🔄 Logic App Standard<br/>(OrdersManagement)"]:::mdPurple
         end
 
         subgraph messaging["Messaging Layer"]
+            direction LR
             serviceBus["📨 Azure Service Bus<br/>(Orders Queue)"]:::mdOrange
         end
 
         subgraph data["Data Layer"]
-            sqlDb[("🗄️ Azure SQL<br/>Database")]:::mdYellow
-            blobStorage[("📦 Blob Storage<br/>(Order Files)")]:::mdYellow
+            direction LR
+            sqlDb[("🗄️ Azure SQL<br/>Database")]:::mdTeal
+            blobStorage[("📦 Blob Storage<br/>(Order Files)")]:::mdTeal
         end
 
-        subgraph observability["Observability"]
-            appInsights["📊 Application Insights"]:::mdOrange
-            logAnalytics["📋 Log Analytics"]:::mdOrange
+        subgraph observability["Observability Layer"]
+            direction LR
+            appInsights["📊 Application Insights"]:::mdPurple
+            logAnalytics["📋 Log Analytics"]:::mdPurple
         end
-
-        webApp -->|"HTTP/REST"| ordersApi
-        ordersApi -->|"Publish Orders"| serviceBus
-        serviceBus -->|"Trigger"| logicApp
-        logicApp -->|"Process Order"| ordersApi
-        logicApp -->|"Store Results"| blobStorage
-        ordersApi -->|"CRUD"| sqlDb
-
-        webApp -.->|"Telemetry"| appInsights
-        ordersApi -.->|"Telemetry"| appInsights
-        logicApp -.->|"Logs"| logAnalytics
     end
 
+    %% Primary Data Flow
+    webApp -->|"HTTP/REST"| ordersApi
+    ordersApi -->|"Publish Orders"| serviceBus
+    serviceBus -->|"Trigger"| logicApp
+    logicApp -->|"Process Order"| ordersApi
+    logicApp -->|"Store Results"| blobStorage
+    ordersApi -->|"CRUD"| sqlDb
+
+    %% Telemetry Flow
+    webApp -.->|"Telemetry"| appInsights
+    ordersApi -.->|"Telemetry"| appInsights
+    logicApp -.->|"Logs"| logAnalytics
+
+    %% Subgraph Styling (CRITICAL: use style directives, not class)
     style system fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px
     style presentation fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
     style services fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
     style messaging fill:#FFF3E0,stroke:#E64A19,stroke-width:2px
-    style data fill:#FFFDE7,stroke:#F57F17,stroke-width:2px
-    style observability fill:#FCE4EC,stroke:#C2185B,stroke-width:2px
+    style data fill:#B2DFDB,stroke:#00796B,stroke-width:2px
+    style observability fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px
 ```
 
 ## ✨ Features
