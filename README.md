@@ -2,22 +2,21 @@
 
 ![Build Status](https://img.shields.io/github/actions/workflow/status/Evilazaro/Azure-LogicApps-Monitoring/ci.yml?branch=main)
 ![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)
-![Azure](https://img.shields.io/badge/Azure-Container%20Apps-0078D4?logo=microsoftazure)
+![Azure](https://img.shields.io/badge/Azure-Logic%20Apps-0078D4?logo=microsoftazure)
 ![License](https://img.shields.io/github/license/Evilazaro/Azure-LogicApps-Monitoring)
 
-A comprehensive monitoring and orchestration solution for Azure Logic Apps Standard using .NET Aspire, featuring distributed order management with Application Insights observability, Azure Service Bus messaging, and Azure SQL Database integration.
+Comprehensive monitoring and orchestration solution for Azure Logic Apps Standard workflows using .NET Aspire. Features distributed order management with Application Insights observability, Azure Service Bus messaging, and Azure SQL Database integration for enterprise-grade cloud-native applications.
 
 ## 📑 Table of Contents
 
 - [Quick Start](#-quick-start)
+- [Deployment](#-deployment)
 - [Architecture](#-architecture)
+- [Usage](#-usage)
 - [Features](#-features)
 - [Prerequisites](#-prerequisites)
-- [Installation](#-installation)
 - [Configuration](#-configuration)
-- [Usage](#-usage)
 - [API Documentation](#-api-documentation)
-- [Deployment](#-deployment)
 - [Development](#-development)
 - [Monitoring](#-monitoring)
 - [Troubleshooting](#-troubleshooting)
@@ -27,156 +26,45 @@ A comprehensive monitoring and orchestration solution for Azure Logic Apps Stand
 ## 🚀 Quick Start
 
 ```bash
-# Clone the repository
+# Clone and navigate to repository
 git clone https://github.com/Evilazaro/Azure-LogicApps-Monitoring.git
 cd Azure-LogicApps-Monitoring
-
-# Restore dependencies and build
-dotnet restore
-dotnet build
 
 # Run with .NET Aspire AppHost
 dotnet run --project app.AppHost
 ```
 
-> 💡 **Tip**: The AppHost dashboard will open automatically at `http://localhost:15888` showing all service health and telemetry.
+The Aspire dashboard opens automatically at `http://localhost:15888` with real-time telemetry.
 
-## 🏗️ Architecture
+## 📦 Deployment
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}} }%%
-flowchart TB
-    %% ============================================
-    %% Architecture: .NET Aspire Distributed Application
-    %% Purpose: Visualize multi-tier eShop system with Logic Apps integration
-    %% Assumptions:
-    %%   - Managed Identity used for Azure service authentication
-    %%   - Service Bus provides async messaging between components
-    %%   - Application Insights captures telemetry from all services
-    %% Last Updated: 2026-02-03
-    %% ============================================
-
-    %% ============================================
-    %% STANDARD COLOR SCHEME (Material Design)
-    %% ============================================
-    %% Level 1: Main System Container (MANDATORY - Neutral Indigo 50)
-    classDef mainGroup fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px,color:#000
-
-    %% Level 2: Sub Groups (Architectural Layers)
-    classDef subGroup fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#000
-
-    %% Level 3: Content Nodes (Semantic Colors - WCAG AA Compliant)
-    classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
-    classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
-    classDef mdRed fill:#FFCDD2,stroke:#D32F2F,stroke-width:2px,color:#000
-    classDef mdYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#000
-    classDef mdOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
-    classDef mdPurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#000
-    classDef mdTeal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#000
-    classDef mdGrey fill:#F5F5F5,stroke:#616161,stroke-width:2px,color:#000
-    %% ============================================
-
-    subgraph system[".NET Aspire Distributed Application"]
-        direction TB
-
-        subgraph frontend["Frontend Layer"]
-            webApp["Blazor Server<br/>eShop.Web.App"]:::mdBlue
-        end
-
-        subgraph backend["Backend Services"]
-            ordersApi["Orders REST API<br/>ASP.NET Core"]:::mdGreen
-            logicApp["Logic Apps Standard<br/>OrdersManagement"]:::mdPurple
-        end
-
-        subgraph data["Data & Messaging Layer"]
-            sqlDb[("Azure SQL Database<br/>OrderDb")]:::mdOrange
-            serviceBus[("Azure Service Bus<br/>Event Messaging")]:::mdOrange
-        end
-
-        subgraph observability["Observability"]
-            appInsights["Application Insights<br/>Distributed Tracing"]:::mdPurple
-        end
-
-        webApp -->|"REST API Calls"| ordersApi
-        ordersApi -->|"EF Core + Managed Identity"| sqlDb
-        ordersApi -->|"Publish Events"| serviceBus
-        logicApp -->|"Subscribe Events"| serviceBus
-        ordersApi --> appInsights
-        webApp --> appInsights
-        logicApp --> appInsights
-    end
-
-    class system mainGroup
-    class frontend,backend,data,observability subGroup
-```
-
-**Key Components**:
-
-- **eShop.Web.App**: Blazor Server frontend with FluentUI for order management
-- **eShop.Orders.API**: REST API with OpenAPI/Swagger documentation
-- **OrdersManagement Logic App**: Event-driven workflows for order processing
-- **Azure SQL Database**: Relational data store with managed identity authentication
-- **Azure Service Bus**: Reliable messaging for event-driven architecture
-- **Application Insights**: End-to-end distributed tracing and monitoring
-
-## ✨ Features
-
-- 🚀 **.NET Aspire Orchestration** - Simplified local development and cloud deployment
-- 🔒 **Managed Identity** - Passwordless authentication for Azure resources
-- 📊 **Distributed Tracing** - Application Insights integration with OpenTelemetry
-- 🔄 **Event-Driven Architecture** - Azure Service Bus for reliable messaging
-- 📝 **OpenAPI Documentation** - Swagger UI for API exploration
-- 🏥 **Health Checks** - Built-in health monitoring for all services
-- 🧪 **Comprehensive Testing** - Unit and integration tests for all components
-
-## 📋 Prerequisites
-
-> ⚠️ **Prerequisites**: Ensure all requirements are installed before proceeding with installation.
-
-- **.NET SDK**: 10.0 or later ([Download](https://dotnet.microsoft.com/download/dotnet/10.0))
-- **Azure CLI**: 2.60.0 or later ([Install](https://learn.microsoft.com/cli/azure/install-azure-cli))
-- **Azure Developer CLI**: 1.11.0 or later ([Install](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd))
-- **Docker Desktop**: For local development ([Install](https://www.docker.com/products/docker-desktop))
-- **Azure Subscription**: With permissions to create resources
-- **Visual Studio Code**: Recommended with C# Dev Kit extension
-
-## 📦 Installation
+> ⚠️ **Prerequisites**: Ensure .NET SDK 10.0, Azure CLI 2.60.0+, and Docker are installed before proceeding.
 
 ### Local Development Setup
 
-1. **Clone the repository**:
-
-```bash
-git clone https://github.com/Evilazaro/Azure-LogicApps-Monitoring.git
-cd Azure-LogicApps-Monitoring
-```
-
-2. **Verify .NET SDK version**:
+1. **Verify .NET SDK installation**:
 
 ```bash
 dotnet --version
-# Should output: 10.0.100 or later
 ```
 
-3. **Restore NuGet packages**:
+2. **Restore dependencies and build**:
 
 ```bash
 dotnet restore
-```
-
-4. **Build the solution**:
-
-```bash
 dotnet build
 ```
 
-5. **Run with .NET Aspire AppHost**:
+3. **Start the application**:
 
 ```bash
 dotnet run --project app.AppHost
 ```
 
-The Aspire dashboard opens automatically at `http://localhost:15888` showing service health, logs, and traces.
+Access services at:
+- Aspire Dashboard: `http://localhost:15888`
+- Orders API: `http://localhost:5000/swagger`
+- Web Application: `http://localhost:5001`
 
 ### Azure Deployment
 
@@ -186,25 +74,138 @@ The Aspire dashboard opens automatically at `http://localhost:15888` showing ser
 azd auth login
 ```
 
-2. **Initialize environment**:
+2. **Initialize and provision environment**:
 
 ```bash
-azd env new <environment-name>
-```
-
-3. **Provision infrastructure and deploy**:
-
-```bash
+azd env new production
 azd up
 ```
 
-> 💡 **Tip**: Use `azd up --help` to see additional deployment options like specifying location or subscription.
+> 💡 **Tip**: Use `azd deploy` for application-only updates after initial provisioning.
+
+## 🏗️ Architecture
+
+```mermaid
+%%{init: {"flowchart": {"htmlLabels": false}} }%%
+flowchart TB
+    %% ============================================
+    %% Azure Logic Apps Monitoring Solution Architecture
+    %% Purpose: Distributed order management with event-driven workflows
+    %% Assumptions: Managed Identity authentication, Azure-hosted services
+    %% Last Updated: 2026-02-03
+    %% ============================================
+    
+    %% ============================================
+    %% STANDARD COLOR SCHEME - MANDATORY
+    %% ============================================
+    classDef mainGroup fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px,color:#000
+    classDef subGroup fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#000
+    classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
+    classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
+    classDef mdOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
+    classDef mdPurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#000
+    %% ============================================
+
+    subgraph system[".NET Aspire Distributed Application"]
+        direction TB
+
+        subgraph presentation["Presentation Layer"]
+            webapp["Blazor Server UI<br/>eShop.Web.App"]:::mdBlue
+        end
+
+        subgraph services["Application Services"]
+            api["Orders REST API<br/>ASP.NET Core 10.0"]:::mdGreen
+            logic["Logic Apps Standard<br/>OrdersManagement"]:::mdPurple
+        end
+
+        subgraph infrastructure["Infrastructure Layer"]
+            sql[("Azure SQL Database<br/>Order Data")]:::mdOrange
+            bus[("Service Bus<br/>Event Messaging")]:::mdOrange
+            insights["Application Insights<br/>Telemetry & Tracing"]:::mdPurple
+        end
+
+        webapp -->|"REST Calls"| api
+        api -->|"EF Core + Managed Identity"| sql
+        api -->|"Publish Events"| bus
+        logic -->|"Subscribe & Process"| bus
+        logic -->|"Query Data"| sql
+        
+        api -.->|"Telemetry"| insights
+        webapp -.->|"Telemetry"| insights
+        logic -.->|"Telemetry"| insights
+    end
+
+    class system mainGroup
+    class presentation,services,infrastructure subGroup
+```
+
+**System Components**:
+
+- **eShop.Web.App**: Blazor Server frontend with FluentUI components for order management
+- **eShop.Orders.API**: RESTful API with OpenAPI documentation and Entity Framework Core
+- **OrdersManagement Logic App**: Event-driven workflows for order validation and processing
+- **Azure SQL Database**: Relational data store with managed identity authentication
+- **Azure Service Bus**: Asynchronous messaging backbone for event-driven architecture
+- **Application Insights**: Distributed tracing with OpenTelemetry integration
+
+## 💻 Usage
+
+### Creating an Order via API
+
+```bash
+curl -X POST http://localhost:5000/api/orders \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerId": "customer-789",
+    "items": [
+      {"productId": "prod-123", "quantity": 3, "price": 49.99}
+    ]
+  }'
+```
+
+**Expected Response**:
+
+```json
+{
+  "orderId": "order-abc123",
+  "status": "Pending",
+  "totalAmount": 149.97,
+  "createdAt": "2026-02-03T14:30:00Z"
+}
+```
+
+### Monitoring Orders in Web UI
+
+1. Navigate to `http://localhost:5001`
+2. View real-time order status dashboard
+3. Track order lifecycle events and workflow execution
+
+## ✨ Features
+
+- 🚀 **.NET Aspire Orchestration** - Unified local development and cloud deployment experience
+- 🔒 **Managed Identity Authentication** - Passwordless Azure resource access
+- 📊 **Distributed Tracing** - End-to-end observability with Application Insights and OpenTelemetry
+- 🔄 **Event-Driven Architecture** - Reliable async messaging with Azure Service Bus
+- 📝 **OpenAPI Documentation** - Interactive API exploration via Swagger UI
+- 🏥 **Health Checks** - Built-in health monitoring endpoints for all services
+- 🧪 **Comprehensive Testing** - Unit and integration test coverage across components
+
+## 📋 Prerequisites
+
+> ⚠️ **Important**: Verify all prerequisites are installed before beginning deployment.
+
+- **.NET SDK**: Version 10.0 or later ([Download](https://dotnet.microsoft.com/download/dotnet/10.0))
+- **Azure CLI**: Version 2.60.0 or later ([Install Guide](https://learn.microsoft.com/cli/azure/install-azure-cli))
+- **Azure Developer CLI (azd)**: Version 1.11.0 or later ([Install Guide](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd))
+- **Docker Desktop**: Required for local containerized services ([Download](https://www.docker.com/products/docker-desktop))
+- **Azure Subscription**: With Contributor permissions for resource provisioning
+- **Visual Studio Code**: Recommended with C# Dev Kit extension ([Download](https://code.visualstudio.com/))
 
 ## ⚙️ Configuration
 
-### Local Settings
+### Application Settings
 
-Configure local development in [`local.settings.json`](workflows/OrdersManagement/OrdersManagementLogicApp/local.settings.json):
+Configure local development in `local.settings.json` within the Logic Apps project:
 
 ```json
 {
@@ -219,171 +220,109 @@ Configure local development in [`local.settings.json`](workflows/OrdersManagemen
 }
 ```
 
-### Azure Configuration
+### Infrastructure Configuration
 
-Infrastructure is defined in [`infra/main.bicep`](infra/main.bicep). Key parameters:
+Infrastructure is defined in `infra/main.bicep` using Azure Bicep. Key parameters:
 
-- `solutionName`: Base name prefix for resources (default: `orders`)
+- `solutionName`: Resource naming prefix (default: `orders`)
 - `envName`: Environment identifier (`dev`, `test`, `staging`, `prod`)
-- `location`: Azure region for deployment
-- `deployHealthModel`: Enable Azure Monitor Health Model (default: `true`)
+- `location`: Azure deployment region (default: `eastus`)
+- `deployHealthModel`: Enable Azure Monitor Health Model integration
 
 ### Connection Strings
 
-Connection strings are automatically configured via .NET Aspire service references. Example from [`AppHost.cs`](app.AppHost/AppHost.cs):
+Connection strings are automatically managed by .NET Aspire service discovery. Example configuration in `app.AppHost/AppHost.cs`:
 
 ```csharp
-var ordersDb = builder.AddSqlServer("sql")
+var sql = builder.AddSqlServer("sql")
     .AddDatabase("OrderDb");
 
+var serviceBus = builder.AddAzureServiceBus("messaging");
+
 var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
-    .WithReference(ordersDb); // Automatic connection string injection
-```
-
-## 💻 Usage
-
-### Running the Application Locally
-
-Start the application with .NET Aspire:
-
-```bash
-dotnet run --project app.AppHost
-```
-
-Services will be available at:
-
-- **Aspire Dashboard**: `http://localhost:15888`
-- **Orders API**: `http://localhost:5000/swagger`
-- **Web App**: `http://localhost:5001`
-
-### Creating an Order
-
-```bash
-curl -X POST http://localhost:5000/api/orders \
-  -H "Content-Type: application/json" \
-  -d '{
-    "customerId": "customer-123",
-    "items": [
-      {"productId": "prod-001", "quantity": 2, "price": 29.99}
-    ]
-  }'
-```
-
-**Expected Response**:
-
-```json
-{
-  "orderId": "order-456",
-  "status": "Pending",
-  "totalAmount": 59.98,
-  "createdAt": "2026-02-03T10:30:00Z"
-}
+    .WithReference(sql)
+    .WithReference(serviceBus);
 ```
 
 ## 📖 API Documentation
 
-The Orders API provides RESTful endpoints for order management with OpenAPI documentation.
+The Orders API provides RESTful endpoints for comprehensive order management.
 
 ### Base URL
 
-- **Local**: `http://localhost:5000`
-- **Azure**: `https://<container-app-url>`
+- **Local Development**: `http://localhost:5000`
+- **Azure (Container Apps)**: `https://<container-app-url>.azurecontainerapps.io`
 
-### Endpoints
+### Core Endpoints
 
-| Method | Endpoint           | Description              | Auth Required |
-| ------ | ------------------ | ------------------------ | ------------- |
-| GET    | `/api/orders`      | List all orders          | No            |
-| GET    | `/api/orders/{id}` | Get order by ID          | No            |
-| POST   | `/api/orders`      | Create new order         | No            |
-| PUT    | `/api/orders/{id}` | Update existing order    | No            |
-| DELETE | `/api/orders/{id}` | Delete order             | No            |
-| GET    | `/health`          | Health check endpoint    | No            |
-| GET    | `/swagger`         | OpenAPI documentation UI | No            |
+| Method | Endpoint           | Description            | Authentication |
+| ------ | ------------------ | ---------------------- | -------------- |
+| GET    | `/api/orders`      | List all orders        | None           |
+| GET    | `/api/orders/{id}` | Retrieve order by ID   | None           |
+| POST   | `/api/orders`      | Create new order       | None           |
+| PUT    | `/api/orders/{id}` | Update existing order  | None           |
+| DELETE | `/api/orders/{id}` | Delete order           | None           |
+| GET    | `/health`          | Service health status  | None           |
+| GET    | `/swagger`         | OpenAPI documentation  | None           |
 
-### Example: Get Order by ID
+### Example: Retrieve Order Details
+
+**Request**:
 
 ```bash
-curl http://localhost:5000/api/orders/order-456
+curl http://localhost:5000/api/orders/order-abc123
 ```
 
 **Response**:
 
 ```json
 {
-  "orderId": "order-456",
-  "customerId": "customer-123",
+  "orderId": "order-abc123",
+  "customerId": "customer-789",
   "status": "Completed",
   "items": [
     {
-      "productId": "prod-001",
-      "quantity": 2,
-      "price": 29.99,
-      "lineTotal": 59.98
+      "productId": "prod-123",
+      "quantity": 3,
+      "price": 49.99,
+      "lineTotal": 149.97
     }
   ],
-  "totalAmount": 59.98,
-  "createdAt": "2026-02-03T10:30:00Z",
-  "updatedAt": "2026-02-03T10:35:00Z"
+  "totalAmount": 149.97,
+  "createdAt": "2026-02-03T14:30:00Z",
+  "updatedAt": "2026-02-03T14:45:00Z"
 }
 ```
 
-> 📝 **Note**: Full API documentation with request/response schemas is available at `/swagger` when running the application.
-
-## 🚀 Deployment
-
-### Deploy to Azure with azd
-
-```bash
-# Authenticate with Azure
-azd auth login
-
-# Create new environment
-azd env new production
-
-# Set environment variables (optional)
-azd env set AZURE_LOCATION eastus
-
-# Deploy infrastructure and applications
-azd up
-```
-
-### CI/CD Pipeline
-
-The repository includes GitHub Actions workflows for automated deployment:
-
-- **Workflow Path**: `.github/workflows/deploy.yml` (if present)
-- **Trigger**: Push to `main` branch or manual dispatch
-- **Steps**: Build → Test → Deploy to Azure Container Apps
-
-> ⚠️ **Security**: Ensure GitHub secrets are configured for `AZURE_CREDENTIALS` and `AZURE_SUBSCRIPTION_ID`.
+> 📝 **Note**: Complete API schemas and interactive testing are available at `/swagger` when the application is running.
 
 ## 🛠️ Development
 
 ### Project Structure
 
 ```plaintext
-├── app.AppHost/              # .NET Aspire orchestration host
-├── app.ServiceDefaults/      # Shared service configuration
+├── app.AppHost/              # .NET Aspire orchestration and service discovery
+├── app.ServiceDefaults/      # Shared service configuration and telemetry
 ├── src/
-│   ├── eShop.Orders.API/     # REST API service
+│   ├── eShop.Orders.API/     # ASP.NET Core REST API
 │   └── eShop.Web.App/        # Blazor Server frontend
 ├── workflows/
-│   └── OrdersManagement/     # Logic Apps Standard workflows
-├── infra/                    # Bicep infrastructure templates
-│   ├── main.bicep            # Main infrastructure definition
-│   └── workload/             # Service-specific resources
-└── hooks/                    # Deployment lifecycle scripts
+│   └── OrdersManagement/     # Azure Logic Apps Standard workflows
+├── infra/                    # Bicep infrastructure-as-code templates
+│   ├── main.bicep            # Main orchestration template
+│   ├── shared/               # Shared resources (networking, identity)
+│   └── workload/             # Application-specific resources
+└── hooks/                    # Deployment lifecycle automation scripts
 ```
 
 ### Running Tests
 
 ```bash
-# Run all tests
+# Execute all test projects
 dotnet test
 
-# Run tests with coverage
-dotnet test /p:CollectCoverage=true
+# Run tests with code coverage
+dotnet test /p:CollectCoverage=true /p:CoverageReportsDirectory=./coverage
 
 # Run specific test project
 dotnet test src/tests/eShop.Orders.API.Tests
@@ -391,106 +330,143 @@ dotnet test src/tests/eShop.Orders.API.Tests
 
 ### Database Migrations
 
-The Orders API uses Entity Framework Core for data access:
+Entity Framework Core manages database schema:
 
 ```bash
 # Create new migration
-dotnet ef migrations add <MigrationName> --project src/eShop.Orders.API
+dotnet ef migrations add AddOrderStatusColumn --project src/eShop.Orders.API
 
-# Apply migrations
+# Apply pending migrations
 dotnet ef database update --project src/eShop.Orders.API
+
+# Rollback to specific migration
+dotnet ef database update PreviousMigration --project src/eShop.Orders.API
 ```
 
-> 💡 **Tip**: Migrations are automatically applied during application startup in development environments.
+> 💡 **Tip**: Migrations are automatically applied on application startup in development mode.
 
 ## 📊 Monitoring
 
-### Application Insights
+### Application Insights Integration
 
-All services automatically send telemetry to Application Insights:
+All services send telemetry to Application Insights automatically:
 
-- **Distributed Traces**: View request flows across services
-- **Metrics**: Monitor performance counters and custom metrics
-- **Logs**: Centralized logging from all components
-- **Live Metrics**: Real-time application health dashboard
+- **Distributed Traces**: Visualize request flows across microservices
+- **Performance Metrics**: Monitor response times, throughput, and resource utilization
+- **Centralized Logs**: Unified logging from all application components
+- **Live Metrics Stream**: Real-time application health and performance dashboard
 
-Access Application Insights in Azure Portal:
+Access Application Insights:
 
 ```bash
 az monitor app-insights component show \
-  --resource-group <resource-group-name> \
-  --app <app-insights-name>
+  --resource-group <resource-group> \
+  --app <app-insights-name> \
+  --query connectionString
 ```
 
-### Health Checks
+### Health Check Endpoints
 
-Health check endpoints are available at:
+Monitor service health at dedicated endpoints:
 
 - **Orders API**: `http://localhost:5000/health`
-- **Web App**: `http://localhost:5001/health`
+- **Web Application**: `http://localhost:5001/health`
 
-**Response Example**:
+**Sample Health Response**:
 
 ```json
 {
   "status": "Healthy",
-  "checks": {
-    "OrderDb": "Healthy",
-    "ServiceBus": "Healthy"
+  "totalDuration": "00:00:00.1234567",
+  "entries": {
+    "OrderDb": {
+      "status": "Healthy",
+      "description": "SQL Server connection verified"
+    },
+    "ServiceBus": {
+      "status": "Healthy",
+      "description": "Message queue accessible"
+    }
   }
 }
 ```
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+### Database Connection Failures
 
-**Issue**: Application fails to start with database connection error
+**Symptom**: Application startup fails with SQL connection timeout
 
-**Solution**: Ensure SQL Server is running and connection string is correct:
+**Solution**: Verify SQL Server availability and connection string configuration
 
 ```bash
-# Verify SQL Server connection
-dotnet ef database update --project src/eShop.Orders.API
+# Test database connectivity
+dotnet ef database update --project src/eShop.Orders.API --verbose
 ```
 
-**Issue**: Azure deployment fails with permission errors
+### Azure Deployment Permission Errors
 
-**Solution**: Verify your Azure account has Contributor role:
+**Symptom**: `azd up` fails with authorization errors
+
+**Solution**: Confirm Azure account has Contributor role on subscription
 
 ```bash
+# Verify current role assignments
 az role assignment list --assignee $(az account show --query user.name -o tsv)
+
+# Request Contributor access if missing
+az role assignment create \
+  --assignee <your-email> \
+  --role Contributor \
+  --scope /subscriptions/<subscription-id>
 ```
 
-**Issue**: Service Bus connection fails locally
+### Service Bus Connection Issues
 
-**Solution**: Ensure Service Bus emulator is configured or use Azure Service Bus with connection string in `local.settings.json`.
+**Symptom**: Logic Apps workflows not receiving events
 
-> 💡 **Tip**: Check the Aspire dashboard logs at `http://localhost:15888` for detailed error information.
+**Solution**: Validate Service Bus namespace and connection string configuration
+
+```bash
+# Test Service Bus connectivity
+az servicebus namespace authorization-rule keys list \
+  --resource-group <resource-group> \
+  --namespace-name <namespace> \
+  --name RootManageSharedAccessKey
+```
+
+> 💡 **Tip**: Check the Aspire dashboard at `http://localhost:15888` for detailed logs and telemetry when debugging issues.
 
 ## 🤝 Contributing
 
 Contributions are welcome! Please follow these guidelines:
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit changes: `git commit -m 'Add your feature'`
-4. Push to branch: `git push origin feature/your-feature`
-5. Open a Pull Request
+1. **Fork the repository** and create your feature branch:
 
-Please ensure all tests pass and code follows existing style conventions.
+```bash
+git checkout -b feature/amazing-feature
+```
+
+2. **Commit your changes** with clear, descriptive messages:
+
+```bash
+git commit -m 'Add order cancellation workflow'
+```
+
+3. **Push to your branch** and open a Pull Request:
+
+```bash
+git push origin feature/amazing-feature
+```
+
+**Development Standards**:
+- Ensure all tests pass: `dotnet test`
+- Follow existing code style and conventions
+- Add unit tests for new features
+- Update documentation as needed
 
 ## 📝 License
 
-This project is licensed under the MIT License. See the [`LICENSE`](LICENSE) file for details.
+This project is licensed under the MIT License. See the `LICENSE` file for complete details.
 
-```plaintext
-MIT License
-
-Copyright (c) 2025 Evilázaro Alves
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files...
-```
-
-For the full license text, see [`LICENSE`](LICENSE).
+Copyright (c) 2025 Evilázaro Alves. Permission is granted to use, copy, modify, and distribute this software under the terms specified in the `LICENSE` file.
