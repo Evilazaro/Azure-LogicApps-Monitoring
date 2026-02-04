@@ -36,64 +36,58 @@ The solution implements a multi-tier, event-driven architecture that separates c
 Each layer communicates through well-defined interfaces: HTTP/REST for synchronous operations, Azure Service Bus for asynchronous event processing, and managed identity for secure service-to-service authentication. The architecture ensures that failures in one component don't cascade to others while maintaining full observability through Application Insights and Log Analytics.
 
 ```mermaid
-%%{init: {"flowchart": {"htmlLabels": false, "nodeSpacing": 50, "rankSpacing": 60, "padding": 20}} }%%
-flowchart TB
-    %% ============================================
-    %% COLOR SCHEME: Material Design v2.1
-    %% Main container: Indigo | Layers: Semantic colors
-    %% ============================================
+%%{init: {"flowchart": {"htmlLabels": false}} }%%
+flowchart LR
+    %% Color Classes
+    classDef blue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
+    classDef green fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
+    classDef orange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
+    classDef purple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#000
+    classDef teal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#000
 
-    classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
-    classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
-    classDef mdOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
-    classDef mdPurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#000
-    classDef mdTeal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#000
-
-    subgraph system["Azure Logic Apps Monitoring Solution"]
-        direction TB
-
-        subgraph presentation["Presentation"]
-            webApp["🌐 eShop Web App<br/>(Blazor Server)"]:::mdBlue
-        end
-
-        subgraph services["Services"]
-            ordersApi["⚙️ Orders API<br/>(ASP.NET Core)"]:::mdGreen
-            logicApp["🔄 Logic App Standard<br/>(OrdersManagement)"]:::mdPurple
-        end
-
-        subgraph messaging["Messaging"]
-            serviceBus["📨 Azure Service Bus<br/>(Orders Queue)"]:::mdOrange
-        end
-
-        subgraph data["Data"]
-            sqlDb[("🗄️ Azure SQL<br/>Database")]:::mdTeal
-            blobStorage[("📦 Blob Storage")]:::mdTeal
-        end
-
-        subgraph observability["Observability"]
-            appInsights["📊 Application Insights"]:::mdPurple
-            logAnalytics["📋 Log Analytics"]:::mdPurple
-        end
-
-        %% Primary Flow
-        webApp -->|"HTTP/REST"| ordersApi
-        ordersApi -->|"Publish"| serviceBus
-        serviceBus -->|"Trigger"| logicApp
-        logicApp -->|"Process"| ordersApi
-        logicApp -->|"Store"| blobStorage
-        ordersApi -->|"CRUD"| sqlDb
-
-        %% Telemetry
-        webApp -.->|"Telemetry"| appInsights
-        ordersApi -.->|"Telemetry"| appInsights
-        logicApp -.->|"Logs"| logAnalytics
+    subgraph presentation["Presentation"]
+        webApp["🌐 eShop Web App<br/>(Blazor Server)"]:::blue
     end
 
-    style system fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px
+    subgraph services["Services"]
+        direction TB
+        ordersApi["⚙️ Orders API<br/>(ASP.NET Core)"]:::green
+        logicApp["🔄 Logic App Standard<br/>(OrdersManagement)"]:::purple
+    end
+
+    subgraph messaging["Messaging"]
+        serviceBus["📨 Azure Service Bus<br/>(Orders Queue)"]:::orange
+    end
+
+    subgraph storage["Data"]
+        direction TB
+        sqlDb[("🗄️ Azure SQL")]:::teal
+        blobStorage[("📦 Blob Storage")]:::teal
+    end
+
+    subgraph observability["Observability"]
+        direction TB
+        appInsights["📊 App Insights"]:::purple
+        logAnalytics["📋 Log Analytics"]:::purple
+    end
+
+    %% Main Flow
+    webApp -->|"REST"| ordersApi
+    ordersApi -->|"Publish"| serviceBus
+    serviceBus -->|"Trigger"| logicApp
+    logicApp -->|"Process"| ordersApi
+    ordersApi -->|"CRUD"| sqlDb
+    logicApp -->|"Store"| blobStorage
+
+    %% Telemetry
+    webApp -.-> appInsights
+    ordersApi -.-> appInsights
+    logicApp -.-> logAnalytics
+
     style presentation fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
     style services fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
     style messaging fill:#FFF3E0,stroke:#E64A19,stroke-width:2px
-    style data fill:#B2DFDB,stroke:#00796B,stroke-width:2px
+    style storage fill:#B2DFDB,stroke:#00796B,stroke-width:2px
     style observability fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px
 ```
 
