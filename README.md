@@ -62,6 +62,7 @@ dotnet run --project app.AppHost
 ```
 
 Access services at:
+
 - Aspire Dashboard: `http://localhost:15888`
 - Orders API: `http://localhost:5000/swagger`
 - Web Application: `http://localhost:5001`
@@ -94,7 +95,7 @@ flowchart TB
     %% Assumptions: Managed Identity authentication, Azure-hosted services
     %% Last Updated: 2026-02-03
     %% ============================================
-    
+
     %% ============================================
     %% STANDARD COLOR SCHEME - MANDATORY
     %% ============================================
@@ -102,8 +103,12 @@ flowchart TB
     classDef subGroup fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#000
     classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
     classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
+    classDef mdRed fill:#FFCDD2,stroke:#D32F2F,stroke-width:2px,color:#000
+    classDef mdYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#000
     classDef mdOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
     classDef mdPurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#000
+    classDef mdTeal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#000
+    classDef mdGrey fill:#F5F5F5,stroke:#616161,stroke-width:2px,color:#000
     %% ============================================
 
     subgraph system[".NET Aspire Distributed Application"]
@@ -119,8 +124,8 @@ flowchart TB
         end
 
         subgraph infrastructure["Infrastructure Layer"]
-            sql[("Azure SQL Database<br/>Order Data")]:::mdOrange
-            bus[("Service Bus<br/>Event Messaging")]:::mdOrange
+            sql[("Azure SQL Database<br/>Order Data")]:::mdTeal
+            bus[("Service Bus<br/>Event Messaging")]:::mdTeal
             insights["Application Insights<br/>Telemetry & Tracing"]:::mdPurple
         end
 
@@ -129,7 +134,7 @@ flowchart TB
         api -->|"Publish Events"| bus
         logic -->|"Subscribe & Process"| bus
         logic -->|"Query Data"| sql
-        
+
         api -.->|"Telemetry"| insights
         webapp -.->|"Telemetry"| insights
         logic -.->|"Telemetry"| insights
@@ -255,15 +260,15 @@ The Orders API provides RESTful endpoints for comprehensive order management.
 
 ### Core Endpoints
 
-| Method | Endpoint           | Description            | Authentication |
-| ------ | ------------------ | ---------------------- | -------------- |
-| GET    | `/api/orders`      | List all orders        | None           |
-| GET    | `/api/orders/{id}` | Retrieve order by ID   | None           |
-| POST   | `/api/orders`      | Create new order       | None           |
-| PUT    | `/api/orders/{id}` | Update existing order  | None           |
-| DELETE | `/api/orders/{id}` | Delete order           | None           |
-| GET    | `/health`          | Service health status  | None           |
-| GET    | `/swagger`         | OpenAPI documentation  | None           |
+| Method | Endpoint           | Description           | Authentication |
+| ------ | ------------------ | --------------------- | -------------- |
+| GET    | `/api/orders`      | List all orders       | None           |
+| GET    | `/api/orders/{id}` | Retrieve order by ID  | None           |
+| POST   | `/api/orders`      | Create new order      | None           |
+| PUT    | `/api/orders/{id}` | Update existing order | None           |
+| DELETE | `/api/orders/{id}` | Delete order          | None           |
+| GET    | `/health`          | Service health status | None           |
+| GET    | `/swagger`         | OpenAPI documentation | None           |
 
 ### Example: Retrieve Order Details
 
@@ -460,6 +465,7 @@ git push origin feature/amazing-feature
 ```
 
 **Development Standards**:
+
 - Ensure all tests pass: `dotnet test`
 - Follow existing code style and conventions
 - Add unit tests for new features
