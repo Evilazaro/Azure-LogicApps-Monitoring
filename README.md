@@ -45,32 +45,36 @@ flowchart TD
     classDef mdYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#000
 
     subgraph system["Azure Logic Apps Monitoring Solution"]
-        direction BT
+        direction TB
         subgraph presentation["Presentation Layer"]
-            direction BT
+            direction TB
             webApp["🌐 eShop Web App<br/>(Blazor Server)"]:::mdBlue
+            direction TB
         end
 
         subgraph services["Services Layer"]
-            direction BT
+            direction TB
             ordersApi["⚙️ Orders API<br/>(ASP.NET Core)"]:::mdGreen
+            direction TB
             logicApp["🔄 Logic App Standard<br/>(OrdersManagement)"]:::mdPurple
         end
 
         subgraph messaging["Messaging Layer"]
-            direction BT
+            direction TB
             serviceBus["📨 Azure Service Bus<br/>(Orders Queue)"]:::mdOrange
         end
 
         subgraph data["Data Layer"]
-            direction BT
+            direction TB
             sqlDb[("🗄️ Azure SQL<br/>Database")]:::mdYellow
+            direction TB
             blobStorage[("📦 Blob Storage<br/>(Order Files)")]:::mdYellow
         end
 
         subgraph observability["Observability"]
-            direction BT
+            direction TB
             appInsights["📊 Application Insights"]:::mdOrange
+            direction TB
             logAnalytics["📋 Log Analytics"]:::mdOrange
         end
 
