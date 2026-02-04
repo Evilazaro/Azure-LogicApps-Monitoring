@@ -63,7 +63,7 @@ flowchart TD
         end
 
         subgraph data["Data Layer"]
-            direction LR
+            direction BT
             sqlDb[("🗄️ Azure SQL<br/>Database")]:::mdYellow
             blobStorage[("📦 Blob Storage<br/>(Order Files)")]:::mdYellow
         end
