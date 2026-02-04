@@ -38,6 +38,28 @@ Each layer communicates through well-defined interfaces: HTTP/REST for synchrono
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": false}} }%%
 flowchart TB
+    %% ============================================
+    %% COLOR SCHEME DOCUMENTATION (v2.1)
+    %% ============================================
+    %% Level 1 (Main Container): Indigo 50 (#E8EAF6)
+    %%   - system: Top-level solution boundary
+    %%   - Stroke: Indigo 500 (#3F51B5), 3px
+    %%
+    %% Level 2 (Functional Siblings - Semantic Colors):
+    %%   - presentation: Blue (#E3F2FD) - UI/Frontend
+    %%   - services: Green (#E8F5E9) - Workload/Backend
+    %%   - messaging: Orange (#FFF3E0) - Async Processing
+    %%   - data: Yellow (#FFFDE7) - Data Storage
+    %%   - observability: Pink (#FCE4EC) - Monitoring
+    %%
+    %% Level 3 (Content Nodes): Material Design semantic colors
+    %%   - mdBlue: Info/Neutral components
+    %%   - mdGreen: Success/Active services
+    %%   - mdOrange: Process/Messaging
+    %%   - mdPurple: Workflow/Orchestration
+    %%   - mdYellow: Data/Storage
+    %% ============================================
+
     classDef mainGroup fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px,color:#000
     classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
     classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
@@ -49,26 +71,26 @@ flowchart TB
         direction TB
 
         subgraph presentation["Presentation Layer"]
-            webApp["eShop Web App<br/>(Blazor Server)"]:::mdBlue
+            webApp["🌐 eShop Web App<br/>(Blazor Server)"]:::mdBlue
         end
 
         subgraph services["Services Layer"]
-            ordersApi["Orders API<br/>(ASP.NET Core)"]:::mdGreen
-            logicApp["Logic App Standard<br/>(OrdersManagement)"]:::mdPurple
+            ordersApi["⚙️ Orders API<br/>(ASP.NET Core)"]:::mdGreen
+            logicApp["🔄 Logic App Standard<br/>(OrdersManagement)"]:::mdPurple
         end
 
         subgraph messaging["Messaging Layer"]
-            serviceBus["Azure Service Bus<br/>(Orders Queue)"]:::mdOrange
+            serviceBus["📨 Azure Service Bus<br/>(Orders Queue)"]:::mdOrange
         end
 
         subgraph data["Data Layer"]
-            sqlDb[("Azure SQL<br/>Database")]:::mdYellow
-            blobStorage[("Blob Storage<br/>(Order Files)")]:::mdYellow
+            sqlDb[("🗄️ Azure SQL<br/>Database")]:::mdYellow
+            blobStorage[("📦 Blob Storage<br/>(Order Files)")]:::mdYellow
         end
 
         subgraph observability["Observability"]
-            appInsights["Application Insights"]:::mdOrange
-            logAnalytics["Log Analytics"]:::mdOrange
+            appInsights["📊 Application Insights"]:::mdOrange
+            logAnalytics["📋 Log Analytics"]:::mdOrange
         end
 
         webApp -->|"HTTP/REST"| ordersApi
