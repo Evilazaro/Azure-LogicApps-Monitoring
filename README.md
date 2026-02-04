@@ -36,21 +36,13 @@ The solution implements a multi-tier, event-driven architecture that separates c
 Each layer communicates through well-defined interfaces: HTTP/REST for synchronous operations, Azure Service Bus for asynchronous event processing, and managed identity for secure service-to-service authentication. The architecture ensures that failures in one component don't cascade to others while maintaining full observability through Application Insights and Log Analytics.
 
 ```mermaid
-%%{init: {"flowchart": {"htmlLabels": false, "nodeSpacing": 60, "rankSpacing": 50}} }%%
+%%{init: {"flowchart": {"htmlLabels": false, "nodeSpacing": 50, "rankSpacing": 60, "padding": 20}} }%%
 flowchart TB
     %% ============================================
-    %% MATERIAL DESIGN COLOR SCHEME v2.1
-    %% ============================================
-    %% Container: Indigo 50 (#E8EAF6) - Solution boundary
-    %% Functional Layers (semantic colors):
-    %%   - Presentation: Blue - UI/Frontend
-    %%   - Services: Green - Workload/Backend
-    %%   - Messaging: Orange - Async Processing
-    %%   - Data: Teal - Storage
-    %%   - Observability: Purple - Monitoring
+    %% COLOR SCHEME: Material Design v2.1
+    %% Main container: Indigo | Layers: Semantic colors
     %% ============================================
 
-    %% Content Node Classes
     classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
     classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
     classDef mdOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
@@ -60,49 +52,43 @@ flowchart TB
     subgraph system["Azure Logic Apps Monitoring Solution"]
         direction TB
 
-        subgraph presentation["Presentation Layer"]
-            direction LR
+        subgraph presentation["Presentation"]
             webApp["🌐 eShop Web App<br/>(Blazor Server)"]:::mdBlue
         end
 
-        subgraph services["Services Layer"]
-            direction LR
+        subgraph services["Services"]
             ordersApi["⚙️ Orders API<br/>(ASP.NET Core)"]:::mdGreen
             logicApp["🔄 Logic App Standard<br/>(OrdersManagement)"]:::mdPurple
         end
 
-        subgraph messaging["Messaging Layer"]
-            direction LR
+        subgraph messaging["Messaging"]
             serviceBus["📨 Azure Service Bus<br/>(Orders Queue)"]:::mdOrange
         end
 
-        subgraph data["Data Layer"]
-            direction LR
+        subgraph data["Data"]
             sqlDb[("🗄️ Azure SQL<br/>Database")]:::mdTeal
-            blobStorage[("📦 Blob Storage<br/>(Order Files)")]:::mdTeal
+            blobStorage[("📦 Blob Storage")]:::mdTeal
         end
 
-        subgraph observability["Observability Layer"]
-            direction LR
+        subgraph observability["Observability"]
             appInsights["📊 Application Insights"]:::mdPurple
             logAnalytics["📋 Log Analytics"]:::mdPurple
         end
+
+        %% Primary Flow
+        webApp -->|"HTTP/REST"| ordersApi
+        ordersApi -->|"Publish"| serviceBus
+        serviceBus -->|"Trigger"| logicApp
+        logicApp -->|"Process"| ordersApi
+        logicApp -->|"Store"| blobStorage
+        ordersApi -->|"CRUD"| sqlDb
+
+        %% Telemetry
+        webApp -.->|"Telemetry"| appInsights
+        ordersApi -.->|"Telemetry"| appInsights
+        logicApp -.->|"Logs"| logAnalytics
     end
 
-    %% Primary Data Flow
-    webApp -->|"HTTP/REST"| ordersApi
-    ordersApi -->|"Publish Orders"| serviceBus
-    serviceBus -->|"Trigger"| logicApp
-    logicApp -->|"Process Order"| ordersApi
-    logicApp -->|"Store Results"| blobStorage
-    ordersApi -->|"CRUD"| sqlDb
-
-    %% Telemetry Flow
-    webApp -.->|"Telemetry"| appInsights
-    ordersApi -.->|"Telemetry"| appInsights
-    logicApp -.->|"Logs"| logAnalytics
-
-    %% Subgraph Styling (CRITICAL: use style directives, not class)
     style system fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px
     style presentation fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
     style services fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
