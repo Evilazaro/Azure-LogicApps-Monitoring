@@ -45,7 +45,7 @@ flowchart TD
     classDef mdYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#000
 
     subgraph system["Azure Logic Apps Monitoring Solution"]
-        direction TB
+        direction CT
 
         subgraph presentation["Presentation Layer"]
             direction LR
