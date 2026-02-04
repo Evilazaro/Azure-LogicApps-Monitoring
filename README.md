@@ -58,7 +58,7 @@ flowchart TD
         end
 
         subgraph messaging["Messaging Layer"]
-            direction LR
+            direction BT
             serviceBus["📨 Azure Service Bus<br/>(Orders Queue)"]:::mdOrange
         end
 
@@ -69,7 +69,7 @@ flowchart TD
         end
 
         subgraph observability["Observability"]
-            direction LR
+            direction BT
             appInsights["📊 Application Insights"]:::mdOrange
             logAnalytics["📋 Log Analytics"]:::mdOrange
         end
