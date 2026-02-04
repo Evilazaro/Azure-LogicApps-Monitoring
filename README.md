@@ -48,24 +48,29 @@ flowchart TB
         direction TB
 
         subgraph presentation["Presentation Layer"]
+            direction TB
             webApp["🌐 eShop Web App<br/>(Blazor Server)"]:::mdBlue
         end
 
         subgraph services["Services Layer"]
+            direction TB
             ordersApi["⚙️ Orders API<br/>(ASP.NET Core)"]:::mdGreen
             logicApp["🔄 Logic App Standard<br/>(OrdersManagement)"]:::mdPurple
         end
 
         subgraph messaging["Messaging Layer"]
+            direction TB
             serviceBus["📨 Azure Service Bus<br/>(Orders Queue)"]:::mdOrange
         end
 
         subgraph data["Data Layer"]
+            direction TB
             sqlDb[("🗄️ Azure SQL<br/>Database")]:::mdYellow
             blobStorage[("📦 Blob Storage<br/>(Order Files)")]:::mdYellow
         end
 
         subgraph observability["Observability"]
+            direction TB
             appInsights["📊 Application Insights"]:::mdOrange
             logAnalytics["📋 Log Analytics"]:::mdOrange
         end
