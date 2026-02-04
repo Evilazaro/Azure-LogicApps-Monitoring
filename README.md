@@ -154,6 +154,86 @@ azd down
 
 The solution follows a microservices architecture orchestrated by .NET Aspire:
 
+```mermaid
+%%{init: {"flowchart": {"htmlLabels": false}} }%%
+flowchart TB
+    %% ============================================
+    %% STANDARD COLOR SCHEME
+    %% ============================================
+    classDef mainGroup fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px,color:#000
+    classDef subGroup fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#000
+    classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
+    classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
+    classDef mdTeal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#000
+    classDef mdOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
+    classDef mdPurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#000
+    %% ============================================
+
+    %% Client Layer
+    subgraph client["Client Layer"]
+        direction TB
+        USER["User Browser"]:::mdBlue
+    end
+
+    %% Application Layer
+    subgraph app["Application Layer - Azure Container Apps"]
+        direction TB
+
+        subgraph frontend["Frontend Service"]
+            WEBAPP["eShop.Web.App<br/>Blazor Server"]:::mdGreen
+        end
+
+        subgraph backend["Backend Service"]
+            API["eShop.Orders.API<br/>REST API"]:::mdGreen
+        end
+    end
+
+    %% Data & Messaging Layer
+    subgraph data["Data & Messaging Layer"]
+        direction TB
+
+        subgraph database["Persistent Storage"]
+            SQLDB["Azure SQL Database<br/>Orders DB"]:::mdTeal
+        end
+
+        subgraph messaging["Async Messaging"]
+            SERVICEBUS["Azure Service Bus<br/>Event-Driven Communication"]:::mdTeal
+        end
+    end
+
+    %% Monitoring Layer
+    subgraph monitoring["Observability & Monitoring"]
+        direction LR
+        APPINSIGHTS["Application Insights<br/>Distributed Tracing"]:::mdPurple
+        LOGS["Log Analytics Workspace<br/>Centralized Logging"]:::mdPurple
+    end
+
+    %% Orchestration Layer
+    subgraph orchestration["Local Development Orchestration"]
+        direction TB
+        ASPIRE[".NET Aspire AppHost<br/>Service Discovery & Configuration"]:::mdOrange
+    end
+
+    %% Connections
+    USER -->|HTTPS| WEBAPP
+    WEBAPP -->|HTTP/REST| API
+    API -->|Entity Framework Core| SQLDB
+    API -->|Async Events| SERVICEBUS
+    WEBAPP -.->|Telemetry| APPINSIGHTS
+    API -.->|Telemetry| APPINSIGHTS
+    APPINSIGHTS -.->|Logs & Metrics| LOGS
+    ASPIRE -.->|Orchestrates| WEBAPP
+    ASPIRE -.->|Orchestrates| API
+
+    %% Apply styles
+    class client mainGroup
+    class app mainGroup
+    class data mainGroup
+    class monitoring mainGroup
+    class orchestration mainGroup
+    class frontend,backend,database,messaging subGroup
+```
+
 **Core Components**:
 
 - **eShop.Orders.API**: RESTful API for order management with Entity Framework Core and Azure SQL
