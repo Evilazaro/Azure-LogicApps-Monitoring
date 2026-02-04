@@ -47,7 +47,7 @@ flowchart TD
     subgraph system["Azure Logic Apps Monitoring Solution"]
 
         subgraph presentation["Presentation Layer"]
-            direction LR
+            direction TD
             webApp["🌐 eShop Web App<br/>(Blazor Server)"]:::mdBlue
         end
 
