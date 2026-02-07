@@ -25,6 +25,12 @@
 
 ## 1. Executive Summary
 
+The eShop Orders solution manages the complete order lifecycle for an e-commerce platform—from the moment a customer submits an order through processing, fulfillment tracking, and archival. The Data layer captures customer orders with their product line items, delivery addresses, and financial totals, ensuring every transaction is reliably persisted and available for downstream processing by Logic Apps workflows.
+
+When a customer places an order through the web application, the data flows through a well-defined pipeline: the Orders API validates incoming order data, the `OrderRepository` persists it to Azure SQL Database, and the `OrdersMessageHandler` publishes events to Azure Service Bus for asynchronous workflow processing. Order processing results—whether successful or failed—are archived to Azure Blob Storage containers, enabling audit trails and error recovery workflows.
+
+This architecture enables the eShop platform to handle high-volume order processing with enterprise-grade reliability. Customer orders are protected by ACID transactions in Azure SQL, while the event-driven workflow pattern ensures orders are processed even during temporary service disruptions. The solution supports business requirements for order history queries, customer lookup by ID, and paginated order listings for administrative dashboards.
+
 ### Data Landscape Overview
 
 | Metric                  | Value                                               |
@@ -61,7 +67,15 @@ The eShop Orders data layer implements a **clean architecture** pattern with cle
 
 ## 2. Data Asset Catalog
 
+The eShop Orders solution manages four core data assets: the `Order` and `OrderProduct` domain models that represent customer transactions in business terms, and their corresponding `OrderEntity` and `OrderProductEntity` database representations optimized for Azure SQL storage. Together, these components capture everything needed to process a customer order—who placed it, what products they purchased, where to deliver, and the financial totals.
+
+The data catalog also includes the infrastructure components that store and manage this information: Azure SQL Database for transactional order data requiring immediate consistency and query capabilities, and Azure Storage Account for workflow state and order processing archives. Each storage component is configured with enterprise security controls including Entra ID authentication and private endpoints.
+
+Understanding this catalog is essential for developers extending the order processing capabilities, operations teams troubleshooting data issues, and compliance teams ensuring proper handling of customer PII (delivery addresses, customer IDs) and financial data (order totals, product prices).
+
 ### 2.1 Domain Models
+
+The `Order` and `OrderProduct` domain models represent how the eShop business thinks about customer transactions—independent of how data is stored in the database. When a customer submits an order through the web application, these models capture the essential business data: the customer placing the order, their delivery address, the products they're purchasing with quantities and prices, and the calculated total.
 
 #### Order (Domain Model)
 
@@ -119,6 +133,10 @@ The eShop Orders data layer implements a **clean architecture** pattern with cle
 ---
 
 ### 2.2 Database Entities
+
+The `OrderEntity` and `OrderProductEntity` classes map directly to the `Orders` and `OrderProducts` tables in Azure SQL Database. These entities are optimized for database operations—when a customer looks up their order history, the indexed `CustomerId` column enables fast queries; when orders are deleted, the cascade delete relationship automatically removes associated line items.
+
+The entity layer handles database-specific concerns like decimal precision for monetary values (18,2), maximum string lengths for addresses (500 chars), and foreign key constraints that prevent orphaned order products. This separation allows the business logic to work with clean domain models while the database layer handles storage optimization.
 
 #### OrderEntity (Database Entity)
 
@@ -188,6 +206,10 @@ The eShop Orders data layer implements a **clean architecture** pattern with cle
 
 ### 2.3 Data Stores
 
+The eShop Orders solution uses two Azure data stores for different purposes. Azure SQL Database (`OrderDb`) stores the live transactional data—when a customer places an order, it's immediately written here with full ACID guarantees. This is where the Orders API queries when a customer views their order history or an administrator searches for orders by date.
+
+Azure Storage Account handles the workflow processing artifacts. When Logic Apps processes an order, the results are written to blob containers: `ordersprocessedsuccessfully` for completed orders, `ordersprocessedwitherrors` for failures requiring investigation, and `ordersprocessedcompleted` for the full audit trail. The `workflowstate` file share maintains Logic Apps runtime state.
+
 #### Azure SQL Database (OrderDb)
 
 | Attribute               | Value                                                                      |
@@ -244,6 +266,10 @@ The eShop Orders data layer implements a **clean architecture** pattern with cle
 ---
 
 ### 2.4 Data Access Components
+
+The `OrderRepository` and `OrderDbContext` provide the bridge between the Orders API business logic and Azure SQL Database. When the `OrderService` needs to save a new order, it calls `_orderRepository.SaveOrderAsync(order)`, and the repository handles mapping to entities, executing the SQL insert, and managing retry logic for transient Azure SQL failures.
+
+The `OrderMapper` converts between domain models and database entities bidirectionally—`order.ToEntity()` when saving to the database, and `entity.ToDomainModel()` when returning data to the API. This keeps the business logic clean and focused on order processing rather than database mechanics.
 
 #### OrderDbContext
 
@@ -304,7 +330,15 @@ The eShop Orders data layer implements a **clean architecture** pattern with cle
 
 ## 3. Data Architecture Patterns
 
+The eShop Orders solution processes customer orders through two distinct data flow patterns. When a customer clicks "Place Order" in the web application, the synchronous path immediately validates the order, persists it to Azure SQL, and returns a confirmation—the customer sees their order ID within milliseconds. Simultaneously, the asynchronous path publishes an event to Azure Service Bus, triggering Logic Apps workflows that handle fulfillment processing in the background.
+
+This dual-path architecture ensures customers get immediate feedback while complex processing happens reliably in the background. If the Logic Apps workflow temporarily fails, the order is already safely persisted in Azure SQL—the workflow can retry without losing customer data. Processing results are archived to blob storage, creating a complete audit trail of every order's journey through the system.
+
+The storage pattern matches data characteristics to appropriate Azure services: structured transactional data (orders, products) goes to Azure SQL where it can be queried efficiently; unstructured workflow artifacts (processing logs, archived orders) go to Blob Storage where they can be retained cost-effectively.
+
 ### 3.1 Data Flow Patterns
+
+Every customer order follows a predictable path through the eShop system. The Orders API receives the HTTP POST, the controller validates the request format, the service layer checks business rules (valid customer, non-empty product list, positive totals), the repository persists to Azure SQL, and finally the message handler publishes to Service Bus. At each step, validation gates catch errors early—before customer data reaches the database.
 
 #### Pattern: Request/Response (API → Database)
 
@@ -362,6 +396,8 @@ The eShop Orders data layer implements a **clean architecture** pattern with cle
 
 ### 3.2 Storage Strategy
 
+Azure SQL Database serves as the primary store for active orders—when a customer queries their order history or an admin searches for today's orders, these queries hit SQL with indexed columns for fast response. Azure Blob Storage handles the high-volume, write-heavy workflow processing logs where query speed matters less than cost-effective retention.
+
 | Strategy          | Implementation                         |
 | ----------------- | -------------------------------------- |
 | **Primary Store** | Azure SQL Database (transactional)     |
@@ -371,6 +407,8 @@ The eShop Orders data layer implements a **clean architecture** pattern with cle
 | **Replication**   | Azure SQL geo-replication (if enabled) |
 
 ### 3.3 Data Contracts
+
+The `Order` schema contract defines what a valid order looks like across all system components—the Orders API, Service Bus messages, and Logic Apps workflows all expect the same JSON structure. When the Orders API publishes to Service Bus, the Logic Apps workflow can reliably deserialize the message because both agree on required fields (Id, CustomerId, Products) and validation rules (Total > 0, at least one product).
 
 #### Order Schema Contract
 
@@ -398,7 +436,15 @@ contract:
 
 ## 4. Relationships & Dependencies
 
+Customer orders in the eShop system flow through multiple connected components. Understanding these connections is critical for troubleshooting—when an order fails to appear in the workflow results, you need to know the chain: did the API receive it? Did the repository persist it? Did the message handler publish it? Did Service Bus deliver it to Logic Apps?
+
+The entity relationships define how orders and products connect in the database. Every `OrderProductEntity` references an `OrderEntity` through the `OrderId` foreign key—this ensures products can't exist without a parent order and that deleting an order automatically removes its line items (cascade delete).
+
+The dependency map also reveals integration points with other system layers: the Business layer's `OrderService` depends on the Data layer's repository for persistence, the Application layer's controllers depend on the service for processing, and the Technology layer's Azure resources provide the underlying storage infrastructure.
+
 ### 4.1 Entity Relationships
+
+Each order contains one or more products—this one-to-many relationship is enforced at both the domain model level (`Order.Products` list) and the database level (`FK_OrderProducts_Orders_OrderId` foreign key). When a customer places an order with three items, one row is created in the `Orders` table and three rows in `OrderProducts`, all linked by the order ID.
 
 | Parent Entity | Relationship | Child Entity         | Cardinality |
 | ------------- | ------------ | -------------------- | ----------- |
@@ -406,6 +452,8 @@ contract:
 | `Order`       | Contains     | `OrderProduct`       | 1:N         |
 
 ### 4.2 Data Flow Dependencies
+
+Order data flows through a chain of producers and consumers. The Orders API produces `Order` objects consumed by the `OrderRepository`. The repository produces `OrderEntity` records consumed by Azure SQL. The `OrderService` produces Service Bus messages consumed by Logic Apps. Understanding this chain helps troubleshoot issues—if orders appear in SQL but not in workflow results, the problem is between the message handler and Logic Apps.
 
 | Producer        | Data Asset      | Consumer            |
 | --------------- | --------------- | ------------------- |
@@ -417,6 +465,8 @@ contract:
 
 ### 4.3 Cross-Domain Dependencies
 
+The Data layer sits at the foundation of the eShop Orders stack. The Business layer (OrderService) calls down to the Data layer for persistence. The Application layer (OrdersController) calls the Business layer. The Technology layer (Azure SQL, Storage) provides the infrastructure the Data layer uses. Changes to the Data layer—like adding a new column to OrderEntity—can impact all layers above it.
+
 | Domain            | Dependency Type | Description                                        |
 | ----------------- | --------------- | -------------------------------------------------- |
 | Business Layer    | Upstream        | OrderService consumes domain models                |
@@ -426,6 +476,10 @@ contract:
 ---
 
 ## 5. Mermaid Diagrams
+
+The following diagrams visualize how customer orders flow through the eShop system. The Entity Relationship Diagram shows the database table structure—how Orders and OrderProducts tables connect. The Component Diagram shows the code organization—domain models, entities, repositories, and mappers. The Data Flow Diagram traces an order from API submission through processing to storage. The Lineage Diagram maps the transformations data undergoes at each step.
+
+These diagrams help new team members understand the system quickly, support troubleshooting by visualizing the processing pipeline, and provide documentation for architecture reviews. Each diagram focuses on a specific aspect of how order data moves through the eShop solution.
 
 ### 5.1 Entity Relationship Diagram
 
@@ -630,7 +684,15 @@ flowchart TB
 
 ## 7. Risks & Recommendations
 
+The eShop Orders data layer has several areas requiring attention to ensure customer data protection, regulatory compliance, and operational reliability. The most critical gap is PII handling—customer delivery addresses and IDs are stored in Azure SQL but not explicitly classified, which could create compliance issues during audits.
+
+The recommendations below prioritize improvements based on customer impact and implementation effort. High-priority items address compliance risks that could result in regulatory penalties. Medium-priority items improve operational reliability and maintainability. Low-priority items enhance documentation and developer experience.
+
+Implementing these recommendations will advance the solution from Data Maturity Level 4 (Measured) toward Level 5 (Optimized), enabling features like real-time data quality dashboards and automated compliance verification.
+
 ### 7.1 Identified Risks
+
+These risks could impact customer data, regulatory compliance, or system reliability if not addressed. The highest severity issue (R-004) relates to PII compliance—customer addresses and IDs need explicit classification in Azure SQL to satisfy data protection regulations and enable automated data discovery tools.
 
 | Risk ID   | Category     | Description                                                                | Severity | Mitigation                                             |
 | --------- | ------------ | -------------------------------------------------------------------------- | -------- | ------------------------------------------------------ |
@@ -641,6 +703,8 @@ flowchart TB
 | **R-005** | Recovery     | No documented RPO/RTO targets                                              | Medium   | Define and document recovery objectives                |
 
 ### 7.2 Recommendations
+
+These recommendations address the identified risks and improve the eShop Orders data layer. Each includes specific implementation steps and links to the source files that need modification.
 
 #### High Priority
 
@@ -656,18 +720,18 @@ flowchart TB
 
 #### Medium Priority
 
-3. **Add Data Retention Policies**
+1. **Add Data Retention Policies**
    - Configure Azure SQL table partitioning by date
    - Implement blob lifecycle management for Storage Account
    - Define retention windows per data classification
 
-4. **Implement Change Data Capture (CDC)**
+2. **Implement Change Data Capture (CDC)**
    - Enable CDC on Orders table for audit logging
    - Stream changes to Event Hub for downstream analytics
 
 #### Low Priority
 
-5. **Create Data Dictionary Documentation**
+1. **Create Data Dictionary Documentation**
    - Generate automated schema documentation
    - Include business glossary definitions
 
@@ -675,7 +739,15 @@ flowchart TB
 
 ## 8. Technical Details
 
+This section provides the technical specifications developers and operators need when working with the eShop Orders data infrastructure. Database connection settings, index configurations, and performance targets are documented here for reference during development, troubleshooting, and capacity planning.
+
+When debugging slow order queries, check the index strategy section to verify appropriate indexes exist. When orders fail to save, check the connection configuration for timeout settings. When planning for higher order volumes, reference the performance baselines to understand current capacity.
+
+These specifications reflect the current production configuration and should be updated when infrastructure changes are deployed.
+
 ### 8.1 Database Engine
+
+The eShop Orders database runs on Azure SQL Database (General Purpose tier) with 2 vCores—sufficient for current order volumes with room to scale. Authentication is Entra ID only (SQL auth disabled) for security compliance. The database handles all CRUD operations for orders and supports the paginated queries used by the admin dashboard.
 
 | Property           | Value                             |
 | ------------------ | --------------------------------- |
@@ -689,6 +761,8 @@ flowchart TB
 
 ### 8.2 Schema Versions
 
+The database schema is managed through Entity Framework Core migrations. The initial migration (`20251227014858_OrderDbV1`) created the Orders and OrderProducts tables with all indexes and foreign keys. Future schema changes should follow the same migration pattern to maintain upgrade/rollback capability.
+
 | Migration                  | Date       | Description                                   |
 | -------------------------- | ---------- | --------------------------------------------- |
 | `20251227014858_OrderDbV1` | 2025-12-27 | Initial schema: Orders + OrderProducts tables |
@@ -696,6 +770,8 @@ flowchart TB
 **Source File:** [src/eShop.Orders.API/Migrations/20251227014858_OrderDbV1.cs](../../src/eShop.Orders.API/Migrations/20251227014858_OrderDbV1.cs)
 
 ### 8.3 Index Strategy
+
+Indexes are configured to optimize the most common order queries: customer order history (indexed on `CustomerId`), order search by date range (indexed on `Date`), and product lookups within orders (indexed on `OrderId` and `ProductId`). These indexes ensure the admin dashboard and customer-facing order history pages respond quickly even with large order volumes.
 
 | Table           | Index Name                   | Columns      | Purpose            |
 | --------------- | ---------------------------- | ------------ | ------------------ |
@@ -707,6 +783,8 @@ flowchart TB
 | `OrderProducts` | `IX_OrderProducts_ProductId` | `ProductId`  | Product lookup     |
 
 ### 8.4 Connection Configuration
+
+The Orders API connects to Azure SQL with retry logic enabled—if a transient network blip occurs, EF Core automatically retries up to 5 times with exponential backoff (max 30 seconds delay). The 120-second command timeout accommodates long-running queries during database maintenance windows.
 
 ```csharp
 // Entity Framework Core Configuration
@@ -730,6 +808,8 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 
 ### 8.5 Performance Baselines
 
+These targets define acceptable performance for order operations. If save/query latencies exceed these thresholds during monitoring, investigate query plans, index usage, and connection pool exhaustion. Current baselines are pending measurement—establish these values during load testing to inform future capacity planning.
+
 | Metric                   | Target        | Current      |
 | ------------------------ | ------------- | ------------ |
 | **Save Order Latency**   | < 100ms (P95) | Baseline TBD |
@@ -739,6 +819,8 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 | **Retry Delay**          | 30s (max)     | Configured   |
 
 ### 8.6 Storage Configuration
+
+The workflow storage account uses Standard_LRS (locally redundant) for cost-effective storage of processing artifacts. The Hot access tier ensures fast reads when Logic Apps access workflow state. Public network access is enabled as required by Logic Apps Standard, but private endpoints provide secure access from the virtual network.
 
 | Storage Account Setting | Value                             |
 | ----------------------- | --------------------------------- |
