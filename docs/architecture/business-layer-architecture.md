@@ -12,11 +12,17 @@
 
 ## 1. Executive Summary
 
-### 1.1 Overview
+**Overview**
 
-The **Azure Logic Apps Monitoring Solution** implements a comprehensive order management business architecture built on event-driven patterns. The solution demonstrates enterprise-grade practices for integrating Azure Logic Apps with modern .NET applications, providing end-to-end observability through Application Insights, processing orders via Azure Service Bus messaging, and persisting data to Azure SQL Database.
+The eShop platform enables customers to place orders through a Blazor web application, which communicates with a .NET 10 Orders API for validation, persistence, and event publication. When an order is placed, the system saves it to Azure SQL Database and publishes an event to Azure Service Bus, triggering automated workflows in Azure Logic Apps for downstream processing.
 
-### 1.2 Business Value Proposition
+The order management system supports single and batch order placement with built-in concurrency controls, duplicate prevention, and comprehensive validation rules. Logic Apps workflows handle order processing outcomes by storing successful orders in blob storage while routing errors to a separate container for investigation. A cleanup workflow runs every 3 seconds to manage processed order data.
+
+### 1.1 Business Value Proposition
+
+**Overview**
+
+The eShop platform delivers value through three primary streams: automated order processing that eliminates manual data entry, workflow automation that handles post-order tasks without human intervention, and operational visibility that enables proactive monitoring of system health and performance.
 
 | Value Stream           | Business Outcome                               | Key Capabilities                                              |
 | ---------------------- | ---------------------------------------------- | ------------------------------------------------------------- |
@@ -24,7 +30,11 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 | Workflow Automation    | Reduced manual intervention through Logic Apps | Event-driven triggers, conditional processing, error handling |
 | Operational Visibility | Real-time monitoring and tracing               | Distributed tracing, metrics collection, health monitoring    |
 
-### 1.3 Key Business Components Identified
+### 1.2 Key Business Components Identified
+
+**Overview**
+
+The analysis identified 35 business components across the eShop platform. The highest maturity scores appear in business processes and domain entities where validation rules and data models are well-defined in code with comprehensive annotations.
 
 | Component Type        | Count | Maturity Level |
 | --------------------- | ----- | -------------- |
@@ -39,7 +49,17 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 
 ## 2. Component Inventory
 
+**Overview**
+
+The eShop order management system consists of a Blazor Server web application for customer interactions, a .NET Orders API providing RESTful endpoints, and Azure Logic Apps workflows for automated order processing. The Orders API implements a layered architecture with controllers handling HTTP requests, services encapsulating business logic, and repositories managing database operations through Entity Framework Core.
+
+Key domain entities include Order (with customer, delivery, and product information) and OrderProduct (individual line items). The system enforces validation rules for required fields, value ranges, and duplicate prevention. Business events flow through Service Bus topics, and four metrics (orders placed, processing duration, errors, and deletions) provide operational visibility.
+
 ### 2.1 Business Strategy
+
+**Overview**
+
+The eShop platform strategy centers on Azure-native integration, using managed identity for zero-secret authentication and Service Bus for event-driven communication. This approach reduces operational overhead while enabling seamless scaling.
 
 | ID      | Component                  | Description                                              | Source File                                       | Maturity |
 | ------- | -------------------------- | -------------------------------------------------------- | ------------------------------------------------- | -------- |
@@ -48,6 +68,10 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 | STR-003 | Event-Driven Architecture  | Strategic adoption of asynchronous messaging patterns    | [AppHost.cs](../../app.AppHost/AppHost.cs#L1-L50) | 3        |
 
 ### 2.2 Business Capabilities
+
+**Overview**
+
+Five core capabilities power the eShop order management: placing orders through the API, persisting orders to SQL Database, publishing order events to Service Bus, automating workflows in Logic Apps, and managing the complete order lifecycle including retrieval and deletion.
 
 | ID      | Capability                 | Description                                                   | Source File                                                                                                                              | Maturity |
 | ------- | -------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------- |
@@ -59,12 +83,20 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 
 ### 2.3 Value Streams
 
+**Overview**
+
+Two value streams operate in the eShop system: the Order-to-Fulfillment stream triggered by customer order placement, and the Order Cleanup stream that runs on a 3-second schedule to manage processed order blobs in storage.
+
 | ID     | Value Stream         | Trigger                           | Outcome                                    | Source File                                                                                                                                              | Maturity |
 | ------ | -------------------- | --------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | VS-001 | Order-to-Fulfillment | Customer places order via Web App | Order processed and stored in blob storage | [workflow.json](../../workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json#L1-L163)                                     | 3        |
 | VS-002 | Order Cleanup        | Scheduled recurrence (3 seconds)  | Processed order blobs cleaned up           | [OrdersPlacedCompleteProcess/workflow.json](../../workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json#L1-L100) | 3        |
 
 ### 2.4 Business Processes
+
+**Overview**
+
+Three key processes execute order operations: PlaceOrder handles single order submission with validation, ProcessOrderWorkflow executes the Logic App that processes Service Bus messages, and BatchOrderPlacement enables parallel processing of multiple orders with semaphore-based concurrency control.
 
 | ID     | Process              | Description                                                       | Actors                                   | Source File                                                                                                                              | Maturity |
 | ------ | -------------------- | ----------------------------------------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------- |
@@ -73,6 +105,10 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 | BP-003 | BatchOrderPlacement  | Parallel processing of multiple orders with concurrency control   | Customer, OrderService                   | [OrderService.cs](../../src/eShop.Orders.API/Services/OrderService.cs#L160-L200)                                                         | 4        |
 
 ### 2.5 Business Services
+
+**Overview**
+
+Four services expose order functionality: the Orders API provides RESTful endpoints, OrderService encapsulates business logic, OrdersAPIService in the Web App consumes the API, and OrdersMessageHandler publishes events to Service Bus.
 
 | ID      | Service           | Description                                  | Consumers           | Source File                                                                                    | Maturity |
 | ------- | ----------------- | -------------------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------- | -------- |
@@ -83,6 +119,10 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 
 ### 2.6 Business Functions
 
+**Overview**
+
+Three organizational functions deliver the eShop capabilities: Order Management (the Orders API project), Customer Interface (the Blazor Web App), and Workflow Orchestration (the Logic Apps in OrdersManagement).
+
 | ID     | Function               | Description                                              | Source File                                                      | Maturity |
 | ------ | ---------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- | -------- |
 | FN-001 | Order Management       | Organizational function responsible for order processing | [src/eShop.Orders.API/](../../src/eShop.Orders.API/)             | 3        |
@@ -90,6 +130,10 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 | FN-003 | Workflow Orchestration | Organizational function for automated workflows          | [workflows/OrdersManagement/](../../workflows/OrdersManagement/) | 3        |
 
 ### 2.7 Business Roles & Actors
+
+**Overview**
+
+Four actors participate in the order flow: the Customer who places orders through the UI, the Orders API that validates and processes requests, the Logic App Workflow that automates post-order processing, and Service Bus that delivers messages between components.
 
 | ID      | Role/Actor         | Type         | Responsibilities                         | Source File                                                                                                                             | Maturity |
 | ------- | ------------------ | ------------ | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------- |
@@ -99,6 +143,10 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 | ACT-004 | Service Bus        | System Actor | Delivers order messages to subscribers   | [OrdersMessageHandler.cs](../../src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs#L60-L100)                                         | 3        |
 
 ### 2.8 Business Rules
+
+**Overview**
+
+Six validation rules enforce data integrity: Order ID and Customer ID are required, orders must contain at least one product, totals must be positive, delivery addresses must be 5-500 characters, and duplicate order IDs are rejected to prevent accidental resubmission.
 
 | ID     | Rule                       | Type       | Description                               | Source File                                                                      | Maturity |
 | ------ | -------------------------- | ---------- | ----------------------------------------- | -------------------------------------------------------------------------------- | -------- |
@@ -111,6 +159,10 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 
 ### 2.9 Business Events
 
+**Overview**
+
+Three events drive the order workflow: OrderPlaced fires when a customer submits an order (triggering database save and Service Bus publish), OrderMessageReceived triggers when Logic Apps receives the message, and OrderProcessed fires when the workflow completes blob storage operations.
+
 | ID      | Event                | Trigger                                   | Action                                                    | Source File                                                                                                                              | Maturity |
 | ------- | -------------------- | ----------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | EVT-001 | OrderPlaced          | Customer submits order through UI         | Order saved to database, message published to Service Bus | [OrderService.cs](../../src/eShop.Orders.API/Services/OrderService.cs#L114-L118)                                                         | 4        |
@@ -119,6 +171,10 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 
 ### 2.10 Business Objects/Entities
 
+**Overview**
+
+Two primary domain entities model order data: Order contains customer ID, delivery address, total, and a products collection; OrderProduct represents individual line items with product ID, description, quantity, and unit price. WeatherForecast exists as a demo entity for health checks.
+
 | ID      | Entity          | Description                                    | Attributes                                                      | Source File                                                          | Maturity |
 | ------- | --------------- | ---------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------- | -------- |
 | OBJ-001 | Order           | Customer order with products and delivery info | Id, CustomerId, Date, DeliveryAddress, Total, Products          | [CommonTypes.cs](../../app.ServiceDefaults/CommonTypes.cs#L64-L105)  | 4        |
@@ -126,6 +182,10 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 | OBJ-003 | WeatherForecast | Demo entity for health checks                  | Date, TemperatureC, TemperatureF, Summary                       | [CommonTypes.cs](../../app.ServiceDefaults/CommonTypes.cs#L24-L60)   | 2        |
 
 ### 2.11 KPIs & Metrics
+
+**Overview**
+
+Four OpenTelemetry metrics track order operations: orders.placed counts successful submissions, orders.processing.duration measures latency in milliseconds, orders.processing.errors counts failures by error type, and orders.deleted tracks removal operations.
 
 | ID      | KPI/Metric                       | Description                             | Target           | Source File                                                                    | Maturity |
 | ------- | -------------------------------- | --------------------------------------- | ---------------- | ------------------------------------------------------------------------------ | -------- |
@@ -138,7 +198,17 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 
 ## 3. Architecture Overview
 
+**Overview**
+
+The eShop system follows a request-response pattern for order placement: the Web App calls the Orders API, which validates the order, persists it to SQL Database, and publishes an event to Service Bus. This synchronous flow ensures customers receive immediate feedback. Asynchronously, Logic Apps subscribe to the Service Bus topic and execute workflow automation without blocking the user experience.
+
+Managed identity authentication eliminates credentials from the codebase—all Azure service connections (SQL, Service Bus, Storage) use workload identity. The .NET Aspire AppHost orchestrates local development, providing service discovery, health checks, and a unified dashboard. In production, Azure Container Apps hosts the workloads with Application Insights collecting distributed traces across all components.
+
 ### 3.1 Architecture Principles
+
+**Overview**
+
+Five principles guide eShop architecture decisions: event-driven design using Service Bus decouples the API from workflows, managed identity eliminates secrets, OpenTelemetry provides observability, the Controller-Service-Repository pattern separates concerns, and Bicep templates version-control infrastructure.
 
 | Principle                  | Description                                        | Implementation                                     |
 | -------------------------- | -------------------------------------------------- | -------------------------------------------------- |
@@ -150,6 +220,10 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 
 ### 3.2 Business Architecture Patterns
 
+**Overview**
+
+Four patterns structure the eShop implementation: RESTful endpoints follow service-oriented architecture, OrderRepository abstracts database access, order events published to Service Bus enable partial event sourcing, and Logic Apps coordinate multi-step processing similar to the saga pattern.
+
 | Pattern                       | Application                                       | Benefits                              |
 | ----------------------------- | ------------------------------------------------- | ------------------------------------- |
 | Service-Oriented Architecture | Orders API exposes RESTful endpoints              | Loose coupling, reusability           |
@@ -158,6 +232,10 @@ The **Azure Logic Apps Monitoring Solution** implements a comprehensive order ma
 | Saga Pattern (Simplified)     | Logic App coordinates multi-step order processing | Distributed transaction management    |
 
 ### 3.3 Strategic Design Rationale
+
+**Overview**
+
+The eShop architecture prioritizes developer experience through Aspire's single-command startup, production observability via distributed tracing, security through managed identity, scalability with event-driven design, and resilience using retry policies and error handling.
 
 The architecture prioritizes:
 
@@ -171,7 +249,17 @@ The architecture prioritizes:
 
 ## 4. Relationships & Dependencies
 
+**Overview**
+
+The Web App depends on the Orders API for all order operations—it cannot function independently. The Orders API requires both SQL Database (for persistence) and Service Bus (for event publishing) to complete the order placement flow. If either downstream service is unavailable, order placement fails and returns an error to the customer.
+
+Logic Apps depend on Service Bus for event triggers but operate independently of real-time customer requests. The OrdersPlacedProcess workflow makes HTTP callbacks to the Orders API and writes to Blob Storage. The OrdersPlacedCompleteProcess workflow only interacts with Blob Storage for cleanup operations. These asynchronous dependencies allow the workflows to retry failed operations without impacting user-facing latency.
+
 ### 4.1 Component Dependency Matrix
+
+**Overview**
+
+The dependency matrix shows six primary connections: Web App calls Orders API via HTTP, Orders API writes to SQL via Entity Framework, Orders API publishes to Service Bus, Service Bus triggers Logic Apps, Logic Apps call back to Orders API, and Logic Apps write to Blob Storage.
 
 | From          | To           | Relationship Type | Protocol                   |
 | ------------- | ------------ | ----------------- | -------------------------- |
@@ -183,6 +271,10 @@ The architecture prioritizes:
 | Logic Apps    | Blob Storage | Asynchronous      | Azure Blob Connector       |
 
 ### 4.2 Capability Dependencies
+
+**Overview**
+
+Capability dependencies form a hierarchy: Order Placement requires Persistence and Message Publishing, Workflow Automation depends on Message Publishing and Order Placement, and Lifecycle Management builds on both Placement and Persistence capabilities.
 
 ```yaml
 Order Placement (CAP-001):
@@ -205,7 +297,17 @@ Order Lifecycle Management (CAP-005):
 
 ## 5. Mermaid Diagrams
 
+**Overview**
+
+The diagrams below visualize how customers interact with the eShop system and how orders flow through the platform. The capability map shows the five core business capabilities: order placement, persistence, messaging, workflow automation, and lifecycle management. The value stream diagram traces an order from customer submission through API processing, Service Bus publication, Logic App execution, and final storage.
+
+The process flow diagram details the order placement logic including validation checks and duplicate prevention. The Logic App workflow diagram shows how the OrdersPlacedProcess handles incoming messages, calls the API, and routes results to success or error blob containers. The component interaction diagram maps the complete system showing all services and their communication protocols.
+
 ### 5.1 Business Capability Map
+
+**Overview**
+
+This diagram shows the eShop's five capabilities organized into two groups: Core Order Capabilities (Order Placement, Persistence, Lifecycle Management) and Integration Capabilities (Message Publishing, Workflow Automation). Core capabilities enable the primary customer journey; integration capabilities connect to downstream systems.
 
 ```mermaid
 ---
@@ -258,6 +360,10 @@ flowchart TB
 
 ### 5.2 Value Stream Diagram
 
+**Overview**
+
+This diagram traces an order from customer trigger to fulfillment outcome: the customer places an order, the Web App captures it, the Orders API validates and saves, Service Bus publishes the event, Logic App processes it, Blob Storage stores the result, and the order is fulfilled.
+
 ```mermaid
 ---
 title: Order-to-Fulfillment Value Stream
@@ -306,6 +412,10 @@ flowchart LR
 ```
 
 ### 5.3 Business Process Flow
+
+**Overview**
+
+This diagram details the PlaceOrder process: receive the request, validate order data (fail with validation error if invalid), check for duplicates (fail with conflict if exists), persist to database, publish to Service Bus, and return success. Error paths terminate the flow with appropriate HTTP status codes.
 
 ```mermaid
 ---
@@ -364,6 +474,10 @@ flowchart TD
 
 ### 5.4 Logic App Workflow Process
 
+**Overview**
+
+This diagram shows the OrdersPlacedProcess workflow: Service Bus triggers the workflow, check if ContentType is JSON, call the Orders API via HTTP POST, check if status is 201, then route to either the success blob container (ordersprocessedsuccessfully) or error container (ordersprocessedwitherrors).
+
 ```mermaid
 ---
 title: Logic App Order Processing Workflow
@@ -414,6 +528,10 @@ flowchart TD
 ```
 
 ### 5.5 Component Interaction Diagram
+
+**Overview**
+
+This diagram maps all eShop components and their connections: Web App (Presentation) calls Orders API, which uses Order Service and Message Handler (Business Layer), Order Service writes to SQL and Message Handler publishes to Service Bus (Data/Messaging), and Logic Apps (Workflow) triggers from Service Bus and writes to Blob Storage.
 
 ```mermaid
 ---
@@ -488,7 +606,17 @@ flowchart TB
 
 ## 7. Risks & Recommendations
 
+**Overview**
+
+The primary operational risks involve message delivery and database connectivity. If Service Bus message publishing fails, the order is saved but downstream workflows never trigger—creating data inconsistency. High-volume batch operations can exhaust database connection pools, which is mitigated by the existing semaphore-based concurrency limiting in OrderService.
+
+Logic App workflows may timeout on long-running API calls, and processed order blobs could accumulate if the cleanup workflow fails. The recommendations focus on adding Dead Letter Queue monitoring to catch failed messages, implementing circuit breakers to prevent cascading failures when the API is unavailable, and adding order status tracking so customers can see where their order is in the processing pipeline.
+
 ### 7.1 Identified Risks
+
+**Overview**
+
+Four operational risks affect the eShop system: Service Bus delivery failures could leave orders unprocessed, Logic App timeouts may interrupt long-running workflows, database connection exhaustion impacts batch operations, and orphaned blobs accumulate if cleanup fails.
 
 | Risk ID  | Description                           | Impact | Likelihood | Mitigation                                                      |
 | -------- | ------------------------------------- | ------ | ---------- | --------------------------------------------------------------- |
@@ -498,6 +626,10 @@ flowchart TB
 | RISK-004 | Orphaned blob storage data            | Low    | Medium     | OrdersPlacedCompleteProcess workflow handles cleanup            |
 
 ### 7.2 Recommendations
+
+**Overview**
+
+Five improvements address identified gaps: Dead Letter Queue monitoring catches failed messages, circuit breakers prevent cascading failures, order status tracking improves customer visibility, batch progress reporting enhances UX, and event sourcing enables complete audit trails.
 
 | Priority | Recommendation                                | Rationale                                          | Effort |
 | -------- | --------------------------------------------- | -------------------------------------------------- | ------ |
@@ -511,7 +643,17 @@ flowchart TB
 
 ## 8. Technical Details
 
+**Overview**
+
+The Orders API exposes five endpoints: POST for single orders, POST for batch orders, GET for listing all orders, GET by ID, and DELETE. All endpoints return JSON and include distributed trace headers (TraceId, SpanId) for correlation across services. The OrderPlaced message contract includes the full order payload with customer ID, delivery address, products array, and total amount.
+
+The technology stack uses .NET 10, Blazor Server for the web frontend, and .NET Aspire 13.1 for local development orchestration. Azure Logic Apps Standard hosts the two workflows (OrdersPlacedProcess and OrdersPlacedCompleteProcess). The solution uses Entity Framework Core for SQL operations and the Azure.Messaging.ServiceBus SDK for message publishing with built-in retry policies.
+
 ### 8.1 Technology Stack
+
+**Overview**
+
+The eShop platform runs on .NET 10 with Blazor Server for the frontend, .NET Aspire 13.1 for local orchestration, and Azure Container Apps for production hosting. Data services include Azure SQL, Service Bus, Blob Storage, and Application Insights.
 
 | Component     | Technology                | Version   |
 | ------------- | ------------------------- | --------- |
@@ -526,6 +668,10 @@ flowchart TB
 
 ### 8.2 API Endpoints
 
+**Overview**
+
+The Orders API exposes five endpoints through OrdersController: POST /api/orders for single orders, POST /api/orders/batch for bulk submission, GET /api/orders for listing, GET /api/orders/{id} for retrieval, and DELETE /api/orders/{id} for removal.
+
 | Method | Endpoint            | Description        | Service          |
 | ------ | ------------------- | ------------------ | ---------------- |
 | POST   | `/api/orders`       | Place new order    | OrdersController |
@@ -535,6 +681,10 @@ flowchart TB
 | POST   | `/api/orders/batch` | Place batch orders | OrdersController |
 
 ### 8.3 Message Contracts
+
+**Overview**
+
+The OrderPlaced message publishes to the 'ordersplaced' topic with JSON content containing the full order payload. Message properties include MessageId (order ID), Subject ('OrderPlaced'), and distributed trace headers (TraceId, SpanId) for cross-service correlation.
 
 ```yaml
 OrderPlaced:
