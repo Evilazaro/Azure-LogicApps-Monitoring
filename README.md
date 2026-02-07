@@ -10,11 +10,11 @@ A production-ready monitoring solution for Azure Logic Apps Standard, built with
 
 **Overview**
 
-This solution demonstrates enterprise-grade patterns for integrating Azure Logic Apps with modern .NET applications. It provides end-to-end observability through Application Insights, processes orders via Azure Service Bus messaging, and persists data to Azure SQL Database—all authenticated using managed identities with zero secrets in code.
+This solution demonstrates **enterprise-grade patterns** for integrating Azure Logic Apps with modern .NET applications. It provides **end-to-end observability** through Application Insights, processes orders via **Azure Service Bus messaging**, and persists data to Azure SQL Database—all authenticated using **managed identities with zero secrets in code**.
 
-The project serves as both a reference architecture and a deployable template for teams building event-driven applications on Azure. By leveraging .NET Aspire for local development orchestration and Azure Developer CLI (`azd`) for cloud deployment, developers can iterate locally with emulators and deploy to production with a single command.
+The project serves as both a **reference architecture** and a deployable template for teams building event-driven applications on Azure. By leveraging **.NET Aspire for local development orchestration** and **Azure Developer CLI (`azd`) for cloud deployment**, developers can iterate locally with emulators and deploy to production with a single command.
 
-For platform teams and architects, this repository showcases Infrastructure as Code (IaC) best practices using modular Bicep templates, VNet-integrated workloads, and comprehensive lifecycle hooks for CI/CD automation.
+> 📌 **Reference**: For platform teams and architects, this repository showcases Infrastructure as Code (IaC) best practices using modular Bicep templates, VNet-integrated workloads, and comprehensive lifecycle hooks for CI/CD automation.
 
 ## 📑 Table of Contents
 
@@ -32,9 +32,9 @@ For platform teams and architects, this repository showcases Infrastructure as C
 
 **Overview**
 
-The solution follows a microservices architecture orchestrated by .NET Aspire, with Azure Logic Apps providing workflow automation capabilities. The architecture emphasizes security through managed identity authentication, network isolation via VNet integration, and comprehensive observability through distributed tracing.
+The solution follows a **microservices architecture** orchestrated by .NET Aspire, with Azure Logic Apps providing workflow automation capabilities. The architecture emphasizes **security through managed identity authentication**, **network isolation via VNet integration**, and **comprehensive observability through distributed tracing**.
 
-All components communicate through well-defined interfaces: the Web App calls the Orders API via HTTP, the API publishes events to Service Bus, and Logic Apps workflows subscribe to topics to process orders asynchronously. This decoupled design enables independent scaling and resilient message processing.
+All components communicate through well-defined interfaces: the Web App calls the Orders API via HTTP, the API publishes events to Service Bus, and Logic Apps workflows subscribe to topics to process orders asynchronously. This **decoupled design** enables **independent scaling** and **resilient message processing**.
 
 ```mermaid
 ---
@@ -109,14 +109,14 @@ This solution delivers a complete platform for building and monitoring event-dri
 
 Each capability integrates seamlessly with Azure's native services, eliminating the need for third-party tools or complex custom integrations. Whether you're building proof-of-concept workflows or production-scale order processing systems, these features provide the foundation you need.
 
-| Feature                          | Description                                                                                    | Benefits                                                                           |
-| -------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| 🎯 **.NET Aspire Orchestration** | Unified local development with service discovery, health checks, and distributed configuration | Single-command startup, automatic dependency wiring, consistent dev/prod parity    |
-| ⚡ **Logic Apps Standard**       | Event-driven workflow automation with Service Bus triggers and HTTP actions                    | Visual workflow designer, built-in retry policies, stateful execution              |
-| 🔒 **Managed Identity Auth**     | Zero-secret authentication for all Azure service connections                                   | Enhanced security posture, no credential rotation, audit-friendly                  |
-| 📊 **Distributed Observability** | End-to-end tracing with OpenTelemetry and Application Insights integration                     | Correlated traces across services, real-time metrics, actionable alerts            |
-| 🏗️ **Infrastructure as Code**    | Modular Bicep templates with shared/workload separation                                        | Reproducible deployments, version-controlled infrastructure, environment promotion |
-| 🚀 **One-Command Deployment**    | Azure Developer CLI (`azd`) integration with lifecycle hooks                                   | `azd up` deploys everything, automated testing, environment isolation              |
+| Feature                          | Description                                                                                    | Benefits                                                                               |
+| -------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 🎯 **.NET Aspire Orchestration** | Unified local development with service discovery, health checks, and distributed configuration | **Single-command startup**, automatic dependency wiring, consistent dev/prod parity    |
+| ⚡ **Logic Apps Standard**       | Event-driven workflow automation with Service Bus triggers and HTTP actions                    | Visual workflow designer, **built-in retry policies**, stateful execution              |
+| 🔒 **Managed Identity Auth**     | **Zero-secret authentication** for all Azure service connections                               | Enhanced security posture, **no credential rotation**, audit-friendly                  |
+| 📊 **Distributed Observability** | End-to-end tracing with OpenTelemetry and Application Insights integration                     | **Correlated traces across services**, real-time metrics, actionable alerts            |
+| 🏗️ **Infrastructure as Code**    | Modular Bicep templates with shared/workload separation                                        | **Reproducible deployments**, version-controlled infrastructure, environment promotion |
+| 🚀 **One-Command Deployment**    | Azure Developer CLI (`azd`) integration with lifecycle hooks                                   | **`azd up` deploys everything**, automated testing, environment isolation              |
 
 ## 📋 Requirements
 
@@ -124,17 +124,17 @@ Each capability integrates seamlessly with Azure's native services, eliminating 
 
 The solution requires a modern .NET development environment with Azure CLI tools for cloud deployment. Local development uses emulators and containers to simulate Azure services, enabling full offline development workflows.
 
-Ensure your workstation meets these prerequisites before beginning. The preprovision hook validates requirements automatically, but verifying them in advance prevents deployment delays.
+> 💡 **Tip**: Ensure your workstation meets these prerequisites before beginning. The preprovision hook validates requirements automatically, but verifying them in advance prevents deployment delays.
 
 | Category      | Requirements                                           | More Information                                                            |
 | ------------- | ------------------------------------------------------ | --------------------------------------------------------------------------- |
-| **Runtime**   | .NET SDK 10.0.100+                                     | [Download .NET](https://dotnet.microsoft.com/download)                      |
-| **Container** | Docker Desktop or compatible runtime                   | [Docker Desktop](https://www.docker.com/products/docker-desktop/)           |
-| **CLI Tools** | Azure CLI ≥2.60.0, Azure Developer CLI ≥1.11.0         | [Install Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli) |
-| **Cloud**     | Azure subscription with Contributor access             | [Create Free Account](https://azure.microsoft.com/free/)                    |
+| **Runtime**   | **.NET SDK 10.0.100+**                                 | [Download .NET](https://dotnet.microsoft.com/download)                      |
+| **Container** | **Docker Desktop** or compatible runtime               | [Docker Desktop](https://www.docker.com/products/docker-desktop/)           |
+| **CLI Tools** | **Azure CLI ≥2.60.0**, **Azure Developer CLI ≥1.11.0** | [Install Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli) |
+| **Cloud**     | Azure subscription with **Contributor access**         | [Create Free Account](https://azure.microsoft.com/free/)                    |
 | **IDE**       | Visual Studio 2022 17.10+ or VS Code with C# extension | [Visual Studio](https://visualstudio.microsoft.com/)                        |
 
-> ⚠️ **Important**: The solution uses .NET 10.0 Preview features. Ensure your SDK supports the target framework specified in `global.json`.
+> ⚠️ **Warning**: The solution uses **.NET 10.0 Preview** features. Ensure your SDK supports the target framework specified in `global.json`.
 
 ## 🚀 Quick Start
 
@@ -165,7 +165,7 @@ The Aspire dashboard opens automatically at `https://localhost:15000`, displayin
 
 **Overview**
 
-Deployment uses Azure Developer CLI (`azd`) for consistent, repeatable infrastructure provisioning and application deployment. The workflow includes pre-provisioning validation, infrastructure deployment, and post-provisioning configuration.
+Deployment uses **Azure Developer CLI (`azd`)** for consistent, repeatable infrastructure provisioning and application deployment. The workflow includes pre-provisioning validation, infrastructure deployment, and post-provisioning configuration.
 
 The deployment pipeline executes lifecycle hooks that build the solution, run tests, provision Azure resources via Bicep templates, configure managed identity database access, and deploy containerized applications to Azure Container Apps.
 
@@ -210,7 +210,7 @@ Deployed Resources:
   - Application Insights
 ```
 
-> ⚠️ **Note**: Initial deployment takes 15-25 minutes. Subsequent deployments using `azd deploy` complete in 3-5 minutes.
+> ⚠️ **Warning**: **Initial deployment takes 15-25 minutes**. Subsequent deployments using `azd deploy` complete in 3-5 minutes.
 
 ## 💻 Usage
 
@@ -258,7 +258,7 @@ curl -X POST https://orders-api.<env>.azurecontainerapps.io/api/Orders \
 
 **Overview**
 
-Configuration follows the .NET options pattern with environment-specific overrides. Local development uses user secrets for sensitive values, while Azure deployment retrieves configuration from environment variables injected by Aspire.
+Configuration follows the **.NET options pattern** with environment-specific overrides. Local development uses **user secrets** for sensitive values, while Azure deployment retrieves configuration from environment variables injected by Aspire.
 
 The modular configuration approach separates shared settings (connection strings, endpoints) from environment-specific values (replica counts, resource SKUs), enabling consistent behavior across dev/test/prod environments.
 
@@ -315,7 +315,7 @@ Before contributing, review the existing issues and discussions to avoid duplica
 
 - Follow [C# coding conventions](https://docs.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions)
 - Include XML documentation for public APIs
-- Ensure all tests pass before submitting PRs
+- **Ensure all tests pass before submitting PRs**
 - Use conventional commit messages
 
 > 💡 **Tip**: Run `dotnet format` before committing to ensure consistent code style.
