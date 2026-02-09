@@ -59,10 +59,10 @@ cd Azure-LogicApps-Monitoring
 # 2. Authenticate with Azure
 azd auth login
 
-# 3. Create a new environment
+# 3. Create a new environment (REQUIRED)
 azd env new dev
 
-# 4. Provision infrastructure and deploy
+# 4. Provision infrastructure and deploy (single command)
 azd up
 ```
 
@@ -81,7 +81,7 @@ Next steps:
   - Open workflows/OrdersManagement to configure Logic Apps
 ```
 
-> ⚠️ **Prerequisites**: **MUST have** Azure CLI >= 2.60.0, Azure Developer CLI >= 1.11.0, **.NET SDK 10.0**, and an **Azure subscription with Contributor access**.
+> ⚠️ **Prerequisites**: **MUST have** Azure CLI **>= 2.60.0**, Azure Developer CLI **>= 1.11.0**, **.NET SDK 10.0**, and an **Azure subscription with Contributor access**. Verify with `hooks/check-dev-workstation.ps1` before deployment.
 
 ## Architecture
 
@@ -232,13 +232,13 @@ azd env get-values
 
 **Configuration Parameters:**
 
-| Parameter             | Description                        | Default   | Required |
-| --------------------- | ---------------------------------- | --------- | -------- |
-| **`AZURE_LOCATION`**  | Azure region for deployment        | `eastus`  | ✅       |
-| **`SOLUTION_NAME`**   | Resource name prefix               | `orders`  | ❌       |
-| **`ENV_NAME`**        | Environment identifier             | `dev`     | ✅       |
-| `DEPLOY_HEALTH_MODEL` | Enable Azure Monitor Health Models | `false`   | ❌       |
-| `AZURE_SUBSCRIPTION`  | Target Azure subscription ID       | (current) | ❌       |
+| Parameter             | Description                                 | Default   | Required |
+| --------------------- | ------------------------------------------- | --------- | -------- |
+| **`AZURE_LOCATION`**  | **Azure region** for deployment             | `eastus`  | ✅       |
+| **`SOLUTION_NAME`**   | **Resource name prefix** (must be unique)   | `orders`  | ❌       |
+| **`ENV_NAME`**        | **Environment identifier** (dev/prod/stage) | `dev`     | ✅       |
+| `DEPLOY_HEALTH_MODEL` | Enable Azure Monitor Health Models          | `false`   | ❌       |
+| `AZURE_SUBSCRIPTION`  | Target Azure subscription ID                | (current) | ❌       |
 
 ### CI/CD Pipeline Deployment
 
@@ -255,7 +255,7 @@ azd env get-values
     AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 ```
 
-> 💡 **Tip**: **Use service principal authentication with federated credentials** for CI/CD pipelines. The `hooks/configure-federated-credential.ps1` script **automates this setup**.
+> 💡 **Tip**: **Use service principal authentication with federated credentials** for CI/CD pipelines to enable passwordless authentication. The `hooks/configure-federated-credential.ps1` script **automates this setup**.
 
 ### Local Development
 
@@ -272,7 +272,7 @@ Access local endpoints:
 - **Orders API**: <http://localhost:5001/swagger> (Swagger UI)
 - **Web App**: <http://localhost:5000> (Blazor UI)
 
-> ⚠️ **Local Requirements**: **MUST have** SQL Server LocalDB or Docker SQL container, and optionally Azure Service Bus emulator for full workflow testing.
+> ⚠️ **Local Requirements**: **MUST have** either **SQL Server LocalDB** or **Docker SQL container** running. Optionally install **Azure Service Bus emulator** for complete workflow testing without Azure dependency.
 
 ## Usage
 
@@ -285,16 +285,16 @@ The solution exposes two primary interfaces: a RESTful API for programmatic acce
 **REST Endpoints** (OpenAPI/Swagger documented):
 
 ```http
-# Health check
+# Health check (monitoring endpoint)
 GET https://orders-api-<id>.azurecontainerapps.io/health
 
-# Get all orders
+# Get all orders (supports pagination)
 GET https://orders-api-<id>.azurecontainerapps.io/api/v1/orders
 
 # Get order by ID
 GET https://orders-api-<id>.azurecontainerapps.io/api/v1/orders/{orderId}
 
-# Create new order
+# Create new order (requires authentication)
 POST https://orders-api-<id>.azurecontainerapps.io/api/v1/orders
 Content-Type: application/json
 
@@ -380,10 +380,10 @@ az monitor app-insights query \
 
 View in **Application Insights → Workbooks → "Logic Apps Monitoring"**:
 
-- **Order Processing Latency**: P50/P95/P99 percentiles
-- **Service Availability**: Uptime percentage (**target: 99.9%**)
-- **Error Rate**: Failed requests per minute (**target: < 0.1%**)
-- **Logic App Runs**: Success/failure ratio and duration
+- **Order Processing Latency**: P50/P95/P99 percentiles (monitor for SLA compliance)
+- **Service Availability**: Uptime percentage (**baseline target: 99.9%**)
+- **Error Rate**: Failed requests per minute (**baseline target: < 0.1%**)
+- **Logic App Runs**: Success/failure ratio and average duration
 
 ### Logic Apps Workflow
 
@@ -448,33 +448,33 @@ This solution delivers a comprehensive set of capabilities for enterprise-grade 
 
 This section outlines the technical prerequisites, Azure permissions, and local development dependencies required to deploy and run the Azure Logic Apps Monitoring Solution.
 
-> ⚠️ **Why Requirements Matter**: **Ensuring all prerequisites are met before deployment prevents 95% of common deployment failures** and **reduces troubleshooting time from hours to minutes**. **Version compatibility is critical**—older .NET SDKs or Azure CLI versions may cause silent failures or missing features.
+> ⚠️ **Critical**: **Verifying all prerequisites before deployment prevents 95% of common failures** and **reduces troubleshooting time from hours to minutes**. **Version compatibility is critical**—older .NET SDKs or Azure CLI versions may cause **silent failures** or missing features.
 
 > 💡 **How to Verify**: Use the provided **verification commands** to audit your environment. The **`hooks/check-dev-workstation.ps1` script automates prerequisite validation** for all dependencies listed below.
 
 ### Local Development
 
-| Requirement            | Minimum Version | Recommended Version | Verification Command        | Purpose                                           |
-| ---------------------- | --------------- | ------------------- | --------------------------- | ------------------------------------------------- |
-| 🔷 **.NET SDK**        | **10.0.100**    | 10.0.100+ (latest)  | `dotnet --version`          | Build and run .NET Aspire AppHost and services    |
-| ☁️ **Azure CLI**       | **2.60.0**      | 2.70.0+             | `az --version`              | Interact with Azure resources via command line    |
-| 🚀 **Azure Dev CLI**   | **1.11.0**      | 1.12.0+             | `azd version`               | Manage infrastructure deployment and environments |
-| 🐳 **Docker Desktop**  | 4.30.0          | 4.35.0+             | `docker --version`          | Container builds and local Service Bus emulator   |
-| 📝 **PowerShell**      | 7.4.0           | 7.5.0+              | `pwsh --version`            | Execute deployment hooks and utility scripts      |
-| 🔧 **Git**             | 2.40.0          | 2.45.0+             | `git --version`             | Clone repository and version control              |
-| 🗄️ **SQL LocalDB**     | 16.0.1000       | 19.0+ (optional)    | `sqllocaldb info`           | Local SQL Server for development (optional)       |
-| 🎨 **Visual Studio**   | 2022 v17.12     | 2025 v18.1+         | `devenv /?` (check version) | Full IDE experience (optional, VS Code works too) |
-| 📦 **Node.js (CI/CD)** | 20.x LTS        | 22.x LTS            | `node --version`            | Required only for GitHub Actions workflows        |
+| Requirement            | Minimum Version | Recommended Version | Verification Command        | Purpose                                            |
+| ---------------------- | --------------- | ------------------- | --------------------------- | -------------------------------------------------- |
+| 🔷 **.NET SDK**        | **10.0.100**    | 10.0.100+ (latest)  | `dotnet --version`          | **Required**: Build and run .NET Aspire AppHost    |
+| ☁️ **Azure CLI**       | **2.60.0**      | 2.70.0+             | `az --version`              | **Required**: Interact with Azure resources        |
+| 🚀 **Azure Dev CLI**   | **1.11.0**      | 1.12.0+             | `azd version`               | **Required**: Manage infrastructure deployment     |
+| 🐳 **Docker Desktop**  | 4.30.0          | 4.35.0+             | `docker --version`          | **Required**: Container builds and local runtime   |
+| 📝 **PowerShell**      | 7.4.0           | 7.5.0+              | `pwsh --version`            | **Required**: Execute deployment hooks             |
+| 🔧 **Git**             | 2.40.0          | 2.45.0+             | `git --version`             | **Required**: Clone repository and version control |
+| 🗄️ **SQL LocalDB**     | 16.0.1000       | 19.0+ (optional)    | `sqllocaldb info`           | Optional: Local SQL Server for development         |
+| 🎨 **Visual Studio**   | 2022 v17.12     | 2025 v18.1+         | `devenv /?` (check version) | Optional: Full IDE experience (VS Code works too)  |
+| 📦 **Node.js (CI/CD)** | 20.x LTS        | 22.x LTS            | `node --version`            | Optional: Required only for GitHub Actions         |
 
 ### Azure Subscription
 
-| Requirement                | Details                                                                | Validation Method                                   |
-| -------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------- |
-| 🏢 **Active Subscription** | **Valid Azure subscription with active billing**                       | `az account show`                                   |
-| 🔐 **RBAC Permissions**    | **`Contributor` role** at subscription or resource group scope         | `az role assignment list --assignee <your-user-id>` |
-| 💰 **Resource Quotas**     | West US 2: 20+ vCPUs for Container Apps, SQL DTU quota                 | `az vm list-usage --location westus2`               |
-| 🌍 **Region Availability** | Target region supports Container Apps, Logic Apps, Service Bus         | Check Azure Portal → Region Availability            |
-| 📊 **Service Enablement**  | Enable providers: Microsoft.App, Microsoft.Logic, Microsoft.ServiceBus | `az provider register --namespace Microsoft.App`    |
+| Requirement                | Details                                                                                           | Validation Method                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| 🏢 **Active Subscription** | **Valid Azure subscription** with **active billing enabled**                                      | `az account show`                                   |
+| 🔐 **RBAC Permissions**    | **`Contributor` role REQUIRED** at subscription or resource group scope                           | `az role assignment list --assignee <your-user-id>` |
+| 💰 **Resource Quotas**     | **Minimum 20+ vCPUs** for Container Apps in target region, SQL DTU quota available                | `az vm list-usage --location westus2`               |
+| 🌍 **Region Availability** | Target region **MUST support** Container Apps, Logic Apps Standard, Service Bus                   | Check Azure Portal → Region Availability            |
+| 📊 **Service Enablement**  | **Register required providers**: Microsoft.App, Microsoft.Logic, Microsoft.ServiceBus (automatic) | `az provider register --namespace Microsoft.App`    |
 
 ### Optional (Enhanced Experience)
 
@@ -512,7 +512,7 @@ bash hooks/check-dev-workstation.sh
 🎉 All critical prerequisites met! Ready to deploy.
 ```
 
-> 💡 **Troubleshooting**: If any checks fail, the script **provides installation instructions and documentation links**.
+> 💡 **Troubleshooting**: If any prerequisite checks fail, the validation script **automatically provides installation instructions and documentation links** to resolve issues.
 
 ## Configuration
 
@@ -520,7 +520,7 @@ bash hooks/check-dev-workstation.sh
 
 The solution uses a hierarchical configuration system combining environment variables (azd environments), user secrets (.NET), and Azure-managed settings (Container Apps environment variables).
 
-> 🔐 **Why This Configuration Model**: **Separating environment-specific settings from code prevents accidental credential leaks**, enables **zero-downtime configuration updates** in Azure, and supports **multiple deployment environments** (dev/staging/prod) from a single codebase.
+> 🔐 **Security Best Practice**: **Separating environment-specific settings from code prevents accidental credential leaks** and secret exposure in version control. This model enables **zero-downtime configuration updates** in Azure and supports **multiple deployment environments** (dev/staging/prod) from a single codebase.
 
 > 📌 **Configuration Flow**: During **`azd up`**, Bicep templates create Azure resources and output connection strings/endpoints. The **azd CLI injects these as Container Apps environment variables**. For local development, **.NET User Secrets store sensitive values**, while `appsettings.Development.json` contains non-sensitive defaults.
 
@@ -549,15 +549,15 @@ services:
 **Environment-specific overrides** (managed via `azd env set`):
 
 ```bash
-# Set environment variables
-azd env set AZURE_LOCATION westus2             # Target region
-azd env set SOLUTION_NAME myorders             # Resource prefix
-azd env set DEPLOY_HEALTH_MODEL true           # Enable health monitoring
-azd env set SQL_DATABASE_SKU S1                # SQL tier (Basic/S0/S1/S2)
-azd env set CONTAINER_APP_MIN_REPLICAS 1       # Min instances
-azd env set CONTAINER_APP_MAX_REPLICAS 10      # Max instances
+# Set environment variables (customize for your deployment)
+azd env set AZURE_LOCATION westus2             # Target region (REQUIRED)
+azd env set SOLUTION_NAME myorders             # Resource prefix (must be globally unique)
+azd env set DEPLOY_HEALTH_MODEL true           # Enable health monitoring (optional)
+azd env set SQL_DATABASE_SKU S1                # SQL tier: Basic/S0/S1/S2 (affects cost)
+azd env set CONTAINER_APP_MIN_REPLICAS 1       # Minimum instances (0 for cost savings)
+azd env set CONTAINER_APP_MAX_REPLICAS 10      # Maximum instances (scales based on load)
 
-# View all environment variables
+# View all configured environment variables
 azd env get-values
 ```
 
@@ -673,7 +673,7 @@ Logic Apps configuration is managed through:
 
 Access configuration in Azure Portal → Logic Apps → OrdersManagementLogicApp → Configuration.
 
-> ⚠️ **Security Best Practice**: **NEVER commit connection strings or secrets to version control**. **MUST use** azd environments, user secrets, or **Azure Key Vault** for sensitive values.
+> ⚠️ **Critical Security Requirement**: **NEVER commit connection strings, API keys, or secrets to version control**. **ALWAYS use** one of these secure methods: (1) `azd` environment variables, (2) .NET User Secrets for local development, or (3) **Azure Key Vault** for production secrets. Violations may expose credentials publicly.
 
 ## Contributing
 
@@ -708,10 +708,10 @@ Found a bug or have a feature request? Please open an issue on GitHub:
    ```
 
 2. **Make your changes** following code style guidelines:
-   - **Use C# 12 features and nullable reference types**
-   - **Follow .NET naming conventions** (PascalCase for types, camelCase for parameters)
-   - **Add XML documentation comments** to public APIs
-   - **Include unit tests** for new functionality (**85%+ code coverage target**)
+   - **MUST use C# 12 features** and **enable nullable reference types**
+   - **MUST follow .NET naming conventions** (PascalCase for types, camelCase for parameters)
+   - **MUST add XML documentation comments** to all public APIs
+   - **MUST include unit tests** for new functionality (**minimum 85% code coverage**)
 
 3. **Run tests locally** before committing:
 
@@ -763,14 +763,14 @@ git push origin feature/my-feature
 
 ### Code Review Guidelines
 
-**All pull requests MUST:**
+**All pull requests MUST meet these requirements:**
 
-- ✅ **Pass CI/CD build and test checks**
+- ✅ **Pass all CI/CD build and test checks** (no exceptions)
 - ✅ **Include unit tests** for new code (**minimum 80% coverage** for changed files)
-- ✅ **Update documentation** (README, XML comments) for public API changes
-- ✅ **Follow existing code style** and patterns
-- ✅ **Keep changes focused** (one feature/fix per PR)
-- ✅ **Squash commits before merge**
+- ✅ **Update documentation** (README, XML comments) for any public API changes
+- ✅ **Follow existing code style** and architectural patterns consistently
+- ✅ **Keep changes focused** (one feature/fix per PR, split large changes)
+- ✅ **Squash commits before merge** (clean commit history required)
 
 ### Community Guidelines
 
@@ -809,12 +809,12 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 **What This Means:**
 
-- ✅ Commercial use allowed
-- ✅ Modification allowed
-- ✅ Distribution allowed
-- ✅ Private use allowed
-- ⚠️ No warranty provided
-- ⚠️ No liability accepted
+- ✅ **Commercial use allowed** (deploy in production environments)
+- ✅ **Modification allowed** (customize for your needs)
+- ✅ **Distribution allowed** (share with others)
+- ✅ **Private use allowed** (internal projects)
+- ⚠️ **No warranty provided** (use at your own risk)
+- ⚠️ **No liability accepted** (maintainers not responsible for damages)
 
 ---
 
