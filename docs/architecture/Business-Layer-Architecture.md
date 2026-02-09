@@ -26,40 +26,36 @@
 
 ### Overview
 
-The Azure Logic Apps Monitoring Solution implements a **production-ready business architecture** designed for enterprise-grade order management and comprehensive observability capabilities. The solution demonstrates excellence across all **TOGAF 10 Business Architecture domains**, with particular strength in business process automation, event-driven workflows, and **end-to-end traceability**.
+The Azure Logic Apps Monitoring Solution delivers a **production-ready business architecture** for enterprise-grade order management with comprehensive observability. This architecture demonstrates TOGAF 10 compliance across all domains, emphasizing **business process automation**, **event-driven workflows**, and **end-to-end traceability**.
 
 ### 1.1 Business Architecture Scope
 
-**In Scope:**
+**In Scope:** 11 TOGAF 10 Business Architecture Components
 
-✅ **Business Strategy & Objectives** - Mission, vision, and strategic goals  
-✅ **Business Capabilities** - Order management, monitoring, workflow orchestration  
-✅ **Value Streams** - Order fulfillment and monitoring value delivery  
-✅ **Business Processes** - Placement, processing, validation, archival  
-✅ **Business Services** - Orders API, message handling, workflow services  
-✅ **Business Functions** - Operations, customer management, monitoring  
-✅ **Business Roles & Actors** - Customer, operations team, system actors  
-✅ **Business Rules** - Validation rules, processing constraints  
-✅ **Business Events** - Lifecycle events, state transitions  
-✅ **Business Objects/Entities** - Order, OrderProduct domain models  
-✅ **KPIs & Metrics** - Performance, quality, operational metrics
+| Component                 | Coverage                                             |
+| ------------------------- | ---------------------------------------------------- |
+| **Strategy & Objectives** | Mission, vision, strategic goals                     |
+| **Capabilities**          | Order management, monitoring, workflow orchestration |
+| **Value Streams**         | Order fulfillment, monitoring value delivery         |
+| **Processes**             | Placement, processing, validation, archival          |
+| **Services**              | Orders API, message handling, workflow services      |
+| **Functions**             | Operations, customer management, monitoring          |
+| **Roles & Actors**        | Customer, operations team, system actors             |
+| **Rules**                 | Validation rules, processing constraints             |
+| **Events**                | Lifecycle events, state transitions                  |
+| **Objects/Entities**      | Order, OrderProduct domain models                    |
+| **KPIs & Metrics**        | Performance, quality, operational metrics            |
 
-**Out of Scope:**
-
-❌ Technology implementation details (see Technology Layer documentation)  
-❌ Data models and schemas (see Data Layer documentation)  
-❌ Application architecture patterns (see Application Layer documentation)
+**Out of Scope:** Technology implementation (see Technology Layer), Data models (see Data Layer), Application patterns (see Application Layer)
 
 ### 1.2 Business Value Proposition
 
-The solution delivers **measurable business value** through:
-
-| Value Stream                   | Business Impact                                                      | Key Metrics                      |
-| ------------------------------ | -------------------------------------------------------------------- | -------------------------------- |
-| 📦 **Order Fulfillment**       | Streamlined end-to-end order processing from placement to completion | Order Processing Duration: ~2.5s |
-| 📈 **Operational Visibility**  | Real-time monitoring of business workflows and process health        | 100% workflow visibility         |
-| ⚡ **Business Agility**        | Rapid deployment and scaling of business services                    | Deployment time: <10 minutes     |
-| 🔒 **Compliance & Governance** | Audit trail and traceability for all business transactions           | Full transaction traceability    |
+| Value Stream                  | Impact                            | Key Metric           |
+| ----------------------------- | --------------------------------- | -------------------- |
+| 📦 **Order Fulfillment**      | Streamlined end-to-end processing | ~2.5s total duration |
+| 📈 **Operational Visibility** | Real-time workflow monitoring     | 100% visibility      |
+| ⚡ **Business Agility**       | Rapid deployment & scaling        | <10 min deployment   |
+| 🔒 **Compliance**             | Complete audit trail              | 100% traceability    |
 
 ### 1.3 Key Findings & Strategic Assessment
 
@@ -75,22 +71,13 @@ The solution delivers **measurable business value** through:
 
 ### 1.4 Business Objectives Alignment
 
-**Primary Business Objectives:**
-
-- 🎯 **Reduce Mean Time to Resolution (MTTR)** - Centralized observability reduces MTTR by 80%+
-- 📊 **Ensure SLA Compliance** - Comprehensive monitoring enables 99.9% SLA compliance
-- 🚀 **Enable Business Continuity** - Resilient order processing with automated error handling
-- 💼 **Support Business Scalability** - Cloud-native architecture supports horizontal scaling
-
-**Strategic Alignment:**
-
-| Business Objective    | Strategic Initiative       | Measurable Outcome           | Status      |
-| --------------------- | -------------------------- | ---------------------------- | ----------- |
-| MTTR Reduction        | Centralized Observability  | <2 minute resolution time    | ✅ Achieved |
-| SLA Compliance        | 24/7 Monitoring & Alerting | 99.9% uptime                 | ✅ Achieved |
-| Business Continuity   | Automated Error Handling   | <1% unhandled error rate     | ✅ Achieved |
-| Scalability           | Cloud-Native Architecture  | Support 1000+ orders/minute  | ✅ Achieved |
-| Deployment Efficiency | Infrastructure-as-Code     | <10 minute deployment cycles | ✅ Achieved |
+| Objective                    | Initiative                 | Target               | Status      |
+| ---------------------------- | -------------------------- | -------------------- | ----------- |
+| 🎯 **MTTR Reduction**        | Centralized Observability  | <2 min resolution    | ✅ Achieved |
+| 📊 **SLA Compliance**        | 24/7 Monitoring & Alerting | 99.9% uptime         | ✅ Achieved |
+| 🚀 **Business Continuity**   | Automated Error Handling   | <1% unhandled errors | ✅ Achieved |
+| 💼 **Scalability**           | Cloud-Native Architecture  | 1000+ orders/min     | ✅ Achieved |
+| ⚡ **Deployment Efficiency** | Infrastructure-as-Code     | <10 min cycles       | ✅ Achieved |
 
 ### 1.5 Architecture Quality Scorecard
 
