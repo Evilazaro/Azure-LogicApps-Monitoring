@@ -51,13 +51,42 @@ flowchart TB
     accTitle: Azure Logic Apps Monitoring Architecture
     accDescr: Multi-tier architecture showing web app, API services, Logic Apps workflows, and Azure monitoring infrastructure
 
+    %% ============================================
+    %% COLOR SCHEME DOCUMENTATION
+    %% ============================================
+    %% HIERARCHICAL (structural nesting):
+    %%   Level 1: #E8EAF6 (Indigo 50) - Main container (aca)
+    %%   Level 2: #C5CAE9 (Indigo 100) - Sub-containers (webapp, api)
+    %% SEMANTIC (functional purpose at Level 1):
+    %%   Client Layer: Blue #BBDEFB (User interaction)
+    %%   Workflows: Green #C8E6C9 (Process/workload)
+    %%   Data Layer: Teal #B2DFDB (Data storage)
+    %%   Monitoring: Yellow #FFF9C4 (Observability)
+    %%   Security: Orange #FFE0B2 (Authentication)
+    %% CONTENT NODES: Material Design 100-level semantic colors
+    %% ============================================
+
+    %% ============================================
+    %% STANDARD COLOR SCHEME
+    %% ============================================
+    classDef level1Group fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px,color:#000
+    classDef level2Group fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#000
+    classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
+    classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
+    classDef mdYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#000
+    classDef mdOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
+    classDef mdTeal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#000
+    classDef mdPurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#000
+    classDef mdRed fill:#FFCDD2,stroke:#D32F2F,stroke-width:2px,color:#000
+    %% ============================================
+
     subgraph client["🌐 Client Layer"]
-        user["👤 User Browser"]:::mdAmber
+        user["👤 User Browser"]:::mdBlue
     end
 
     subgraph aca["☁️ Azure Container Apps Environment"]
         subgraph webapp["Web Application"]
-            blazor["🎨 eShop.Web.App<br/>(Blazor Server)"]:::mdIndigo
+            blazor["🎨 eShop.Web.App<br/>(Blazor Server)"]:::mdPurple
         end
 
         subgraph api["API Services"]
@@ -66,7 +95,7 @@ flowchart TB
     end
 
     subgraph workflows["⚙️ Logic Apps Standard"]
-        logicapp["📋 OrdersManagement<br/>Workflow"]:::mdPurple
+        logicapp["📋 OrdersManagement<br/>Workflow"]:::mdGreen
     end
 
     subgraph data["💾 Data Layer"]
@@ -76,11 +105,11 @@ flowchart TB
 
     subgraph monitoring["📊 Monitoring & Observability"]
         appinsights["📈 Application Insights<br/>(Telemetry)"]:::mdOrange
-        loganalytics["📝 Log Analytics<br/>(Workspace)"]:::mdCyan
+        loganalytics["📝 Log Analytics<br/>(Workspace)"]:::mdYellow
     end
 
     subgraph identity["🔐 Security"]
-        managedid["🆔 Managed Identity"]:::mdRed
+        managedid["🆔 Managed Identity"]:::mdOrange
     end
 
     user -->|HTTPS| blazor
@@ -100,15 +129,19 @@ flowchart TB
     managedid -->|Access Control| sqldb
     managedid -->|Access Control| servicebus
 
-    classDef mdIndigo fill:#E8EAF6,stroke:#3F51B5,stroke-width:2px,color:#1A237E
-    classDef mdTeal fill:#E0F2F1,stroke:#009688,stroke-width:2px,color:#004D40
-    classDef mdPurple fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px,color:#4A148C
-    classDef mdBlue fill:#E3F2FD,stroke:#2196F3,stroke-width:2px,color:#0D47A1
-    classDef mdGreen fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px,color:#1B5E20
-    classDef mdOrange fill:#FFF3E0,stroke:#FF9800,stroke-width:2px,color:#E65100
-    classDef mdCyan fill:#E0F7FA,stroke:#00BCD4,stroke-width:2px,color:#006064
-    classDef mdRed fill:#FFEBEE,stroke:#F44336,stroke-width:2px,color:#B71C1C
-    classDef mdAmber fill:#FFF8E1,stroke:#FFC107,stroke-width:2px,color:#FF6F00
+    %% ============================================
+    %% SUBGRAPH STYLING (MANDATORY - 7 subgraphs = 7 style directives)
+    %% ============================================
+    style client fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
+    style aca fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px
+    style webapp fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px
+    style api fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px
+    style workflows fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style data fill:#B2DFDB,stroke:#00796B,stroke-width:2px
+    style monitoring fill:#FFF9C4,stroke:#F57F17,stroke-width:2px
+    style identity fill:#FFE0B2,stroke:#E64A19,stroke-width:2px
+
+    %% Accessibility: WCAG AA verified (4.5:1 contrast ratio minimum)
 ```
 
 **Component Roles:**
