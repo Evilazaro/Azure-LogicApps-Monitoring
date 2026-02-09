@@ -1088,10 +1088,23 @@ flowchart TB
     accTitle: Business Rules Enforcement Architecture
     accDescr: Shows multi-layered defense-in-depth validation strategy with rule enforcement at schema, logic, and infrastructure layers
 
+    %% ============================================
+    %% STANDARD COLOR SCHEME v2.1
+    %% ============================================
+    classDef level1Group fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px,color:#000
+    classDef level2Group fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#000
+    classDef level3Group fill:#9FA8DA,stroke:#3F51B5,stroke-width:2px,color:#000
+    classDef level4Group fill:#7986CB,stroke:#3F51B5,stroke-width:1px,color:#000
+    classDef mainGroup fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px,color:#000
+    classDef subGroup fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#000
     classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
     classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
-    classDef mdOrange fill:#FFE0B2,stroke:#F57C00,stroke-width:2px,color:#000
+    classDef mdYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#000
     classDef mdRed fill:#FFCDD2,stroke:#D32F2F,stroke-width:2px,color:#000
+    classDef mdOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
+    classDef mdPurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#000
+    classDef mdTeal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#000
+    classDef mdGrey fill:#F5F5F5,stroke:#616161,stroke-width:2px,color:#000
 
     order["📦 Order Entity<br/>(Domain Model)"]:::mdBlue
 
@@ -1126,12 +1139,17 @@ flowchart TB
 
     subgraph legend["🛡️ Defense-in-Depth Strategy"]
         direction TB
-        e1["1️⃣ Schema: Data Annotations (BR-001 to BR-007)"]
-        e2["2️⃣ Logic: Service Methods (BR-008 to BR-010)"]
-        e3["3️⃣ Infrastructure: Database Constraints"]
+        e1["1️⃣ Schema: Data Annotations (BR-001 to BR-007)"]:::mdGreen
+        e2["2️⃣ Logic: Service Methods (BR-008 to BR-010)"]:::mdOrange
+        e3["3️⃣ Infrastructure: Database Constraints"]:::mdRed
     end
 
-    style legend fill:#FFF9C4,stroke:#F57F17,stroke-width:3px
+    %% ============================================
+    %% SUBGRAPH STYLING (1 subgraph = 1 style directive)
+    %% ============================================
+    style legend fill:#E8EAF6,stroke:#3F51B5,stroke-width:3px
+
+    %% Accessibility: WCAG AA verified (4.5:1 contrast ratio)
 ```
 
 ### 8.7 Business Rule Application Points
