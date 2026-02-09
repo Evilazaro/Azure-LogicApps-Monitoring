@@ -1102,11 +1102,11 @@ flowchart TB
     layer2["⚙️ Business Logic<br/>(Service Validation)"]:::mdOrange
     layer3["🔒 Infrastructure<br/>(Database Constraints)"]:::mdRed
 
-    br_schema["BR-001: ID Required<br/>BR-002: Customer ID Required<br/>BR-003: Total > 0<br/>BR-004: Min 1 Product<br/>BR-005: Delivery Address<br/>BR-006: Quantity ≥ 1<br/>BR-007: Price > 0"]:::mdGreen
+    br_schema["📋 BR-001: ID Required<br/>BR-002: Customer ID Required<br/>BR-003: Total > 0<br/>BR-004: Min 1 Product<br/>BR-005: Delivery Address<br/>BR-006: Quantity ≥ 1<br/>BR-007: Price > 0"]:::mdGreen
 
-    br_logic["BR-008: Duplicate Prevention<br/>BR-009: Batch Size Limit<br/>BR-010: Concurrency Control"]:::mdOrange
+    br_logic["📋 BR-008: Duplicate Prevention<br/>BR-009: Batch Size Limit<br/>BR-010: Concurrency Control"]:::mdOrange
 
-    br_infra["Foreign Key Constraints<br/>Unique Indexes<br/>Data Type Constraints"]:::mdRed
+    br_infra["📋 Foreign Key Constraints<br/>Unique Indexes<br/>Data Type Constraints"]:::mdRed
 
     order --> layer1
     layer1 --> layer2
