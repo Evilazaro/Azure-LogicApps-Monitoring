@@ -5,7 +5,7 @@
 ![Azure](https://img.shields.io/badge/Azure-Container%20Apps-0078D4?logo=microsoft-azure)
 ![Aspire](https://img.shields.io/badge/.NET-Aspire-512BD4)
 
-A comprehensive monitoring solution for Azure Logic Apps Standard, built with .NET Aspire orchestration and deployed to Azure Container Apps. This enterprise-grade solution provides real-time observability, distributed tracing, and health monitoring for Logic Apps workflows through Application Insights integration.
+A comprehensive monitoring solution for **Azure Logic Apps Standard**, built with **.NET Aspire orchestration** and deployed to **Azure Container Apps**. This enterprise-grade solution provides **real-time observability**, **distributed tracing**, and **health monitoring** for Logic Apps workflows through Application Insights integration.
 
 ## Table of Contents
 
@@ -27,11 +27,11 @@ A comprehensive monitoring solution for Azure Logic Apps Standard, built with .N
 
 ## Overview
 
-Enterprise Logic Apps deployments often lack comprehensive monitoring visibility, leading to delayed incident detection and difficult troubleshooting. This solution provides centralized observability across all Logic Apps workflows, reducing mean time to detection (MTTD) by 70% and enabling proactive issue resolution before business impact occurs.
+Enterprise Logic Apps deployments often lack comprehensive monitoring visibility, leading to **delayed incident detection** and difficult troubleshooting. This solution provides **centralized observability** across all Logic Apps workflows, **reducing mean time to detection (MTTD) by 70%** and enabling proactive issue resolution before business impact occurs.
 
-The solution leverages .NET Aspire for local development and orchestration, automatically provisioning Azure infrastructure including Application Insights, Log Analytics, Service Bus, and SQL Server. The Orders API serves as both a sample microservice and monitoring data aggregator, while the web application provides real-time dashboards visualizing Logic Apps execution metrics, errors, and performance telemetry.
+The solution leverages **.NET Aspire** for local development and orchestration, **automatically provisioning Azure infrastructure** including Application Insights, Log Analytics, Service Bus, and SQL Server. The **Orders API** serves as both a sample microservice and monitoring data aggregator, while the web application provides **real-time dashboards** visualizing Logic Apps execution metrics, errors, and performance telemetry.
 
-Built on .NET 10.0, the solution uses Azure Container Apps for hosting microservices with automatic scaling, Azure Managed Identity for secure authentication, and Bicep for infrastructure-as-code deployment. The AppHost orchestrator manages service dependencies, health checks, and observability configuration, ensuring consistent behavior between local development and production environments.
+Built on **.NET 10.0**, the solution uses **Azure Container Apps** for hosting microservices with automatic scaling, **Azure Managed Identity** for secure authentication, and **Bicep** for infrastructure-as-code deployment. The **AppHost orchestrator** manages service dependencies, health checks, and observability configuration, ensuring consistent behavior between local development and production environments.
 
 This project is ideal for:
 
@@ -161,10 +161,12 @@ flowchart TB
 
 1. User accesses web application via HTTPS
 2. Web app queries Orders API for monitoring data
-3. Orders API processes business logic and triggers Logic Apps workflows
-4. Logic Apps workflows consume Service Bus messages and update SQL database
-5. All components emit telemetry to Application Insights
-6. Logs aggregate in Log Analytics for querying and alerting
+3. Orders API processes business logic and **triggers Logic Apps workflows**
+4. Logic Apps workflows **consume Service Bus messages** and update SQL database
+5. **All components emit telemetry to Application Insights**
+6. **Logs aggregate in Log Analytics** for querying and alerting
+
+> 💡 **Observability Pattern**: Every request is traced end-to-end with a unique correlation ID, enabling full transaction visibility across all services.
 
 ## Features
 
@@ -176,16 +178,16 @@ Traditional Logic Apps monitoring through the Azure Portal provides limited visi
 
 The solution captures telemetry at multiple layers—API requests, Logic Apps diagnostics, database queries, and service bus messages—correlating them via distributed tracing. The web dashboard aggregates this data in real-time, providing actionable insights with drill-down capabilities.
 
-| Feature                          | Description                                                           | Status    | Benefit                                        |
-| -------------------------------- | --------------------------------------------------------------------- | --------- | ---------------------------------------------- |
-| **Real-Time Monitoring**         | Live telemetry streaming from Logic Apps workflows with <5s latency   | ✅ Stable | Immediate visibility into workflow execution   |
-| **Distributed Tracing**          | End-to-end transaction tracking across API → Logic Apps → Service Bus | ✅ Stable | Identify bottlenecks across service boundaries |
-| **Custom Dashboards**            | Blazor-based UI with configurable widgets and KQL-powered queries     | ✅ Stable | Tailored views for different operational roles |
-| **Automated Alerting**           | Threshold-based alerts on workflow failures, latency, and throughput  | ✅ Stable | Proactive issue detection before user impact   |
-| **Health Checks**                | Built-in liveness/readiness probes for all microservices              | ✅ Stable | Container orchestration and auto-recovery      |
-| **Infrastructure as Code**       | Complete Bicep templates for reproducible deployments                 | ✅ Stable | Consistent environments from dev to production |
-| **Managed Identity Integration** | Zero-secret authentication for all Azure resources                    | ✅ Stable | Enhanced security posture and compliance       |
-| **Local Development**            | .NET Aspire orchestration for inner-loop development with emulators   | ✅ Stable | Faster iteration without Azure dependencies    |
+| Feature                          | Description                                                               | Status    | Benefit                                          |
+| -------------------------------- | ------------------------------------------------------------------------- | --------- | ------------------------------------------------ |
+| **Real-Time Monitoring**         | Live telemetry streaming from Logic Apps workflows with **<5s latency**   | ✅ Stable | **Immediate visibility** into workflow execution |
+| **Distributed Tracing**          | **End-to-end transaction tracking** across API → Logic Apps → Service Bus | ✅ Stable | Identify bottlenecks across service boundaries   |
+| **Custom Dashboards**            | Blazor-based UI with configurable widgets and KQL-powered queries         | ✅ Stable | Tailored views for different operational roles   |
+| **Automated Alerting**           | **Threshold-based alerts** on workflow failures, latency, and throughput  | ✅ Stable | **Proactive issue detection** before user impact |
+| **Health Checks**                | Built-in liveness/readiness probes for all microservices                  | ✅ Stable | Container orchestration and auto-recovery        |
+| **Infrastructure as Code**       | Complete Bicep templates for reproducible deployments                     | ✅ Stable | Consistent environments from dev to production   |
+| **Managed Identity Integration** | **Zero-secret authentication** for all Azure resources                    | ✅ Stable | **Enhanced security posture** and compliance     |
+| **Local Development**            | .NET Aspire orchestration for inner-loop development with emulators       | ✅ Stable | Faster iteration without Azure dependencies      |
 
 > ⚠️ **Note**: Real-time monitoring requires Application Insights Standard pricing tier for live metrics streaming. Basic tier has 1-2 minute delays.
 
@@ -201,27 +203,27 @@ The solution requires both local development tools (.NET SDK, Azure CLI) and Azu
 
 ### Development Environment
 
-| Requirement                   | Minimum Version | Recommended | Purpose                         | Installation                                                                            |
-| ----------------------------- | --------------- | ----------- | ------------------------------- | --------------------------------------------------------------------------------------- |
-| **.NET SDK**                  | 10.0.100        | 10.0.100+   | Core framework                  | [Download](https://dot.net/download)                                                    |
-| **Azure CLI**                 | 2.60.0          | 2.65.0+     | Azure resource management       | [Download](https://learn.microsoft.com/cli/azure/install-azure-cli)                     |
-| **Azure Developer CLI (azd)** | 1.11.0          | 1.12.0+     | Infrastructure deployment       | [Download](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) |
-| **Visual Studio 2022**        | 17.12           | 17.13+      | IDE (optional)                  | [Download](https://visualstudio.microsoft.com/)                                         |
-| **VS Code**                   | 1.95+           | Latest      | Lightweight editor (optional)   | [Download](https://code.visualstudio.com/)                                              |
-| **Docker Desktop**            | 4.34+           | Latest      | Container runtime for local dev | [Download](https://www.docker.com/products/docker-desktop)                              |
-| **PowerShell**                | 7.4+            | Latest      | Deployment scripts              | [Download](https://github.com/PowerShell/PowerShell)                                    |
+| Requirement                   | **Minimum Version** | **Recommended** | Purpose                         | Installation                                                                            |
+| ----------------------------- | ------------------- | --------------- | ------------------------------- | --------------------------------------------------------------------------------------- |
+| **.NET SDK**                  | **10.0.100**        | 10.0.100+       | Core framework                  | [Download](https://dot.net/download)                                                    |
+| **Azure CLI**                 | **2.60.0**          | 2.65.0+         | Azure resource management       | [Download](https://learn.microsoft.com/cli/azure/install-azure-cli)                     |
+| **Azure Developer CLI (azd)** | **1.11.0**          | 1.12.0+         | Infrastructure deployment       | [Download](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) |
+| **Visual Studio 2022**        | 17.12               | 17.13+          | IDE (optional)                  | [Download](https://visualstudio.microsoft.com/)                                         |
+| **VS Code**                   | 1.95+               | Latest          | Lightweight editor (optional)   | [Download](https://code.visualstudio.com/)                                              |
+| **Docker Desktop**            | 4.34+               | Latest          | Container runtime for local dev | [Download](https://www.docker.com/products/docker-desktop)                              |
+| **PowerShell**                | 7.4+                | Latest          | Deployment scripts              | [Download](https://github.com/PowerShell/PowerShell)                                    |
 
 > 💡 **Tip**: Run `dotnet --version`, `az --version`, and `azd version` to verify installations.
 
 ### Azure Subscription Requirements
 
-**Azure Entra ID Permissions:**
+> 📌 **Azure Entra ID Permissions Required:**
 
 - **Contributor** role on target subscription/resource group
 - **User Access Administrator** (for managed identity configuration)
 - **Logic Apps Contributor** (if deploying Logic Apps)
 
-**Required Resource Providers** (auto-registered by deployment):
+> 📌 **Required Resource Providers** (auto-registered by deployment):
 
 - `Microsoft.App` (Container Apps)
 - `Microsoft.Logic` (Logic Apps)
@@ -267,7 +269,7 @@ az --version
 azd version
 # Expected: azd version 1.11.0 or higher
 
-# Login to Azure
+# Login to Azure (REQUIRED)
 az login
 ```
 
@@ -406,6 +408,8 @@ azd up
 
 # ⏱️ Estimated time: 8-12 minutes
 ```
+
+> 💡 **Tip**: The `azd up` command is **idempotent** - you can run it multiple times safely. It will update existing resources rather than creating duplicates.
 
 **Expected Output:**
 
@@ -728,15 +732,15 @@ az containerapp update \
 
 **Container Apps Environment Variables Reference:**
 
-| Variable                                | Description                      | Example                     | Required    |
-| --------------------------------------- | -------------------------------- | --------------------------- | ----------- |
-| `ASPNETCORE_ENVIRONMENT`                | Runtime environment              | `Development`, `Production` | Yes         |
-| `ConnectionStrings__OrdersDb`           | SQL connection string            | `Server=...;Database=...`   | Yes         |
-| `ConnectionStrings__ServiceBus`         | Service Bus endpoint             | `Endpoint=sb://...`         | Yes         |
-| `ApplicationInsights__ConnectionString` | App Insights instrumentation key | `InstrumentationKey=...`    | Yes         |
-| `AZURE_CLIENT_ID`                       | Managed identity client ID       | `12345678-1234-...`         | Yes (Azure) |
-| `HealthChecks__ServiceBus__Enabled`     | Enable Service Bus health check  | `true`, `false`             | No          |
-| `RateLimiting__RequestsPerMinute`       | API rate limit                   | `100`                       | No          |
+| Variable                                | Description                      | Example                     | **Required**    |
+| --------------------------------------- | -------------------------------- | --------------------------- | --------------- |
+| `ASPNETCORE_ENVIRONMENT`                | Runtime environment              | `Development`, `Production` | **Yes**         |
+| `ConnectionStrings__OrdersDb`           | SQL connection string            | `Server=...;Database=...`   | **Yes**         |
+| `ConnectionStrings__ServiceBus`         | Service Bus endpoint             | `Endpoint=sb://...`         | **Yes**         |
+| `ApplicationInsights__ConnectionString` | App Insights instrumentation key | `InstrumentationKey=...`    | **Yes**         |
+| `AZURE_CLIENT_ID`                       | Managed identity client ID       | `12345678-1234-...`         | **Yes (Azure)** |
+| `HealthChecks__ServiceBus__Enabled`     | Enable Service Bus health check  | `true`, `false`             | No              |
+| `RateLimiting__RequestsPerMinute`       | API rate limit                   | `100`                       | No              |
 
 ### Infrastructure Configuration
 
@@ -805,12 +809,14 @@ azd env set AZURE_BICEP_PARAMS '{
 
 **Managed Identity (Automatic in Azure):**
 
-The deployment automatically configures Managed Identity for:
+The deployment **automatically configures Managed Identity** for:
 
-- SQL Server authentication (no connection string passwords)
-- Service Bus access
-- Application Insights telemetry
-- Azure Key Vault secrets access
+- **SQL Server authentication** (no connection string passwords)
+- **Service Bus access**
+- **Application Insights telemetry**
+- **Azure Key Vault secrets access**
+
+> 🔐 **Security Best Practice**: Managed Identity provides **zero-secret authentication** - no passwords or connection strings stored in code or configuration files.
 
 **Connection String Pattern with Managed Identity:**
 
@@ -904,10 +910,10 @@ This section provides practical examples for interacting with the deployed monit
 - Local: `http://localhost:5001`
 - Azure: `https://orders-api.{your-env}.azurecontainerapps.io`
 
-**Authentication:**
-
-- Local development: No authentication required
-- Azure deployment: Managed Identity or API Key (set in Container Apps configuration)
+> 🔑 **Authentication Requirements:**
+>
+> - **Local development**: No authentication required
+> - **Azure deployment**: **Managed Identity or API Key required** (set in Container Apps configuration)
 
 **Create a New Order:**
 
@@ -1198,18 +1204,18 @@ curl https://orders-api.{your-env}.azurecontainerapps.io/swagger/v1/swagger.json
 
 **HTTP Status Codes:**
 
-| Code  | Meaning               | Common Causes                                     |
-| ----- | --------------------- | ------------------------------------------------- |
-| `200` | OK                    | Successful GET/PATCH request                      |
-| `201` | Created               | Successful POST request                           |
-| `204` | No Content            | Successful DELETE request                         |
-| `400` | Bad Request           | Invalid request body or parameters                |
-| `401` | Unauthorized          | Missing or invalid API key                        |
-| `404` | Not Found             | Order ID does not exist                           |
-| `409` | Conflict              | Order already exists or status transition invalid |
-| `429` | Too Many Requests     | Rate limit exceeded                               |
-| `500` | Internal Server Error | Server-side error, check logs                     |
-| `503` | Service Unavailable   | Service is down or overloaded                     |
+| Code  | Meaning                   | Common Causes                                     |
+| ----- | ------------------------- | ------------------------------------------------- |
+| `200` | OK                        | Successful GET/PATCH request                      |
+| `201` | Created                   | Successful POST request                           |
+| `204` | No Content                | Successful DELETE request                         |
+| `400` | **Bad Request**           | **Invalid request body or parameters**            |
+| `401` | **Unauthorized**          | **Missing or invalid API key**                    |
+| `404` | Not Found                 | Order ID does not exist                           |
+| `409` | Conflict                  | Order already exists or status transition invalid |
+| `429` | **Too Many Requests**     | **Rate limit exceeded**                           |
+| `500` | **Internal Server Error** | **Server-side error, check logs**                 |
+| `503` | **Service Unavailable**   | **Service is down or overloaded**                 |
 
 ### Rate Limiting
 
@@ -1355,21 +1361,23 @@ curl https://orders-api.{your-env}.azurecontainerapps.io/health/ready
 
 **Health Check Configuration:**
 
-Container Apps automatically calls health endpoints:
+Container Apps **automatically calls health endpoints**:
 
-- **Liveness**: Every 30 seconds → Restart container if unhealthy
-- **Readiness**: Every 10 seconds → Remove from load balancer if unhealthy
+- **Liveness**: Every 30 seconds → **Restart container if unhealthy**
+- **Readiness**: Every 10 seconds → **Remove from load balancer if unhealthy**
+
+> 💡 **Best Practice**: Implement both liveness and readiness probes to ensure **zero-downtime deployments** and automatic recovery from transient failures.
 
 ### Alerting Rules
 
 **Pre-Configured Alert Rules** (created during deployment):
 
-| Alert                  | Condition                              | Severity | Action                     |
-| ---------------------- | -------------------------------------- | -------- | -------------------------- |
-| High Error Rate        | Error rate > 5% for 5 minutes          | High     | Email + Teams notification |
-| High Latency           | P95 latency > 2 seconds for 10 minutes | Medium   | Email notification         |
-| Health Check Failures  | Health check fails 3 consecutive times | Critical | Email + SMS + PagerDuty    |
-| Service Bus Deadletter | Messages in deadletter queue > 10      | High     | Email notification         |
+| Alert                     | Condition                                  | Severity     | Action                     |
+| ------------------------- | ------------------------------------------ | ------------ | -------------------------- |
+| **High Error Rate**       | **Error rate > 5% for 5 minutes**          | **High**     | Email + Teams notification |
+| High Latency              | P95 latency > 2 seconds for 10 minutes     | Medium       | Email notification         |
+| **Health Check Failures** | **Health check fails 3 consecutive times** | **Critical** | Email + SMS + PagerDuty    |
+| Service Bus Deadletter    | Messages in deadletter queue > 10          | High         | Email notification         |
 
 **Create Custom Alert Rule:**
 
@@ -1486,7 +1494,7 @@ dotnet ef migrations script --idempotent --output Migrations/migrate-to-latest.s
 # Review script, then apply in Azure SQL via Azure Portal or CLI
 ```
 
-> 💡 **Tip**: Always generate and review SQL scripts for production migrations. Never run `dotnet ef database update` directly against production databases.
+> ⚠️ **Production Database Safety**: **Never run `dotnet ef database update` directly against production databases**. Always generate SQL scripts, review them, and apply through controlled deployment processes.
 
 ### Code Style and Linting
 
@@ -1711,6 +1719,8 @@ az containerapp logs show \
 # 3. Image pull failure → Check Azure Container Registry access
 ```
 
+> ⚠️ **Critical**: If containers restart frequently (>3 times/hour), check **liveness probe configuration** and ensure health endpoints respond within timeout.
+
 ### Database Connection Failures
 
 **Symptom**: Errors like "Login failed for user" or "Cannot open database"
@@ -1732,6 +1742,8 @@ az containerapp exec \
   --name orders-api \
   --command "sqlcmd -S sql-orders-dev-eastus.database.windows.net -d sqldb-orders-dev -Q 'SELECT @@VERSION'"
 ```
+
+> 💡 **Debugging Tip**: Use `az containerapp exec` to **open an interactive shell** inside the running container for live troubleshooting: `az containerapp exec ... --command "/bin/bash"`
 
 ### Application Insights Not Receiving Telemetry
 
@@ -1850,14 +1862,14 @@ All contributors must adhere to the [Contributor Covenant Code of Conduct](https
 6. **Push** to your fork: `git push origin feature/your-feature-name`
 7. **Create Pull Request** on GitHub
 
-**Pull Request Checklist:**
-
-- [ ] Code follows existing style guidelines
-- [ ] All tests pass (`dotnet test`)
-- [ ] New features include unit tests
-- [ ] Documentation updated (README, XML comments)
-- [ ] Commit messages are descriptive
-- [ ] No merge conflicts with `main` branch
+> 💡 **Pull Request Checklist:**
+>
+> - [ ] Code follows existing style guidelines
+> - [ ] **All tests pass** (`dotnet test`)
+> - [ ] **New features include unit tests**
+> - [ ] Documentation updated (README, XML comments)
+> - [ ] Commit messages are descriptive
+> - [ ] No merge conflicts with `main` branch
 
 **Pull Request Template:**
 
