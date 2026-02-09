@@ -5,7 +5,7 @@
 ![Azure](https://img.shields.io/badge/Azure-Logic%20Apps-0078D4)
 ![Aspire](https://img.shields.io/badge/Aspire-13.1-purple)
 
-A production-ready monitoring and orchestration platform for Azure Logic Apps Standard, built with .NET Aspire and comprehensive Azure observability capabilities.
+A **production-ready monitoring and orchestration platform** for Azure Logic Apps Standard, built with **.NET Aspire** and comprehensive **Azure observability capabilities**.
 
 ## Table of Contents
 
@@ -41,15 +41,15 @@ A production-ready monitoring and orchestration platform for Azure Logic Apps St
 
 ## Overview
 
-The Azure Logic Apps Monitoring Solution provides enterprise-grade infrastructure for deploying, monitoring, and managing distributed applications on Azure using Logic Apps Standard. This solution combines .NET Aspire's orchestration capabilities with Azure's native monitoring services (Application Insights, Log Analytics) to deliver end-to-end visibility into application health, performance, and business workflows.
+The Azure Logic Apps Monitoring Solution provides **enterprise-grade infrastructure** for deploying, monitoring, and managing distributed applications on Azure using **Logic Apps Standard**. This solution combines **.NET Aspire's orchestration capabilities** with Azure's native monitoring services (**Application Insights**, **Log Analytics**) to deliver **end-to-end visibility** into application health, performance, and business workflows.
 
-**Tier 1 (Why This Matters)**: Organizations deploying Logic Apps at scale need robust monitoring to ensure business continuity, troubleshoot issues quickly, and maintain SLA compliance. This solution reduces mean time to resolution (MTTR) by providing centralized observability across all application components, from API endpoints to database operations.
+> 💡 **Why This Matters**: Organizations deploying Logic Apps at scale need **robust monitoring** to ensure business continuity, troubleshoot issues quickly, and maintain **SLA compliance**. This solution **reduces mean time to resolution (MTTR)** by providing **centralized observability** across all application components, from API endpoints to database operations.
 
-**Tier 2 (How It Works)**: The platform uses .NET Aspire's AppHost to orchestrate microservices (Orders API and Web App) deployed to Azure Container Apps, while Logic Apps workflows handle event-driven business processes. All telemetry flows to Application Insights for unified monitoring, alerting, and diagnostics. Infrastructure-as-Code (Bicep) ensures repeatable deployments with Azure Developer CLI (azd).
+> 📌 **How It Works**: The platform uses **.NET Aspire's AppHost** to orchestrate microservices (Orders API and Web App) deployed to **Azure Container Apps**, while **Logic Apps workflows** handle event-driven business processes. All telemetry flows to Application Insights for unified monitoring, alerting, and diagnostics. **Infrastructure-as-Code (Bicep)** ensures **repeatable deployments** with **Azure Developer CLI (azd)**.
 
 ## Quick Start
 
-Get the solution running in Azure in under 10 minutes:
+Get the solution running in Azure in **under 10 minutes**:
 
 ```bash
 # 1. Clone the repository
@@ -81,7 +81,7 @@ Next steps:
   - Open workflows/OrdersManagement to configure Logic Apps
 ```
 
-> ⚠️ **Prerequisites**: Requires Azure CLI >= 2.60.0, Azure Developer CLI >= 1.11.0, .NET SDK 10.0, and an Azure subscription with Contributor access.
+> ⚠️ **Prerequisites**: **MUST have** Azure CLI >= 2.60.0, Azure Developer CLI >= 1.11.0, **.NET SDK 10.0**, and an **Azure subscription with Contributor access**.
 
 ## Architecture
 
@@ -181,9 +181,9 @@ flowchart TB
 
 Deployment is fully automated through Azure Developer CLI (azd) with Infrastructure-as-Code (Bicep templates). The solution supports both interactive (developer workstation) and automated (CI/CD pipeline) deployment modes.
 
-**Tier 1 (Why This Approach)**: Infrastructure-as-Code ensures environment consistency, reduces deployment errors by 80%+, and enables version-controlled infrastructure changes. The azd CLI abstracts Azure complexity while maintaining full customization through Bicep templates.
+> 💡 **Why This Approach**: **Infrastructure-as-Code** ensures **environment consistency**, **reduces deployment errors by 80%+**, and enables version-controlled infrastructure changes. The **azd CLI** abstracts Azure complexity while maintaining **full customization** through Bicep templates.
 
-**Tier 2 (Deployment Flow)**: The `azd up` command executes: (1) provisions Azure resources via Bicep, (2) builds .NET projects, (3) containerizes applications, (4) pushes images to Azure Container Registry, (5) deploys to Container Apps, (6) configures managed identities and RBAC, (7) runs post-deployment hooks for SQL schema and federated credentials.
+> 📌 **Deployment Flow**: The **`azd up` command** executes: (1) **provisions Azure resources via Bicep**, (2) builds .NET projects, (3) containerizes applications, (4) pushes images to Azure Container Registry, (5) **deploys to Container Apps**, (6) **configures managed identities and RBAC**, (7) runs post-deployment hooks for SQL schema and federated credentials.
 
 ### Standard Deployment (Recommended)
 
@@ -192,7 +192,7 @@ Deployment is fully automated through Azure Developer CLI (azd) with Infrastruct
 azd up
 ```
 
-This single command performs all necessary steps:
+**This single command performs all necessary steps:**
 
 1. ✅ Creates Azure resources (Resource Group, Container Apps, SQL, Service Bus)
 2. ✅ Builds and containerizes .NET projects
@@ -234,9 +234,9 @@ azd env get-values
 
 | Parameter             | Description                        | Default   | Required |
 | --------------------- | ---------------------------------- | --------- | -------- |
-| `AZURE_LOCATION`      | Azure region for deployment        | `eastus`  | ✅       |
-| `SOLUTION_NAME`       | Resource name prefix               | `orders`  | ❌       |
-| `ENV_NAME`            | Environment identifier             | `dev`     | ✅       |
+| **`AZURE_LOCATION`**  | Azure region for deployment        | `eastus`  | ✅       |
+| **`SOLUTION_NAME`**   | Resource name prefix               | `orders`  | ❌       |
+| **`ENV_NAME`**        | Environment identifier             | `dev`     | ✅       |
 | `DEPLOY_HEALTH_MODEL` | Enable Azure Monitor Health Models | `false`   | ❌       |
 | `AZURE_SUBSCRIPTION`  | Target Azure subscription ID       | (current) | ❌       |
 
@@ -255,7 +255,7 @@ azd env get-values
     AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 ```
 
-> 💡 **Tip**: Use service principal authentication with federated credentials for CI/CD pipelines. The `hooks/configure-federated-credential.ps1` script automates this setup.
+> 💡 **Tip**: **Use service principal authentication with federated credentials** for CI/CD pipelines. The `hooks/configure-federated-credential.ps1` script **automates this setup**.
 
 ### Local Development
 
@@ -272,7 +272,7 @@ Access local endpoints:
 - **Orders API**: <http://localhost:5001/swagger> (Swagger UI)
 - **Web App**: <http://localhost:5000> (Blazor UI)
 
-> ⚠️ **Local Requirements**: Requires SQL Server LocalDB or Docker SQL container, and optionally Azure Service Bus emulator for full workflow testing.
+> ⚠️ **Local Requirements**: **MUST have** SQL Server LocalDB or Docker SQL container, and optionally Azure Service Bus emulator for full workflow testing.
 
 ## Usage
 
@@ -378,11 +378,11 @@ az monitor app-insights query \
 
 **Key Performance Indicators (KPIs):**
 
-View in Application Insights → Workbooks → "Logic Apps Monitoring":
+View in **Application Insights → Workbooks → "Logic Apps Monitoring"**:
 
 - **Order Processing Latency**: P50/P95/P99 percentiles
-- **Service Availability**: Uptime percentage (target: 99.9%)
-- **Error Rate**: Failed requests per minute (target: < 0.1%)
+- **Service Availability**: Uptime percentage (**target: 99.9%**)
+- **Error Rate**: Failed requests per minute (**target: < 0.1%**)
 - **Logic App Runs**: Success/failure ratio and duration
 
 ### Logic Apps Workflow
@@ -410,9 +410,9 @@ View workflow runs in Azure Portal → Logic Apps → OrdersManagement → Run H
 
 This solution delivers a comprehensive set of capabilities for enterprise-grade Logic Apps monitoring, deployment automation, and operational excellence.
 
-**Tier 1 (Why Features Matter)**: Modern cloud applications require automated deployment, proactive monitoring, and scalable infrastructure. These features reduce operational overhead by 60-70%, enable teams to ship production-ready Logic Apps in hours instead of weeks, and provide the observability needed to maintain SLAs in mission-critical scenarios.
+> 💡 **Why Features Matter**: Modern cloud applications **require automated deployment**, proactive monitoring, and scalable infrastructure. These features **reduce operational overhead by 60-70%**, enable teams to **ship production-ready Logic Apps in hours** instead of weeks, and provide the **observability needed to maintain SLAs** in mission-critical scenarios.
 
-**Tier 2 (How They Work)**: Features are implemented through a combination of .NET Aspire's orchestration primitives, Azure's managed services (Application Insights, Service Bus, Container Apps), and Infrastructure-as-Code patterns. The AppHost declaratively defines service topology, while Bicep templates ensure reproducible Azure deployments with role-based access control and managed identities.
+> 📌 **How They Work**: Features are implemented through a combination of **.NET Aspire's orchestration primitives**, Azure's managed services (Application Insights, Service Bus, Container Apps), and **Infrastructure-as-Code patterns**. The **AppHost declaratively defines service topology**, while **Bicep templates ensure reproducible Azure deployments** with role-based access control and managed identities.
 
 | Feature                              | Description                                                                                                  | Status     |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------ | ---------- |
@@ -448,17 +448,17 @@ This solution delivers a comprehensive set of capabilities for enterprise-grade 
 
 This section outlines the technical prerequisites, Azure permissions, and local development dependencies required to deploy and run the Azure Logic Apps Monitoring Solution.
 
-**Tier 1 (Why Requirements Matter)**: Ensuring all prerequisites are met before deployment prevents 95% of common deployment failures and reduces troubleshooting time from hours to minutes. Version compatibility is critical—older .NET SDKs or Azure CLI versions may cause silent failures or missing features.
+> ⚠️ **Why Requirements Matter**: **Ensuring all prerequisites are met before deployment prevents 95% of common deployment failures** and **reduces troubleshooting time from hours to minutes**. **Version compatibility is critical**—older .NET SDKs or Azure CLI versions may cause silent failures or missing features.
 
-**Tier 2 (How to Verify)**: Use the provided verification commands to audit your environment. The `hooks/check-dev-workstation.ps1` script automates prerequisite validation for all dependencies listed below.
+> 💡 **How to Verify**: Use the provided **verification commands** to audit your environment. The **`hooks/check-dev-workstation.ps1` script automates prerequisite validation** for all dependencies listed below.
 
 ### Local Development
 
 | Requirement            | Minimum Version | Recommended Version | Verification Command        | Purpose                                           |
 | ---------------------- | --------------- | ------------------- | --------------------------- | ------------------------------------------------- |
-| 🔷 **.NET SDK**        | 10.0.100        | 10.0.100+ (latest)  | `dotnet --version`          | Build and run .NET Aspire AppHost and services    |
-| ☁️ **Azure CLI**       | 2.60.0          | 2.70.0+             | `az --version`              | Interact with Azure resources via command line    |
-| 🚀 **Azure Dev CLI**   | 1.11.0          | 1.12.0+             | `azd version`               | Manage infrastructure deployment and environments |
+| 🔷 **.NET SDK**        | **10.0.100**    | 10.0.100+ (latest)  | `dotnet --version`          | Build and run .NET Aspire AppHost and services    |
+| ☁️ **Azure CLI**       | **2.60.0**      | 2.70.0+             | `az --version`              | Interact with Azure resources via command line    |
+| 🚀 **Azure Dev CLI**   | **1.11.0**      | 1.12.0+             | `azd version`               | Manage infrastructure deployment and environments |
 | 🐳 **Docker Desktop**  | 4.30.0          | 4.35.0+             | `docker --version`          | Container builds and local Service Bus emulator   |
 | 📝 **PowerShell**      | 7.4.0           | 7.5.0+              | `pwsh --version`            | Execute deployment hooks and utility scripts      |
 | 🔧 **Git**             | 2.40.0          | 2.45.0+             | `git --version`             | Clone repository and version control              |
@@ -470,8 +470,8 @@ This section outlines the technical prerequisites, Azure permissions, and local 
 
 | Requirement                | Details                                                                | Validation Method                                   |
 | -------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------- |
-| 🏢 **Active Subscription** | Valid Azure subscription with active billing                           | `az account show`                                   |
-| 🔐 **RBAC Permissions**    | `Contributor` role at subscription or resource group scope             | `az role assignment list --assignee <your-user-id>` |
+| 🏢 **Active Subscription** | **Valid Azure subscription with active billing**                       | `az account show`                                   |
+| 🔐 **RBAC Permissions**    | **`Contributor` role** at subscription or resource group scope         | `az role assignment list --assignee <your-user-id>` |
 | 💰 **Resource Quotas**     | West US 2: 20+ vCPUs for Container Apps, SQL DTU quota                 | `az vm list-usage --location westus2`               |
 | 🌍 **Region Availability** | Target region supports Container Apps, Logic Apps, Service Bus         | Check Azure Portal → Region Availability            |
 | 📊 **Service Enablement**  | Enable providers: Microsoft.App, Microsoft.Logic, Microsoft.ServiceBus | `az provider register --namespace Microsoft.App`    |
@@ -512,7 +512,7 @@ bash hooks/check-dev-workstation.sh
 🎉 All critical prerequisites met! Ready to deploy.
 ```
 
-> 💡 **Troubleshooting**: If any checks fail, the script provides installation instructions and documentation links.
+> 💡 **Troubleshooting**: If any checks fail, the script **provides installation instructions and documentation links**.
 
 ## Configuration
 
@@ -520,9 +520,9 @@ bash hooks/check-dev-workstation.sh
 
 The solution uses a hierarchical configuration system combining environment variables (azd environments), user secrets (.NET), and Azure-managed settings (Container Apps environment variables).
 
-**Tier 1 (Why This Configuration Model)**: Separating environment-specific settings from code prevents accidental credential leaks, enables zero-downtime configuration updates in Azure, and supports multiple deployment environments (dev/staging/prod) from a single codebase.
+> 🔐 **Why This Configuration Model**: **Separating environment-specific settings from code prevents accidental credential leaks**, enables **zero-downtime configuration updates** in Azure, and supports **multiple deployment environments** (dev/staging/prod) from a single codebase.
 
-**Tier 2 (Configuration Flow)**: During `azd up`, Bicep templates create Azure resources and output connection strings/endpoints. The azd CLI injects these as Container Apps environment variables. For local development, .NET User Secrets store sensitive values, while `appsettings.Development.json` contains non-sensitive defaults.
+> 📌 **Configuration Flow**: During **`azd up`**, Bicep templates create Azure resources and output connection strings/endpoints. The **azd CLI injects these as Container Apps environment variables**. For local development, **.NET User Secrets store sensitive values**, while `appsettings.Development.json` contains non-sensitive defaults.
 
 ### Azure Developer CLI (azd) Configuration
 
@@ -673,7 +673,7 @@ Logic Apps configuration is managed through:
 
 Access configuration in Azure Portal → Logic Apps → OrdersManagementLogicApp → Configuration.
 
-> ⚠️ **Security Best Practice**: Never commit connection strings or secrets to version control. Use azd environments, user secrets, or Azure Key Vault for sensitive values.
+> ⚠️ **Security Best Practice**: **NEVER commit connection strings or secrets to version control**. **MUST use** azd environments, user secrets, or **Azure Key Vault** for sensitive values.
 
 ## Contributing
 
@@ -681,9 +681,9 @@ Access configuration in Azure Portal → Logic Apps → OrdersManagementLogicApp
 
 We welcome contributions from the community! This section provides guidelines for reporting bugs, suggesting features, and submitting code changes.
 
-**Tier 1 (Why Contribute)**: Open-source collaboration accelerates innovation and improves software quality through diverse perspectives. Your contributions help thousands of developers deploy better Logic Apps solutions.
+> 💡 **Why Contribute**: Open-source collaboration accelerates innovation and improves software quality through diverse perspectives. Your contributions help **thousands of developers deploy better Logic Apps solutions**.
 
-**Tier 2 (Contribution Process)**: All changes go through pull requests with automated CI checks (build, test, lint). Maintainers review PRs within 48 hours. Issues are triaged weekly using priority labels (P0: blocking, P1: important, P2: nice-to-have).
+> 📌 **Contribution Process**: **All changes go through pull requests** with automated CI checks (build, test, lint). Maintainers **review PRs within 48 hours**. Issues are triaged weekly using **priority labels** (P0: blocking, P1: important, P2: nice-to-have).
 
 ### Reporting Issues
 
@@ -691,13 +691,13 @@ Found a bug or have a feature request? Please open an issue on GitHub:
 
 **[GitHub Issues](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)**
 
-When reporting bugs, include:
+**When reporting bugs, include:**
 
-- ✅ Detailed description of the issue
-- ✅ Steps to reproduce
-- ✅ Expected vs actual behavior
-- ✅ Environment details (OS, .NET SDK version, Azure region)
-- ✅ Relevant logs or error messages
+- ✅ **Detailed description** of the issue
+- ✅ **Steps to reproduce**
+- ✅ **Expected vs actual behavior**
+- ✅ **Environment details** (OS, .NET SDK version, Azure region)
+- ✅ **Relevant logs or error messages**
 
 ### Submitting Pull Requests
 
@@ -708,10 +708,10 @@ When reporting bugs, include:
    ```
 
 2. **Make your changes** following code style guidelines:
-   - Use C# 12 features and nullable reference types
-   - Follow .NET naming conventions (PascalCase for types, camelCase for parameters)
-   - Add XML documentation comments to public APIs
-   - Include unit tests for new functionality (85%+ code coverage target)
+   - **Use C# 12 features and nullable reference types**
+   - **Follow .NET naming conventions** (PascalCase for types, camelCase for parameters)
+   - **Add XML documentation comments** to public APIs
+   - **Include unit tests** for new functionality (**85%+ code coverage target**)
 
 3. **Run tests locally** before committing:
 
@@ -763,14 +763,14 @@ git push origin feature/my-feature
 
 ### Code Review Guidelines
 
-All pull requests must:
+**All pull requests MUST:**
 
-- ✅ Pass CI/CD build and test checks
-- ✅ Include unit tests for new code (minimum 80% coverage for changed files)
-- ✅ Update documentation (README, XML comments) for public API changes
-- ✅ Follow existing code style and patterns
-- ✅ Keep changes focused (one feature/fix per PR)
-- ✅ Squash commits before merge
+- ✅ **Pass CI/CD build and test checks**
+- ✅ **Include unit tests** for new code (**minimum 80% coverage** for changed files)
+- ✅ **Update documentation** (README, XML comments) for public API changes
+- ✅ **Follow existing code style** and patterns
+- ✅ **Keep changes focused** (one feature/fix per PR)
+- ✅ **Squash commits before merge**
 
 ### Community Guidelines
 
