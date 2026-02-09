@@ -92,7 +92,18 @@ The solution follows a modern cloud-native architecture with clear separation be
 ```mermaid
 flowchart TB
     accTitle: Azure Logic Apps Monitoring Solution Architecture
-    accDescr: Multi-tier architecture showing .NET Aspire orchestration, application services, Azure infrastructure, and monitoring components
+    accDescr: Multi-tier architecture showing .NET Aspire orchestration, application services, Azure infrastructure, and monitoring components with semantic color coding for functional layers
+
+    %% ============================================
+    %% COLOR DOCUMENTATION
+    %% ============================================
+    %% This diagram uses SEMANTIC colors (functional siblings with different purposes)
+    %% - Orchestration Layer: Blue (#BBDEFB) - Platform/Technical orchestration
+    %% - Application Layer: Green (#C8E6C9) - Active application services
+    %% - Infrastructure Layer: Orange (#FFE0B2) - External Azure infrastructure
+    %% - Monitoring Layer: Purple (#E1BEE7) - Analytics/Observability
+    %% All colors use Material Design 100-level palette (WCAG AA compliant)
+    %% ============================================
 
     %% Orchestration Layer
     subgraph orchestration["🎭 Orchestration Layer"]
@@ -142,16 +153,11 @@ flowchart TB
     appinsights --> loganalytics
     loganalytics --> workbook
 
-    %% Styling
-    classDef orchClass fill:#0078D4,stroke:#005A9E,stroke-width:2px,color:#fff
-    classDef appClass fill:#107C10,stroke:#0B5A0B,stroke-width:2px,color:#fff
-    classDef infraClass fill:#FF8C00,stroke:#CC7000,stroke-width:2px,color:#fff
-    classDef monitorClass fill:#7C3AED,stroke:#5B21B6,stroke-width:2px,color:#fff
-
-    class aspire,defaults orchClass
-    class api,web,logic appClass
-    class aca,servicebus,sql,storage infraClass
-    class appinsights,loganalytics,workbook monitorClass
+    %% Styling - Using Material Design 100-level palette
+    style orchestration fill:#BBDEFB,stroke:#1976D2,stroke-width:3px
+    style application fill:#C8E6C9,stroke:#388E3C,stroke-width:3px
+    style infrastructure fill:#FFE0B2,stroke:#F57C00,stroke-width:3px
+    style monitoring fill:#E1BEE7,stroke:#7B1FA2,stroke-width:3px
 ```
 
 **Component Roles:**
