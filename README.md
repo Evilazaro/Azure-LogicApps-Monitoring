@@ -310,7 +310,7 @@ flowchart TB
     orders_api -->|SQL CRUD| sql_db
     orders_api -->|Publish OrderCreated| service_bus
     service_bus -->|OrderCreated Event| logic_app
-    logic_app -->|GET /orders/{id}| orders_api
+    logic_app -->|GET Order Details| orders_api
 
     %% Telemetry paths (dotted lines for observability)
     orders_api -.->|OTLP Traces| app_insights
