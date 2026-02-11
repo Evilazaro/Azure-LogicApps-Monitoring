@@ -118,26 +118,26 @@ flowchart TB
 
         subgraph presentation["🌐 Presentation Layer"]
             direction LR
-            client["👤 Client"]:::mdBlue
-            webapp["🌐 Web App<br/>ASP.NET Core"]
+            client["👤 Client"]:::azureBlue
+            webapp["🌐 Web App<br/>ASP.NET Core"]:::azureBlue
         end
 
         subgraph application["⚙️ Application Layer"]
             direction LR
-            api["⚙️ Orders API<br/>REST + EF Core"]
-            logicapp["🔄 Logic Apps<br/>Workflows"]
+            api["⚙️ Orders API<br/>REST + EF Core"]:::azureIndigo
+            logicapp["🔄 Logic Apps<br/>Workflows"]:::azureIndigo
         end
 
         subgraph data["🗄️ Data & Messaging Layer"]
             direction LR
-            servicebus["📬 Service Bus<br/>Messaging Queue"]
-            sqldb["🗄️ SQL Database<br/>Orders Data"]
+            servicebus["📬 Service Bus<br/>Messaging Queue"]:::azureTeal
+            sqldb["🗄️ SQL Database<br/>Orders Data"]:::azureTeal
         end
 
         subgraph observability["📊 Observability Layer"]
             direction LR
-            appinsights["📊 Application Insights<br/>Distributed Tracing"]
-            loganalytics["📝 Log Analytics<br/>Centralized Logs"]
+            appinsights["📊 Application Insights<br/>Distributed Tracing"]:::azurePurple
+            loganalytics["📝 Log Analytics<br/>Centralized Logs"]:::azurePurple
         end
 
         %% Data Flow (solid arrows)
@@ -158,8 +158,25 @@ flowchart TB
         logicapp -.->|"writes execution history"| loganalytics
     end
 
+    %% Subgraph Styling (MRM-S001 compliant)
+    style system fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px
+    style presentation fill:#BBDEFB,stroke:#2196F3,stroke-width:2px
+    style application fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px
+    style data fill:#B2DFDB,stroke:#009688,stroke-width:2px
+    style observability fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
 
+    %% Color Classes (Material Design 100-level palette)
+    classDef azureBlue fill:#BBDEFB,stroke:#2196F3,stroke-width:2px,color:#000000
+    classDef azureIndigo fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#000000
+    classDef azureTeal fill:#B2DFDB,stroke:#009688,stroke-width:2px,color:#000000
+    classDef azurePurple fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px,color:#000000
 
+    %% Color Documentation (MRM-D001 compliant)
+    %% Main Container: #FFFFFF (White) - Enterprise standard
+    %% Presentation Layer: #BBDEFB (Blue 100) - User interfaces
+    %% Application Layer: #C5CAE9 (Indigo 100) - Business logic
+    %% Data Layer: #B2DFDB (Teal 100) - Storage & messaging
+    %% Observability Layer: #E1BEE7 (Purple 100) - Monitoring & analytics
     %% Accessibility: WCAG AA verified (4.5:1 contrast ratio)
 ```
 
