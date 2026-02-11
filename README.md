@@ -254,31 +254,56 @@ The solution follows a distributed microservices architecture orchestrated by .N
 > 📌 **Design Principles**: Separation of concerns with API layer, business logic, and data access layers. Observable by default with OpenTelemetry tracing. Infrastructure as Code for reproducible deployments.
 
 ```mermaid
+---
+title: Azure Logic Apps Monitoring Solution Architecture
+config:
+  theme: base
+  flowchart:
+    htmlLabels: false
+    curve: cardinal
+---
 flowchart TB
-    subgraph "Client Layer"
-        browser["🌐 Web Browser"]
-        api_client["📱 API Client"]
+    accTitle: Azure Logic Apps Monitoring Solution Architecture
+    accDescr: Distributed microservices architecture with .NET Aspire orchestration, Azure Container Apps, Logic Apps workflows, and comprehensive observability through Application Insights
+
+    %% ============================================
+    %% COLOR SCHEME v5.0 (Microsoft Fluent UI / Azure)
+    %% Semantic colors for functional distinction
+    %% Client=Blue, Apps=Green, Workflow=Teal, Data=Yellow, Observability=Orange
+    %% ============================================
+
+    %% Azure Fluent UI semantic color palette (100-level for content nodes)
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#000
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#000
+    classDef presenceTeal fill:#C8F0E7,stroke:#005B4E,stroke-width:2px,color:#000
+    classDef sharedYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#000
+    classDef warningOrange fill:#FDE7E9,stroke:#8A3707,stroke-width:2px,color:#000
+
+    subgraph client["🌐 Client Layer"]
+        browser["🌐 Web Browser"]:::azureBlue
+        api_client["📱 API Client"]:::azureBlue
     end
 
-    subgraph "Azure Container Apps"
-        web_app["🎨 eShop.Web.App<br/>(Blazor Server)"]
-        orders_api["🔌 eShop.Orders.API<br/>(REST API)"]
+    subgraph container_apps["☁️ Azure Container Apps"]
+        web_app["🎨 eShop.Web.App<br/>(Blazor Server)"]:::successGreen
+        orders_api["🔌 eShop.Orders.API<br/>(REST API)"]:::successGreen
     end
 
-    subgraph "Azure Logic Apps"
-        logic_app["⚙️ Orders Management<br/>Workflow"]
+    subgraph logic_apps["⚙️ Azure Logic Apps"]
+        logic_app["⚙️ Orders Management<br/>Workflow"]:::presenceTeal
     end
 
-    subgraph "Data Layer"
-        sql_db["🗄️ Azure SQL Database"]
-        service_bus["📬 Azure Service Bus"]
+    subgraph data["🗄️ Data Layer"]
+        sql_db["🗄️ Azure SQL Database"]:::sharedYellow
+        service_bus["📬 Azure Service Bus"]:::sharedYellow
     end
 
-    subgraph "Observability"
-        app_insights["📊 Application Insights"]
-        log_analytics["📈 Log Analytics"]
+    subgraph observability["📊 Observability"]
+        app_insights["📊 Application Insights"]:::warningOrange
+        log_analytics["📈 Log Analytics"]:::warningOrange
     end
 
+    %% Request flow paths
     browser --> web_app
     api_client --> orders_api
     web_app --> orders_api
@@ -287,20 +312,20 @@ flowchart TB
     service_bus --> logic_app
     logic_app --> orders_api
 
+    %% Telemetry paths (dotted lines for observability)
     orders_api -.-> app_insights
     web_app -.-> app_insights
     logic_app -.-> app_insights
     app_insights --> log_analytics
 
-    classDef azure fill:#0078D4,stroke:#003D7A,color:#fff
-    classDef app fill:#68217A,stroke:#3C1348,color:#fff
-    classDef data fill:#00BCF2,stroke:#0078D4,color:#000
-    classDef monitor fill:#F25022,stroke:#A13319,color:#fff
+    %% SUBGRAPH STYLING (5 subgraphs = 5 style directives - MRM-S001 compliant)
+    style client fill:#DEECF9,stroke:#004578,stroke-width:3px
+    style container_apps fill:#DFF6DD,stroke:#0B6A0B,stroke-width:3px
+    style logic_apps fill:#C8F0E7,stroke:#005B4E,stroke-width:3px
+    style data fill:#FFF4CE,stroke:#986F0B,stroke-width:3px
+    style observability fill:#FDE7E9,stroke:#8A3707,stroke-width:3px
 
-    class web_app,orders_api app
-    class sql_db,service_bus data
-    class logic_app azure
-    class app_insights,log_analytics monitor
+    %% Accessibility: WCAG AA verified (4.5:1 contrast ratio minimum)
 ```
 
 **Component Roles:**
