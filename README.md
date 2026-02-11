@@ -306,7 +306,15 @@ The solution implements a cloud-native architecture using Azure Container Apps a
 ### System Architecture
 
 ```mermaid
+---
+config:
+  theme: base
+  themeVariables:
+    primaryColor: "#BBDEFB"
+---
 C4Context
+    accTitle: System Architecture Diagram
+    accDescr: Azure Logic Apps monitoring solution showing user interactions with web dashboard, APIs, database, and supporting Azure services
     title System Architecture - Azure Logic Apps Monitoring Solution
 
     Person(user, "Operations Engineer", "Monitors Logic Apps<br/>and investigates issues")
@@ -353,7 +361,13 @@ C4Context
 ### Data Flow
 
 ```mermaid
+---
+config:
+  theme: base
+---
 sequenceDiagram
+    accTitle: Data Flow Sequence Diagram
+    accDescr: Order processing flow showing user interaction with web dashboard, API calls, Service Bus messaging, Logic Apps workflow execution, and database operations with Application Insights telemetry
     participant U as 👤 User
     participant W as 🌐 Web Dashboard
     participant A as 🔌 Orders API
@@ -390,25 +404,31 @@ sequenceDiagram
 The infrastructure follows Azure Well-Architected Framework principles:
 
 ```mermaid
+---
+config:
+  theme: base
+---
 graph LR
-    subgraph "Developer Workstation"
-        CLI[Azure Developer CLI<br/>azd]
+    accTitle: Deployment Architecture Diagram
+    accDescr: Azure infrastructure deployment showing developer workstation using Azure CLI to provision and deploy containers, registries, and Azure services with managed identity authentication and Log Analytics monitoring
+    subgraph dev["💻 Developer Workstation"]
+        CLI["🚀 Azure Developer CLI<br/>azd"]
     end
 
-    subgraph "Azure Subscription"
-        subgraph "Resource Group"
-            subgraph "Container Apps Environment"
-                CA1[orders-api<br/>Container]
-                CA2[web-app<br/>Container]
-                CA3[Logic Apps<br/>Runtime]
+    subgraph azure["☁️ Azure Subscription"]
+        subgraph rg["📦 Resource Group"]
+            subgraph cae["🏗️ Container Apps Environment"]
+                CA1["🐳 orders-api<br/>Container"]
+                CA2["🌐 web-app<br/>Container"]
+                CA3["⚡ Logic Apps<br/>Runtime"]
             end
 
-            ACR[Container<br/>Registry]
-            LAW[Log Analytics<br/>Workspace]
-            APPI[Application<br/>Insights]
-            SQL[SQL<br/>Database]
-            SB[Service Bus]
-            MI[Managed<br/>Identity]
+            ACR["📦 Container<br/>Registry"]
+            LAW["📊 Log Analytics<br/>Workspace"]
+            APPI["📈 Application<br/>Insights"]
+            SQL["🗄️ SQL<br/>Database"]
+            SB["📨 Service Bus"]
+            MI["🔐 Managed<br/>Identity"]
         end
     end
 
@@ -431,10 +451,23 @@ graph LR
 
     LAW -->|Telemetry| APPI
 
-    style CA1 fill:#0078d4
-    style CA2 fill:#0078d4
-    style CA3 fill:#0078d4
-    style MI fill:#50e6ff
+    style dev fill:#FFFFFF,stroke:#757575,stroke-width:2px
+    style azure fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
+    style rg fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px
+    style cae fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px
+    style CA1 fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
+    style CA2 fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
+    style CA3 fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
+    style MI fill:#B2EBF2,stroke:#0097A7,stroke-width:2px
+
+    %% Material Design 100-level colors applied
+    %% Main container: #FFFFFF (white)
+    %% Azure layer: #BBDEFB (Blue 100 - cloud infrastructure)
+    %% Resource Group: #C5CAE9 (Indigo 100 - hierarchical container)
+    %% Container Apps: #E1BEE7 (Purple 100 - compute layer)
+    %% Containers: #BBDEFB (Blue 100 - services)
+    %% Managed Identity: #B2EBF2 (Cyan 100 - security/identity)
+    %% All colors WCAG AA compliant (4.5:1 contrast ratio)
 ```
 
 **Infrastructure Layers:**
@@ -448,19 +481,25 @@ graph LR
 ### Security Model
 
 ```mermaid
+---
+config:
+  theme: base
+---
 flowchart TB
-    subgraph "Authentication Flow"
-        A[Container App] -->|1. Request token| B[Managed Identity]
-        B -->|2. Azure AD token| C[Target Service]
-        C -->|3. Validate token| D[RBAC Validation]
-        D -->|4. Grant access| E[Resource Access]
+    accTitle: Security Model Diagram
+    accDescr: Azure authentication flow showing container apps requesting tokens from managed identity, validating through Azure AD and RBAC, then accessing SQL Database, Service Bus, Container Registry, and Key Vault
+    subgraph auth["🔒 Authentication Flow"]
+        A["🐳 Container App"] -->|1. Request token| B["🔐 Managed Identity"]
+        B -->|2. Azure AD token| C["🎯 Target Service"]
+        C -->|3. Validate token| D["✅ RBAC Validation"]
+        D -->|4. Grant access| E["🔓 Resource Access"]
     end
 
-    subgraph "Supported Services"
-        SQL[SQL Database]
-        SB[Service Bus]
-        ACR[Container Registry]
-        KV[Key Vault*]
+    subgraph services["☁️ Supported Services"]
+        SQL["🗄️ SQL Database"]
+        SB["📨 Service Bus"]
+        ACR["📦 Container Registry"]
+        KV["🔑 Key Vault*"]
     end
 
     E --> SQL
@@ -468,8 +507,16 @@ flowchart TB
     E --> ACR
     E --> KV
 
-    style B fill:#50e6ff
-    style D fill:#ffa500
+    style auth fill:#FFFFFF,stroke:#757575,stroke-width:2px
+    style services fill:#FFFFFF,stroke:#757575,stroke-width:2px
+    style B fill:#B2EBF2,stroke:#0097A7,stroke-width:2px
+    style D fill:#FFF9C4,stroke:#F57F17,stroke-width:2px
+
+    %% Material Design 100-level colors applied
+    %% Subgraphs: #FFFFFF (white - main containers)
+    %% Managed Identity: #B2EBF2 (Cyan 100 - security)
+    %% RBAC Validation: #FFF9C4 (Yellow 100 - validation/warning)
+    %% All colors WCAG AA compliant (4.5:1 contrast ratio)
 ```
 
 > 🔒 **Security Highlights**:
