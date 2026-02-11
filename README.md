@@ -113,19 +113,6 @@ flowchart TB
     accTitle: Azure Logic Apps Monitoring Solution Architecture
     accDescr: Shows the three-tier architecture with presentation layer (Web App), application layer (Orders API and Logic Apps), data layer (SQL Database and Service Bus), and cross-cutting observability services (Application Insights and Log Analytics) for comprehensive monitoring.
 
-    %% ═══════════════════════════════════════════════════════════════════════════
-    %% STANDARD COLOR SCHEME v2.1 - Material Design Compliant
-    %% ═══════════════════════════════════════════════════════════════════════════
-    %% SUBGRAPH HIERARCHY (Indigo progression):
-    %%   Level 1: #FFFFFF | Level 2: #C5CAE9 | Level 3: #9FA8DA
-    %% SEMANTIC COLORS (functional purpose):
-    %%   Blue=#BBDEFB (API/Network) | Green=#C8E6C9 (Workload/Core)
-    %%   Orange=#FFE0B2 (Process/Security) | Teal=#B2DFDB (Data/Storage)
-    %%   Yellow=#FFF9C4 (Monitoring/Observability)
-    %% ═══════════════════════════════════════════════════════════════════════════
-
-
-
     subgraph system["🏢 Azure Logic Apps Monitoring Solution"]
         direction TB
 
@@ -171,14 +158,7 @@ flowchart TB
         logicapp -.->|"writes execution history"| loganalytics
     end
 
-    %% ============================================
-    %% SUBGRAPH STYLING (5 subgraphs = 5 style directives)
-    %% ============================================
-    style system fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px
-    style presentation fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
-    style application fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
-    style data fill:#B2DFDB,stroke:#00796B,stroke-width:2px
-    style observability fill:#FFF9C4,stroke:#F57F17,stroke-width:2px
+
 
     %% Accessibility: WCAG AA verified (4.5:1 contrast ratio)
 ```
