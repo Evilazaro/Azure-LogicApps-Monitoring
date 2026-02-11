@@ -273,11 +273,11 @@ flowchart TB
     %% ============================================
 
     %% Azure Fluent UI semantic color palette (100-level for content nodes)
-    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#000
-    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#000
-    classDef presenceTeal fill:#C8F0E7,stroke:#005B4E,stroke-width:2px,color:#000
-    classDef sharedYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#000
-    classDef warningOrange fill:#FDE7E9,stroke:#8A3707,stroke-width:2px,color:#000
+    classDef azureBlue fill:#BBDEFB,stroke:#004578,stroke-width:2px,color:#000
+    classDef successGreen fill:#C8E6C9,stroke:#0B6A0B,stroke-width:2px,color:#000
+    classDef presenceTeal fill:#B2DFDB,stroke:#005B4E,stroke-width:2px,color:#000
+    classDef sharedYellow fill:#FFF9C4,stroke:#986F0B,stroke-width:2px,color:#000
+    classDef warningOrange fill:#FFCCBC,stroke:#8A3707,stroke-width:2px,color:#000
 
     subgraph client["🌐 Client Layer"]
         browser["🌐 Web Browser"]:::azureBlue
@@ -319,11 +319,11 @@ flowchart TB
     app_insights --> log_analytics
 
     %% SUBGRAPH STYLING (5 subgraphs = 5 style directives - MRM-S001 compliant)
-    style client fill:#DEECF9,stroke:#004578,stroke-width:3px
-    style container_apps fill:#DFF6DD,stroke:#0B6A0B,stroke-width:3px
-    style logic_apps fill:#C8F0E7,stroke:#005B4E,stroke-width:3px
-    style data fill:#FFF4CE,stroke:#986F0B,stroke-width:3px
-    style observability fill:#FDE7E9,stroke:#8A3707,stroke-width:3px
+    style client fill:#BBDEFB,stroke:#004578,stroke-width:3px
+    style container_apps fill:#C8E6C9,stroke:#0B6A0B,stroke-width:3px
+    style logic_apps fill:#B2DFDB,stroke:#005B4E,stroke-width:3px
+    style data fill:#FFF9C4,stroke:#986F0B,stroke-width:3px
+    style observability fill:#FFCCBC,stroke:#8A3707,stroke-width:3px
 
     %% Accessibility: WCAG AA verified (4.5:1 contrast ratio minimum)
 ```
