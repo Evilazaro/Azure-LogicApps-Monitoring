@@ -1,16 +1,16 @@
 # Azure Logic Apps Monitoring
 
-A comprehensive monitoring solution for Azure Logic Apps Standard, leveraging .NET Aspire orchestration to deploy Application Insights, Log Analytics, Service Bus, and supporting infrastructure with automated observability for enterprise workflows. This solution provides end-to-end telemetry, health monitoring, and diagnostic capabilities for Logic Apps running in Azure Container Apps environments.
+A comprehensive monitoring solution for **Azure Logic Apps Standard**, leveraging **.NET Aspire orchestration** to deploy **Application Insights**, **Log Analytics**, **Service Bus**, and supporting infrastructure with automated observability for enterprise workflows. This solution provides **end-to-end telemetry**, **health monitoring**, and **diagnostic capabilities** for Logic Apps running in **Azure Container Apps** environments.
 
 ## Overview
 
 **What This Solution Provides**
 
-This project delivers a production-ready monitoring infrastructure for Azure Logic Apps Standard workflows, built on .NET Aspire for local development orchestration and Azure Container Apps for cloud deployment. The solution integrates Application Insights for distributed tracing, Log Analytics for centralized logging, and Azure Service Bus for asynchronous messaging patterns, enabling real-time visibility into Logic App executions, performance metrics, and failure diagnostics.
+This project delivers a **production-ready monitoring infrastructure** for Azure Logic Apps Standard workflows, built on **.NET Aspire** for local development orchestration and **Azure Container Apps** for cloud deployment. The solution integrates **Application Insights** for distributed tracing, **Log Analytics** for centralized logging, and **Azure Service Bus** for asynchronous messaging patterns, enabling **real-time visibility** into Logic App executions, performance metrics, and failure diagnostics.
 
-The architecture follows cloud-native best practices with Infrastructure as Code (Bicep templates), automated deployment via Azure Developer CLI (azd), managed identity authentication, and comprehensive health checks. It includes a sample eShop Orders API and Web App to demonstrate monitoring patterns for microservices that integrate with Logic Apps workflows.
+The architecture follows **cloud-native best practices** with **Infrastructure as Code (Bicep templates)**, **automated deployment via Azure Developer CLI (azd)**, **managed identity authentication**, and **comprehensive health checks**. It includes a sample **eShop Orders API** and **Web App** to demonstrate monitoring patterns for microservices that integrate with Logic Apps workflows.
 
-> 💡 **Why This Matters**: Traditional Logic Apps monitoring requires manual configuration of Application Insights and Log Analytics. This solution automates the entire setup, reducing deployment time from hours to minutes while enforcing enterprise-grade observability standards. Teams gain immediate access to distributed traces, custom metrics, and correlated logs across all workflow executions.
+> 💡 **Why This Matters**: Traditional Logic Apps monitoring requires manual configuration of Application Insights and Log Analytics. This solution **automates the entire setup**, reducing deployment time from **hours to minutes** while enforcing **enterprise-grade observability standards**. Teams gain immediate access to **distributed traces**, **custom metrics**, and **correlated logs** across all workflow executions.
 
 ## Quick Start
 
@@ -22,12 +22,14 @@ The architecture follows cloud-native best practices with Infrastructure as Code
 # 1. Authenticate with Azure
 azd auth login
 
-# 2. Create a new environment
+# 2. Create a new environment (required)
 azd env new my-logicapp-monitor
 
 # 3. Provision infrastructure and deploy applications
 azd up
 ```
+
+> ⚠️ **Important**: Ensure all prerequisites are installed before running `azd up`. Use `hooks/check-dev-workstation.ps1` to verify your environment.
 
 **Expected Output:**
 
@@ -49,15 +51,15 @@ SUCCESS: View your deployment at https://portal.azure.com
 Application Insights: https://portal.azure.com/#resource/{resourceId}/overview
 ```
 
-> ⚠️ **Important**: The first deployment takes 8-12 minutes as Azure provisions all infrastructure resources. Subsequent deployments complete in 2-3 minutes.
+> ⚠️ **Important**: The first deployment takes **8-12 minutes** as Azure provisions all infrastructure resources. Subsequent deployments complete in **2-3 minutes**.
 
 ## Features
 
 **Overview**
 
-The monitoring solution provides five core capabilities designed for enterprise Logic Apps deployments. These features address the most common operational challenges: workflow execution visibility, performance bottlenecks, failure diagnostics, infrastructure health, and secure authentication.
+The monitoring solution provides **five core capabilities** designed for enterprise Logic Apps deployments. These features address the most common operational challenges: **workflow execution visibility**, **performance bottlenecks**, **failure diagnostics**, **infrastructure health**, and **secure authentication**.
 
-> 📌 **How It Works**: The solution uses .NET Aspire's service discovery and dependency injection to automatically wire Application Insights telemetry across all services. When a Logic App workflow executes, telemetry flows through distributed tracing channels to Application Insights, where correlation IDs link requests across the Orders API, Service Bus, and database layers.
+> 📌 **How It Works**: The solution uses **.NET Aspire's service discovery** and **dependency injection** to automatically wire **Application Insights telemetry** across all services. When a Logic App workflow executes, telemetry flows through **distributed tracing channels** to Application Insights, where **correlation IDs link requests** across the Orders API, Service Bus, and database layers.
 
 | Feature                       | Description                                                                     | Technology                         | Status    |
 | ----------------------------- | ------------------------------------------------------------------------------- | ---------------------------------- | --------- |
@@ -73,9 +75,9 @@ The monitoring solution provides five core capabilities designed for enterprise 
 
 **Overview**
 
-This solution requires specific versions of Azure tools and .NET SDK to ensure compatibility with .NET Aspire 13.1.0 and Azure Container Apps deployment targets. All prerequisites are available cross-platform for Windows, macOS, and Linux development environments.
+This solution **requires specific versions** of Azure tools and .NET SDK to ensure compatibility with **.NET Aspire 13.1.0** and **Azure Container Apps** deployment targets. All prerequisites are available cross-platform for Windows, macOS, and Linux development environments.
 
-> 💡 **Verification**: Run `hooks/check-dev-workstation.ps1` (Windows) or `hooks/check-dev-workstation.sh` (Linux/macOS) to automatically validate all prerequisites are installed with correct versions.
+> 💡 **Verification**: Run `hooks/check-dev-workstation.ps1` (Windows) or `hooks/check-dev-workstation.sh` (Linux/macOS) to **automatically validate** all prerequisites are installed with correct versions.
 
 | Prerequisite                     | Minimum Version    | Purpose                                | Installation Link                                                                                    |
 | -------------------------------- | ------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -87,15 +89,17 @@ This solution requires specific versions of Azure tools and .NET SDK to ensure c
 
 **Azure Subscription Requirements:**
 
-- Active Azure subscription with Contributor permissions
-- Sufficient quota for: Container Apps (4 vCPU), Azure SQL (1 DTU), Service Bus (Standard tier)
-- Resource providers registered: `Microsoft.App`, `Microsoft.OperationalInsights`, `Microsoft.ServiceBus`, `Microsoft.Sql`
+- **Active Azure subscription** with **Contributor permissions**
+- **Sufficient quota** for: Container Apps (4 vCPU), Azure SQL (1 DTU), Service Bus (Standard tier)
+- **Resource providers registered**: `Microsoft.App`, `Microsoft.OperationalInsights`, `Microsoft.ServiceBus`, `Microsoft.Sql`
+
+> ⚠️ **Permissions Required**: You must have **Contributor** or **Owner** role at the subscription or resource group level to deploy this solution.
 
 ## Architecture
 
 **Overview**
 
-The solution follows a three-tier architecture with clear separation between presentation (Web App), business logic (Orders API), messaging (Service Bus), and observability (Application Insights). All components run in Azure Container Apps with managed identity authentication, eliminating the need for connection strings or secrets.
+The solution follows a **three-tier architecture** with clear separation between **presentation (Web App)**, **business logic (Orders API)**, **messaging (Service Bus)**, and **observability (Application Insights)**. All components run in **Azure Container Apps** with **managed identity authentication**, **eliminating the need for connection strings or secrets**.
 
 ```mermaid
 ---
@@ -187,13 +191,13 @@ flowchart TB
 
 **Component Responsibilities:**
 
-- **Web App**: User-facing interface for order management, publishes telemetry to Application Insights
-- **Orders API**: Business logic layer with Entity Framework Core, Azure SQL connectivity, and health checks
-- **Logic Apps**: Workflow orchestration triggered by Service Bus messages for order processing automation
-- **Service Bus**: Reliable message queue enabling asynchronous communication between services
-- **Application Insights**: Real-time telemetry collection, distributed tracing, and custom metrics aggregation
-- **Log Analytics**: Long-term log retention, KQL queries, and integration with Azure Monitor alerts
-- **SQL Database**: Persistent storage for orders with managed identity authentication and connection resiliency
+- **Web App**: User-facing interface for order management, **publishes telemetry** to Application Insights
+- **Orders API**: Business logic layer with **Entity Framework Core**, **Azure SQL connectivity**, and **health checks**
+- **Logic Apps**: **Workflow orchestration** triggered by Service Bus messages for **order processing automation**
+- **Service Bus**: **Reliable message queue** enabling **asynchronous communication** between services
+- **Application Insights**: **Real-time telemetry collection**, **distributed tracing**, and **custom metrics aggregation**
+- **Log Analytics**: **Long-term log retention**, **KQL queries**, and integration with **Azure Monitor alerts**
+- **SQL Database**: **Persistent storage** for orders with **managed identity authentication** and **connection resiliency**
 
 ## Deployment
 
@@ -254,6 +258,8 @@ azd up
 # azd deploy     # Deploy applications to Container Apps
 ```
 
+> 📌 **Tip**: Use `azd up` for first-time deployment. For subsequent updates, use `azd deploy` to skip infrastructure provisioning and deploy only application changes.
+
 **7. Verify Deployment**
 
 ```bash
@@ -266,20 +272,22 @@ az group show --name rg-orders-dev-eastus --query id -o tsv | xargs az portal sh
 
 **Lifecycle Hooks (Automated)**
 
-The deployment automatically executes these hooks via `azure.yaml`:
+The deployment **automatically executes** these hooks via `azure.yaml`:
 
-- `preprovision.ps1`: Validates prerequisites and Azure permissions
-- `postprovision.ps1`: Configures managed identity for SQL Database, creates database schema via migrations
-- `deploy-workflow.ps1`: Deploys Logic Apps workflows from `workflows/OrdersManagement/` directory
-- `postinfradelete.ps1`: Cleanup operations when running `azd down` (removes resource group)
+- `preprovision.ps1`: **Validates prerequisites** and Azure permissions
+- `postprovision.ps1`: **Configures managed identity** for SQL Database, **creates database schema** via migrations
+- `deploy-workflow.ps1`: **Deploys Logic Apps workflows** from `workflows/OrdersManagement/` directory
+- `postinfradelete.ps1`: **Cleanup operations** when running `azd down` (removes resource group)
 
-> 📌 **Note**: Deployment hooks require PowerShell 7.4+ on Windows or Bash on Linux/macOS. Scripts auto-detect the platform and execute the appropriate version.
+> 📌 **Note**: Deployment hooks **require PowerShell 7.4+** on Windows or **Bash** on Linux/macOS. Scripts auto-detect the platform and execute the appropriate version.
 
 ## Configuration
 
 **Overview**
 
-The solution uses layered configuration following .NET best practices: `appsettings.json` for defaults, `appsettings.Development.json` for local development, and Azure App Configuration for production secrets. All sensitive values (connection strings, Application Insights keys) are injected via Azure managed identity or user secrets during local development.
+The solution uses **layered configuration** following **.NET best practices**: `appsettings.json` for defaults, `appsettings.Development.json` for local development, and **Azure App Configuration** for production secrets. **All sensitive values** (connection strings, Application Insights keys) are **injected via Azure managed identity** or **user secrets** during local development.
+
+> ⚠️ **Security**: Never commit connection strings or secrets to source control. Use **.NET user secrets** for local development.
 
 **Application Settings (`appsettings.json`)**
 
@@ -309,8 +317,6 @@ The solution uses layered configuration following .NET best practices: `appsetti
 
 **Local Development Configuration**
 
-> ⚠️ **Security**: Never commit connection strings or secrets to source control. Use .NET user secrets for local development.
-
 ```bash
 # Initialize user secrets for Orders API
 cd src/eShop.Orders.API
@@ -325,7 +331,7 @@ dotnet user-secrets set "ConnectionStrings:OrderDb" "Server=localhost,1433;Datab
 
 **Azure Deployment Configuration**
 
-In Azure Container Apps, configuration is managed via environment variables injected by .NET Aspire during `azd deploy`:
+In Azure Container Apps, configuration is **managed via environment variables** injected by **.NET Aspire** during `azd deploy`:
 
 | Environment Variable                         | Source                                | Purpose                            |
 | -------------------------------------------- | ------------------------------------- | ---------------------------------- |
@@ -336,12 +342,14 @@ In Azure Container Apps, configuration is managed via environment variables inje
 
 **Aspire Dashboard (Local Development)**
 
-When running locally via `dotnet run --project app.AppHost`, access the Aspire dashboard at `http://localhost:15888` to view:
+When running locally via `dotnet run --project app.AppHost`, access the **Aspire dashboard** at `http://localhost:15888` to view:
 
-- Real-time distributed traces
-- Service health status
-- Log aggregation across all projects
-- Environment variables and configuration values
+- **Real-time distributed traces**
+- **Service health status**
+- **Log aggregation** across all projects
+- **Environment variables** and configuration values
+
+> 💡 **Tip**: The Aspire dashboard provides the same observability locally that Application Insights provides in Azure.
 
 ## Usage
 
@@ -359,7 +367,7 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 **Testing the Orders API**
 
 ```bash
-# Health check endpoint
+# Health check endpoint (verify API is running)
 curl http://localhost:5001/health
 
 # Create a new order (example)
@@ -370,6 +378,8 @@ curl -X POST http://localhost:5001/api/orders \
     "items": [{"productId": "P001", "quantity": 2}]
   }'
 ```
+
+> 💡 **Interactive Testing**: Access the **Swagger UI** at `http://localhost:5001/swagger` for interactive API testing with built-in documentation.
 
 **Viewing Telemetry in Application Insights**
 
@@ -393,6 +403,8 @@ traces
 | order by timestamp desc
 ```
 
+> 📌 **KQL Resources**: Learn more about Kusto Query Language at [Microsoft Learn KQL Tutorial](https://learn.microsoft.com/azure/data-explorer/kusto/query/).
+
 **Generating Sample Orders**
 
 ```powershell
@@ -403,37 +415,41 @@ traces
 ./hooks/Generate-Orders.sh --count 100 --api-endpoint "https://orders-api-xxx.eastus.azurecontainerapps.io"
 ```
 
+> ⚠️ **Load Testing**: Use this script with caution in production environments. Start with **low counts** (10-20) and monitor Application Insights metrics before scaling up.
+
 ## Contributing
 
 **Overview**
 
-Contributions are welcome! This project follows standard GitHub workflows with pull requests, code reviews, and automated CI/CD validation. All contributions must maintain compatibility with .NET Aspire 13.1.0 and Azure Container Apps deployment targets.
+Contributions are welcome! This project follows **standard GitHub workflows** with **pull requests**, **code reviews**, and **automated CI/CD validation**. All contributions **must maintain compatibility** with **.NET Aspire 13.1.0** and **Azure Container Apps** deployment targets.
 
 **Development Workflow**
 
-1. Fork the repository and clone your fork locally
-2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Make changes and test locally with `dotnet run --project app.AppHost`
-4. Verify deployment with `azd up` in a test environment
-5. Run validation scripts: `./hooks/check-dev-workstation.ps1`
-6. Commit with clear messages following [Conventional Commits](https://www.conventionalcommits.org/)
-7. Push to your fork and submit a pull request to the `main` branch
+1. **Fork the repository** and clone your fork locally
+2. **Create a feature branch**: `git checkout -b feature/your-feature-name`
+3. **Make changes** and test locally with `dotnet run --project app.AppHost`
+4. **Verify deployment** with `azd up` in a test environment
+5. **Run validation scripts**: `./hooks/check-dev-workstation.ps1`
+6. **Commit** with clear messages following [Conventional Commits](https://www.conventionalcommits.org/)
+7. **Push** to your fork and **submit a pull request** to the `main` branch
 
 **Code Standards**
 
-- Follow [C# Coding Conventions](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
-- Bicep templates must pass `az bicep build` without warnings
-- All PowerShell scripts must support both Windows PowerShell 5.1 and PowerShell 7.4+
-- Include XML documentation comments for public APIs
-- Add unit tests for new service methods in `src/tests/`
+- **Follow** [C# Coding Conventions](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
+- **Bicep templates must pass** `az bicep build` without warnings
+- **All PowerShell scripts must support** both Windows PowerShell 5.1 and PowerShell 7.4+
+- **Include XML documentation comments** for public APIs
+- **Add unit tests** for new service methods in `src/tests/`
+
+> 💡 **Best Practice**: Run `azd up` in a dedicated test environment before submitting your PR to ensure infrastructure changes don't break deployment.
 
 **Pull Request Guidelines**
 
-- Title must describe the change clearly (e.g., "Add Cosmos DB monitoring support")
-- Include description of **what** changed and **why**
-- Reference related issues using `Fixes #123` or `Closes #456`
-- Ensure all CI checks pass (build, tests, Bicep validation)
-- Request review from at least one maintainer
+- Title **must describe the change clearly** (e.g., "Add Cosmos DB monitoring support")
+- **Include description** of **what** changed and **why**
+- **Reference related issues** using `Fixes #123` or `Closes #456`
+- **Ensure all CI checks pass** (build, tests, Bicep validation)
+- **Request review** from at least one maintainer
 
 ## License
 
