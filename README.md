@@ -178,7 +178,7 @@ flowchart TB
     %% ============================================
     style system fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px
     style presentation fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
-    style application fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px
+    style application fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
     style data fill:#B2DFDB,stroke:#00796B,stroke-width:2px
     style observability fill:#FFF9C4,stroke:#F57F17,stroke-width:2px
 
