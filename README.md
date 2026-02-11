@@ -97,7 +97,7 @@ This solution requires specific versions of Azure tools and .NET SDK to ensure c
 
 The solution follows a three-tier architecture with clear separation between presentation (Web App), business logic (Orders API), messaging (Service Bus), and observability (Application Insights). All components run in Azure Container Apps with managed identity authentication, eliminating the need for connection strings or secrets.
 
-````mermaid
+```mermaid
 ---
 title: Azure Logic Apps Monitoring Architecture
 config:
@@ -183,6 +183,9 @@ flowchart TB
     style observability fill:#FFF9C4,stroke:#F57F17,stroke-width:2px
 
     %% Accessibility: WCAG AA verified (4.5:1 contrast ratio)
+```
+
+**Component Responsibilities:**
 
 - **Web App**: User-facing interface for order management, publishes telemetry to Application Insights
 - **Orders API**: Business logic layer with Entity Framework Core, Azure SQL connectivity, and health checks
@@ -201,7 +204,7 @@ flowchart TB
 ```bash
 git clone https://github.com/Evilazaro/Azure-LogicApps-Monitoring.git
 cd Azure-LogicApps-Monitoring
-````
+```
 
 **2. Verify Prerequisites**
 
