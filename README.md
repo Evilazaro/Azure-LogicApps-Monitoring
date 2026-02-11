@@ -97,36 +97,92 @@ This solution requires specific versions of Azure tools and .NET SDK to ensure c
 
 The solution follows a three-tier architecture with clear separation between presentation (Web App), business logic (Orders API), messaging (Service Bus), and observability (Application Insights). All components run in Azure Container Apps with managed identity authentication, eliminating the need for connection strings or secrets.
 
-```mermaid
-flowchart LR
-    client[👤 Client]:::mdOrange
-    webapp[🌐 Web App<br/>ASP.NET Core]:::mdTeal
-    api[⚙️ Orders API<br/>REST + EF Core]:::mdTeal
-    logicapp[🔄 Logic Apps<br/>Workflows]:::mdOrange
-    servicebus[📬 Service Bus<br/>Messaging]:::mdTeal
-    appinsights[📊 Application Insights<br/>Telemetry]:::mdOrange
-    sqldb[🗄️ SQL Database<br/>Orders Data]:::mdTeal
-    loganalytics[📝 Log Analytics<br/>Centralized Logs]:::mdOrange
+````mermaid
+---
+title: Azure Logic Apps Monitoring Architecture
+config:
+  theme: base
+  flowchart:
+    htmlLabels: false
+---
+flowchart TB
+    accTitle: Azure Logic Apps Monitoring Solution Architecture
+    accDescr: Shows the three-tier architecture with presentation layer (Web App), application layer (Orders API and Logic Apps), data layer (SQL Database and Service Bus), and cross-cutting observability services (Application Insights and Log Analytics) for comprehensive monitoring.
 
-    client -->|HTTPS| webapp
-    webapp -->|REST API| api
-    api -->|Publish Events| servicebus
-    servicebus -->|Trigger| logicapp
-    logicapp -->|Query/Update| sqldb
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% STANDARD COLOR SCHEME v2.1 - Material Design Compliant
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% SUBGRAPH HIERARCHY (Indigo progression):
+    %%   Level 1: #FFFFFF | Level 2: #C5CAE9 | Level 3: #9FA8DA
+    %% SEMANTIC COLORS (functional purpose):
+    %%   Blue=#BBDEFB (API/Network) | Green=#C8E6C9 (Workload/Core)
+    %%   Orange=#FFE0B2 (Process/Security) | Teal=#B2DFDB (Data/Storage)
+    %%   Yellow=#FFF9C4 (Monitoring/Observability)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
-    webapp -.->|Distributed Tracing| appinsights
-    api -.->|Custom Metrics| appinsights
-    logicapp -.->|Workflow Telemetry| appinsights
+    classDef level1Group fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px,color:#000
+    classDef level2Group fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#000
+    classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
+    classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
+    classDef mdOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
+    classDef mdTeal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#000
+    classDef mdYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#000
 
-    webapp -.->|Structured Logs| loganalytics
-    api -.->|Diagnostic Logs| loganalytics
-    logicapp -.->|Execution History| loganalytics
+    subgraph system["🏢 Azure Logic Apps Monitoring Solution"]
+        direction TB
 
-    classDef mdOrange fill:#fb923c,stroke:#ea580c,stroke-width:2px,color:#000
-    classDef mdTeal fill:#2dd4bf,stroke:#14b8a6,stroke-width:2px,color:#000
-```
+        subgraph presentation["🌐 Presentation Layer"]
+            direction LR
+            client["👤 Client"]:::mdBlue
+            webapp["🌐 Web App<br/>ASP.NET Core"]:::mdBlue
+        end
 
-**Component Responsibilities:**
+        subgraph application["⚙️ Application Layer"]
+            direction LR
+            api["⚙️ Orders API<br/>REST + EF Core"]:::mdGreen
+            logicapp["🔄 Logic Apps<br/>Workflows"]:::mdOrange
+        end
+
+        subgraph data["🗄️ Data & Messaging Layer"]
+            direction LR
+            servicebus["📬 Service Bus<br/>Messaging Queue"]:::mdTeal
+            sqldb["🗄️ SQL Database<br/>Orders Data"]:::mdTeal
+        end
+
+        subgraph observability["📊 Observability Layer"]
+            direction LR
+            appinsights["📊 Application Insights<br/>Distributed Tracing"]:::mdYellow
+            loganalytics["📝 Log Analytics<br/>Centralized Logs"]:::mdYellow
+        end
+
+        %% Data Flow (solid arrows)
+        client -->|"sends HTTPS requests"| webapp
+        webapp -->|"invokes REST API"| api
+        api -->|"publishes events"| servicebus
+        servicebus -->|"triggers workflow"| logicapp
+        logicapp -->|"queries and updates"| sqldb
+        api -->|"reads and writes"| sqldb
+
+        %% Observability Flow (dotted arrows)
+        webapp -.->|"sends distributed traces"| appinsights
+        api -.->|"sends custom metrics"| appinsights
+        logicapp -.->|"sends workflow telemetry"| appinsights
+
+        webapp -.->|"writes structured logs"| loganalytics
+        api -.->|"writes diagnostic logs"| loganalytics
+        logicapp -.->|"writes execution history"| loganalytics
+    end
+
+    %% ============================================
+    %% SUBGRAPH STYLING (5 subgraphs = 5 style directives)
+    %% ============================================
+    style system fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px
+    style presentation fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
+    style application fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px
+    style data fill:#B2DFDB,stroke:#00796B,stroke-width:2px
+    style observability fill:#FFF9C4,stroke:#F57F17,stroke-width:2px
+
+    %% Accessibility: WCAG AA verified (4.5:1 contrast ratio)
 
 - **Web App**: User-facing interface for order management, publishes telemetry to Application Insights
 - **Orders API**: Business logic layer with Entity Framework Core, Azure SQL connectivity, and health checks
@@ -145,7 +201,7 @@ flowchart LR
 ```bash
 git clone https://github.com/Evilazaro/Azure-LogicApps-Monitoring.git
 cd Azure-LogicApps-Monitoring
-```
+````
 
 **2. Verify Prerequisites**
 
