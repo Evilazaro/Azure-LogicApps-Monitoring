@@ -124,13 +124,7 @@ flowchart TB
     %%   Yellow=#FFF9C4 (Monitoring/Observability)
     %% ═══════════════════════════════════════════════════════════════════════════
 
-    classDef level1Group fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px,color:#000
-    classDef level2Group fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#000
-    classDef mdBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#000
-    classDef mdGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#000
-    classDef mdOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#000
-    classDef mdTeal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#000
-    classDef mdYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#000
+
 
     subgraph system["🏢 Azure Logic Apps Monitoring Solution"]
         direction TB
