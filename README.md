@@ -304,19 +304,19 @@ flowchart TB
     end
 
     %% Request flow paths
-    browser --> web_app
-    api_client --> orders_api
-    web_app --> orders_api
-    orders_api --> sql_db
-    orders_api --> service_bus
-    service_bus --> logic_app
-    logic_app --> orders_api
+    browser -->|HTTPS| web_app
+    api_client -->|REST API| orders_api
+    web_app -->|HTTP POST /orders| orders_api
+    orders_api -->|SQL CRUD| sql_db
+    orders_api -->|Publish OrderCreated| service_bus
+    service_bus -->|OrderCreated Event| logic_app
+    logic_app -->|GET /orders/{id}| orders_api
 
     %% Telemetry paths (dotted lines for observability)
-    orders_api -.-> app_insights
-    web_app -.-> app_insights
-    logic_app -.-> app_insights
-    app_insights --> log_analytics
+    orders_api -.->|OTLP Traces| app_insights
+    web_app -.->|OTLP Traces| app_insights
+    logic_app -.->|Workflow Logs| app_insights
+    app_insights -->|KQL Queries| log_analytics
 
     %% SUBGRAPH STYLING (5 subgraphs = 5 style directives - MRM-S001 compliant)
     style client fill:#BBDEFB,stroke:#004578,stroke-width:3px
