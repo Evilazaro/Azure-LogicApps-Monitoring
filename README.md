@@ -138,25 +138,25 @@ flowchart TB
         subgraph presentation["🌐 Presentation Layer"]
             direction LR
             client["👤 Client"]:::mdBlue
-            webapp["🌐 Web App<br/>ASP.NET Core"]:::mdBlue
+            webapp["🌐 Web App<br/>ASP.NET Core"]
         end
 
         subgraph application["⚙️ Application Layer"]
             direction LR
-            api["⚙️ Orders API<br/>REST + EF Core"]:::mdGreen
-            logicapp["🔄 Logic Apps<br/>Workflows"]:::mdOrange
+            api["⚙️ Orders API<br/>REST + EF Core"]
+            logicapp["🔄 Logic Apps<br/>Workflows"]
         end
 
         subgraph data["🗄️ Data & Messaging Layer"]
             direction LR
-            servicebus["📬 Service Bus<br/>Messaging Queue"]:::mdTeal
-            sqldb["🗄️ SQL Database<br/>Orders Data"]:::mdTeal
+            servicebus["📬 Service Bus<br/>Messaging Queue"]
+            sqldb["🗄️ SQL Database<br/>Orders Data"]
         end
 
         subgraph observability["📊 Observability Layer"]
             direction LR
-            appinsights["📊 Application Insights<br/>Distributed Tracing"]:::mdYellow
-            loganalytics["📝 Log Analytics<br/>Centralized Logs"]:::mdYellow
+            appinsights["📊 Application Insights<br/>Distributed Tracing"]
+            loganalytics["📝 Log Analytics<br/>Centralized Logs"]
         end
 
         %% Data Flow (solid arrows)
