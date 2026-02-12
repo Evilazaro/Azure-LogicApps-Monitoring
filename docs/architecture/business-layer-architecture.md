@@ -31,7 +31,7 @@
 
 ### 1.1 Purpose and Scope
 
-This document provides comprehensive architectural documentation for the **Business Layer** of the Azure Logic Apps Monitoring Solution. The Business layer implements core domain logic for order management, message handling, and business process orchestration within the eShop distributed application.
+This document provides comprehensive architectural documentation for the **Business Layer** of the Azure Logic Apps Monitoring Solution. The Business layer implements **core domain logic** for order management, message handling, and business process orchestration within the eShop distributed application.
 
 ### 1.2 Key Architectural Decisions
 
