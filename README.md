@@ -104,13 +104,13 @@ flowchart TB
 
     %% ============================================
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1 (Semantic + Font Governance)
-    %% Color Scheme: Functional layer semantic colors (100-level for nodes)
-    %% - Client Layer = Blue (#BBDEFB) → API/Info
-    %% - Application Layer = Orange (#FFE0B2) → Process/Service
-    %% - Workflow Layer = Purple (#E1BEE7) → Orchestration
-    %% - Data Layer = Teal (#B2DFDB) → Storage/Messaging
-    %% - Observability = Purple (#E1BEE7) → Monitoring
-    %% Subgraph fills use 50-level from same color family for visual hierarchy
+    %% Color Scheme: Semantic colors based on component function (100-level for nodes)
+    %% - Client/UI = Blue (#BBDEFB) → User interaction
+    %% - Application Services = Orange (#FFE0B2) → Business logic
+    %% - Workflow/Orchestration = Purple (#E1BEE7) → Event-driven processes
+    %% - Data/Storage = Teal (#B2DFDB) → Persistence and messaging
+    %% - Observability = Purple (#E1BEE7) → Monitoring and logging
+    %% Subgraph backgrounds = White/neutral for clean visual hierarchy
     %% ============================================
 
     %% Complete classDef palette (14 declarations - MRM-D002 compliant)
@@ -148,7 +148,7 @@ flowchart TB
     subgraph dataLayer["🗄️ Data Layer - Azure PaaS"]
         direction TB
         sqlDb["💾 Azure SQL Database<br/>Order entities<br/>Managed Identity Auth"]:::azureTeal
-        serviceBus["📬 Service Bus<br/>orderCompleted Queue<br/>Dead-letter Queue"]:::azureTeal
+        serviceBus["📬 Service Bus<br/>orderCompleted Queue<br/>Dead-letter Queue"]:::azureRed
     end
 
     subgraph observabilityLayer["📊 Observability - Azure Monitor"]
@@ -171,11 +171,12 @@ flowchart TB
     appInsights -->|Logs Sink| logAnalytics
 
     %% Subgraph styling (MANDATORY - MRM-S001 - 5 subgraphs = 5 style directives)
-    style clientLayer fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
-    style appLayer fill:#FFF3E0,stroke:#E64A19,stroke-width:2px
-    style workflowLayer fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
-    style dataLayer fill:#E0F2F1,stroke:#00796B,stroke-width:2px
-    style observabilityLayer fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
+    %% Using white/neutral backgrounds for clean hierarchy - semantic colors on nodes only
+    style clientLayer fill:#FFFFFF,stroke:#1976D2,stroke-width:2px
+    style appLayer fill:#FFFFFF,stroke:#E64A19,stroke-width:2px
+    style workflowLayer fill:#FFFFFF,stroke:#7B1FA2,stroke-width:2px
+    style dataLayer fill:#FFFFFF,stroke:#00796B,stroke-width:2px
+    style observabilityLayer fill:#FFFFFF,stroke:#7B1FA2,stroke-width:2px
 
     %% Accessibility: WCAG AA verified (contrast ratio ≥4.5:1)
 ```
