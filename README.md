@@ -8,6 +8,22 @@
 
 A comprehensive, production-ready monitoring solution for Azure Logic Apps Standard workflows with Application Insights, Log Analytics, and Service Bus integration. Built with .NET Aspire orchestration and Infrastructure as Code (IaC) for enterprise deployments.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Configuration](#configuration)
+- [Deployment](#deployment)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+- [Additional Resources](#additional-resources)
+- [Support](#support)
+- [Acknowledgments](#acknowledgments)
+
 ## Overview
 
 **Overview**
@@ -38,8 +54,6 @@ The architecture includes:
 - ✅ **Cost Optimized**: Elastic scaling for Logic Apps, connection pooling, and log retention policies
 
 </details>
-
----
 
 ## Quick Start
 
@@ -83,8 +97,6 @@ MONITORING:
 
 > ⚠️ **Prerequisites**: Requires Azure CLI ≥2.60.0, Azure Developer CLI ≥1.11.0, .NET SDK 10.0, and Docker for local development. See [Requirements](#requirements) for installation instructions.
 
----
-
 ## Architecture
 
 **Overview**
@@ -100,6 +112,25 @@ title: "Azure Logic Apps Monitoring Solution - System Architecture"
 flowchart TB
     accTitle: Azure Logic Apps Monitoring Solution System Architecture
     accDescr: A comprehensive architecture diagram showing the Azure Logic Apps monitoring solution with client layer, container apps environment running web app and orders API, Logic Apps workflows for order processing, Service Bus messaging, data layer with SQL Database and storage, monitoring components with Application Insights and Log Analytics, and infrastructure components including VNet and managed identity. All components are connected showing data flow and authentication patterns.
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% COLOR SCHEME v2.1 - Microsoft Fluent UI 100-Level Fills
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% SEMANTIC COLORS (Content Nodes):
+    %%   - azureBlue (#BBDEFB): APIs, Clients, Input - Fluent UI Blue 100
+    %%   - azureGreen (#C8E6C9): Backend Services, Processing - Fluent UI Green 100
+    %%   - azureOrange (#FFE0B2): Workflows, Orchestration - Fluent UI Orange 100
+    %%   - azureTeal (#B2EBF2): Data Storage, Persistence - Fluent UI Teal 100
+    %%   - azurePurple (#E1BEE7): Messaging, Events - Fluent UI Purple 100
+    %% STRUCTURAL COLORS (Containers):
+    %%   - Level 1 System Container: #FFFFFF (White - main boundary)
+    %%   - Level 2+ Subgraphs: #FFFFFF (White - nested boundaries)
+    %%   - Infrastructure: #F3F2F1 (Neutral Gray 10)
+    %% FONT GOVERNANCE:
+    %%   - Dark text (#323130) on all light backgrounds for WCAG AA (4.5:1)
+    %% MAX SEMANTIC COLORS: 5 (within 5-color limit)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph client["👤 Client Layer"]
         user["👤 Web Browser / API Client"]:::neutral
@@ -122,13 +153,13 @@ flowchart TB
     end
 
     subgraph data["💾 Data Layer"]
-        sql["🗄️ Azure SQL Database<br/>(Orders DB)<br/>Managed Identity Auth"]:::azureGreen
-        storage["📦 Azure Storage<br/>(Workflow State)"]:::azureGreen
+        sql["🗄️ Azure SQL Database<br/>(Orders DB)<br/>Managed Identity Auth"]:::azureTeal
+        storage["📦 Azure Storage<br/>(Workflow State)"]:::azureTeal
     end
 
     subgraph monitoring["📊 Monitoring & Observability"]
-        appinsights["📈 Application Insights<br/>(OpenTelemetry)"]:::azureTeal
-        loganalytics["📉 Log Analytics<br/>(Workspace)"]:::azureTeal
+        appinsights["📈 Application Insights<br/>(OpenTelemetry)"]:::azureGreen
+        loganalytics["📉 Log Analytics<br/>(Workspace)"]:::azureGreen
     end
 
     subgraph infra["🏗️ Infrastructure"]
@@ -137,62 +168,53 @@ flowchart TB
     end
 
     %% Client connections
-    user -->|HTTPS| webapp
-    user -->|HTTPS/Swagger| api
+    user -->|"sends HTTPS requests"| webapp
+    user -->|"calls API via Swagger"| api
 
     %% Application flow
-    webapp -->|REST API| api
-    api -->|Send Order| queue
-    queue -->|Trigger| workflow1
-    workflow1 -->|Update Status| workflow2
-    workflow2 -->|Complete Order| api
+    webapp -->|"invokes"| api
+    api -->|"publishes order message"| queue
+    queue -->|"triggers workflow"| workflow1
+    workflow1 -->|"updates order status"| workflow2
+    workflow2 -->|"sends completion callback"| api
 
     %% Data access
-    api -->|EF Core| sql
-    workflow1 -.->|Read/Write| storage
-    workflow2 -.->|Read/Write| storage
+    api -->|"queries via EF Core"| sql
+    workflow1 -.->|"reads/writes state"| storage
+    workflow2 -.->|"reads/writes state"| storage
 
     %% Authentication
-    api -->|Auth| identity
-    workflow1 -->|Auth| identity
-    workflow2 -->|Auth| identity
+    api -->|"authenticates via"| identity
+    workflow1 -->|"authenticates via"| identity
+    workflow2 -->|"authenticates via"| identity
 
     %% Monitoring
-    webapp -.->|Telemetry| appinsights
-    api -.->|Telemetry| appinsights
-    workflow1 -.->|Traces| appinsights
-    workflow2 -.->|Traces| appinsights
-    appinsights -->|Logs| loganalytics
+    webapp -.->|"sends telemetry"| appinsights
+    api -.->|"sends telemetry"| appinsights
+    workflow1 -.->|"sends traces"| appinsights
+    workflow2 -.->|"sends traces"| appinsights
+    appinsights -->|"forwards logs"| loganalytics
 
     %% Network
-    aca -.->|Subnet| vnet
-    logic -.->|Subnet| vnet
+    aca -.->|"uses subnet"| vnet
+    logic -.->|"uses subnet"| vnet
 
-    %% Color Definitions (Azure Brand Palette)
-    classDef azureBlue fill:#0078D4,stroke:#005A9E,stroke-width:2px,color:#FFFFFF
-    classDef azureGreen fill:#107C10,stroke:#0B5A0B,stroke-width:2px,color:#FFFFFF
-    classDef azureOrange fill:#D83B01,stroke:#A52A00,stroke-width:2px,color:#FFFFFF
-    classDef azurePurple fill:#5C2D91,stroke:#401B6C,stroke-width:2px,color:#FFFFFF
-    classDef azureTeal fill:#00BCF2,stroke:#0098C7,stroke-width:2px,color:#FFFFFF
+    %% Color Definitions (Fluent UI 100-Level Fills)
+    classDef azureBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#004578
+    classDef azureGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#004B04
+    classDef azureOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#4D3806
+    classDef azurePurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#38006B
+    classDef azureTeal fill:#B2EBF2,stroke:#0097A7,stroke-width:2px,color:#003D40
     classDef neutral fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
     %% Subgraph Styling (MRM-S001 compliant)
     style client fill:#FFFFFF,stroke:#8A8886,stroke-width:2px
-    style aca fill:#FFFFFF,stroke:#0078D4,stroke-width:3px
-    style logic fill:#FFFFFF,stroke:#D83B01,stroke-width:3px
-    style messaging fill:#FFFFFF,stroke:#5C2D91,stroke-width:3px
-    style data fill:#FFFFFF,stroke:#107C10,stroke-width:3px
-    style monitoring fill:#FFFFFF,stroke:#00BCF2,stroke-width:3px
+    style aca fill:#FFFFFF,stroke:#1976D2,stroke-width:3px
+    style logic fill:#FFFFFF,stroke:#E64A19,stroke-width:3px
+    style messaging fill:#FFFFFF,stroke:#7B1FA2,stroke-width:3px
+    style data fill:#FFFFFF,stroke:#0097A7,stroke-width:3px
+    style monitoring fill:#FFFFFF,stroke:#388E3C,stroke-width:3px
     style infra fill:#FFFFFF,stroke:#8A8886,stroke-width:2px
-
-    %% Accessibility: WCAG AA compliant (4.5:1 contrast ratio verified)
-    %% Color Palette Documentation:
-    %% - azureBlue (#0078D4): Container Apps, APIs (Azure primary blue)
-    %% - azureGreen (#107C10): Data Layer (SQL, Storage)
-    %% - azureOrange (#D83B01): Logic Apps Workflows (Processing/Orchestration)
-    %% - azurePurple (#5C2D91): Messaging (Service Bus)
-    %% - azureTeal (#00BCF2): Monitoring (App Insights, Log Analytics - distinct from Container Apps)
-    %% - neutral (#F3F2F1): Infrastructure, Client (Non-semantic)
 ```
 
 **Component Responsibilities:**
@@ -217,8 +239,6 @@ flowchart TB
 5. Workflow triggers **OrdersPlacedCompleteProcess** to finalize order
 6. API receives completion callback → Updates database → Returns confirmation to Web App
 7. Application Insights captures distributed trace across all 6 hops with correlation IDs
-
----
 
 ## Features
 
@@ -253,8 +273,6 @@ The solution provides **8 core capabilities** designed for enterprise production
 - **Cost Monitoring**: Azure tags applied to all resources (`Solution`, `Environment`, `CostCenter`)
 
 </details>
-
----
 
 ## Requirements
 
@@ -318,8 +336,6 @@ az provider show --namespace Microsoft.ServiceBus --query "registrationState"
 ```
 
 > 💡 **Tip**: If providers show "NotRegistered", run `az provider register --namespace <provider-name>` (takes 2-5 minutes).
-
----
 
 ## Configuration
 
@@ -439,8 +455,6 @@ For scenarios where `azd up` cannot be used (e.g., existing infrastructure), man
 3. **Configure Logic Apps** via Azure Portal → Logic App → Identity → Assign roles:
    - `Azure Service Bus Data Receiver` on Service Bus namespace
    - `Storage Blob Data Contributor` on workflow storage account
-
----
 
 ## Deployment
 
@@ -613,8 +627,6 @@ az monitor app-insights component show \
   --query "instrumentationKey"
 # Expected: <guid>
 ```
-
----
 
 ## Usage
 
@@ -818,11 +830,13 @@ curl https://orders-api-<unique-id>.eastus.azurecontainerapps.io/health
 curl https://web-app-<unique-id>.eastus.azurecontainerapps.io/health
 ```
 
----
-
 ## Contributing
 
 **Overview**
+
+> 💡 **Why This Matters**: Contributing to this project helps the Azure community by improving monitoring patterns, documentation, and tooling that other teams can leverage. Your contributions are governed by the MIT License, ensuring your work remains freely available and properly attributed.
+
+> 📌 **How It Works**: This project follows standard GitHub flow—fork the repository, create a feature branch, make changes with tests and documentation, then submit a pull request with descriptive commit messages following conventional commit format (feat:, fix:, docs:). All contributions require code review and CI/CD validation before merge.
 
 Contributions are welcome! This project follows standard GitHub flow with pull request reviews. All contributions must include unit tests, documentation updates, and pass CI/CD validation.
 
@@ -917,8 +931,6 @@ Use the [GitHub issue template](https://github.com/Evilazaro/Azure-LogicApps-Mon
 - 📖 **Documentation**: Identify unclear sections, suggest improvements
 - ❓ **Question**: Check [Discussions](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/discussions) first
 
----
-
 ## License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for full details.
@@ -941,8 +953,6 @@ copies or substantial portions of the Software.
 
 > 💡 **Commercial Use**: This MIT license allows commercial use, modification, distribution, and private use with no warranty. Attribution to the original author (Evilázaro Alves) is required in derivative works.
 
----
-
 ## Additional Resources
 
 | Resource                              | Description                                     | Link                                                                                                      |
@@ -954,8 +964,6 @@ copies or substantial portions of the Software.
 | 📊 **Application Insights KQL**       | Query language for telemetry analysis           | [Microsoft Learn](https://learn.microsoft.com/azure/azure-monitor/logs/log-query-overview)                |
 | 🔒 **Azure Managed Identity**         | Passwordless authentication best practices      | [Microsoft Learn](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) |
 
----
-
 ## Support
 
 | Support Channel           | Response Time               | Link                                                                                   |
@@ -965,8 +973,6 @@ copies or substantial portions of the Software.
 | 📧 **Email**              | 5-7 business days           | [Contact Maintainer](mailto:evilazaro@example.com)                                     |
 
 > ⚠️ **Security Vulnerabilities**: Report security issues privately via [GitHub Security Advisories](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/security/advisories). Do not create public issues for security bugs.
-
----
 
 ## Acknowledgments
 
@@ -979,8 +985,6 @@ This solution was built using the following open-source projects and Azure servi
 - 🚀 **Azure Developer CLI** - Infrastructure automation
 
 **Maintainer**: [Evilázaro Alves](https://github.com/Evilazaro)
-
----
 
 <div align="center">
 
