@@ -6,7 +6,7 @@
 [![Bicep](https://img.shields.io/badge/IaC-Bicep-0078D4.svg)](https://learn.microsoft.com/azure/azure-resource-manager/bicep/)
 [![Azure Developer CLI](https://img.shields.io/badge/azd-compatible-2B7489.svg)](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
 
-A comprehensive, production-ready monitoring solution for Azure Logic Apps Standard workflows with Application Insights, Log Analytics, and Service Bus integration. Built with .NET Aspire orchestration and Infrastructure as Code (IaC) for enterprise deployments.
+A comprehensive, **production-ready monitoring solution** for **Azure Logic Apps Standard workflows** with **Application Insights**, **Log Analytics**, and **Service Bus integration**. Built with **.NET Aspire orchestration** and **Infrastructure as Code (IaC)** for enterprise deployments.
 
 ## Table of Contents
 
@@ -28,7 +28,7 @@ A comprehensive, production-ready monitoring solution for Azure Logic Apps Stand
 
 **Overview**
 
-The Azure Logic Apps Monitoring Solution provides end-to-end observability and operational intelligence for Logic Apps Standard workflows in production environments. This solution demonstrates enterprise-grade patterns for monitoring distributed workflows, integrating telemetry from multiple Azure services into a unified monitoring stack.
+The Azure Logic Apps Monitoring Solution provides **end-to-end observability** and **operational intelligence** for **Logic Apps Standard workflows** in production environments. This solution demonstrates **enterprise-grade patterns** for monitoring distributed workflows, integrating telemetry from multiple Azure services into a **unified monitoring stack**.
 
 > 💡 **Why This Matters**: Traditional Logic Apps monitoring relies on fragmented logs across multiple Azure services. This solution consolidates telemetry from Logic Apps workflows, Service Bus messaging, SQL Database operations, and API calls into Application Insights with custom dashboards and alerts. Organizations using this solution report **70% faster incident resolution** and **95% reduction in monitoring overhead**.
 
@@ -57,7 +57,7 @@ The architecture includes:
 
 ## Quick Start
 
-Get the solution running in **under 10 minutes** with Azure Developer CLI:
+Get the solution running in **under 10 minutes** with **Azure Developer CLI**:
 
 ```bash
 # Clone the repository
@@ -95,15 +95,15 @@ MONITORING:
   Log Analytics:        https://portal.azure.com/#@<tenant>/resource/<workspaceId>
 ```
 
-> ⚠️ **Prerequisites**: Requires Azure CLI ≥2.60.0, Azure Developer CLI ≥1.11.0, .NET SDK 10.0, and Docker for local development. See [Requirements](#requirements) for installation instructions.
+> ⚠️ **Prerequisites**: Requires **Azure CLI ≥2.60.0**, **Azure Developer CLI ≥1.11.0**, **.NET SDK 10.0**, and **Docker** for local development. See [Requirements](#requirements) for installation instructions.
 
 ## Architecture
 
 **Overview**
 
-The solution implements a **3-tier microservices architecture** with Logic Apps workflows orchestrating order processing. All components communicate asynchronously via Azure Service Bus and emit OpenTelemetry traces to Application Insights for centralized observability.
+The solution implements a **3-tier microservices architecture** with **Logic Apps workflows** orchestrating order processing. All components communicate **asynchronously via Azure Service Bus** and emit **OpenTelemetry traces** to **Application Insights** for centralized observability.
 
-> 💡 **Design Rationale**: This architecture separates stateless compute (Container Apps), stateful workflows (Logic Apps), messaging (Service Bus), and data (SQL Database) to enable independent scaling and deployment. The VNet integration ensures all traffic remains within Azure's private network, while managed identities eliminate credential management across 15+ authentication points.
+> 💡 **Design Rationale**: This architecture separates **stateless compute** (Container Apps), **stateful workflows** (Logic Apps), **messaging** (Service Bus), and **data** (SQL Database) to enable **independent scaling and deployment**. The **VNet integration** ensures all traffic remains within Azure's private network, while **managed identities eliminate credential management** across **15+ authentication points**.
 
 ```mermaid
 ---
@@ -278,9 +278,9 @@ The solution provides **8 core capabilities** designed for enterprise production
 
 **Overview**
 
-This section lists all prerequisites for local development and Azure deployment. Installation takes approximately **15-20 minutes** for first-time setup.
+This section lists **all prerequisites** for local development and Azure deployment. Installation takes approximately **15-20 minutes** for first-time setup.
 
-> ⚠️ **Version Compatibility**: This solution requires .NET 10.0 (released February 2025) and Azure Developer CLI 1.11.0+. Earlier versions will fail during `azd up` with incompatible schema errors.
+> ⚠️ **Version Compatibility**: This solution **requires .NET 10.0** (released February 2025) and **Azure Developer CLI 1.11.0+**. **Earlier versions will fail** during `azd up` with incompatible schema errors.
 
 ### Development Environment
 
@@ -295,12 +295,12 @@ This section lists all prerequisites for local development and Azure deployment.
 
 ### Azure Subscription Requirements
 
-| Requirement                      | Details                                                                                                                                                     |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ✅ **Active Azure Subscription** | Owner or Contributor role required for resource group creation                                                                                              |
-| ✅ **Resource Providers**        | `Microsoft.Web`, `Microsoft.Logic`, `Microsoft.Sql`, `Microsoft.ServiceBus` must be registered                                                              |
-| ✅ **Quota Availability**        | 4 vCPUs for Container Apps, 1 Logic Apps Standard, 1 SQL Database (S1 tier)                                                                                 |
-| ✅ **Service Availability**      | Azure Container Apps and Logic Apps Standard available in target region ([check availability](https://azure.microsoft.com/global-infrastructure/services/)) |
+| Requirement                      | Details                                                                                                                                                                 |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ✅ **Active Azure Subscription** | **Owner or Contributor role required** for resource group creation                                                                                                      |
+| ✅ **Resource Providers**        | `Microsoft.Web`, `Microsoft.Logic`, `Microsoft.Sql`, `Microsoft.ServiceBus` **must be registered**                                                                      |
+| ✅ **Quota Availability**        | **4 vCPUs** for Container Apps, **1 Logic Apps Standard**, **1 SQL Database (S1 tier)**                                                                                 |
+| ✅ **Service Availability**      | Azure Container Apps and Logic Apps Standard **must be available in target region** ([check availability](https://azure.microsoft.com/global-infrastructure/services/)) |
 
 ### Verification Commands
 
@@ -335,15 +335,15 @@ az provider show --namespace Microsoft.ServiceBus --query "registrationState"
 # Expected: "Registered" for all providers
 ```
 
-> 💡 **Tip**: If providers show "NotRegistered", run `az provider register --namespace <provider-name>` (takes 2-5 minutes).
+> 💡 **Tip**: If providers show "NotRegistered", **run `az provider register --namespace <provider-name>`** (takes 2-5 minutes).
 
 ## Configuration
 
 **Overview**
 
-The solution uses **environment-based configuration** with Azure Developer CLI managing environment variables. Configuration is split across three layers: infrastructure (Bicep parameters), application settings (user secrets), and deployment hooks (post-provisioning scripts).
+The solution uses **environment-based configuration** with **Azure Developer CLI** managing environment variables. Configuration is split across **three layers**: infrastructure (Bicep parameters), application settings (user secrets), and deployment hooks (post-provisioning scripts).
 
-> 📌 **Security Best Practice**: Connection strings and secrets are **never committed to source control**. They are generated during `azd up` and stored in `.azure/<environment>/.env` (gitignored) and .NET user secrets.
+> 📌 **Security Best Practice**: Connection strings and secrets are **never committed to source control**. They are **generated during `azd up`** and stored in **`.azure/<environment>/.env` (gitignored)** and **.NET user secrets**.
 
 ### Infrastructure Configuration
 
@@ -426,7 +426,7 @@ Logic Apps workflows read configuration from [`workflows/OrdersManagement/Orders
 }
 ```
 
-> ⚠️ **Important**: In Azure, connection strings are resolved via **managed identity** and don't require explicit values. Local development uses connection strings from `.env` file.
+> ⚠️ **Important**: In Azure, connection strings are **resolved via managed identity** and **don't require explicit values**. Local development uses connection strings from `.env` file.
 
 ### Manual Configuration Override
 
@@ -460,13 +460,13 @@ For scenarios where `azd up` cannot be used (e.g., existing infrastructure), man
 
 **Overview**
 
-This solution supports **three deployment methods**: Azure Developer CLI (recommended), Azure Portal (manual), and GitHub Actions CI/CD. Each method deploys the same infrastructure defined in Bicep templates.
+This solution supports **three deployment methods**: **Azure Developer CLI (recommended)**, Azure Portal (manual), and GitHub Actions CI/CD. Each method deploys the same infrastructure defined in Bicep templates.
 
-> 💡 **Recommended Approach**: Use Azure Developer CLI (`azd up`) for 90% faster deployments compared to manual Azure Portal deployments. The automated post-provisioning hooks eliminate 25+ manual configuration steps.
+> 💡 **Recommended Approach**: Use **Azure Developer CLI (`azd up`)** for **90% faster deployments** compared to manual Azure Portal deployments. The automated post-provisioning hooks **eliminate 25+ manual configuration steps**.
 
 ### Method 1: Azure Developer CLI (Recommended)
 
-**Deployment Time**: 12-15 minutes (fully automated)
+**Deployment Time**: **12-15 minutes** (fully automated)
 
 ```bash
 # Step 1: Authenticate with Azure
@@ -484,14 +484,14 @@ azd env set AZURE_LOCATION eastus
 # Step 4: Provision infrastructure and deploy code (single command)
 azd up
 # Executes the following automatically:
-#   1. Creates resource group (rg-orders-dev-eastus)
-#   2. Deploys shared infrastructure (VNet, Log Analytics, SQL Database)
-#   3. Deploys workload infrastructure (Container Apps, Logic Apps, Service Bus)
-#   4. Builds and pushes container images to ACR
-#   5. Deploys Logic Apps workflows
-#   6. Configures SQL Database managed identity (postprovision hook)
-#   7. Sets .NET user secrets for local development
-#   8. Outputs service endpoints and monitoring URLs
+#   1. **Creates resource group** (rg-orders-dev-eastus)
+#   2. **Deploys shared infrastructure** (VNet, Log Analytics, SQL Database)
+#   3. **Deploys workload infrastructure** (Container Apps, Logic Apps, Service Bus)
+#   4. **Builds and pushes container images** to ACR
+#   5. **Deploys Logic Apps workflows**
+#   6. **Configures SQL Database managed identity** (postprovision hook)
+#   7. **Sets .NET user secrets** for local development
+#   8. **Outputs service endpoints** and monitoring URLs
 ```
 
 **Expected Output:**
@@ -596,7 +596,7 @@ git push origin main
 #   - Runs health checks
 ```
 
-> ⚠️ **CI/CD Configuration**: Set `deployHealthModel: false` in [`infra/main.parameters.json`](infra/main.parameters.json) when deploying via service principal (GitHub Actions), as health model deployment requires tenant-level permissions.
+> ⚠️ **CI/CD Configuration**: **Set `deployHealthModel: false`** in [`infra/main.parameters.json`](infra/main.parameters.json) when deploying via service principal (GitHub Actions), as health model deployment **requires tenant-level permissions**.
 
 ### Post-Deployment Verification
 
@@ -634,7 +634,7 @@ az monitor app-insights component show \
 
 This section demonstrates how to interact with the deployed solution, including REST API calls, Logic Apps workflow triggers, and monitoring queries.
 
-> 💡 **Quick Testing**: Use the provided PowerShell script [`hooks/Generate-Orders.ps1`](hooks/Generate-Orders.ps1) to generate 100 test orders and observe end-to-end processing with distributed tracing in Application Insights.
+> 💡 **Quick Testing**: Use the provided PowerShell script [`hooks/Generate-Orders.ps1`](hooks/Generate-Orders.ps1) to **generate 100 test orders** and observe **end-to-end processing with distributed tracing** in Application Insights.
 
 ### REST API Usage
 
@@ -834,11 +834,11 @@ curl https://web-app-<unique-id>.eastus.azurecontainerapps.io/health
 
 **Overview**
 
-> 💡 **Why This Matters**: Contributing to this project helps the Azure community by improving monitoring patterns, documentation, and tooling that other teams can leverage. Your contributions are governed by the MIT License, ensuring your work remains freely available and properly attributed.
+> 💡 **Why This Matters**: Contributing to this project helps the Azure community by improving monitoring patterns, documentation, and tooling that other teams can leverage. Your contributions are governed by the **MIT License**, ensuring your work remains freely available and properly attributed.
 
-> 📌 **How It Works**: This project follows standard GitHub flow—fork the repository, create a feature branch, make changes with tests and documentation, then submit a pull request with descriptive commit messages following conventional commit format (feat:, fix:, docs:). All contributions require code review and CI/CD validation before merge.
+> 📌 **How It Works**: This project follows **standard GitHub flow**—fork the repository, create a feature branch, make changes with tests and documentation, then submit a pull request with **descriptive commit messages** following **conventional commit format** (feat:, fix:, docs:). **All contributions require code review and CI/CD validation** before merge.
 
-Contributions are welcome! This project follows standard GitHub flow with pull request reviews. All contributions must include unit tests, documentation updates, and pass CI/CD validation.
+Contributions are welcome! This project follows standard GitHub flow with pull request reviews. **All contributions must include unit tests, documentation updates, and pass CI/CD validation**.
 
 > 💡 **First-Time Contributors**: Check [GitHub Issues](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) for beginner-friendly tasks labeled `good first issue`.
 
@@ -890,21 +890,21 @@ Contributions are welcome! This project follows standard GitHub flow with pull r
 
 ### Contribution Guidelines
 
-| Guideline               | Requirement                                                                                                                      |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| ✅ **Code Style**       | Follow [Microsoft C# Coding Conventions](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions) |
-| ✅ **Commit Messages**  | Use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, etc.)                                |
-| ✅ **Testing**          | Unit test coverage ≥80%, all tests passing                                                                                       |
-| ✅ **Documentation**    | Update README.md for new features, add inline code comments                                                                      |
-| ✅ **Bicep Templates**  | Run `az bicep lint` before committing infrastructure changes                                                                     |
-| ✅ **Breaking Changes** | Create GitHub issue first for discussion, update CHANGELOG.md                                                                    |
+| Guideline               | Requirement                                                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| ✅ **Code Style**       | **Follow** [Microsoft C# Coding Conventions](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions) |
+| ✅ **Commit Messages**  | **Use** [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, etc.)                                |
+| ✅ **Testing**          | **Unit test coverage ≥80%**, all tests passing                                                                                       |
+| ✅ **Documentation**    | **Update README.md** for new features, add inline code comments                                                                      |
+| ✅ **Bicep Templates**  | **Run `az bicep lint`** before committing infrastructure changes                                                                     |
+| ✅ **Breaking Changes** | **Create GitHub issue first** for discussion, update CHANGELOG.md                                                                    |
 
 ### Code Review Process
 
-1. All pull requests require **1 approving review** from maintainers
-2. CI/CD pipeline must pass (builds, tests, Bicep validation)
-3. Address review comments within **7 days** or PR may be closed
-4. Squash commits before merge to keep history clean
+1. All pull requests **require 1 approving review** from maintainers
+2. **CI/CD pipeline must pass** (builds, tests, Bicep validation)
+3. **Address review comments within 7 days** or PR may be closed
+4. **Squash commits before merge** to keep history clean
 
 ### Development Environment Setup
 
@@ -951,7 +951,7 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 ```
 
-> 💡 **Commercial Use**: This MIT license allows commercial use, modification, distribution, and private use with no warranty. Attribution to the original author (Evilázaro Alves) is required in derivative works.
+> 💡 **Commercial Use**: This MIT license **allows commercial use, modification, distribution, and private use** with no warranty. **Attribution to the original author (Evilázaro Alves) is required** in derivative works.
 
 ## Additional Resources
 
@@ -972,7 +972,7 @@ copies or substantial portions of the Software.
 | 💬 **GitHub Discussions** | Community-driven (1-2 days) | [Join Discussion](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/discussions) |
 | 📧 **Email**              | 5-7 business days           | [Contact Maintainer](mailto:evilazaro@example.com)                                     |
 
-> ⚠️ **Security Vulnerabilities**: Report security issues privately via [GitHub Security Advisories](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/security/advisories). Do not create public issues for security bugs.
+> ⚠️ **Security Vulnerabilities**: **Report security issues privately** via [GitHub Security Advisories](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/security/advisories). **Do not create public issues** for security bugs.
 
 ## Acknowledgments
 
