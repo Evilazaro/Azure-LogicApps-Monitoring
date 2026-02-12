@@ -148,7 +148,7 @@ flowchart TB
     subgraph dataLayer["🗄️ Data Layer - Azure PaaS"]
         direction TB
         sqlDb["💾 Azure SQL Database<br/>Order entities<br/>Managed Identity Auth"]:::azureTeal
-        serviceBus["📬 Service Bus<br/>orderCompleted Queue<br/>Dead-letter Queue"]:::azureRed
+        serviceBus["📬 Service Bus<br/>orderCompleted Queue<br/>Dead-letter Queue"]:::azureTeal
     end
 
     subgraph observabilityLayer["📊 Observability - Azure Monitor"]
