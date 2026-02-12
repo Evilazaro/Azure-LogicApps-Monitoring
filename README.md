@@ -92,51 +92,83 @@ The solution implements a layered microservices architecture orchestrated by .NE
 ```mermaid
 ---
 title: "Azure Logic Apps Monitoring Solution Architecture"
+config:
+  theme: base
+  flowchart:
+    htmlLabels: false
+    curve: cardinal
 ---
-graph TB
-    subgraph "Client Layer"
-        Client[Web Browser]
+flowchart TB
+    accTitle: Azure Logic Apps Monitoring Solution Architecture
+    accDescr: Layered microservices architecture showing client access, application services, workflow orchestration, data persistence, and observability components with their interactions
+
+    %% ============================================
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1 (Semantic + Font Governance)
+    %% Color Scheme: Functional layer semantic colors (100-level for nodes)
+    %% - Client Layer = Blue (#BBDEFB) → API/Info
+    %% - Application Layer = Orange (#FFE0B2) → Process/Service
+    %% - Workflow Layer = Purple (#E1BEE7) → Orchestration
+    %% - Data Layer = Teal (#B2DFDB) → Storage/Messaging
+    %% - Observability = Purple (#E1BEE7) → Monitoring
+    %% Subgraph fills use 50-level from same color family for visual hierarchy
+    %% ============================================
+
+    subgraph clientLayer["🖥️ Client Layer"]
+        direction TB
+        clientNode["🌐 Web Browser"]:::azureBlue
     end
 
-    subgraph "Application Layer - Azure Container Apps"
-        WebApp["🌐 eShop Web App<br/>.NET Aspire Frontend<br/>Health Checks: /health"]
-        OrdersAPI["⚙️ Orders API<br/>REST Endpoints<br/>Entity Framework Core"]
+    subgraph appLayer["⚙️ Application Layer - Azure Container Apps"]
+        direction TB
+        webApp["🌐 eShop Web App<br/>.NET Aspire Frontend<br/>Health Checks: /health"]:::azureOrange
+        ordersAPI["⚙️ Orders API<br/>REST Endpoints<br/>Entity Framework Core"]:::azureOrange
     end
 
-    subgraph "Workflow Layer"
-        LogicApp["⚡ OrdersManagement<br/>Logic App Standard<br/>Event-driven Workflows"]
+    subgraph workflowLayer["⚡ Workflow Layer"]
+        direction TB
+        logicApp["⚡ OrdersManagement<br/>Logic App Standard<br/>Event-driven Workflows"]:::azurePurple
     end
 
-    subgraph "Data Layer - Azure PaaS"
-        SQL["💾 Azure SQL Database<br/>Order entities<br/>Managed Identity Auth"]
-        ServiceBus["📬 Service Bus<br/>orderCompleted Queue<br/>Dead-letter Queue"]
+    subgraph dataLayer["🗄️ Data Layer - Azure PaaS"]
+        direction TB
+        sqlDb["💾 Azure SQL Database<br/>Order entities<br/>Managed Identity Auth"]:::azureTeal
+        serviceBus["📬 Service Bus<br/>orderCompleted Queue<br/>Dead-letter Queue"]:::azureTeal
     end
 
-    subgraph "Observability - Azure Monitor"
-        AppInsights["📊 Application Insights<br/>Distributed Tracing<br/>Custom Metrics"]
-        LogAnalytics["📝 Log Analytics<br/>Workspace: logs-orders<br/>KQL Queries"]
+    subgraph observabilityLayer["📊 Observability - Azure Monitor"]
+        direction TB
+        appInsights["📊 Application Insights<br/>Distributed Tracing<br/>Custom Metrics"]:::azurePurple
+        logAnalytics["📝 Log Analytics<br/>Workspace: logs-orders<br/>KQL Queries"]:::azurePurple
     end
 
-    Client -->|HTTPS| WebApp
-    WebApp -->|"GET/POST /api/orders"| OrdersAPI
-    OrdersAPI -->|"EF Core + Retry"| SQL
-    OrdersAPI -->|"Send Messages"| ServiceBus
-    ServiceBus -->|Trigger| LogicApp
-    LogicApp -->|Query Orders| OrdersAPI
+    %% Connections
+    clientNode -->|HTTPS| webApp
+    webApp -->|"GET/POST /api/orders"| ordersAPI
+    ordersAPI -->|"EF Core + Retry"| sqlDb
+    ordersAPI -->|"Send Messages"| serviceBus
+    serviceBus -->|Trigger| logicApp
+    logicApp -->|Query Orders| ordersAPI
 
-    OrdersAPI -.->|OpenTelemetry| AppInsights
-    WebApp -.->|OpenTelemetry| AppInsights
-    LogicApp -.->|Diagnostics| AppInsights
-    AppInsights -->|Logs Sink| LogAnalytics
+    ordersAPI -.->|OpenTelemetry| appInsights
+    webApp -.->|OpenTelemetry| appInsights
+    logicApp -.->|Diagnostics| appInsights
+    appInsights -->|Logs Sink| logAnalytics
 
-    style Client fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
-    style WebApp fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
-    style OrdersAPI fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
-    style LogicApp fill:#E8EAF6,stroke:#5E35B1,stroke-width:2px
-    style SQL fill:#E0F2F1,stroke:#00796B,stroke-width:2px
-    style ServiceBus fill:#FCE4EC,stroke:#C2185B,stroke-width:2px
-    style AppInsights fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
-    style LogAnalytics fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1 (Semantic + Font Governance)
+    %% classDef declarations
+    classDef azureBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#323130
+    classDef azureOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#323130
+    classDef azurePurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#323130
+    classDef azureTeal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#323130
+
+    %% Subgraph styling (MANDATORY - MRM-S001)
+    style clientLayer fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    style appLayer fill:#FFF3E0,stroke:#E64A19,stroke-width:2px
+    style workflowLayer fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
+    style dataLayer fill:#E0F2F1,stroke:#00796B,stroke-width:2px
+    style observabilityLayer fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
+
+    %% Accessibility: WCAG AA verified (contrast ratio ≥4.5:1)
 ```
 
 **Component Responsibilities**:
