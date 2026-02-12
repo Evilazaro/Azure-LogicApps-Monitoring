@@ -155,11 +155,21 @@ flowchart TB
     appInsights -->|Logs Sink| logAnalytics
 
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1 (Semantic + Font Governance)
-    %% classDef declarations
+    %% Complete classDef palette (14 declarations - MRM-D002 compliant)
+    classDef level1Group fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px,color:#323130
+    classDef level2Group fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#323130
+    classDef level3Group fill:#9FA8DA,stroke:#3F51B5,stroke-width:2px,color:#323130
+    classDef level4Group fill:#7986CB,stroke:#3F51B5,stroke-width:1px,color:#fff
+    classDef mainGroup fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px,color:#323130
+    classDef subGroup fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#323130
     classDef azureBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#323130
+    classDef azureGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#323130
+    classDef azureRed fill:#FFCDD2,stroke:#D32F2F,stroke-width:2px,color:#323130
+    classDef azureYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
     classDef azureOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#323130
     classDef azurePurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#323130
     classDef azureTeal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#323130
+    classDef neutralGrey fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     %% Subgraph styling (MANDATORY - MRM-S001)
     style clientLayer fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
