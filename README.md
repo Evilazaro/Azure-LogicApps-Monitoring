@@ -168,31 +168,31 @@ flowchart TB
     aca -.->|Subnet| vnet
     logic -.->|Subnet| vnet
 
-    %% Color Definitions (Microsoft Fluent UI / Azure Palette)
-    classDef azureBlue fill:#BBDEFB,stroke:#2196F3,stroke-width:2px,color:#0D47A1
-    classDef azureGreen fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px,color:#1B5E20
-    classDef azureOrange fill:#FFE0B2,stroke:#FF9800,stroke-width:2px,color:#E65100
-    classDef azurePurple fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px,color:#4A148C
-    classDef azureTeal fill:#B2DFDB,stroke:#009688,stroke-width:2px,color:#004D40
-    classDef neutral fill:#F5F5F5,stroke:#9E9E9E,stroke-width:2px,color:#212121
+    %% Color Definitions (Azure Brand Palette)
+    classDef azureBlue fill:#0078D4,stroke:#005A9E,stroke-width:2px,color:#FFFFFF
+    classDef azureGreen fill:#107C10,stroke:#0B5A0B,stroke-width:2px,color:#FFFFFF
+    classDef azureOrange fill:#D83B01,stroke:#A52A00,stroke-width:2px,color:#FFFFFF
+    classDef azurePurple fill:#5C2D91,stroke:#401B6C,stroke-width:2px,color:#FFFFFF
+    classDef azureTeal fill:#00BCF2,stroke:#0098C7,stroke-width:2px,color:#FFFFFF
+    classDef neutral fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
     %% Subgraph Styling (MRM-S001 compliant)
-    style client fill:#FFFFFF,stroke:#9E9E9E,stroke-width:2px
-    style aca fill:#BBDEFB,stroke:#2196F3,stroke-width:3px
-    style logic fill:#FFE0B2,stroke:#FF9800,stroke-width:3px
-    style messaging fill:#E1BEE7,stroke:#9C27B0,stroke-width:3px
-    style data fill:#C8E6C9,stroke:#4CAF50,stroke-width:3px
-    style monitoring fill:#B2DFDB,stroke:#009688,stroke-width:3px
-    style infra fill:#FFFFFF,stroke:#9E9E9E,stroke-width:2px
+    style client fill:#FFFFFF,stroke:#8A8886,stroke-width:2px
+    style aca fill:#FFFFFF,stroke:#0078D4,stroke-width:3px
+    style logic fill:#FFFFFF,stroke:#D83B01,stroke-width:3px
+    style messaging fill:#FFFFFF,stroke:#5C2D91,stroke-width:3px
+    style data fill:#FFFFFF,stroke:#107C10,stroke-width:3px
+    style monitoring fill:#FFFFFF,stroke:#00BCF2,stroke-width:3px
+    style infra fill:#FFFFFF,stroke:#8A8886,stroke-width:2px
 
     %% Accessibility: WCAG AA compliant (4.5:1 contrast ratio verified)
     %% Color Palette Documentation:
-    %% - azureBlue (#BBDEFB): Container Apps, APIs (Information/Communication)
-    %% - azureGreen (#C8E6C9): Data Layer (SQL, Storage)
-    %% - azureOrange (#FFE0B2): Logic Apps Workflows (Processing/Orchestration)
-    %% - azurePurple (#E1BEE7): Messaging (Service Bus)
-    %% - azureTeal (#B2DFDB): Monitoring (App Insights, Log Analytics)
-    %% - neutral (#F5F5F5): Infrastructure, Client (Non-semantic)
+    %% - azureBlue (#0078D4): Container Apps, APIs (Azure primary blue)
+    %% - azureGreen (#107C10): Data Layer (SQL, Storage)
+    %% - azureOrange (#D83B01): Logic Apps Workflows (Processing/Orchestration)
+    %% - azurePurple (#5C2D91): Messaging (Service Bus)
+    %% - azureTeal (#00BCF2): Monitoring (App Insights, Log Analytics - distinct from Container Apps)
+    %% - neutral (#F3F2F1): Infrastructure, Client (Non-semantic)
 ```
 
 **Component Responsibilities:**
