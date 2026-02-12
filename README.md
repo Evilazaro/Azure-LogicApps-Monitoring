@@ -101,27 +101,27 @@ graph TB
     accTitle: Azure Logic Apps Monitoring Solution Architecture
     accDescr: Shows layered microservices architecture with Client Layer, Application Layer, Workflow Layer, Data Layer, and Observability components with their interactions
 
-    subgraph "Client Layer"
-        Client["🌐 Web Browser"]
+    subgraph clientLayer["Client Layer"]
+        Client["🌐 Web Browser"]:::clientColor
     end
 
-    subgraph "Application Layer - Azure Container Apps"
-        WebApp["🌐 eShop Web App<br/>.NET Aspire Frontend<br/>Health Checks: /health"]
-        OrdersAPI["⚙️ Orders API<br/>REST Endpoints<br/>Entity Framework Core"]
+    subgraph appLayer["Application Layer - Azure Container Apps"]
+        WebApp["🌐 eShop Web App<br/>.NET Aspire Frontend<br/>Health Checks: /health"]:::apiColor
+        OrdersAPI["⚙️ Orders API<br/>REST Endpoints<br/>Entity Framework Core"]:::apiColor
     end
 
-    subgraph "Workflow Layer"
-        LogicApp["⚡ OrdersManagement<br/>Logic App Standard<br/>Event-driven Workflows"]
+    subgraph workflowLayer["Workflow Layer"]
+        LogicApp["⚡ OrdersManagement<br/>Logic App Standard<br/>Event-driven Workflows"]:::workflowColor
     end
 
-    subgraph "Data Layer - Azure PaaS"
-        SQL["💾 Azure SQL Database<br/>Order entities<br/>Managed Identity Auth"]
-        ServiceBus["📬 Service Bus<br/>orderCompleted Queue<br/>Dead-letter Queue"]
+    subgraph dataLayer["Data Layer - Azure PaaS"]
+        SQL["💾 Azure SQL Database<br/>Order entities<br/>Managed Identity Auth"]:::dataColor
+        ServiceBus["📬 Service Bus<br/>orderCompleted Queue<br/>Dead-letter Queue"]:::messagingColor
     end
 
-    subgraph "Observability - Azure Monitor"
-        AppInsights["📊 Application Insights<br/>Distributed Tracing<br/>Custom Metrics"]
-        LogAnalytics["📝 Log Analytics<br/>Workspace: logs-orders<br/>KQL Queries"]
+    subgraph observability["Observability - Azure Monitor"]
+        AppInsights["📊 Application Insights<br/>Distributed Tracing<br/>Custom Metrics"]:::observabilityColor
+        LogAnalytics["📝 Log Analytics<br/>Workspace: logs-orders<br/>KQL Queries"]:::observabilityColor
     end
 
     Client -->|HTTPS| WebApp
@@ -136,14 +136,27 @@ graph TB
     LogicApp -.->|Diagnostics| AppInsights
     AppInsights -->|Logs Sink| LogAnalytics
 
-    style Client fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
-    style WebApp fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
-    style OrdersAPI fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
-    style LogicApp fill:#E8EAF6,stroke:#5E35B1,stroke-width:2px
-    style SQL fill:#E0F2F1,stroke:#00796B,stroke-width:2px
-    style ServiceBus fill:#FCE4EC,stroke:#C2185B,stroke-width:2px
-    style AppInsights fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
-    style LogAnalytics fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
+    %% Semantic color definitions (Microsoft Fluent UI / Azure palette)
+    classDef clientColor fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#0D47A1
+    classDef apiColor fill:#FFE0B2,stroke:#F57C00,stroke-width:2px,color:#E65100
+    classDef workflowColor fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#4A148C
+    classDef dataColor fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#004D40
+    classDef messagingColor fill:#FFCDD2,stroke:#C62828,stroke-width:2px,color:#B71C1C
+    classDef observabilityColor fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#4A148C
+
+    %% Subgraph styling
+    style clientLayer fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
+    style appLayer fill:#FFE0B2,stroke:#F57C00,stroke-width:2px
+    style workflowLayer fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px
+    style dataLayer fill:#B2DFDB,stroke:#00796B,stroke-width:2px
+    style observability fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px
+
+    %% Color Palette Reference (Microsoft Fluent UI / Azure):
+    %% azureBlue (#BBDEFB): Client/User interfaces
+    %% azureOrange (#FFE0B2): API/Application services
+    %% azurePurple (#E1BEE7): Workflow/Logic orchestration & Observability
+    %% azureTeal (#B2DFDB): Data storage/persistence
+    %% azureRed (#FFCDD2): Messaging/Communication
 ```
 
 **Component Responsibilities**:
