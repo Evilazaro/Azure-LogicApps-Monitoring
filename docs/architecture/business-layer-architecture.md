@@ -753,10 +753,9 @@ flowchart LR
     client --> controller
     controller --> service
     service --> repo
-    repo --> optimizations
-    optimizations --> noTracking
-    optimizations --> splitQuery
-    optimizations --> pagination
+    repo --> noTracking
+    repo --> splitQuery
+    repo --> pagination
     noTracking --> db
     splitQuery --> db
     pagination --> db
