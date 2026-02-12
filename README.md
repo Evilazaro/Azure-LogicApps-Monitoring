@@ -136,27 +136,27 @@ graph TB
     LogicApp -.->|Diagnostics| AppInsights
     AppInsights -->|Logs Sink| LogAnalytics
 
-    %% Semantic color definitions (Microsoft Fluent UI / Azure palette)
-    classDef clientColor fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#0D47A1
-    classDef apiColor fill:#FFE0B2,stroke:#F57C00,stroke-width:2px,color:#E65100
-    classDef workflowColor fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#4A148C
-    classDef dataColor fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#004D40
-    classDef messagingColor fill:#FFCDD2,stroke:#C62828,stroke-width:2px,color:#B71C1C
-    classDef observabilityColor fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#4A148C
+    %% Semantic color definitions (lighter, softer palette for better readability)
+    classDef clientColor fill:#E3F2FD,stroke:#1976D2,stroke-width:2px,color:#0D47A1
+    classDef apiColor fill:#FFF3E0,stroke:#F57C00,stroke-width:2px,color:#E65100
+    classDef workflowColor fill:#E8EAF6,stroke:#5E35B1,stroke-width:2px,color:#4A148C
+    classDef dataColor fill:#E0F2F1,stroke:#00796B,stroke-width:2px,color:#004D40
+    classDef messagingColor fill:#FCE4EC,stroke:#C2185B,stroke-width:2px,color:#B71C1C
+    classDef observabilityColor fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px,color:#4A148C
 
-    %% Subgraph styling
-    style clientLayer fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
-    style appLayer fill:#FFE0B2,stroke:#F57C00,stroke-width:2px
-    style workflowLayer fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px
-    style dataLayer fill:#B2DFDB,stroke:#00796B,stroke-width:2px
-    style observability fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px
+    %% Subgraph styling (light, clean backgrounds)
+    style clientLayer fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    style appLayer fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
+    style workflowLayer fill:#E8EAF6,stroke:#5E35B1,stroke-width:2px
+    style dataLayer fill:#E0F2F1,stroke:#00796B,stroke-width:2px
+    style observability fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
 
-    %% Color Palette Reference (Microsoft Fluent UI / Azure):
-    %% azureBlue (#BBDEFB): Client/User interfaces
-    %% azureOrange (#FFE0B2): API/Application services
-    %% azurePurple (#E1BEE7): Workflow/Logic orchestration & Observability
-    %% azureTeal (#B2DFDB): Data storage/persistence
-    %% azureRed (#FFCDD2): Messaging/Communication
+    %% Color Palette Reference (Material Design inspired):
+    %% Light Blue (#E3F2FD): Client/User interfaces
+    %% Light Orange (#FFF3E0): API/Application services
+    %% Light Purple (#E8EAF6): Workflow orchestration & (#F3E5F5) Observability
+    %% Light Teal (#E0F2F1): Data storage/persistence
+    %% Light Red (#FCE4EC): Messaging/Communication
 ```
 
 **Component Responsibilities**:
