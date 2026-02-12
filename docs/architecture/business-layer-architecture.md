@@ -202,13 +202,15 @@ public sealed record OrderProduct
 
 ### 2.4 Layer Boundaries
 
+> ⚠️ **Architecture Constraint**: Violating these boundaries compromises maintainability and testability.
+
 **Clean Boundaries Maintained:**
 
 - ✅ Business layer **NEVER** contains UI logic (no MVC concerns)
 - ✅ Business layer **NEVER** contains data access implementation (only calls interfaces)
-- ✅ Business layer **CONSUMES** abstractions (IOrderRepository, IOrdersMessageHandler)
-- ✅ Business layer **EXPOSES** contracts (IOrderService)
-- ✅ Controllers depend on IOrderService, not OrderService directly
+- ✅ Business layer **MUST CONSUME** abstractions (`IOrderRepository`, `IOrdersMessageHandler`)
+- ✅ Business layer **MUST EXPOSE** contracts (`IOrderService`)
+- ✅ Controllers **MUST** depend on `IOrderService`, not `OrderService` directly
 
 ---
 
@@ -395,9 +397,9 @@ public async Task<IEnumerable<Order>> GetOrdersAsync(
 
 **Resilience Patterns:**
 
-- Internal timeout handling (prevents HTTP cancellation from interrupting transactions)
-- Duplicate key violation detection (`SqlException` error 2627)
-- Distributed tracing with Activity events at key operations
+- **Internal timeout handling** (prevents HTTP cancellation from interrupting transactions)
+- **Duplicate key violation detection** (`SqlException` error 2627)
+- **Distributed tracing** with Activity events at key operations
 
 #### 3.2.3 OrdersMessageHandler
 
@@ -441,8 +443,8 @@ public async Task<IEnumerable<Order>> GetOrdersAsync(
 
 **Integration Point:**
 
-- Topic Name: `ordersplaced` (configurable via `Azure:ServiceBus:TopicName`)
-- Trace Context Propagation: W3C TraceContext format
+- **Topic Name:** `ordersplaced` (configurable via `Azure:ServiceBus:TopicName`)
+- **Trace Context Propagation:** W3C TraceContext format
 
 #### 3.2.4 OrdersController
 
@@ -859,10 +861,12 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 });
 ```
 
+> 💡 **Best Practice**: Use Managed Identity in production to eliminate credential storage.
+
 **Authentication:**
 
 - **Development:** SQL Server Authentication
-- **Production:** Azure Managed Identity (configured via Aspire .WithReference())
+- **Production:** **Azure Managed Identity** (configured via Aspire .WithReference())
 
 **Database Schema:**
 
@@ -890,10 +894,10 @@ CREATE TABLE OrderProducts (
 
 **Resilience Features:**
 
-- Automatic retry on transient failures (Azure SQL recommended pattern)
-- Connection pooling (default: min 0, max 100)
-- Command timeout: 120 seconds
-- Circuit breaker pattern (via EF Core retry policy)
+- **Automatic retry** on transient failures (Azure SQL recommended pattern)
+- **Connection pooling** (default: min 0, max 100)
+- **Command timeout:** 120 seconds
+- **Circuit breaker pattern** (via EF Core retry policy)
 
 #### 5.2.2 Azure Service Bus Integration
 
@@ -925,7 +929,7 @@ builder.Services.AddSingleton<IOrdersMessageHandler, OrdersMessageHandler>();
 - **Name:** `ordersplaced-sub` (Logic App creates automatically)
 - **Filter:** None (all messages)
 - **Max Delivery Count:** 10 (configurable)
-- **Dead Letter Queue:** Enabled
+- **Dead Letter Queue:** **Enabled**
 
 #### 5.2.3 Application Insights Integration
 
@@ -968,9 +972,9 @@ _logger.LogInformation("Placing order with ID: {OrderId} for customer {CustomerI
 
 **Correlation:**
 
-- All telemetry includes `TraceId` and `SpanId` for end-to-end correlation
-- Service Bus messages include trace context for cross-service tracing
-- Log scopes include trace IDs for queryability in Log Analytics
+- **All telemetry includes** `TraceId` and `SpanId` for end-to-end correlation
+- **Service Bus messages include** trace context for cross-service tracing
+- **Log scopes include** trace IDs for queryability in Log Analytics
 
 ---
 
@@ -1004,10 +1008,10 @@ public sealed class OrderRepository : IOrderRepository
 
 **Benefits:**
 
-- ✅ Business layer doesn't know about EF Core
-- ✅ Easy to unit test with mock repositories
-- ✅ Can swap data access technology without changing business logic
-- ✅ Centralized query logic and optimization
+- ✅ **Business layer doesn't know about EF Core**
+- ✅ **Easy to unit test** with mock repositories
+- ✅ **Can swap data access technology** without changing business logic
+- ✅ **Centralized query logic** and optimization
 
 #### 6.1.2 Service Layer Pattern
 
@@ -1042,10 +1046,10 @@ public sealed class OrderService : IOrderService
 
 **Benefits:**
 
-- ✅ Single place for business logic
-- ✅ Controllers remain thin (just HTTP concerns)
-- ✅ Reusable across multiple consumers (API, gRPC, SignalR, etc.)
-- ✅ Transactional boundaries clearly defined
+- ✅ **Single place for business logic**
+- ✅ **Controllers remain thin** (just HTTP concerns)
+- ✅ **Reusable across multiple consumers** (API, gRPC, SignalR, etc.)
+- ✅ **Transactional boundaries clearly defined**
 
 #### 6.1.3 Dependency Injection Pattern
 
@@ -1112,10 +1116,10 @@ public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken ct)
 
 **Benefits:**
 
-- ✅ Read queries are faster (no change tracking)
-- ✅ Write operations are safer (tracked changes)
-- ✅ Can scale reads and writes independently
-- ✅ Prevents N+1 query problems with split queries
+- ✅ **Read queries are faster** (no change tracking)
+- ✅ **Write operations are safer** (tracked changes)
+- ✅ **Can scale reads and writes independently**
+- ✅ **Prevents N+1 query problems** with split queries
 
 ### 6.2 SOLID Principles Application
 
@@ -1211,19 +1215,23 @@ graph TB
     style external fill:#FFCDD2,stroke:#F44336,stroke-width:2px
 ```
 
+> ⚠️ **Critical Architecture Rules**: These rules MUST be enforced to maintain clean architecture.
+
 **Key Architectural Rules:**
 
-1. ✅ Dependencies point INWARD (Infrastructure → Use Cases → Domain)
-2. ✅ Domain layer has ZERO external dependencies
-3. ✅ Use Cases layer depends only on domain entities and interfaces
-4. ✅ Infrastructure layer implements interfaces defined in Use Cases layer
-5. ✅ External systems are accessed ONLY through abstractions
+1. ✅ **Dependencies point INWARD** (Infrastructure → Use Cases → Domain)
+2. ✅ **Domain layer has ZERO external dependencies**
+3. ✅ **Use Cases layer depends only on domain entities and interfaces**
+4. ✅ **Infrastructure layer implements interfaces** defined in Use Cases layer
+5. ✅ **External systems are accessed ONLY through abstractions**
 
 ---
 
 ## 7. Observability and Monitoring
 
 ### 7.1 Observability Strategy
+
+> 💡 **Best Practice**: Implement all three pillars for comprehensive observability.
 
 The Business layer implements the **Three Pillars of Observability**:
 
@@ -1462,9 +1470,9 @@ public class DbContextHealthCheck : IHealthCheck
 
 **Health Endpoints:**
 
-- `/health` - All health checks (liveness + readiness)
-- `/health/live` - Liveness probe (process is running)
-- `/health/ready` - Readiness probe (can accept traffic)
+- **`/health`** - All health checks (liveness + readiness)
+- **`/health/live`** - Liveness probe (process is running)
+- **`/health/ready`** - Readiness probe (can accept traffic)
 
 ---
 
@@ -1683,9 +1691,9 @@ await _dbContext.SaveChangesAsync(linkedCts.Token);
 
 **Benefits:**
 
-- ✅ Prevents HTTP cancellation from interrupting critical database operations
-- ✅ Allows cleanup logic to execute even if client disconnects
-- ✅ Provides deterministic timeout behavior
+- ✅ **Prevents HTTP cancellation** from interrupting critical database operations
+- ✅ **Allows cleanup logic to execute** even if client disconnects
+- ✅ **Provides deterministic timeout behavior**
 
 #### 8.3.2 Retry Pattern
 
@@ -1701,9 +1709,9 @@ sqlOptions.EnableRetryOnFailure(
 
 **Transient Errors Retried Automatically:**
 
-- Azure SQL: Connection timeouts, throttling (error codes 40197, 40501, 40613, etc.)
-- Network: TCP/IP connection failures
-- Service: Temporary unavailability
+- **Azure SQL:** Connection timeouts, throttling (error codes 40197, 40501, 40613, etc.)
+- **Network:** TCP/IP connection failures
+- **Service:** Temporary unavailability
 
 #### 8.3.3 Circuit Breaker Pattern
 
@@ -1746,9 +1754,9 @@ builder.AddAzureServiceBusClient(); // ✅ Singleton with connection pooling
 
 **Benefits:**
 
-- ✅ Database connection pool prevents resource exhaustion
-- ✅ Service Bus client maintains separate connection pool
-- ✅ One slow database query doesn't block messaging operations
+- ✅ **Database connection pool prevents resource exhaustion**
+- ✅ **Service Bus client maintains separate connection pool**
+- ✅ **One slow database query doesn't block messaging operations**
 
 ### 8.4 Error Monitoring
 
@@ -1825,9 +1833,9 @@ public class OrderCacheService : IOrderCacheService
 
 **Benefits:**
 
-- ✅ Reduces database load for frequently accessed orders
-- ✅ Improves response times for read operations
-- ✅ Scales horizontally with Redis cluster
+- ✅ **Reduces database load** for frequently accessed orders
+- ✅ **Improves response times** for read operations
+- ✅ **Scales horizontally** with Redis cluster
 
 #### 9.1.2 Read Replicas
 
@@ -1971,10 +1979,10 @@ public class OrderAggregate
 
 **Benefits:**
 
-- ✅ Complete audit trail of all changes
-- ✅ Ability to replay events for debugging
-- ✅ Temporal queries ("what was the state on X date?")
-- ✅ Event-driven architecture enablement
+- ✅ **Complete audit trail** of all changes
+- ✅ **Ability to replay events** for debugging
+- ✅ **Temporal queries** ("what was the state on X date?")
+- ✅ **Event-driven architecture enablement**
 
 ### 9.3 Performance Optimizations
 
@@ -1998,9 +2006,9 @@ query GetOrder($orderId: ID!) {
 
 **Benefits:**
 
-- ✅ Clients fetch only needed fields (reduces payload size)
-- ✅ Single request for complex data requirements
-- ✅ Built-in introspection and schema documentation
+- ✅ **Clients fetch only needed fields** (reduces payload size)
+- ✅ **Single request for complex data requirements**
+- ✅ **Built-in introspection** and schema documentation
 
 #### 9.3.2 Pagination Cursor-Based
 
@@ -2045,9 +2053,9 @@ public async Task<PagedResult<Order>> GetOrdersAsync(
 
 **Benefits:**
 
-- ✅ No offset calculation (better performance)
-- ✅ Stable pagination (no duplicates/missing items when data changes)
-- ✅ Efficient for infinite scroll UIs
+- ✅ **No offset calculation** (better performance)
+- ✅ **Stable pagination** (no duplicates/missing items when data changes)
+- ✅ **Efficient for infinite scroll UIs**
 
 ### 9.4 Security Enhancements
 
