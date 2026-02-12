@@ -134,27 +134,27 @@ flowchart TB
         clientNode["🌐 Web Browser"]:::azureBlue
     end
 
-    subgraph appLayer["⚙️ Application Layer - Azure Container Apps"]
+    subgraph appLayer["⚙️ Application Layer"]
         direction TB
-        webApp["🌐 eShop Web App<br/>.NET Aspire Frontend<br/>Health Checks: /health"]:::azureOrange
-        ordersAPI["⚙️ Orders API<br/>REST Endpoints<br/>Entity Framework Core"]:::azureOrange
+        webApp["🌐 eShop Web App"]:::azureOrange
+        ordersAPI["⚙️ Orders API"]:::azureOrange
     end
 
     subgraph workflowLayer["⚡ Workflow Layer"]
         direction TB
-        logicApp["⚡ OrdersManagement<br/>Logic App Standard<br/>Event-driven Workflows"]:::azurePurple
+        logicApp["⚡ OrdersManagement"]:::azurePurple
     end
 
-    subgraph dataLayer["🗄️ Data Layer - Azure PaaS"]
+    subgraph dataLayer["🗄️ Data Layer"]
         direction TB
-        sqlDb["💾 Azure SQL Database<br/>Order entities<br/>Managed Identity Auth"]:::azureTeal
-        serviceBus["📬 Service Bus<br/>orderCompleted Queue<br/>Dead-letter Queue"]:::azureTeal
+        sqlDb["💾 Azure SQL Database"]:::azureTeal
+        serviceBus["📬 Service Bus"]:::azureTeal
     end
 
-    subgraph observabilityLayer["📊 Observability - Azure Monitor"]
+    subgraph observabilityLayer["📊 Observability"]
         direction TB
-        appInsights["📊 Application Insights<br/>Distributed Tracing<br/>Custom Metrics"]:::azurePurple
-        logAnalytics["📝 Log Analytics<br/>Workspace: logs-orders<br/>KQL Queries"]:::azurePurple
+        appInsights["📊 Application Insights"]:::azurePurple
+        logAnalytics["📝 Log Analytics"]:::azurePurple
     end
 
     %% Connections
