@@ -159,9 +159,9 @@ flowchart TB
 
     %% Connections
     clientNode -->|HTTPS| webApp
-    webApp -->|"GET/POST /api/orders"| ordersAPI
-    ordersAPI -->|"EF Core + Retry"| sqlDb
-    ordersAPI -->|"Send Messages"| serviceBus
+    webApp -->|GET/POST /api/orders| ordersAPI
+    ordersAPI -->|EF Core + Retry| sqlDb
+    ordersAPI -->|Send Messages| serviceBus
     serviceBus -->|Trigger| logicApp
     logicApp -->|Query Orders| ordersAPI
 
