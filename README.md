@@ -96,89 +96,54 @@ config:
   theme: base
   flowchart:
     htmlLabels: false
-    curve: cardinal
 ---
-flowchart TB
+graph TB
     accTitle: Azure Logic Apps Monitoring Solution Architecture
-    accDescr: Layered microservices architecture showing client access, application services, workflow orchestration, data persistence, and observability components with their interactions
+    accDescr: Shows layered microservices architecture with Client Layer, Application Layer, Workflow Layer, Data Layer, and Observability components with their interactions
 
-    %% ============================================
-    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1 (Semantic + Font Governance)
-    %% Color Scheme: Semantic colors based on component function (100-level for nodes)
-    %% - Client/UI = Blue (#BBDEFB) → User interaction
-    %% - Application Services = Orange (#FFE0B2) → Business logic
-    %% - Workflow/Orchestration = Purple (#E1BEE7) → Event-driven processes
-    %% - Data/Storage = Teal (#B2DFDB) → Persistence and messaging
-    %% - Observability = Purple (#E1BEE7) → Monitoring and logging
-    %% Subgraph backgrounds = White/neutral for clean visual hierarchy
-    %% ============================================
-
-    %% Complete classDef palette (14 declarations - MRM-D002 compliant)
-    classDef level1Group fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px,color:#323130
-    classDef level2Group fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#323130
-    classDef level3Group fill:#9FA8DA,stroke:#3F51B5,stroke-width:2px,color:#323130
-    classDef level4Group fill:#7986CB,stroke:#3F51B5,stroke-width:1px,color:#fff
-    classDef mainGroup fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px,color:#323130
-    classDef subGroup fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#323130
-    classDef azureBlue fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#323130
-    classDef azureGreen fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#323130
-    classDef azureRed fill:#FFCDD2,stroke:#D32F2F,stroke-width:2px,color:#323130
-    classDef azureYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
-    classDef azureOrange fill:#FFE0B2,stroke:#E64A19,stroke-width:2px,color:#323130
-    classDef azurePurple fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px,color:#323130
-    classDef azureTeal fill:#B2DFDB,stroke:#00796B,stroke-width:2px,color:#323130
-    classDef neutralGrey fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
-
-    subgraph clientLayer["🖥️ Client Layer"]
-        direction TB
-        clientNode["🌐 Web Browser"]:::azureBlue
+    subgraph "Client Layer"
+        Client["🌐 Web Browser"]
     end
 
-    subgraph appLayer["⚙️ Application Layer"]
-        direction TB
-        webApp["🌐 eShop Web App"]:::azureOrange
-        ordersAPI["⚙️ Orders API"]:::azureOrange
+    subgraph "Application Layer - Azure Container Apps"
+        WebApp["🌐 eShop Web App<br/>.NET Aspire Frontend<br/>Health Checks: /health"]
+        OrdersAPI["⚙️ Orders API<br/>REST Endpoints<br/>Entity Framework Core"]
     end
 
-    subgraph workflowLayer["⚡ Workflow Layer"]
-        direction TB
-        logicApp["⚡ OrdersManagement"]:::azurePurple
+    subgraph "Workflow Layer"
+        LogicApp["⚡ OrdersManagement<br/>Logic App Standard<br/>Event-driven Workflows"]
     end
 
-    subgraph dataLayer["🗄️ Data Layer"]
-        direction TB
-        sqlDb["💾 Azure SQL Database"]:::azureTeal
-        serviceBus["📬 Service Bus"]:::azureTeal
+    subgraph "Data Layer - Azure PaaS"
+        SQL["💾 Azure SQL Database<br/>Order entities<br/>Managed Identity Auth"]
+        ServiceBus["📬 Service Bus<br/>orderCompleted Queue<br/>Dead-letter Queue"]
     end
 
-    subgraph observabilityLayer["📊 Observability"]
-        direction TB
-        appInsights["📊 Application Insights"]:::azurePurple
-        logAnalytics["📝 Log Analytics"]:::azurePurple
+    subgraph "Observability - Azure Monitor"
+        AppInsights["📊 Application Insights<br/>Distributed Tracing<br/>Custom Metrics"]
+        LogAnalytics["📝 Log Analytics<br/>Workspace: logs-orders<br/>KQL Queries"]
     end
 
-    %% Connections
-    clientNode -->|HTTPS| webApp
-    webApp -->|GET/POST /api/orders| ordersAPI
-    ordersAPI -->|EF Core + Retry| sqlDb
-    ordersAPI -->|Send Messages| serviceBus
-    serviceBus -->|Trigger| logicApp
-    logicApp -->|Query Orders| ordersAPI
+    Client -->|HTTPS| WebApp
+    WebApp -->|"GET/POST /api/orders"| OrdersAPI
+    OrdersAPI -->|"EF Core + Retry"| SQL
+    OrdersAPI -->|"Send Messages"| ServiceBus
+    ServiceBus -->|Trigger| LogicApp
+    LogicApp -->|Query Orders| OrdersAPI
 
-    ordersAPI -.->|OpenTelemetry| appInsights
-    webApp -.->|OpenTelemetry| appInsights
-    logicApp -.->|Diagnostics| appInsights
-    appInsights -->|Logs Sink| logAnalytics
+    OrdersAPI -.->|OpenTelemetry| AppInsights
+    WebApp -.->|OpenTelemetry| AppInsights
+    LogicApp -.->|Diagnostics| AppInsights
+    AppInsights -->|Logs Sink| LogAnalytics
 
-    %% Subgraph styling (MANDATORY - MRM-S001 - 5 subgraphs = 5 style directives)
-    %% Using white/neutral backgrounds for clean hierarchy - semantic colors on nodes only
-    style clientLayer fill:#FFFFFF,stroke:#1976D2,stroke-width:2px
-    style appLayer fill:#FFFFFF,stroke:#E64A19,stroke-width:2px
-    style workflowLayer fill:#FFFFFF,stroke:#7B1FA2,stroke-width:2px
-    style dataLayer fill:#FFFFFF,stroke:#00796B,stroke-width:2px
-    style observabilityLayer fill:#FFFFFF,stroke:#7B1FA2,stroke-width:2px
-
-    %% Accessibility: WCAG AA verified (contrast ratio ≥4.5:1)
+    style Client fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    style WebApp fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
+    style OrdersAPI fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
+    style LogicApp fill:#E8EAF6,stroke:#5E35B1,stroke-width:2px
+    style SQL fill:#E0F2F1,stroke:#00796B,stroke-width:2px
+    style ServiceBus fill:#FCE4EC,stroke:#C2185B,stroke-width:2px
+    style AppInsights fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
+    style LogAnalytics fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
 ```
 
 **Component Responsibilities**:
@@ -195,9 +160,11 @@ flowchart TB
 
 **Communication Patterns**:
 
-- **Synchronous**: HTTP/REST between Web App and Orders API
-- **Asynchronous**: Service Bus messages trigger Logic App workflows
-- **Observability**: OpenTelemetry traces flow through all components with correlation IDs
+| Pattern              | Description                               | Components Involved                  |
+| -------------------- | ----------------------------------------- | ------------------------------------ |
+| 🔄 **Synchronous**   | HTTP/REST requests                        | Web App → Orders API                 |
+| ⚡ **Asynchronous**  | Service Bus messages trigger workflows    | Orders API → Service Bus → Logic App |
+| 📊 **Observability** | OpenTelemetry traces with correlation IDs | All components → App Insights        |
 
 ## Features
 
@@ -281,23 +248,21 @@ dotnet user-secrets set "ConnectionStrings:OrderDb" "Server=localhost,1433;Datab
 
 **Environment Variables** (Azure Container Apps):
 
-| Variable                                | Description                                       | Example                                                                                                      |
-| --------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `APPLICATIONINSIGHTS_CONNECTION_STRING` | Application Insights connection string            | `InstrumentationKey=abc123;IngestionEndpoint=https://...`                                                    |
-| `AZURE_CLIENT_ID`                       | Managed Identity client ID (auto-populated)       | `00000000-0000-0000-0000-000000000000`                                                                       |
-| `ConnectionStrings__OrderDb`            | Azure SQL connection string with managed identity | `Server=tcp:sql-orders.database.windows.net,1433;Database=OrdersDb;Authentication=Active Directory Default;` |
-| `MESSAGING_HOST`                        | Service Bus fully qualified namespace             | `sb-orders-dev.servicebus.windows.net`                                                                       |
+| Variable                                   | Description                                       | Example                                                                                                      |
+| ------------------------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 🔗 `APPLICATIONINSIGHTS_CONNECTION_STRING` | Application Insights connection string            | `InstrumentationKey=abc123;IngestionEndpoint=https://...`                                                    |
+| 🔐 `AZURE_CLIENT_ID`                       | Managed Identity client ID (auto-populated)       | `00000000-0000-0000-0000-000000000000`                                                                       |
+| 🗄️ `ConnectionStrings__OrderDb`            | Azure SQL connection string with managed identity | `Server=tcp:sql-orders.database.windows.net,1433;Database=OrdersDb;Authentication=Active Directory Default;` |
+| 📬 `MESSAGING_HOST`                        | Service Bus fully qualified namespace             | `sb-orders-dev.servicebus.windows.net`                                                                       |
 
 **Infrastructure Parameters** (`infra/main.parameters.json`):
 
-```json
-{
-  "solutionName": "orders",
-  "envName": "dev",
-  "location": "eastus2",
-  "deployerPrincipalType": "User"
-}
-```
+| Parameter                  | Description                   | Example Values                            |
+| -------------------------- | ----------------------------- | ----------------------------------------- |
+| 📁 `solutionName`          | Prefix for all resource names | `"orders"`, `"monitoring"`                |
+| ⚙️ `envName`               | Environment identifier        | `"dev"`, `"staging"`, `"prod"`            |
+| 🌍 `location`              | Azure region                  | `"eastus2"`, `"westus3"`, `"northeurope"` |
+| 🔐 `deployerPrincipalType` | Identity type for deployment  | `"User"`, `"ServicePrincipal"`            |
 
 **Customization**:
 
@@ -606,12 +571,12 @@ Azure-LogicApps-Monitoring/
 
 The solution exports these business metrics:
 
-| Metric                           | Unit         | Description                            |
-| -------------------------------- | ------------ | -------------------------------------- |
-| `orders_created_total`           | Count        | Total orders created (counter)         |
-| `order_processing_duration_ms`   | Milliseconds | Time to process order (histogram)      |
-| `servicebus_messages_sent_total` | Count        | Messages sent to Service Bus (counter) |
-| `logic_app_workflow_runs_total`  | Count        | Logic App executions (counter)         |
+| Metric                              | Unit         | Description                            |
+| ----------------------------------- | ------------ | -------------------------------------- |
+| 📈 `orders_created_total`           | Count        | Total orders created (counter)         |
+| ⏱️ `order_processing_duration_ms`   | Milliseconds | Time to process order (histogram)      |
+| 📨 `servicebus_messages_sent_total` | Count        | Messages sent to Service Bus (counter) |
+| ⚡ `logic_app_workflow_runs_total`  | Count        | Logic App executions (counter)         |
 
 **Querying custom metrics**:
 
