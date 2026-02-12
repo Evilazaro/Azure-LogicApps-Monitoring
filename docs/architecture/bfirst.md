@@ -77,6 +77,13 @@ The Business layer sits between the **Presentation Layer** (Controllers/API Endp
 ---
 config:
   theme: base
+  themeVariables:
+    primaryColor: "#0078D4"
+    primaryTextColor: "#323130"
+    primaryBorderColor: "#8A8886"
+    lineColor: "#605E5C"
+    secondaryColor: "#E1DFDD"
+    tertiaryColor: "#F3F2F1"
 ---
 flowchart TD
     accTitle: Business Layer Position in Application Architecture
@@ -85,38 +92,38 @@ flowchart TD
     %% Presentation Layer
     subgraph presentation["🎨 Presentation Layer"]
         direction LR
-        controller["🎯 OrdersController<br/>(API Endpoints)"]
-        webApp["🌐 Web App<br/>(UI Components)"]
+        controller["OrdersController<br/>(API Endpoints)"]
+        webApp["Web App<br/>(UI Components)"]
     end
 
     %% Business Layer
     subgraph business["💼 Business Layer"]
         direction LR
-        orderService["⚙️ OrderService<br/>(Business Logic)"]
-        messageHandler["📨 OrdersMessageHandler<br/>(Messaging)"]
-        interfaces["📋 Interfaces<br/>(Contracts)"]
+        orderService["OrderService<br/>(Business Logic)"]
+        messageHandler["OrdersMessageHandler<br/>(Messaging)"]
+        interfaces["Interfaces<br/>(Contracts)"]
     end
 
     %% Data Layer
     subgraph data["💾 Data Layer"]
         direction LR
-        repository["🗄️ OrderRepository<br/>(Data Access)"]
-        dbContext["🔗 OrderDbContext<br/>(EF Core)"]
+        repository["OrderRepository<br/>(Data Access)"]
+        dbContext["OrderDbContext<br/>(EF Core)"]
     end
 
     %% External Services
     subgraph external["☁️ External Services"]
         direction LR
-        servicebus["📮 Azure Service Bus"]
-        sqldb["🗃️ Azure SQL Database"]
+        servicebus["Azure Service Bus"]
+        sqldb["Azure SQL Database"]
     end
 
     %% Cross-Cutting Concerns
     subgraph crosscutting["⚙️ Cross-Cutting Concerns"]
         direction LR
-        tracing["🔍 Distributed Tracing"]
-        logging["📝 Structured Logging"]
-        metrics["📊 Metrics Collection"]
+        tracing["Distributed Tracing"]
+        logging["Structured Logging"]
+        metrics["Metrics Collection"]
     end
 
     %% Connections
@@ -135,25 +142,18 @@ flowchart TD
     repository -.-> tracing
     messageHandler -.-> tracing
 
-    %% Styling with explicit hex colors (Microsoft Fluent UI / Azure palette)
-    classDef presentationStyle fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px,color:#000
-    classDef businessStyle fill:#BBDEFB,stroke:#2196F3,stroke-width:3px,color:#000
-    classDef dataStyle fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px,color:#000
-    classDef externalStyle fill:#FFCDD2,stroke:#F44336,stroke-width:2px,color:#000
-    classDef crosscuttingStyle fill:#E0E0E0,stroke:#757575,stroke-width:2px,color:#000
+    %% Styling
+    classDef presentationStyle fill:#D4EDDA,stroke:#28A745,stroke-width:2px,color:#000
+    classDef businessStyle fill:#CCE5FF,stroke:#0078D4,stroke-width:3px,color:#000
+    classDef dataStyle fill:#FFF3CD,stroke:#FFC107,stroke-width:2px,color:#000
+    classDef externalStyle fill:#F8D7DA,stroke:#DC3545,stroke-width:2px,color:#000
+    classDef crosscuttingStyle fill:#E2E3E5,stroke:#6C757D,stroke-width:2px,color:#000
 
-    class controller,webApp presentationStyle
-    class orderService,messageHandler,interfaces businessStyle
-    class repository,dbContext dataStyle
-    class servicebus,sqldb externalStyle
-    class tracing,logging,metrics crosscuttingStyle
-
-    %% Subgraph styling (MRM-S001 compliant - use style not class)
-    style presentation fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px
-    style business fill:#BBDEFB,stroke:#2196F3,stroke-width:3px
-    style data fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
-    style external fill:#FFCDD2,stroke:#F44336,stroke-width:2px
-    style crosscutting fill:#E0E0E0,stroke:#757575,stroke-width:2px
+    class presentation,controller,webApp presentationStyle
+    class business,orderService,messageHandler,interfaces businessStyle
+    class data,repository,dbContext dataStyle
+    class external,servicebus,sqldb externalStyle
+    class crosscutting,tracing,logging,metrics crosscuttingStyle
 ```
 
 ### 2.2 Core Responsibilities
@@ -220,6 +220,10 @@ public sealed record OrderProduct
 ---
 config:
   theme: base
+  themeVariables:
+    primaryColor: "#0078D4"
+    primaryTextColor: "#323130"
+    primaryBorderColor: "#8A8886"
 ---
 graph TB
     accTitle: Business Layer Component Architecture
@@ -227,43 +231,43 @@ graph TB
 
     %% Controllers (Presentation Layer)
     subgraph controllers["🎯 API Controllers"]
-        ordersController["🎯 OrdersController<br/>📍 /api/orders<br/>📤 REST Endpoints"]
+        ordersController["OrdersController<br/>📍 /api/orders<br/>📤 REST Endpoints"]
     end
 
     %% Service Layer
     subgraph services["💼 Service Layer"]
-        orderService["⚙️ OrderService<br/>✨ Business Logic<br/>📊 Metrics & Tracing"]
-        ordersWrapper["🔄 OrdersWrapper<br/>Service Facade"]
+        orderService["OrderService<br/>✨ Business Logic<br/>📊 Metrics & Tracing"]
+        ordersWrapper["OrdersWrapper<br/>🔄 Service Facade"]
     end
 
     %% Messaging Layer
     subgraph messaging["📨 Messaging Layer"]
-        messageHandler["📮 OrdersMessageHandler<br/>Service Bus Publisher<br/>🔁 Retry Logic"]
-        noOpHandler["🚫 NoOpOrdersMessageHandler<br/>Dev Mode Fallback"]
+        messageHandler["OrdersMessageHandler<br/>📮 Service Bus Publisher<br/>🔁 Retry Logic"]
+        noOpHandler["NoOpOrdersMessageHandler<br/>🚫 Dev Mode Fallback"]
     end
 
     %% Repository Layer
     subgraph repositories["💾 Repository Layer"]
-        orderRepo["🗄️ OrderRepository<br/>EF Core Data Access<br/>⚡ Async Operations"]
+        orderRepo["OrderRepository<br/>🗄️ EF Core Data Access<br/>⚡ Async Operations"]
     end
 
     %% Interfaces
     subgraph interfaces["📋 Contracts"]
-        iOrderService["📄 «interface»<br/>IOrderService"]
-        iOrderRepo["📄 «interface»<br/>IOrderRepository"]
-        iMessageHandler["📄 «interface»<br/>IOrdersMessageHandler"]
+        iOrderService["«interface»<br/>IOrderService"]
+        iOrderRepo["«interface»<br/>IOrderRepository"]
+        iMessageHandler["«interface»<br/>IOrdersMessageHandler"]
     end
 
     %% Data Context
     subgraph dataContext["🗃️ Data Context"]
-        dbContext["🔗 OrderDbContext<br/>EF Core DbContext<br/>📊 Change Tracking"]
-        mapper["🔄 OrderMapper<br/>Entity ↔️ Model"]
+        dbContext["OrderDbContext<br/>🔗 EF Core DbContext<br/>📊 Change Tracking"]
+        mapper["OrderMapper<br/>🔄 Entity ↔️ Model"]
     end
 
     %% Health Checks
     subgraph health["❤️ Health Checks"]
-        dbHealthCheck["🏥 DbContextHealthCheck<br/>Database Health"]
-        sbHealthCheck["🏥 ServiceBusHealthCheck<br/>Messaging Health"]
+        dbHealthCheck["DbContextHealthCheck<br/>🏥 Database Health"]
+        sbHealthCheck["ServiceBusHealthCheck<br/>🏥 Messaging Health"]
     end
 
     %% Connections - Controllers to Services
@@ -287,14 +291,14 @@ graph TB
     dbHealthCheck -->|"Monitors"| dbContext
     sbHealthCheck -->|"Monitors"| messageHandler
 
-    %% Styling with explicit hex colors (Microsoft Fluent UI / Azure palette)
-    classDef controllerStyle fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px,color:#000
-    classDef serviceStyle fill:#BBDEFB,stroke:#2196F3,stroke-width:3px,color:#000
-    classDef messagingStyle fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px,color:#000
-    classDef repoStyle fill:#FFCDD2,stroke:#F44336,stroke-width:2px,color:#000
-    classDef interfaceStyle fill:#E0E0E0,stroke:#757575,stroke-width:2px,stroke-dasharray: 5 5,color:#000
-    classDef dataStyle fill:#E0F2F1,stroke:#009688,stroke-width:2px,color:#000
-    classDef healthStyle fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px,color:#000
+    %% Styling
+    classDef controllerStyle fill:#D4EDDA,stroke:#28A745,stroke-width:2px,color:#000
+    classDef serviceStyle fill:#CCE5FF,stroke:#0078D4,stroke-width:3px,color:#000
+    classDef messagingStyle fill:#FFF3CD,stroke:#FFC107,stroke-width:2px,color:#000
+    classDef repoStyle fill:#F8D7DA,stroke:#DC3545,stroke-width:2px,color:#000
+    classDef interfaceStyle fill:#E2E3E5,stroke:#6C757D,stroke-width:2px,stroke-dasharray: 5 5,color:#000
+    classDef dataStyle fill:#D1ECF1,stroke:#0C5460,stroke-width:2px,color:#000
+    classDef healthStyle fill:#F5C2C7,stroke:#842029,stroke-width:2px,color:#000
 
     class ordersController controllerStyle
     class orderService,ordersWrapper serviceStyle
@@ -303,15 +307,6 @@ graph TB
     class iOrderService,iOrderRepo,iMessageHandler interfaceStyle
     class dbContext,mapper dataStyle
     class dbHealthCheck,sbHealthCheck healthStyle
-
-    %% Subgraph styling (MRM-S001 compliant - use style not class)
-    style controllers fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px
-    style services fill:#BBDEFB,stroke:#2196F3,stroke-width:3px
-    style messaging fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
-    style repositories fill:#FFCDD2,stroke:#F44336,stroke-width:2px
-    style interfaces fill:#E0E0E0,stroke:#757575,stroke-width:2px
-    style dataContext fill:#E0F2F1,stroke:#009688,stroke-width:2px
-    style health fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
 ```
 
 ### 3.2 Core Components
@@ -472,6 +467,8 @@ public async Task<IEnumerable<Order>> GetOrdersAsync(
 ---
 config:
   theme: base
+  themeVariables:
+    primaryColor: "#0078D4"
 ---
 graph LR
     accTitle: Component Dependency Graph
@@ -480,35 +477,35 @@ graph LR
     %% Dependency Injection Container
     subgraph di["⚙️ Dependency Injection Container"]
         direction TB
-        registration["📝 Service Registration<br/>(Program.cs)"]
+        registration["Service Registration<br/>(Program.cs)"]
     end
 
     %% Controllers
     subgraph controllers["Controllers"]
-        ordersCtrl["🎯 OrdersController"]
+        ordersCtrl["OrdersController"]
     end
 
     %% Services
     subgraph services["Services"]
-        orderSvc["⚙️ OrderService"]
+        orderSvc["OrderService"]
     end
 
     %% Repositories
     subgraph repos["Repositories"]
-        orderRepo["🗄️ OrderRepository"]
+        orderRepo["OrderRepository"]
     end
 
     %% Handlers
     subgraph handlers["Handlers"]
-        msgHandler["📮 OrdersMessageHandler"]
+        msgHandler["OrdersMessageHandler"]
     end
 
     %% Infrastructure
     subgraph infra["Infrastructure"]
-        dbContext["🔗 OrderDbContext"]
-        serviceBus["📨 ServiceBusClient"]
-        activitySrc["🔍 ActivitySource"]
-        meterFactory["📊 IMeterFactory"]
+        dbContext["OrderDbContext"]
+        serviceBus["ServiceBusClient"]
+        activitySrc["ActivitySource"]
+        meterFactory["IMeterFactory"]
     end
 
     %% Dependencies
@@ -528,28 +525,20 @@ graph LR
     orderRepo -->|"Requires"| dbContext
     msgHandler -->|"Requires"| serviceBus
 
-    %% Styling with explicit hex colors (Microsoft Fluent UI / Azure palette)
-    classDef diStyle fill:#F5F5F5,stroke:#9E9E9E,stroke-width:2px,color:#000
-    classDef ctrlStyle fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px,color:#000
-    classDef svcStyle fill:#BBDEFB,stroke:#2196F3,stroke-width:3px,color:#000
-    classDef repoStyle fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px,color:#000
-    classDef handlerStyle fill:#FFCDD2,stroke:#F44336,stroke-width:2px,color:#000
-    classDef infraStyle fill:#E0E0E0,stroke:#757575,stroke-width:2px,color:#000
+    %% Styling
+    classDef diStyle fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#000
+    classDef ctrlStyle fill:#D4EDDA,stroke:#28A745,stroke-width:2px,color:#000
+    classDef svcStyle fill:#CCE5FF,stroke:#0078D4,stroke-width:3px,color:#000
+    classDef repoStyle fill:#FFF3CD,stroke:#FFC107,stroke-width:2px,color:#000
+    classDef handlerStyle fill:#F8D7DA,stroke:#DC3545,stroke-width:2px,color:#000
+    classDef infraStyle fill:#E2E3E5,stroke:#6C757D,stroke-width:2px,color:#000
 
-    class registration diStyle
-    class ordersCtrl ctrlStyle
-    class orderSvc svcStyle
-    class orderRepo repoStyle
-    class msgHandler handlerStyle
-    class dbContext,serviceBus,activitySrc,meterFactory infraStyle
-
-    %% Subgraph styling (MRM-S001 compliant - use style not class)
-    style di fill:#F5F5F5,stroke:#9E9E9E,stroke-width:2px
-    style controllers fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px
-    style services fill:#BBDEFB,stroke:#2196F3,stroke-width:3px
-    style repos fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
-    style handlers fill:#FFCDD2,stroke:#F44336,stroke-width:2px
-    style infra fill:#E0E0E0,stroke:#757575,stroke-width:2px
+    class di,registration diStyle
+    class controllers,ordersCtrl ctrlStyle
+    class services,orderSvc svcStyle
+    class repos,orderRepo repoStyle
+    class handlers,msgHandler handlerStyle
+    class infra,dbContext,serviceBus,activitySrc,meterFactory infraStyle
 ```
 
 ---
@@ -719,6 +708,8 @@ sequenceDiagram
 ---
 config:
   theme: base
+  themeVariables:
+    primaryColor: "#0078D4"
 ---
 flowchart LR
     accTitle: Query Operations Data Flow
@@ -728,22 +719,22 @@ flowchart LR
     client["👤 Client"]
 
     %% API Layer
-    controller["🎯 OrdersController<br/>GET /api/orders"]
+    controller["OrdersController<br/>GET /api/orders"]
 
     %% Service Layer
-    service["⚙️ OrderService<br/>GetOrdersAsync()"]
+    service["OrderService<br/>GetOrdersAsync()"]
 
     %% Repository Layer
-    repo["🗄️ OrderRepository<br/>Query Building"]
+    repo["OrderRepository<br/>Query Building"]
 
     %% Database Layer
-    db["🔗 OrderDbContext<br/>SQL Generation"]
+    db["OrderDbContext<br/>SQL Generation"]
 
     %% Query Optimizations
     subgraph optimizations["⚡ Query Optimizations"]
-        noTracking["🚫 AsNoTracking()<br/>Read-only"]
-        splitQuery["✂️ AsSplitQuery()<br/>Avoid cartesian explosion"]
-        pagination["📊 Skip/Take<br/>Pagination"]
+        noTracking["AsNoTracking()<br/>Read-only"]
+        splitQuery["AsSplitQuery()<br/>Avoid cartesian explosion"]
+        pagination["Skip/Take<br/>Pagination"]
     end
 
     %% Results
@@ -763,21 +754,18 @@ flowchart LR
     db --> results
     results --> client
 
-    %% Styling with explicit hex colors (Microsoft Fluent UI / Azure palette)
-    classDef clientStyle fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px,color:#000
-    classDef apiStyle fill:#BBDEFB,stroke:#2196F3,stroke-width:2px,color:#000
-    classDef dataStyle fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px,color:#000
-    classDef optimizationStyle fill:#FFCDD2,stroke:#F44336,stroke-width:2px,color:#000
-    classDef resultStyle fill:#E0E0E0,stroke:#757575,stroke-width:2px,color:#000
+    %% Styling
+    classDef clientStyle fill:#D4EDDA,stroke:#28A745,stroke-width:2px,color:#000
+    classDef apiStyle fill:#CCE5FF,stroke:#0078D4,stroke-width:2px,color:#000
+    classDef dataStyle fill:#FFF3CD,stroke:#FFC107,stroke-width:2px,color:#000
+    classDef optimizationStyle fill:#F8D7DA,stroke:#DC3545,stroke-width:2px,color:#000
+    classDef resultStyle fill:#E2E3E5,stroke:#6C757D,stroke-width:2px,color:#000
 
     class client clientStyle
     class controller,service apiStyle
     class repo,db dataStyle
-    class noTracking,splitQuery,pagination optimizationStyle
+    class optimizations,noTracking,splitQuery,pagination optimizationStyle
     class results resultStyle
-
-    %% Subgraph styling (MRM-S001 compliant - use style not class)
-    style optimizations fill:#FFCDD2,stroke:#F44336,stroke-width:2px
 ```
 
 ---
@@ -790,6 +778,8 @@ flowchart LR
 ---
 config:
   theme: base
+  themeVariables:
+    primaryColor: "#0078D4"
 ---
 graph TB
     accTitle: External System Integration Points
@@ -797,22 +787,22 @@ graph TB
 
     %% Business Layer
     subgraph business["💼 Business Layer"]
-        orderService["⚙️ OrderService"]
-        orderRepo["🗄️ OrderRepository"]
-        messageHandler["📮 OrdersMessageHandler"]
+        orderService["OrderService"]
+        orderRepo["OrderRepository"]
+        messageHandler["OrdersMessageHandler"]
     end
 
     %% Azure Services
     subgraph azure["☁️ Azure Services"]
         direction TB
-        sqldb["🗃️ Azure SQL Database<br/>OrderDb<br/>Connection: Managed Identity"]
-        servicebus["📨 Azure Service Bus<br/>Topic: ordersplaced<br/>Connection: Managed Identity"]
-        appinsights["📊 Application Insights<br/>Telemetry Endpoint<br/>Connection: InstrumentationKey"]
+        sqldb["Azure SQL Database<br/>🗄️ OrderDb<br/>Connection: Managed Identity"]
+        servicebus["Azure Service Bus<br/>📨 Topic: ordersplaced<br/>Connection: Managed Identity"]
+        appinsights["Application Insights<br/>📊 Telemetry Endpoint<br/>Connection: InstrumentationKey"]
     end
 
     %% Logic Apps
     subgraph workflows["🔄 Serverless Workflows"]
-        logicapp["⚡ Logic Apps Standard<br/>OrdersManagement<br/>Subscription: ordersplaced-sub"]
+        logicapp["Logic Apps Standard<br/>OrdersManagement<br/>Subscription: ordersplaced-sub"]
     end
 
     %% Connections
@@ -823,19 +813,14 @@ graph TB
     orderRepo -.->|"Activity Events"| appinsights
     messageHandler -.->|"Trace Context"| appinsights
 
-    %% Styling with explicit hex colors (Microsoft Fluent UI / Azure palette)
-    classDef businessStyle fill:#BBDEFB,stroke:#2196F3,stroke-width:3px,color:#000
-    classDef azureStyle fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px,color:#000
-    classDef workflowStyle fill:#FFCDD2,stroke:#F44336,stroke-width:2px,color:#000
+    %% Styling
+    classDef businessStyle fill:#CCE5FF,stroke:#0078D4,stroke-width:3px,color:#000
+    classDef azureStyle fill:#FFF3CD,stroke:#FFC107,stroke-width:2px,color:#000
+    classDef workflowStyle fill:#F8D7DA,stroke:#DC3545,stroke-width:2px,color:#000
 
-    class orderService,orderRepo,messageHandler businessStyle
-    class sqldb,servicebus,appinsights azureStyle
-    class logicapp workflowStyle
-
-    %% Subgraph styling (MRM-S001 compliant - use style not class)
-    style business fill:#BBDEFB,stroke:#2196F3,stroke-width:3px
-    style azure fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
-    style workflows fill:#FFCDD2,stroke:#F44336,stroke-width:2px
+    class business,orderService,orderRepo,messageHandler businessStyle
+    class azure,sqldb,servicebus,appinsights azureStyle
+    class workflows,logicapp workflowStyle
 ```
 
 ### 5.2 Integration Specifications
@@ -1154,6 +1139,8 @@ public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken ct)
 ---
 config:
   theme: base
+  themeVariables:
+    primaryColor: "#0078D4"
 ---
 graph TB
     accTitle: Clean Architecture Boundaries
@@ -1161,27 +1148,27 @@ graph TB
 
     %% Core Domain
     subgraph core["🎯 Core Domain (Innermost)"]
-        entities["📦 Domain Entities<br/>Order, OrderProduct<br/>app.ServiceDefaults.CommonTypes"]
+        entities["Domain Entities<br/>Order, OrderProduct<br/>📦 app.ServiceDefaults.CommonTypes"]
     end
 
     %% Use Cases / Business Logic
     subgraph usecases["💼 Use Cases / Business Logic"]
-        interfaces["📄 Interfaces<br/>IOrderService<br/>IOrderRepository<br/>IOrdersMessageHandler"]
-        businessLogic["⚙️ Business Logic<br/>OrderService<br/>Validation Rules"]
+        interfaces["Interfaces<br/>IOrderService<br/>IOrderRepository<br/>IOrdersMessageHandler"]
+        businessLogic["Business Logic<br/>OrderService<br/>Validation Rules"]
     end
 
     %% Infrastructure / Adapters
     subgraph infrastructure["🔌 Infrastructure / Adapters"]
-        repos["🗄️ Repositories<br/>OrderRepository<br/>EF Core Implementation"]
-        handlers["📨 Message Handlers<br/>OrdersMessageHandler<br/>Azure SDK"]
-        controllers["🎯 Controllers<br/>OrdersController<br/>ASP.NET Core MVC"]
+        repos["Repositories<br/>OrderRepository<br/>EF Core Implementation"]
+        handlers["Message Handlers<br/>OrdersMessageHandler<br/>Azure SDK"]
+        controllers["Controllers<br/>OrdersController<br/>ASP.NET Core MVC"]
     end
 
     %% External Systems
     subgraph external["🌐 External Systems"]
-        database["🗃️ Azure SQL Database"]
-        servicebus["📨 Azure Service Bus"]
-        appinsights["📊 Application Insights"]
+        database["Azure SQL Database"]
+        servicebus["Azure Service Bus"]
+        appinsights["Application Insights"]
     end
 
     %% Dependencies (arrows point INWARD)
@@ -1194,22 +1181,16 @@ graph TB
     controllers --> external
     infrastructure -.->|"Telemetry"| appinsights
 
-    %% Styling with explicit hex colors (Microsoft Fluent UI / Azure palette)
-    classDef coreStyle fill:#BBDEFB,stroke:#2196F3,stroke-width:3px,color:#000
-    classDef usecaseStyle fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px,color:#000
-    classDef infraStyle fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px,color:#000
-    classDef externalStyle fill:#FFCDD2,stroke:#F44336,stroke-width:2px,color:#000
+    %% Styling
+    classDef coreStyle fill:#CCE5FF,stroke:#0078D4,stroke-width:3px,color:#000
+    classDef usecaseStyle fill:#D4EDDA,stroke:#28A745,stroke-width:2px,color:#000
+    classDef infraStyle fill:#FFF3CD,stroke:#FFC107,stroke-width:2px,color:#000
+    classDef externalStyle fill:#F8D7DA,stroke:#DC3545,stroke-width:2px,color:#000
 
-    class entities coreStyle
-    class interfaces,businessLogic usecaseStyle
-    class repos,handlers,controllers infraStyle
-    class database,servicebus,appinsights externalStyle
-
-    %% Subgraph styling (MRM-S001 compliant - use style not class)
-    style core fill:#BBDEFB,stroke:#2196F3,stroke-width:3px
-    style usecases fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px
-    style infrastructure fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
-    style external fill:#FFCDD2,stroke:#F44336,stroke-width:2px
+    class core,entities coreStyle
+    class usecases,interfaces,businessLogic usecaseStyle
+    class infrastructure,repos,handlers,controllers infraStyle
+    class external,database,servicebus,appinsights externalStyle
 ```
 
 **Key Architectural Rules:**
@@ -1238,18 +1219,20 @@ The Business layer implements the **Three Pillars of Observability**:
 ---
 config:
   theme: base
+  themeVariables:
+    primaryColor: "#0078D4"
 ---
 graph LR
     accTitle: Distributed Trace Propagation
     accDescr: Shows how trace context flows through the system from client to external services
 
     client["👤 Client<br/>Initiates Request"]
-    controller["🎯 OrdersController<br/>TraceId: 4bf92f..."]
-    service["⚙️ OrderService<br/>SpanId: 00f067aa"]
-    repo["🗄️ OrderRepository<br/>SpanId: a3ba902c"]
-    handler["📮 MessageHandler<br/>SpanId: 9fb34d12"]
-    servicebus["📨 Service Bus<br/>TraceId in message"]
-    logicapp["⚡ Logic App<br/>Continues trace"]
+    controller["OrdersController<br/>TraceId: 4bf92f..."]
+    service["OrderService<br/>SpanId: 00f067aa"]
+    repo["OrderRepository<br/>SpanId: a3ba902c"]
+    handler["MessageHandler<br/>SpanId: 9fb34d12"]
+    servicebus["Service Bus<br/>TraceId in message"]
+    logicapp["Logic App<br/>Continues trace"]
 
     client -->|"TraceId generated"| controller
     controller -->|"TraceId propagated"| service
@@ -1258,10 +1241,10 @@ graph LR
     handler -->|"TraceId in ApplicationProperties"| servicebus
     servicebus -->|"Subscribe with TraceId"| logicapp
 
-    %% Styling with explicit hex colors (Microsoft Fluent UI / Azure palette)
-    classDef clientStyle fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px,color:#000
-    classDef internalStyle fill:#BBDEFB,stroke:#2196F3,stroke-width:2px,color:#000
-    classDef externalStyle fill:#FFCDD2,stroke:#F44336,stroke-width:2px,color:#000
+    %% Styling
+    classDef clientStyle fill:#D4EDDA,stroke:#28A745,stroke-width:2px,color:#000
+    classDef internalStyle fill:#CCE5FF,stroke:#0078D4,stroke-width:2px,color:#000
+    classDef externalStyle fill:#F8D7DA,stroke:#DC3545,stroke-width:2px,color:#000
 
     class client clientStyle
     class controller,service,repo,handler internalStyle
@@ -1477,6 +1460,8 @@ public class DbContextHealthCheck : IHealthCheck
 ---
 config:
   theme: base
+  themeVariables:
+    primaryColor: "#0078D4"
 ---
 flowchart TD
     accTitle: Error Handling Strategy
@@ -1485,26 +1470,26 @@ flowchart TD
     start["🎬 Operation Starts"]
 
     subgraph validation["✅ Validation Layer"]
-        validateInput["🔍 Validate Input<br/>(Data Annotations)"]
-        validateBusiness["⚙️ Validate Business Rules<br/>(OrderService)"]
+        validateInput["Validate Input<br/>(Data Annotations)"]
+        validateBusiness["Validate Business Rules<br/>(OrderService)"]
     end
 
     subgraph execution["⚙️ Execution Layer"]
-        saveDb["💾 Save to Database<br/>(OrderRepository)"]
-        publishMsg["📨 Publish Message<br/>(MessageHandler)"]
+        saveDb["Save to Database<br/>(OrderRepository)"]
+        publishMsg["Publish Message<br/>(MessageHandler)"]
     end
 
     subgraph errorHandling["🚨 Error Handling"]
-        validationError["❌ ArgumentException<br/>→ 400 Bad Request"]
-        businessError["❌ InvalidOperationException<br/>→ 409 Conflict"]
-        dbError["❌ SqlException<br/>→ Retry or 500"]
-        msgError["❌ ServiceBusException<br/>→ Retry or 500"]
+        validationError["ArgumentException<br/>→ 400 Bad Request"]
+        businessError["InvalidOperationException<br/>→ 409 Conflict"]
+        dbError["SqlException<br/>→ Retry or 500"]
+        msgError["ServiceBusException<br/>→ Retry or 500"]
     end
 
     subgraph observability["📊 Observability"]
-        recordMetrics["📊 Record Error Metrics"]
-        logError["📝 Log Exception"]
-        setActivityError["❌ Set Activity Status = Error"]
+        recordMetrics["Record Error Metrics"]
+        logError["Log Exception"]
+        setActivityError["Set Activity Status = Error"]
     end
 
     success["✅ Success Response"]
@@ -1529,26 +1514,20 @@ flowchart TD
     recordMetrics --> logError
     logError --> setActivityError
 
-    %% Styling with explicit hex colors (Microsoft Fluent UI / Azure palette)
-    classDef startStyle fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px,color:#000
-    classDef validationStyle fill:#BBDEFB,stroke:#2196F3,stroke-width:2px,color:#000
-    classDef executionStyle fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px,color:#000
-    classDef errorStyle fill:#FFCDD2,stroke:#F44336,stroke-width:2px,color:#000
-    classDef observabilityStyle fill:#E0E0E0,stroke:#757575,stroke-width:2px,color:#000
-    classDef successStyle fill:#E0F2F1,stroke:#009688,stroke-width:2px,color:#000
+    %% Styling
+    classDef startStyle fill:#D4EDDA,stroke:#28A745,stroke-width:2px,color:#000
+    classDef validationStyle fill:#CCE5FF,stroke:#0078D4,stroke-width:2px,color:#000
+    classDef executionStyle fill:#FFF3CD,stroke:#FFC107,stroke-width:2px,color:#000
+    classDef errorStyle fill:#F8D7DA,stroke:#DC3545,stroke-width:2px,color:#000
+    classDef observabilityStyle fill:#E2E3E5,stroke:#6C757D,stroke-width:2px,color:#000
+    classDef successStyle fill:#D1ECF1,stroke:#0C5460,stroke-width:2px,color:#000
 
     class start startStyle
-    class validateInput,validateBusiness validationStyle
-    class saveDb,publishMsg executionStyle
-    class validationError,businessError,dbError,msgError errorStyle
-    class recordMetrics,logError,setActivityError observabilityStyle
+    class validation,validateInput,validateBusiness validationStyle
+    class execution,saveDb,publishMsg executionStyle
+    class errorHandling,validationError,businessError,dbError,msgError errorStyle
+    class observability,recordMetrics,logError,setActivityError observabilityStyle
     class success successStyle
-
-    %% Subgraph styling (MRM-S001 compliant - use style not class)
-    style validation fill:#BBDEFB,stroke:#2196F3,stroke-width:2px
-    style execution fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
-    style errorHandling fill:#FFCDD2,stroke:#F44336,stroke-width:2px
-    style observability fill:#E0E0E0,stroke:#757575,stroke-width:2px
 ```
 
 ### 8.2 Exception Handling Patterns
@@ -1838,6 +1817,8 @@ public class OrderCacheService : IOrderCacheService
 ---
 config:
   theme: base
+  themeVariables:
+    primaryColor: "#0078D4"
 ---
 flowchart LR
     accTitle: Read Replica Architecture
@@ -1845,15 +1826,15 @@ flowchart LR
 
     client["👤 Client"]
 
-    subgraph api["🎯 API Layer"]
-        writeOps["✏️ Write Operations<br/>(POST, DELETE)"]
-        readOps["🔍 Read Operations<br/>(GET)"]
+    subgraph api["API Layer"]
+        writeOps["Write Operations<br/>(POST, DELETE)"]
+        readOps["Read Operations<br/>(GET)"]
     end
 
-    subgraph database["💾 Database Layer"]
-        primary["🔴 Primary Database<br/>Read/Write"]
-        replica1["🟢 Read Replica 1<br/>Read-Only"]
-        replica2["🟢 Read Replica 2<br/>Read-Only"]
+    subgraph database["Database Layer"]
+        primary["Primary Database<br/>🔴 Read/Write"]
+        replica1["Read Replica 1<br/>🟢 Read-Only"]
+        replica2["Read Replica 2<br/>🟢 Read-Only"]
     end
 
     client --> writeOps
@@ -1864,20 +1845,16 @@ flowchart LR
     primary -.->|"Async Replication"| replica1
     primary -.->|"Async Replication"| replica2
 
-    %% Styling with explicit hex colors (Microsoft Fluent UI / Azure palette)
-    classDef clientStyle fill:#E8F5E9,stroke:#4CAF50,stroke-width:2px,color:#000
-    classDef apiStyle fill:#BBDEFB,stroke:#2196F3,stroke-width:2px,color:#000
-    classDef primaryStyle fill:#FFCDD2,stroke:#F44336,stroke-width:2px,color:#000
-    classDef replicaStyle fill:#E0F2F1,stroke:#009688,stroke-width:2px,color:#000
+    %% Styling
+    classDef clientStyle fill:#D4EDDA,stroke:#28A745,stroke-width:2px,color:#000
+    classDef apiStyle fill:#CCE5FF,stroke:#0078D4,stroke-width:2px,color:#000
+    classDef primaryStyle fill:#F8D7DA,stroke:#DC3545,stroke-width:2px,color:#000
+    classDef replicaStyle fill:#D1ECF1,stroke:#0C5460,stroke-width:2px,color:#000
 
     class client clientStyle
-    class writeOps,readOps apiStyle
+    class api,writeOps,readOps apiStyle
     class primary primaryStyle
     class replica1,replica2 replicaStyle
-
-    %% Subgraph styling (MRM-S001 compliant - use style not class)
-    style api fill:#BBDEFB,stroke:#2196F3,stroke-width:2px
-    style database fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
 ```
 
 **Implementation:**
