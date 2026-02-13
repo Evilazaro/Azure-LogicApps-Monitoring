@@ -70,7 +70,7 @@ The solution implements a modern 3-tier architecture with clear separation of co
 ---
 title: "Azure Logic Apps Monitoring Solution - System Architecture"
 ---
-graph TB
+flowchart TB
     accTitle: Azure Logic Apps Monitoring Solution System Architecture
     accDescr: Three-tier architecture diagram showing client tier with Blazor web app, application tier with Orders API and Logic Apps, integration tier with Service Bus, data tier with SQL Database and Blob Storage, observability tier with Application Insights and Log Analytics, security layer with managed identity and Key Vault, and orchestration layer with .NET Aspire AppHost
 
@@ -1498,7 +1498,7 @@ The infrastructure is organized into modular Bicep templates following Azure bes
 ---
 title: "Infrastructure as Code Organization"
 ---
-graph TD
+flowchart TD
     accTitle: Infrastructure as Code Organization
     accDescr: Hierarchical diagram showing Bicep infrastructure organization with main orchestration layer connecting to shared infrastructure modules including identity, monitoring, network, and data, and workload infrastructure modules including messaging, container services, and Logic Apps
 
@@ -1617,7 +1617,7 @@ Deploys Logic Apps Standard with:
 ---
 title: "Resource Deployment Order"
 ---
-graph TB
+flowchart TB
     accTitle: Azure Resource Deployment Order
     accDescr: Dependency diagram showing deployment sequence of Azure resources starting from Resource Group, then foundational resources like Managed Identity, Log Analytics, Virtual Network, followed by data services, messaging, container infrastructure, and finally application workloads including Container Apps and Logic Apps
 
