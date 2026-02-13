@@ -138,7 +138,7 @@ graph TB
     style DataTier fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px
     style ObservabilityTier fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
     style SecurityIdentity fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
-    style OrchestrationLayer fill:#FFCDD2,stroke:#D32F2F,stroke-width:2px
+    style OrchestrationLayer fill:#FFF9C4,stroke:#F59B00,stroke-width:2px
 
     style WebApp fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#323130
     style OrdersAPI fill:#FFF9C4,stroke:#F59B00,stroke-width:2px,color:#323130
@@ -150,15 +150,14 @@ graph TB
     style LogAnalytics fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#323130
     style ManagedIdentity fill:#FFF3E0,stroke:#F57C00,stroke-width:2px,color:#323130
     style KeyVault fill:#FFF3E0,stroke:#F57C00,stroke-width:2px,color:#323130
-    style Aspire fill:#FFCDD2,stroke:#D32F2F,stroke-width:2px,color:#323130
+    style Aspire fill:#FFF9C4,stroke:#F59B00,stroke-width:2px,color:#323130
 
     %% Color Palette Documentation
     %% azureBlue (#DEECF9): Client and Integration tiers
-    %% azureYellow (#FFF9C4): Application tier services
+    %% azureYellow (#FFF9C4): Application tier services and orchestration
     %% azurePurple (#F3E5F5): Data storage layer
     %% azureGreen (#E8F5E9): Observability and monitoring
     %% azureOrange (#FFF3E0): Security and identity
-    %% azureRed (#FFCDD2): Orchestration layer
     %%
     %% Accessibility: WCAG AA compliant (4.5:1 contrast ratio)
     %% Icons: Semantic emojis for visual identification
