@@ -74,6 +74,13 @@ graph TB
     accTitle: Azure Logic Apps Monitoring Solution System Architecture
     accDescr: Three-tier architecture diagram showing client tier with Blazor web app, application tier with Orders API and Logic Apps, integration tier with Service Bus, data tier with SQL Database and Blob Storage, observability tier with Application Insights and Log Analytics, security layer with managed identity and Key Vault, and orchestration layer with .NET Aspire AppHost
 
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% Semantic + Structural + Font + Accessibility Governance
+    %% Color Scheme: Semantic colors for functional purpose
+    %% Blue (#DEECF9): Client/Network/Integration | Yellow (#FFF4CE): Application/Orchestration
+    %% Teal (#C8F0E7): Data Storage | Green (#DFF6DD): Monitoring/Observability
+    %% Orange (#FDE7E9): Security/Identity
+
     subgraph ClientTier["Client Tier"]
         WebApp["🌐 eShop Web App<br/>(Blazor Frontend)"]
     end
@@ -132,35 +139,37 @@ graph TB
     OrdersAPI -.->|Read Secrets| KeyVault
     LogicApp -.->|Read Secrets| KeyVault
 
-    style ClientTier fill:#DEECF9,stroke:#0078D4,stroke-width:2px
-    style ApplicationTier fill:#FFF9C4,stroke:#F59B00,stroke-width:2px
-    style IntegrationTier fill:#DEECF9,stroke:#0078D4,stroke-width:2px
-    style DataTier fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px
-    style ObservabilityTier fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
-    style SecurityIdentity fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
-    style OrchestrationLayer fill:#FFF9C4,stroke:#F59B00,stroke-width:2px
+    %% Subgraph styling (hierarchical containers)
+    style ClientTier fill:#DEECF9,stroke:#004578,stroke-width:2px
+    style ApplicationTier fill:#FFF4CE,stroke:#986F0B,stroke-width:2px
+    style IntegrationTier fill:#DEECF9,stroke:#004578,stroke-width:2px
+    style DataTier fill:#C8F0E7,stroke:#00666B,stroke-width:2px
+    style ObservabilityTier fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px
+    style SecurityIdentity fill:#FDE7E9,stroke:#A4262C,stroke-width:2px
+    style OrchestrationLayer fill:#FFF4CE,stroke:#986F0B,stroke-width:2px
 
-    style WebApp fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#323130
-    style OrdersAPI fill:#FFF9C4,stroke:#F59B00,stroke-width:2px,color:#323130
-    style LogicApp fill:#FFF9C4,stroke:#F59B00,stroke-width:2px,color:#323130
-    style ServiceBus fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#323130
-    style SQLDatabase fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px,color:#323130
-    style BlobStorage fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px,color:#323130
-    style AppInsights fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#323130
-    style LogAnalytics fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#323130
-    style ManagedIdentity fill:#FFF3E0,stroke:#F57C00,stroke-width:2px,color:#323130
-    style KeyVault fill:#FFF3E0,stroke:#F57C00,stroke-width:2px,color:#323130
-    style Aspire fill:#FFF9C4,stroke:#F59B00,stroke-width:2px,color:#323130
+    %% Content node styling (semantic colors with proper contrast)
+    WebApp:::azureBlue
+    OrdersAPI:::sharedYellow
+    LogicApp:::sharedYellow
+    ServiceBus:::azureBlue
+    SQLDatabase:::presenceTeal
+    BlobStorage:::presenceTeal
+    AppInsights:::successGreen
+    LogAnalytics:::successGreen
+    ManagedIdentity:::warningOrange
+    KeyVault:::warningOrange
+    Aspire:::sharedYellow
 
-    %% Color Palette Documentation
-    %% azureBlue (#DEECF9): Client and Integration tiers
-    %% azureYellow (#FFF9C4): Application tier services and orchestration
-    %% azurePurple (#F3E5F5): Data storage layer
-    %% azureGreen (#E8F5E9): Observability and monitoring
-    %% azureOrange (#FFF3E0): Security and identity
-    %%
-    %% Accessibility: WCAG AA compliant (4.5:1 contrast ratio)
-    %% Icons: Semantic emojis for visual identification
+    %% classDef declarations (AZURE/FLUENT v1.1 - 100-level fills for content nodes)
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#002440
+    classDef sharedYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#002D26
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef warningOrange fill:#FDE7E9,stroke:#A4262C,stroke-width:2px,color:#323130
+
+    %% Accessibility: WCAG AA compliant (4.5:1 contrast ratio minimum)
+    %% Icons: Semantic emojis for visual component identification
 ```
 
 ### Component Roles
@@ -1493,6 +1502,13 @@ graph TD
     accTitle: Infrastructure as Code Organization
     accDescr: Hierarchical diagram showing Bicep infrastructure organization with main orchestration layer connecting to shared infrastructure modules including identity, monitoring, network, and data, and workload infrastructure modules including messaging, container services, and Logic Apps
 
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% Semantic + Structural + Font + Accessibility Governance
+    %% Color Scheme: Hierarchical structure with semantic differentiation
+    %% Blue (#DEECF9): Main orchestration | Yellow (#FFF4CE): Shared resources
+    %% Orange (#FDE7E9): Workload resources | Teal (#C8F0E7): Data/Storage
+    %% Green (#DFF6DD): Monitoring | Coral (#F3D6D8): Security
+
     Main["📋 main.bicep<br/>Orchestration Layer"]
 
     Main --> Shared["🏗️ shared/main.bicep<br/>Shared Infrastructure"]
@@ -1507,26 +1523,27 @@ graph TD
     Workload --> Services["📦 services/<br/>Container Apps, ACR"]
     Workload --> LogicAppMod["⚡ logic-app.bicep<br/>Logic Apps Standard"]
 
-    style Main fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#323130
-    style Shared fill:#FFF9C4,stroke:#F59B00,stroke-width:2px,color:#323130
-    style Workload fill:#FFF3E0,stroke:#F57C00,stroke-width:2px,color:#323130
-    style Identity fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#323130
-    style Monitoring fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#323130
-    style Network fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#323130
-    style Data fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#323130
-    style Messaging fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px,color:#323130
-    style Services fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px,color:#323130
-    style LogicAppMod fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px,color:#323130
+    %% Apply semantic colors via classDef pattern
+    Main:::azureBlue
+    Shared:::sharedYellow
+    Workload:::sharedYellow
+    Identity:::warningOrange
+    Monitoring:::successGreen
+    Network:::azureBlue
+    Data:::presenceTeal
+    Messaging:::azureBlue
+    Services:::sharedYellow
+    LogicAppMod:::sharedYellow
 
-    %% Color Palette Documentation
-    %% azureBlue (#DEECF9): Orchestration layer
-    %% azureYellow (#FFF9C4): Shared infrastructure modules
-    %% azureOrange (#FFF3E0): Workload infrastructure layer
-    %% azureGreen (#E8F5E9): Shared resource modules
-    %% azurePurple (#F3E5F5): Workload resource modules
-    %%
-    %% Accessibility: WCAG AA compliant (4.5:1 contrast ratio)
-    %% Icons: Semantic emojis for visual identification of infrastructure components
+    %% classDef declarations (AZURE/FLUENT v1.1 - 100-level fills)
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#002440
+    classDef sharedYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef warningOrange fill:#FDE7E9,stroke:#A4262C,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#002D26
+
+    %% Accessibility: WCAG AA compliant (4.5:1 contrast ratio minimum)
+    %% Icons: Semantic emojis for infrastructure component type identification
 ```
 
 ### Deployed Resources
@@ -1604,6 +1621,13 @@ graph TB
     accTitle: Azure Resource Deployment Order
     accDescr: Dependency diagram showing deployment sequence of Azure resources starting from Resource Group, then foundational resources like Managed Identity, Log Analytics, Virtual Network, followed by data services, messaging, container infrastructure, and finally application workloads including Container Apps and Logic Apps
 
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% Semantic + Structural + Font + Accessibility Governance
+    %% Color Scheme: Deployment dependency flow with semantic resource types
+    %% Blue (#DEECF9): Foundation/Network | Orange (#FDE7E9): Security/Identity
+    %% Green (#DFF6DD): Monitoring | Teal (#C8F0E7): Data/Storage
+    %% Yellow (#FFF4CE): Application/Compute
+
     RG["📦 Resource Group"]
     Identity["🔐 Managed Identity"]
     LogAnalytics["📋 Log Analytics"]
@@ -1643,29 +1667,30 @@ graph TB
     Storage --> LogicApp
     VNet --> LogicApp
 
-    style RG fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#323130
-    style Identity fill:#FFF3E0,stroke:#F57C00,stroke-width:2px,color:#323130
-    style LogAnalytics fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#323130
-    style AppInsights fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#323130
-    style VNet fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#323130
-    style SQL fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px,color:#323130
-    style ServiceBus fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#323130
-    style Storage fill:#F3E5F5,stroke:#8E24AA,stroke-width:2px,color:#323130
-    style ACR fill:#FFF9C4,stroke:#F59B00,stroke-width:2px,color:#323130
-    style CAE fill:#FFF9C4,stroke:#F59B00,stroke-width:2px,color:#323130
-    style CA fill:#FFF9C4,stroke:#F59B00,stroke-width:2px,color:#323130
-    style ASP fill:#FFF9C4,stroke:#F59B00,stroke-width:2px,color:#323130
-    style LogicApp fill:#FFF9C4,stroke:#F59B00,stroke-width:2px,color:#323130
+    %% Apply semantic colors via classDef pattern
+    RG:::azureBlue
+    Identity:::warningOrange
+    LogAnalytics:::successGreen
+    AppInsights:::successGreen
+    VNet:::azureBlue
+    SQL:::presenceTeal
+    ServiceBus:::azureBlue
+    Storage:::presenceTeal
+    ACR:::sharedYellow
+    CAE:::sharedYellow
+    CA:::sharedYellow
+    ASP:::sharedYellow
+    LogicApp:::sharedYellow
 
-    %% Color Palette Documentation
-    %% azureBlue (#DEECF9): Foundation resources (Resource Group, VNet, Service Bus)
-    %% azureOrange (#FFF3E0): Identity and security
-    %% azureGreen (#E8F5E9): Monitoring and observability
-    %% azurePurple (#F3E5F5): Data storage resources
-    %% azureYellow (#FFF9C4): Application hosting (Container Apps, Logic Apps)
-    %%
-    %% Accessibility: WCAG AA compliant (4.5:1 contrast ratio)
-    %% Icons: Semantic emojis for resource type identification
+    %% classDef declarations (AZURE/FLUENT v1.1 - 100-level fills)
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#002440
+    classDef warningOrange fill:#FDE7E9,stroke:#A4262C,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#002D26
+    classDef sharedYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+
+    %% Accessibility: WCAG AA compliant (4.5:1 contrast ratio minimum)
+    %% Icons: Semantic emojis for Azure resource type identification
 ```
 
 ### Infrastructure Customization
