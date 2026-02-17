@@ -69,8 +69,6 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 
 ## 🏗️ Architecture
 
-**Overview**
-
 > 💡 **Why This Matters**: This architecture leverages **.NET Aspire to orchestrate distributed services** with Azure-native components, enabling **horizontal scalability, fault tolerance, and comprehensive observability**. The design ensures **production-grade reliability** while maintaining **developer productivity** through local development capabilities.
 
 > 📌 **How It Works**: Services communicate **asynchronously via Azure Service Bus**, share telemetry through **Application Insights**, and persist data to **Azure SQL with managed identity authentication**. Logic Apps workflows **process order events triggered by Service Bus messages**, with all components deployed to **Azure Container Apps for elastic scaling**.
