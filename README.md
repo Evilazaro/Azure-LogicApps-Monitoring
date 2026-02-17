@@ -47,44 +47,70 @@ config:
     fontSize: '16px'
   flowchart:
     htmlLabels: false
+    curve: cardinal
 ---
 flowchart TB
     accTitle: Azure Logic Apps Monitoring Solution Architecture
-    accDescr: Event-driven architecture showing Blazor frontend, Orders API, Service Bus messaging, Logic Apps workflows, and Azure data services
+    accDescr: Event-driven architecture showing Blazor frontend, Orders API, Service Bus messaging, Logic Apps workflows, and Azure data services with full observability
 
-    classDef azure fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef success fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
-    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
-    classDef warning fill:#FFF4CE,stroke:#797673,stroke-width:2px,color:#323130
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: TB direction explicit, 2-level nesting, 7 subgraphs, 9 nodes
+    %% PHASE 2 - SEMANTIC: 5 semantic colors + 1 neutral (within 5+1 limit)
+    %%   azureBlue: Frontend (web) | azureGreen: API (processing)
+    %%   azureYellow: Messaging | azurePurple: Workflows/automation
+    %%   azureTeal: Data storage | neutralGrey: Observability/monitoring
+    %% PHASE 3 - FONT: Dark text #323130 on all light backgrounds (WCAG AA 4.5:1)
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all 9 content nodes
+    %% PHASE 5 - STANDARD: v1.1 format, 14 classDefs (complete palette), 7 style directives
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    %% Required classDef palette (ALL 14 - MANDATORY)
+    classDef level1Group fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px,color:#323130
+    classDef level2Group fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#323130
+    classDef level3Group fill:#9FA8DA,stroke:#3F51B5,stroke-width:2px,color:#323130
+    classDef level4Group fill:#7986CB,stroke:#3F51B5,stroke-width:1px,color:#323130
+    classDef mainGroup fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px,color:#323130
+    classDef subGroup fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#323130
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef azureGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef azureRed fill:#FFCDD2,stroke:#D32F2F,stroke-width:2px,color:#323130
+    classDef azureYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
+    classDef azureOrange fill:#FDE7E9,stroke:#A4262C,stroke-width:2px,color:#323130
+    classDef azurePurple fill:#E7E2FA,stroke:#5B2F91,stroke-width:2px,color:#323130
+    classDef azureTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
+    classDef neutralGrey fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph system["🏢 Azure Logic Apps Monitoring Solution"]
         direction TB
 
         subgraph frontend["🌐 Frontend Layer"]
-            webapp["⚛️ Blazor Server<br/>(Fluent UI)"]:::azure
+            webapp["⚛️ Blazor Server<br/>(Fluent UI)"]:::azureBlue
         end
 
         subgraph api["⚙️ API Layer"]
-            ordersapi["🔌 Orders API<br/>(ASP.NET Core)"]:::success
+            ordersapi["🔌 Orders API<br/>(ASP.NET Core)"]:::azureGreen
         end
 
         subgraph messaging["📨 Messaging Layer"]
-            servicebus["📡 Azure Service Bus<br/>(Topics & Subscriptions)"]:::warning
+            servicebus["📡 Azure Service Bus<br/>(Topics & Subscriptions)"]:::azureYellow
         end
 
         subgraph workflows["🔄 Workflow Layer"]
-            logicapp["⚡ Logic Apps Standard<br/>(OrdersPlacedProcess)"]:::azure
-            logicapp2["⚡ Logic Apps Standard<br/>(OrdersPlacedCompleteProcess)"]:::azure
+            logicapp["⚡ Logic Apps Standard<br/>(OrdersPlacedProcess)"]:::azurePurple
+            logicapp2["⚡ Logic Apps Standard<br/>(OrdersPlacedCompleteProcess)"]:::azurePurple
         end
 
         subgraph data["🗄️ Data Layer"]
-            sqldb[("💾 Azure SQL<br/>Database")]:::neutral
-            blob[("📦 Azure Blob<br/>Storage")]:::neutral
+            sqldb[("💾 Azure SQL<br/>Database")]:::azureTeal
+            blob[("📦 Azure Blob<br/>Storage")]:::azureTeal
         end
 
         subgraph observability["📊 Observability Layer"]
-            appinsights["📈 Application Insights"]:::azure
-            loganalytics["📋 Log Analytics"]:::azure
+            appinsights["📈 Application Insights"]:::neutralGrey
+            loganalytics["📋 Log Analytics"]:::neutralGrey
         end
 
         webapp -->|"REST API calls"| ordersapi
@@ -99,13 +125,14 @@ flowchart TB
         logicapp -.->|"diagnostics"| loganalytics
     end
 
-    style system fill:#FFFFFF,stroke:#D2D0CE,stroke-width:3px
-    style frontend fill:#F3F2F1,stroke:#A19F9D,stroke-width:2px
-    style api fill:#F3F2F1,stroke:#A19F9D,stroke-width:2px
-    style messaging fill:#F3F2F1,stroke:#A19F9D,stroke-width:2px
-    style workflows fill:#F3F2F1,stroke:#A19F9D,stroke-width:2px
-    style data fill:#F3F2F1,stroke:#A19F9D,stroke-width:2px
-    style observability fill:#F3F2F1,stroke:#A19F9D,stroke-width:2px
+    %% Subgraph styling (7 subgraphs = 7 style directives)
+    style system fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px
+    style frontend fill:#DEECF9,stroke:#004578,stroke-width:2px
+    style api fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px
+    style messaging fill:#FFF9C4,stroke:#F57F17,stroke-width:2px
+    style workflows fill:#E7E2FA,stroke:#5B2F91,stroke-width:2px
+    style data fill:#C8F0E7,stroke:#00666B,stroke-width:2px
+    style observability fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
 ```
 
 ## ✨ Features
