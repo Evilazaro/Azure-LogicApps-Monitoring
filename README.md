@@ -208,7 +208,7 @@ flowchart TB
 | **Azure Developer CLI** | 🚀   | 1.11.0              | azd deployment workflows                   | `azd version`                                  |
 | **Contributor Role**    | 🔑   | Subscription-level  | Permission to create resource groups       | `az role assignment list --assignee <user-id>` |
 
-> ⚠️ **Azure Permissions**: You must have at least Contributor role at the subscription level to create resource groups. Contact your Azure administrator if `azd up` fails with authorization errors.
+> ⚠️ **Azure Permissions**: You **must have at least Contributor role** at the subscription level to create resource groups. **Contact your Azure administrator** if `azd up` fails with authorization errors.
 
 ### Development Tools
 
@@ -263,7 +263,7 @@ azd up
 6. Configures managed identities and RBAC
 7. Outputs service endpoints
 
-> 💡 **Environment Management**: Use `azd env` commands to manage multiple environments (dev, staging, prod). Each environment maintains isolated infrastructure and configuration: `azd env new staging`, `azd env select staging`, `azd up`.
+> 💡 **Environment Management**: **Use `azd env` commands** to manage multiple environments (dev, staging, prod). Each environment maintains isolated infrastructure and configuration: `azd env new staging`, `azd env select staging`, `azd up`.
 
 ### Option 2: GitHub Actions (CI/CD Pipeline)
 
@@ -294,7 +294,7 @@ git push origin main
 # Actions → Deploy to Azure → Run workflow
 ```
 
-> ⚠️ **Production Deployments**: Modify `.github/workflows/azure-deploy.yml` to require manual approval for production environments. Add environment protection rules in repository Settings → Environments.
+> ⚠️ **Production Deployments**: **Modify `.github/workflows/azure-deploy.yml` to require manual approval** for production environments. **Add environment protection rules** in repository Settings → Environments.
 
 ### Option 3: Manual Bicep Deployment (Advanced)
 
@@ -360,7 +360,7 @@ Configure these variables when deploying to Azure Container Apps or local develo
 | `ASPNETCORE_ENVIRONMENT`                | ⚙️   | Runtime environment             | `Development`, `Staging`, `Production`                                                                 | No (default: Production) |
 | `AZURE_LOCATION`                        | 🌍   | Azure region for deployment     | `eastus`, `westus2`, `northeurope`                                                                     | Yes (azd)                |
 
-> ⚠️ **Connection Strings**: Never commit connection strings to source control. Use User Secrets for local development and managed identities for Azure deployments. The `ConnectionStrings__OrderDb` format uses double underscores to represent hierarchical keys in environment variables.
+> ⚠️ **Connection Strings**: **Never commit connection strings to source control**. **Use User Secrets for local development** and **managed identities for Azure deployments**. The `ConnectionStrings__OrderDb` format uses double underscores to represent hierarchical keys in environment variables.
 
 ### Local Development Configuration
 
@@ -543,7 +543,7 @@ curl -X POST https://orders-api-xyz123.azurecontainerapps.io/api/orders \
 
 **Overview**
 
-> 💡 **Why Local Development Workflow**: Running the complete solution locally with .NET Aspire dashboard enables rapid iteration without Azure costs. The development stack uses in-memory databases and Service Bus emulator by default, providing 95% production parity while eliminating network latency and Azure service dependencies.
+> 💡 **Why Local Development Workflow**: Running the complete solution locally with **.NET Aspire dashboard enables rapid iteration without Azure costs**. The development stack uses **in-memory databases and Service Bus emulator** by default, providing **95% production parity** while eliminating network latency and Azure service dependencies.
 
 > 📌 **Development Lifecycle**: Changes to source code trigger automatic recompilation via dotnet watch, and the Aspire dashboard provides unified logs, metrics, and traces across all services. This tight feedback loop reduces debugging time from minutes to seconds compared to deploying to Azure for each change.
 
@@ -593,7 +593,7 @@ dotnet watch run
 - **Web App**: `https://localhost:7002` (auto-assigned port, check dashboard)
 - **Swagger UI**: `https://localhost:7001/swagger`
 
-> 💡 **Local Database**: On first run, the application automatically creates the SQL Server LocalDB database and applies Entity Framework migrations. No manual database setup required.
+> 💡 **Local Database**: On first run, the application **automatically creates the SQL Server LocalDB database** and **applies Entity Framework migrations**. **No manual database setup required**.
 
 ### Running Tests
 
@@ -746,15 +746,15 @@ az deployment group show \
 | Logic Apps Standard          | 📋   | WS1 plan (1 instance)      | ~$200/month      |
 | **Total Estimated Cost**     | 💰   | -                          | **~$315/month**  |
 
-> ⚠️ **Cost Optimization**: Enable auto-scaling rules to scale Container Apps to zero during idle periods. Switch SQL Database to serverless tier for development environments to reduce costs by ~60%.
+> ⚠️ **Cost Optimization**: **Enable auto-scaling rules** to scale Container Apps to zero during idle periods. **Switch SQL Database to serverless tier** for development environments to reduce costs by ~60%.
 
 ## 💚 Health Checks
 
 **Overview**
 
-> 💡 **Why Health Checks Matter**: Azure Container Apps uses health probes to determine when containers are ready to receive traffic (readiness) and when to restart unhealthy containers (liveness). Implementing comprehensive health checks prevents user-facing errors during deployments and ensures automatic recovery from transient failures.
+> 💡 **Why Health Checks Matter**: Azure Container Apps uses health probes to determine when containers are **ready to receive traffic** (readiness) and when to **restart unhealthy containers** (liveness). **Implementing comprehensive health checks prevents user-facing errors** during deployments and ensures automatic recovery from transient failures.
 
-> 📌 **Health Check Architecture**: The solution implements multi-layered health checks that verify API responsiveness, database connectivity, Service Bus availability, and downstream dependencies. Failed health checks trigger automatic container restarts within 30 seconds, minimizing downtime from infrastructure or dependency failures.
+> 📌 **Health Check Architecture**: The solution implements **multi-layered health checks** that verify API responsiveness, database connectivity, Service Bus availability, and downstream dependencies. **Failed health checks trigger automatic container restarts within 30 seconds**, minimizing downtime from infrastructure or dependency failures.
 
 ### Built-in Health Endpoints
 
@@ -837,7 +837,7 @@ builder.Services.AddHealthChecks()
 
 > 💡 **Why Troubleshooting Guidance**: Production issues typically fall into predictable categories: authentication failures (managed identity configuration), connectivity problems (networking/firewall), or performance degradation (resource limits). This section provides diagnostic commands verified against real deployment scenarios to minimize mean-time-to-resolution.
 
-> 📌 **Diagnostic Approach**: Follow the layered diagnostic pattern: verify health checks first (fastest signal), then check logs for error patterns, query distributed traces for cross-service issues, and finally examine Application Insights metrics for performance anomalies. This sequence maximizes troubleshooting efficiency by eliminating common issues before investigating complex scenarios.
+> 📌 **Diagnostic Approach**: Follow the **layered diagnostic pattern**: verify health checks first (fastest signal), then check logs for error patterns, query distributed traces for cross-service issues, and finally examine Application Insights metrics for performance anomalies. This sequence **maximizes troubleshooting efficiency** by eliminating common issues before investigating complex scenarios.
 
 ### Common Issues and Solutions
 
@@ -1010,7 +1010,7 @@ git push origin feature/add-order-validation
 - [ ] No breaking changes (or clearly documented)
 - [ ] Commit messages follow conventional format
 
-> 💡 **First-time contributors**: Start with issues labeled `good-first-issue` in the GitHub Issues tab. These are designed to help you learn the codebase with mentorship from maintainers.
+> 💡 **First-time contributors**: **Start with issues labeled `good-first-issue`** in the GitHub Issues tab. These are designed to help you **learn the codebase with mentorship** from maintainers.
 
 ## 📝 License
 
