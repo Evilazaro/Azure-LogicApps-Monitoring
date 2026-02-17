@@ -5,7 +5,7 @@
 ![License](https://img.shields.io/github/license/Evilazaro/Azure-LogicApps-Monitoring)
 ![Azure](https://img.shields.io/badge/Azure-Container%20Apps-0078D4)
 
-A production-ready monitoring solution for Azure Logic Apps Standard using .NET Aspire orchestration, featuring order management workflows with end-to-end observability through Application Insights and distributed tracing.
+A **production-ready monitoring solution** for **Azure Logic Apps Standard** using **.NET Aspire orchestration**, featuring **order management workflows** with **end-to-end observability** through Application Insights and distributed tracing.
 
 ## Overview
 
@@ -15,7 +15,7 @@ A production-ready monitoring solution for Azure Logic Apps Standard using .NET 
 
 > 📌 **How It Works**: The solution uses **.NET Aspire to orchestrate microservices** that interact with Logic Apps workflows, **Azure Service Bus for asynchronous messaging**, and **Application Insights for unified observability**. All components use **managed identities for zero-secret authentication** and deploy to **Azure Container Apps with VNet integration** for enhanced security.
 
-This project demonstrates a cloud-native architecture for monitoring Azure Logic Apps Standard workflows in production environments. Built on .NET 10.0 with Aspire orchestration, it provides order management APIs, a Blazor-based web interface, and comprehensive telemetry collection through Application Insights with OpenTelemetry support.
+This project demonstrates a **cloud-native architecture** for monitoring **Azure Logic Apps Standard workflows** in production environments. Built on **.NET 10.0 with Aspire orchestration**, it provides **order management APIs**, a **Blazor-based web interface**, and **comprehensive telemetry collection** through Application Insights with OpenTelemetry support.
 
 ## Table of Contents
 
@@ -255,13 +255,13 @@ azd up
 
 **What `azd up` does automatically:**
 
-1. Validates prerequisites via `hooks/preprovision.ps1`
-2. Runs unit tests to ensure code quality
-3. Provisions infrastructure via Bicep templates
-4. Builds container images
-5. Deploys containers to Azure Container Apps
-6. Configures managed identities and RBAC
-7. Outputs service endpoints
+1. **Validates prerequisites** via `hooks/preprovision.ps1`
+2. **Runs unit tests** to ensure code quality
+3. **Provisions infrastructure** via Bicep templates
+4. **Builds container images**
+5. **Deploys containers** to Azure Container Apps
+6. **Configures managed identities and RBAC**
+7. **Outputs service endpoints**
 
 > 💡 **Environment Management**: **Use `azd env` commands** to manage multiple environments (dev, staging, prod). Each environment maintains isolated infrastructure and configuration: `azd env new staging`, `azd env select staging`, `azd up`.
 
@@ -400,12 +400,12 @@ dotnet user-secrets set "APPLICATIONINSIGHTS_CONNECTION_STRING" "Instrumentation
 
 ### Azure-Specific Configuration
 
-**Automated by `azd`:** These settings are automatically configured during `azd up`:
+**Automated by `azd`:** These settings are **automatically configured during `azd up`**:
 
-- Managed identity client IDs
-- Application Insights connection strings
-- Service Bus endpoints
-- SQL Database connections with Azure AD authentication
+- **Managed identity client IDs**
+- **Application Insights connection strings**
+- **Service Bus endpoints**
+- **SQL Database connections with Azure AD authentication**
 
 **Manual configuration (if not using `azd`):**
 
@@ -427,7 +427,7 @@ az containerapp update \
 4. User Secrets - Local development secrets
 5. Azure App Configuration - Centralized feature flags (if enabled)
 
-> 💡 **Feature Flags**: For A/B testing or gradual rollouts, integrate Azure App Configuration by adding the `Microsoft.Azure.AppConfiguration.AspNetCore` package and configuring the provider in `Program.cs`.
+> 💡 **Feature Flags**: For A/B testing or gradual rollouts, **integrate Azure App Configuration** by adding the `Microsoft.Azure.AppConfiguration.AspNetCore` package and **configuring the provider** in `Program.cs`.
 
 ## 💻 Usage
 
@@ -996,11 +996,11 @@ git push origin feature/add-order-validation
 
 ### Code Quality Standards
 
-- ✅ All new code must have ≥80% test coverage
-- ✅ Follow C# coding conventions (use `dotnet format`)
-- ✅ Update documentation for public API changes
-- ✅ Include XML doc comments for public methods
-- ✅ Add integration tests for new endpoints
+- ✅ All new code **must have ≥80% test coverage**
+- ✅ **Follow C# coding conventions** (use `dotnet format`)
+- ✅ **Update documentation** for public API changes
+- ✅ **Include XML doc comments** for public methods
+- ✅ **Add integration tests** for new endpoints
 
 ### Pull Request Checklist
 
