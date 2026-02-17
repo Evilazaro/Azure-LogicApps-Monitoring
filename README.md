@@ -87,42 +87,58 @@ flowchart TB
     accTitle: Azure Logic Apps Monitoring Solution Architecture
     accDescr: Shows microservices architecture with Blazor Web App, Orders API, Logic Apps, Service Bus, SQL Database, and Application Insights with managed identity authentication
 
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: TB direction explicit, 2-level nesting (azure→layers), 9 subgraphs total
+    %% PHASE 2 - SEMANTIC: 5 semantic colors used (within limit):
+    %%   - azureBlue (#DEECF9): UI/API layers - application services
+    %%   - azureYellow (#FFF9C4): Workflow orchestration - business logic
+    %%   - azurePurple (#E7E2FA): Messaging infrastructure - async communication
+    %%   - azureTeal (#C8F0E7): Data persistence - storage services
+    %%   - azureOrange (#FDE7E9): Security/Identity - authentication services
+    %% PHASE 3 - FONT: Dark text #323130 on all 100-level fills (WCAG AA 4.5:1+ contrast)
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, all nodes have semantic icons
+    %% PHASE 5 - STANDARD: v1.1 format, 9 subgraphs with semantic color matching, centralized classDefs
+    %% ═══════════════════════════════════════════════════════════════════════════
+
     subgraph azure["☁️ Azure Cloud Platform"]
         direction TB
 
         subgraph ui["🖥️ User Interface Layer"]
-            webapp["🌐 Blazor Web App<br/>(Fluent UI)"]
+            webapp["🌐 Blazor Web App<br/>(Fluent UI)"]:::azureBlue
         end
 
         subgraph api["⚙️ API Layer"]
-            ordersapi["🔌 Orders API<br/>(REST/OpenAPI)"]
+            ordersapi["🔌 Orders API<br/>(REST/OpenAPI)"]:::azureBlue
         end
 
         subgraph workflows["🔄 Workflow Layer"]
-            logicapp["📋 Logic Apps Standard<br/>(OrdersManagement)"]
+            logicapp["📋 Logic Apps Standard<br/>(OrdersManagement)"]:::azureYellow
         end
 
         subgraph messaging["📬 Messaging Layer"]
-            servicebus["📨 Service Bus<br/>(Topics/Subscriptions)"]
+            servicebus["📨 Service Bus<br/>(Topics/Subscriptions)"]:::azurePurple
         end
 
         subgraph data["🗄️ Data Layer"]
-            sqldb["💾 Azure SQL Database<br/>(OrderDb)"]
+            sqldb["💾 Azure SQL Database<br/>(OrderDb)"]:::azureTeal
         end
 
         subgraph observability["📊 Observability Layer"]
-            appinsights["📈 Application Insights<br/>(OpenTelemetry)"]
-            loganalytics["📜 Log Analytics Workspace"]
+            appinsights["📈 Application Insights<br/>(OpenTelemetry)"]:::azureTeal
+            loganalytics["📜 Log Analytics Workspace"]:::azureTeal
         end
 
         subgraph identity["🔐 Identity Layer"]
-            managedid["🔑 Managed Identity<br/>(Zero-Secret Auth)"]
+            managedid["🔑 Managed Identity<br/>(Zero-Secret Auth)"]:::azureOrange
         end
     end
 
     subgraph users["👥 External Users"]
-        customer["👤 Customer"]
-        admin["🔧 Administrator"]
+        customer["👤 Customer"]:::neutral
+        admin["🔧 Administrator"]:::neutral
     end
 
     customer -->|"HTTPS requests"| webapp
@@ -143,15 +159,24 @@ flowchart TB
     managedid -->|"Authenticate to"| servicebus
     managedid -->|"Authenticate to"| appinsights
 
+    %% Centralized classDefs - Using 100-level fills for content nodes (MRM-C004)
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef azureYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
+    classDef azurePurple fill:#E7E2FA,stroke:#5B2F91,stroke-width:2px,color:#323130
+    classDef azureTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
+    classDef azureOrange fill:#FDE7E9,stroke:#A4262C,stroke-width:2px,color:#323130
+    classDef neutral fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    %% Subgraph styling - Semantic colors matching content purpose (9 subgraphs = 9 style directives)
     style azure fill:#FFFFFF,stroke:#0078D4,stroke-width:3px,color:#323130
-    style ui fill:#E1F5FE,stroke:#01579B,stroke-width:2px,color:#323130
-    style api fill:#E8F5E9,stroke:#1B5E20,stroke-width:2px,color:#323130
+    style ui fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style api fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     style workflows fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
-    style messaging fill:#FCE4EC,stroke:#880E4F,stroke-width:2px,color:#323130
-    style data fill:#F3E5F5,stroke:#4A148C,stroke-width:2px,color:#323130
-    style observability fill:#E0F2F1,stroke:#004D40,stroke-width:2px,color:#323130
-    style identity fill:#FBE9E7,stroke:#BF360C,stroke-width:2px,color:#323130
-    style users fill:#F5F5F5,stroke:#616161,stroke-width:2px,color:#323130
+    style messaging fill:#E7E2FA,stroke:#5B2F91,stroke-width:2px,color:#323130
+    style data fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
+    style observability fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
+    style identity fill:#FDE7E9,stroke:#A4262C,stroke-width:2px,color:#323130
+    style users fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
 ### Component Responsibilities
