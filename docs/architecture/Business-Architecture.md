@@ -1603,27 +1603,33 @@ mermaid_diagrams:
 
 ### Medium-Term Initiatives (Q2-Q3 2026)
 
-4. **Externalize Business Rules** (Priority: Medium)
+6. **Externalize Business Rules** (Priority: High)
    - Evaluate Azure Rules Service, Drools.NET, or decision table library
    - Migrate ValidateOrder logic to rules engine
    - Enable business user configuration via no-code interface
+   - Target: Elevate Order Validation capability from Level 2 to Level 4
 
-5. **Implement Azure Schema Registry** (Priority: Medium)
-   - Centralize event schema versioning
+7. **Implement Azure Schema Registry** (Priority: Medium)
+   - Centralize event schema versioning for OrderPlaced and OrderProcessed events
    - Enable backward/forward compatibility checks
    - Integrate with CI/CD pipeline for schema validation
 
-6. **Create Real-Time KPI Dashboards** (Priority: Low)
+8. **Create Real-Time KPI Dashboards** (Priority: Medium)
    - Build Power BI dashboards from Azure Monitor metrics
    - Display: Order processing duration (p95), error rates, throughput
    - Enable stakeholder self-service analytics
 
 ### Long-Term Evolution (Q4 2026+)
 
-7. **Achieve Level 5 Maturity (Optimized)**
+9. **Define Human Escalation Role** (Priority: Low)
+   - Create Order Manager role for manual intervention on processing failures
+   - Establish escalation workflows for non-standard order scenarios
+   - Define SLA for manual review and resolution
+
+10. **Achieve Level 5 Maturity (Optimized)**
    - Implement continuous improvement feedback loops
    - A/B testing for business rule effectiveness
-   - Predictive analytics for capacity planning
+   - Predictive analytics for capacity planning and demand forecasting
 
 ---
 
