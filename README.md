@@ -9,8 +9,6 @@ A **production-ready monitoring solution** for **Azure Logic Apps Standard** usi
 
 ## Overview
 
-**Overview**
-
 > 💡 **Why This Matters**: Azure Logic Apps require **comprehensive monitoring and observability** to ensure reliable workflow execution at scale. This solution provides a **complete reference architecture** demonstrating **best practices for monitoring Logic Apps Standard** deployments with integrated order management capabilities, helping teams **quickly implement production-grade workflow monitoring**.
 
 > 📌 **How It Works**: The solution uses **.NET Aspire to orchestrate microservices** that interact with Logic Apps workflows, **Azure Service Bus for asynchronous messaging**, and **Application Insights for unified observability**. All components use **managed identities for zero-secret authentication** and deploy to **Azure Container Apps with VNet integration** for enhanced security.
@@ -172,8 +170,6 @@ flowchart TB
 
 ## ✨ Features
 
-**Overview**
-
 > 💡 **Why This Matters**: This solution provides **production-ready capabilities** designed to **accelerate enterprise adoption** of Azure Logic Apps monitoring. Each feature addresses **common operational challenges** identified by platform teams deploying workflow automation at scale.
 
 > 📌 **How It Works**: Features are implemented as **modular components with dependency injection**, enabling teams to **adopt incrementally without architectural changes**. All functionality uses **Azure-native services** to minimize operational overhead and maximize cloud integration benefits.
@@ -192,8 +188,6 @@ flowchart TB
 | **Elastic Scalability**         | 📈   | Azure Container Apps with horizontal pod autoscaling                 | Handles 10x traffic spikes automatically without manual intervention     |
 
 ## 📋 Requirements
-
-**Overview**
 
 > 💡 **Why These Requirements**: The specified versions ensure access to **critical features** like **.NET Aspire orchestration** (requires .NET 10.0), **Azure Container Apps deployment via azd** (requires azd 1.11+), and **managed identity authentication improvements** (requires Azure CLI 2.60+). **Using earlier versions may result in deployment failures** or missing functionality.
 
@@ -230,8 +224,6 @@ flowchart TB
 | **SQL Server Express**     | 🗄️   | Local database development         | Testing migrations without Azure connectivity |
 
 ## 📦 Deployment
-
-**Overview**
 
 > 💡 **Why Multiple Deployment Options**: Different scenarios require different workflows. **Azure Developer CLI (`azd`) provides one-command deployment** for rapid iteration, **GitHub Actions enables continuous deployment** with governance controls, and **manual Bicep deployment offers granular control** for complex enterprise environments with existing infrastructure.
 
@@ -341,8 +333,6 @@ azd logs --service orders-api --follow
 
 ## ⚙️ Configuration
 
-**Overview**
-
 > 💡 **Why Configuration Matters**: This solution uses a **layered configuration approach** where defaults are overridden by environment-specific values, then by Azure Key Vault secrets in production. This pattern ensures **secure credential management** while maintaining **developer productivity** with local development defaults.
 
 > 📌 **Configuration Sources**: Settings are loaded in this order: `appsettings.json` (defaults) → `appsettings.Development.json` (local dev overrides) → **Environment variables** (azd/Container Apps) → **User Secrets** (sensitive local data) → **Azure App Configuration** (feature flags). **Later sources override earlier ones**.
@@ -430,8 +420,6 @@ az containerapp update \
 > 💡 **Feature Flags**: For A/B testing or gradual rollouts, **integrate Azure App Configuration** by adding the `Microsoft.Azure.AppConfiguration.AspNetCore` package and **configuring the provider** in `Program.cs`.
 
 ## 💻 Usage
-
-**Overview**
 
 > 💡 **Why These Usage Patterns**: The solution provides **multiple interaction methods** to support different personas and scenarios. **Developers use REST APIs and Swagger UI** for integration testing, **administrators use the Blazor web app** for operational monitoring, and **DevOps teams use CLI commands** for automation and scripting.
 
@@ -540,8 +528,6 @@ curl -X POST https://orders-api-xyz123.azurecontainerapps.io/api/orders \
 ```
 
 ## 🛠️ Development
-
-**Overview**
 
 > 💡 **Why Local Development Workflow**: Running the complete solution locally with **.NET Aspire dashboard enables rapid iteration without Azure costs**. The development stack uses **in-memory databases and Service Bus emulator** by default, providing **95% production parity** while eliminating network latency and Azure service dependencies.
 
@@ -750,8 +736,6 @@ az deployment group show \
 
 ## 💚 Health Checks
 
-**Overview**
-
 > 💡 **Why Health Checks Matter**: Azure Container Apps uses health probes to determine when containers are **ready to receive traffic** (readiness) and when to **restart unhealthy containers** (liveness). **Implementing comprehensive health checks prevents user-facing errors** during deployments and ensures automatic recovery from transient failures.
 
 > 📌 **Health Check Architecture**: The solution implements **multi-layered health checks** that verify API responsiveness, database connectivity, Service Bus availability, and downstream dependencies. **Failed health checks trigger automatic container restarts within 30 seconds**, minimizing downtime from infrastructure or dependency failures.
@@ -832,8 +816,6 @@ builder.Services.AddHealthChecks()
 ```
 
 ## 🐛 Troubleshooting
-
-**Overview**
 
 > 💡 **Why Troubleshooting Guidance**: Production issues typically fall into predictable categories: authentication failures (managed identity configuration), connectivity problems (networking/firewall), or performance degradation (resource limits). This section provides diagnostic commands verified against real deployment scenarios to minimize mean-time-to-resolution.
 
@@ -943,8 +925,6 @@ az servicebus topic show \
 
 ## 🤝 Contributing
 
-**Overview**
-
 > 💡 **Why Contribute**: This project follows **standard open-source contribution practices** with pull request workflows, code review, and automated validation. All contributions are governed by the **MIT License**, ensuring your work **remains freely available** to the community while you retain copyright.
 
 > 📌 **Contribution Impact**: Your contributions **directly improve production deployments** used by enterprise teams. Changes undergo **automated testing via GitHub Actions**, **peer review by maintainers**, and validation against the 44-item README quality checklist before merging.
@@ -1027,8 +1007,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 See the [LICENSE](LICENSE) file for full license text.
 
 ## 📚 Documentation
-
-**Overview**
 
 > 💡 **Why External Documentation**: While this README provides **comprehensive project overview and quickstart guidance**, external documentation offers **deeper technical details**, **architectural decision records**, and **API specifications** that exceed the scope of a README file. These resources support **advanced scenarios** like enterprise integration planning and architecture review processes.
 
