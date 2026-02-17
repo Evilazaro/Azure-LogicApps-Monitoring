@@ -195,9 +195,9 @@ flowchart TB
 
 **Overview**
 
-> 💡 **Why These Requirements**: The specified versions ensure access to critical features like .NET Aspire orchestration (requires .NET 10.0), Azure Container Apps deployment via azd (requires azd 1.11+), and managed identity authentication improvements (requires Azure CLI 2.60+). Using earlier versions may result in deployment failures or missing functionality.
+> 💡 **Why These Requirements**: The specified versions ensure access to **critical features** like **.NET Aspire orchestration** (requires .NET 10.0), **Azure Container Apps deployment via azd** (requires azd 1.11+), and **managed identity authentication improvements** (requires Azure CLI 2.60+). **Using earlier versions may result in deployment failures** or missing functionality.
 
-> 📌 **Compatibility Impact**: These requirements enable local development parity with production environments. Docker Desktop allows testing Service Bus emulator locally, while .NET 10.0 SDK provides the same runtime as Azure Container Apps deployments, eliminating "works on my machine" issues.
+> 📌 **Compatibility Impact**: These requirements enable **local development parity with production environments**. Docker Desktop allows **testing Service Bus emulator locally**, while .NET 10.0 SDK provides the **same runtime as Azure Container Apps** deployments, eliminating "works on my machine" issues.
 
 ### Azure Prerequisites
 
@@ -219,7 +219,7 @@ flowchart TB
 | **Visual Studio Code** | 📝   | 1.90+           | Recommended IDE             | [VS Code](https://code.visualstudio.com/)                          |
 | **Git**                | 🔀   | 2.40+           | Source control              | [Git Downloads](https://git-scm.com/downloads)                     |
 
-> 💡 **IDE Alternative**: Visual Studio 2022 (17.11+) provides superior debugging for .NET Aspire projects with the Aspire Dashboard integration. Use VS Code for lightweight development and Visual Studio for advanced debugging scenarios.
+> 💡 **IDE Alternative**: **Visual Studio 2022 (17.11+) provides superior debugging** for .NET Aspire projects with the Aspire Dashboard integration. **Use VS Code for lightweight development** and **Visual Studio for advanced debugging scenarios**.
 
 ### Optional Components
 
@@ -233,9 +233,9 @@ flowchart TB
 
 **Overview**
 
-> 💡 **Why Multiple Deployment Options**: Different scenarios require different workflows. Azure Developer CLI (`azd`) provides one-command deployment for rapid iteration, GitHub Actions enables continuous deployment with governance controls, and manual Bicep deployment offers granular control for complex enterprise environments with existing infrastructure.
+> 💡 **Why Multiple Deployment Options**: Different scenarios require different workflows. **Azure Developer CLI (`azd`) provides one-command deployment** for rapid iteration, **GitHub Actions enables continuous deployment** with governance controls, and **manual Bicep deployment offers granular control** for complex enterprise environments with existing infrastructure.
 
-> 📌 **Deployment Process**: All methods execute the same Bicep templates in `infra/` but differ in orchestration and credential management. The `azd` workflow is optimized for developer productivity, GitHub Actions for team collaboration, and manual deployment for infrastructure-as-code pipelines with external approval processes.
+> 📌 **Deployment Process**: All methods **execute the same Bicep templates** in `infra/` but differ in orchestration and credential management. The **`azd` workflow is optimized for developer productivity**, **GitHub Actions for team collaboration**, and **manual deployment for infrastructure-as-code pipelines** with external approval processes.
 
 ### Option 1: Azure Developer CLI (Recommended)
 
