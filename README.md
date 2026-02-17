@@ -36,7 +36,7 @@ This project demonstrates a cloud-native architecture for monitoring Azure Logic
 
 ## 🚀 Quick Start
 
-> ⚠️ **Prerequisites**: Ensure you have Azure CLI 2.60+, Azure Developer CLI (azd) 1.11+, .NET SDK 10.0, and Docker installed before proceeding. Missing prerequisites will cause deployment failures.
+> ⚠️ **Prerequisites**: Ensure you have **Azure CLI 2.60+**, **Azure Developer CLI (azd) 1.11+**, **.NET SDK 10.0**, and **Docker** installed before proceeding. **Missing prerequisites will cause deployment failures**.
 
 Get the solution running in under 5 minutes with these steps:
 
@@ -53,7 +53,7 @@ azd up
 # Expected output: SUCCESS: Environment provisioned and deployed in 8-12 minutes
 ```
 
-> 💡 **Tip**: Use `azd up` instead of separate `azd provision` and `azd deploy` commands. It automatically handles dependency ordering, runs tests, and configures environments in a single operation.
+> 💡 **Tip**: **Use `azd up` instead of separate `azd provision` and `azd deploy` commands**. It automatically handles dependency ordering, runs tests, and configures environments in a single operation.
 
 After deployment completes, access the web application at the URL displayed in the terminal output (typically `https://web-app-<random>.azurecontainerapps.io`).
 
