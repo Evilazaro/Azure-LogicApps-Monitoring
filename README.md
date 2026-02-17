@@ -7,15 +7,15 @@
 ![Aspire](https://img.shields.io/badge/Aspire-13.1-blueviolet)
 ![Language](https://img.shields.io/badge/language-C%23-green)
 
-An end-to-end order management and monitoring solution built with .NET Aspire, Azure Logic Apps Standard, and Azure Container Apps — demonstrating enterprise-grade observability, event-driven workflows, and Infrastructure-as-Code deployment.
+An end-to-end order management and monitoring solution built with **.NET Aspire**, **Azure Logic Apps Standard**, and **Azure Container Apps** — demonstrating **enterprise-grade observability**, event-driven workflows, and Infrastructure-as-Code deployment.
 
 **Overview**
 
-This solution addresses the challenge of monitoring and managing distributed order processing pipelines across Azure services. It combines a Blazor Server frontend, an ASP.NET Core REST API, Azure Logic Apps workflows, and Azure Service Bus messaging into a single .NET Aspire-orchestrated application with full OpenTelemetry observability.
+This solution addresses the challenge of monitoring and managing distributed order processing pipelines across Azure services. It combines a Blazor Server frontend, an ASP.NET Core REST API, Azure Logic Apps workflows, and Azure Service Bus messaging into a single .NET Aspire-orchestrated application with **full OpenTelemetry observability**.
 
-The application processes customer orders through a multi-stage pipeline: the web frontend submits orders to the API, which persists them in Azure SQL and publishes events to Service Bus. Azure Logic Apps workflows subscribe to these events, process orders, and store results in Azure Blob Storage — providing a complete audit trail with success/error routing.
+The application processes customer orders through a **multi-stage pipeline**: the web frontend submits orders to the API, which persists them in Azure SQL and publishes events to Service Bus. Azure Logic Apps workflows subscribe to these events, process orders, and store results in Azure Blob Storage — providing a **complete audit trail** with success/error routing.
 
-Unlike standalone monitoring dashboards, this solution embeds monitoring into the application architecture itself through Application Insights, Log Analytics, and distributed tracing — enabling teams to observe the full lifecycle of every order across all services.
+Unlike standalone monitoring dashboards, this solution **embeds monitoring into the application architecture itself** through Application Insights, Log Analytics, and distributed tracing — enabling teams to observe the **full lifecycle of every order** across all services.
 
 ## Table of Contents
 
@@ -34,9 +34,9 @@ Unlike standalone monitoring dashboards, this solution embeds monitoring into th
 
 **Overview**
 
-The solution uses a layered, event-driven architecture orchestrated by .NET Aspire. The AppHost configures service discovery, health checks, and Azure resource connections for all components. In local development, containers and emulators replace cloud services transparently.
+The solution uses a **layered, event-driven architecture** orchestrated by .NET Aspire. The AppHost configures **service discovery**, **health checks**, and Azure resource connections for all components. In local development, containers and emulators replace cloud services transparently.
 
-Azure Logic Apps Standard provides the workflow engine that bridges Service Bus messaging with order processing and blob storage archival. All services communicate through managed identity authentication — no secrets are stored in code.
+Azure Logic Apps Standard provides the workflow engine that bridges Service Bus messaging with order processing and blob storage archival. All services communicate through **managed identity authentication** — no secrets are stored in code.
 
 ```mermaid
 ---
@@ -154,7 +154,9 @@ The solution delivers six core capabilities spanning order management, event-dri
 
 **Overview**
 
-Local development uses .NET Aspire to run all services with containers and emulators, requiring only Docker and the .NET SDK. Azure deployment additionally requires Azure CLI and Azure Developer CLI for infrastructure provisioning.
+Local development uses .NET Aspire to run all services with containers and emulators, requiring only **Docker** and the **.NET SDK**. Azure deployment additionally requires **Azure CLI** and **Azure Developer CLI** for infrastructure provisioning.
+
+> 💡 **Tip**: For local development, you only need Docker Desktop and the .NET SDK installed. Azure CLI tools are required only when deploying to the cloud.
 
 | Category            | Requirements                                        | More Info                                                                                         |
 | ------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -177,6 +179,8 @@ Local development uses .NET Aspire to run all services with containers and emula
    ```
 
 2. **Ensure Docker Desktop is running** (required for SQL Server and Service Bus emulators)
+
+   > ⚠️ **Warning**: Without Docker Desktop running, the SQL Server container and Service Bus emulator **will not start**, blocking all local services.
 
 3. **Run the Aspire AppHost**
 
@@ -254,7 +258,7 @@ Local development uses .NET Aspire to run all services with containers and emula
 
 **Overview**
 
-The application uses a dual-mode configuration pattern: local development uses Docker containers and emulators while Azure deployment connects to managed cloud services — all controlled through the same AppHost code with configuration switches.
+The application uses a **dual-mode configuration pattern**: local development uses Docker containers and emulators while Azure deployment connects to managed cloud services — all controlled through the **same AppHost code** with configuration switches.
 
 ### Local Development
 
@@ -293,7 +297,7 @@ Azure configuration is managed through `azd env` variables and Bicep parameters:
 
 **Overview**
 
-Deployment uses Azure Developer CLI (`azd`) with Bicep templates to provision a complete Azure environment. The CI/CD pipeline runs builds and tests on push, then provisions infrastructure and deploys on merge to `main`.
+Deployment uses **Azure Developer CLI (`azd`)** with **Bicep templates** to provision a complete Azure environment. The CI/CD pipeline runs builds and tests on push, then provisions infrastructure and deploys on merge to `main`.
 
 ### Azure Resources Provisioned
 
@@ -376,7 +380,7 @@ Contributions are welcome. The project uses standard .NET development practices 
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Make changes and ensure all tests pass:
+3. Make changes and **ensure all tests pass**:
    ```bash
    dotnet build --configuration Debug
    dotnet test --configuration Debug --no-build
@@ -384,7 +388,7 @@ Contributions are welcome. The project uses standard .NET development practices 
 4. Commit with a descriptive message (`git commit -m 'Add feature: description'`)
 5. Push to your fork and open a Pull Request
 
-The CI pipeline automatically runs builds, tests (with coverage), code formatting analysis, and CodeQL security scanning on all PRs.
+The CI pipeline **automatically runs** builds, tests (with coverage), code formatting analysis, and **CodeQL security scanning** on all PRs.
 
 ## 📜 License
 
