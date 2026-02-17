@@ -343,9 +343,9 @@ azd logs --service orders-api --follow
 
 **Overview**
 
-> 💡 **Why Configuration Matters**: This solution uses a layered configuration approach where defaults are overridden by environment-specific values, then by Azure Key Vault secrets in production. This pattern ensures secure credential management while maintaining developer productivity with local development defaults.
+> 💡 **Why Configuration Matters**: This solution uses a **layered configuration approach** where defaults are overridden by environment-specific values, then by Azure Key Vault secrets in production. This pattern ensures **secure credential management** while maintaining **developer productivity** with local development defaults.
 
-> 📌 **Configuration Sources**: Settings are loaded in this order: `appsettings.json` (defaults) → `appsettings.Development.json` (local dev overrides) → Environment variables (azd/Container Apps) → User Secrets (sensitive local data) → Azure App Configuration (feature flags). Later sources override earlier ones.
+> 📌 **Configuration Sources**: Settings are loaded in this order: `appsettings.json` (defaults) → `appsettings.Development.json` (local dev overrides) → **Environment variables** (azd/Container Apps) → **User Secrets** (sensitive local data) → **Azure App Configuration** (feature flags). **Later sources override earlier ones**.
 
 ### Environment Variables
 
@@ -433,9 +433,9 @@ az containerapp update \
 
 **Overview**
 
-> 💡 **Why These Usage Patterns**: The solution provides multiple interaction methods to support different personas and scenarios. Developers use REST APIs and Swagger UI for integration testing, administrators use the Blazor web app for operational monitoring, and DevOps teams use CLI commands for automation and scripting.
+> 💡 **Why These Usage Patterns**: The solution provides **multiple interaction methods** to support different personas and scenarios. **Developers use REST APIs and Swagger UI** for integration testing, **administrators use the Blazor web app** for operational monitoring, and **DevOps teams use CLI commands** for automation and scripting.
 
-> 📌 **Usage Context**: All endpoints support OpenTelemetry distributed tracing with correlation IDs automatically propagated through headers. This enables end-to-end transaction monitoring across web app, API, Service Bus, and Logic Apps workflows in Application Insights.
+> 📌 **Usage Context**: All endpoints support **OpenTelemetry distributed tracing** with correlation IDs **automatically propagated through headers**. This enables **end-to-end transaction monitoring** across web app, API, Service Bus, and Logic Apps workflows in Application Insights.
 
 ### Access the Web Application
 
@@ -545,7 +545,7 @@ curl -X POST https://orders-api-xyz123.azurecontainerapps.io/api/orders \
 
 > 💡 **Why Local Development Workflow**: Running the complete solution locally with **.NET Aspire dashboard enables rapid iteration without Azure costs**. The development stack uses **in-memory databases and Service Bus emulator** by default, providing **95% production parity** while eliminating network latency and Azure service dependencies.
 
-> 📌 **Development Lifecycle**: Changes to source code trigger automatic recompilation via dotnet watch, and the Aspire dashboard provides unified logs, metrics, and traces across all services. This tight feedback loop reduces debugging time from minutes to seconds compared to deploying to Azure for each change.
+> 📌 **Development Lifecycle**: Changes to source code trigger **automatic recompilation via dotnet watch**, and the **Aspire dashboard provides unified logs, metrics, and traces** across all services. This tight feedback loop **reduces debugging time from minutes to seconds** compared to deploying to Azure for each change.
 
 ### Prerequisites
 
@@ -660,9 +660,9 @@ Press **F5** to start debugging with breakpoints enabled across all services.
 
 **Overview**
 
-> 💡 **Why Infrastructure as Code**: Bicep templates provide declarative, idempotent infrastructure definitions that enable version control, peer review, and automated deployments. This approach eliminates configuration drift between environments and ensures reproducible infrastructure provisioning for disaster recovery scenarios.
+> 💡 **Why Infrastructure as Code**: Bicep templates provide **declarative, idempotent infrastructure definitions** that enable **version control, peer review, and automated deployments**. This approach **eliminates configuration drift** between environments and ensures **reproducible infrastructure provisioning** for disaster recovery scenarios.
 
-> 📌 **Modular Architecture**: The infrastructure is organized into shared (cross-cutting resources like networking and identity) and workload (application-specific resources like Container Apps) modules. This separation enables independent evolution of platform capabilities without disrupting application deployments.
+> 📌 **Modular Architecture**: The infrastructure is organized into **shared** (cross-cutting resources like networking and identity) and **workload** (application-specific resources like Container Apps) modules. This separation enables **independent evolution of platform capabilities** without disrupting application deployments.
 
 ### Infrastructure Components
 
@@ -945,9 +945,9 @@ az servicebus topic show \
 
 **Overview**
 
-> 💡 **Why Contribute**: This project follows standard open-source contribution practices with pull request workflows, code review, and automated validation. All contributions are governed by the MIT License, ensuring your work remains freely available to the community while you retain copyright.
+> 💡 **Why Contribute**: This project follows **standard open-source contribution practices** with pull request workflows, code review, and automated validation. All contributions are governed by the **MIT License**, ensuring your work **remains freely available** to the community while you retain copyright.
 
-> 📌 **Contribution Impact**: Your contributions directly improve production deployments used by enterprise teams. Changes undergo automated testing via GitHub Actions, peer review by maintainers, and validation against the 44-item README quality checklist before merging.
+> 📌 **Contribution Impact**: Your contributions **directly improve production deployments** used by enterprise teams. Changes undergo **automated testing via GitHub Actions**, **peer review by maintainers**, and validation against the 44-item README quality checklist before merging.
 
 Contributions are welcome! Follow these guidelines to ensure smooth collaboration:
 
@@ -1030,9 +1030,9 @@ See the [LICENSE](LICENSE) file for full license text.
 
 **Overview**
 
-> 💡 **Why External Documentation**: While this README provides comprehensive project overview and quickstart guidance, external documentation offers deeper technical details, architectural decision records, and API specifications that exceed the scope of a README file. These resources support advanced scenarios like enterprise integration planning and architecture review processes.
+> 💡 **Why External Documentation**: While this README provides **comprehensive project overview and quickstart guidance**, external documentation offers **deeper technical details**, **architectural decision records**, and **API specifications** that exceed the scope of a README file. These resources support **advanced scenarios** like enterprise integration planning and architecture review processes.
 
-> 📌 **Documentation Ecosystem**: Microsoft Learn provides authoritative service-level documentation, while GitHub repositories contain project-specific implementation guides. Application Insights documentation explains telemetry configuration, and Bicep references detail infrastructure customization options.
+> 📌 **Documentation Ecosystem**: **Microsoft Learn provides authoritative service-level documentation**, while **GitHub repositories contain project-specific implementation guides**. Application Insights documentation explains **telemetry configuration**, and Bicep references detail **infrastructure customization options**.
 
 ### Official Documentation
 
