@@ -11,9 +11,9 @@ A production-ready monitoring solution for Azure Logic Apps Standard using .NET 
 
 **Overview**
 
-> 💡 **Why This Matters**: Azure Logic Apps require comprehensive monitoring and observability to ensure reliable workflow execution at scale. This solution provides a complete reference architecture demonstrating best practices for monitoring Logic Apps Standard deployments with integrated order management capabilities, helping teams quickly implement production-grade workflow monitoring.
+> 💡 **Why This Matters**: Azure Logic Apps require **comprehensive monitoring and observability** to ensure reliable workflow execution at scale. This solution provides a **complete reference architecture** demonstrating **best practices for monitoring Logic Apps Standard** deployments with integrated order management capabilities, helping teams **quickly implement production-grade workflow monitoring**.
 
-> 📌 **How It Works**: The solution uses .NET Aspire to orchestrate microservices that interact with Logic Apps workflows, Azure Service Bus for asynchronous messaging, and Application Insights for unified observability. All components use managed identities for zero-secret authentication and deploy to Azure Container Apps with VNet integration for enhanced security.
+> 📌 **How It Works**: The solution uses **.NET Aspire to orchestrate microservices** that interact with Logic Apps workflows, **Azure Service Bus for asynchronous messaging**, and **Application Insights for unified observability**. All components use **managed identities for zero-secret authentication** and deploy to **Azure Container Apps with VNet integration** for enhanced security.
 
 This project demonstrates a cloud-native architecture for monitoring Azure Logic Apps Standard workflows in production environments. Built on .NET 10.0 with Aspire orchestration, it provides order management APIs, a Blazor-based web interface, and comprehensive telemetry collection through Application Insights with OpenTelemetry support.
 
@@ -73,9 +73,9 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 
 **Overview**
 
-> 💡 **Why This Matters**: This architecture leverages .NET Aspire to orchestrate distributed services with Azure-native components, enabling horizontal scalability, fault tolerance, and comprehensive observability. The design ensures production-grade reliability while maintaining developer productivity through local development capabilities.
+> 💡 **Why This Matters**: This architecture leverages **.NET Aspire to orchestrate distributed services** with Azure-native components, enabling **horizontal scalability, fault tolerance, and comprehensive observability**. The design ensures **production-grade reliability** while maintaining **developer productivity** through local development capabilities.
 
-> 📌 **How It Works**: Services communicate asynchronously via Azure Service Bus, share telemetry through Application Insights, and persist data to Azure SQL with managed identity authentication. Logic Apps workflows process order events triggered by Service Bus messages, with all components deployed to Azure Container Apps for elastic scaling.
+> 📌 **How It Works**: Services communicate **asynchronously via Azure Service Bus**, share telemetry through **Application Insights**, and persist data to **Azure SQL with managed identity authentication**. Logic Apps workflows **process order events triggered by Service Bus messages**, with all components deployed to **Azure Container Apps for elastic scaling**.
 
 ```mermaid
 ---
@@ -174,9 +174,9 @@ flowchart TB
 
 **Overview**
 
-> 💡 **Why This Matters**: This solution provides production-ready capabilities designed to accelerate enterprise adoption of Azure Logic Apps monitoring. Each feature addresses common operational challenges identified by platform teams deploying workflow automation at scale.
+> 💡 **Why This Matters**: This solution provides **production-ready capabilities** designed to **accelerate enterprise adoption** of Azure Logic Apps monitoring. Each feature addresses **common operational challenges** identified by platform teams deploying workflow automation at scale.
 
-> 📌 **How It Works**: Features are implemented as modular components with dependency injection, enabling teams to adopt incrementally without architectural changes. All functionality uses Azure-native services to minimize operational overhead and maximize cloud integration benefits.
+> 📌 **How It Works**: Features are implemented as **modular components with dependency injection**, enabling teams to **adopt incrementally without architectural changes**. All functionality uses **Azure-native services** to minimize operational overhead and maximize cloud integration benefits.
 
 | Feature                         | Icon | Description                                                          | Business Value                                                           |
 | ------------------------------- | ---- | -------------------------------------------------------------------- | ------------------------------------------------------------------------ |
