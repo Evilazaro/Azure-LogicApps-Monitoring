@@ -24,8 +24,8 @@ This project demonstrates a **cloud-native architecture** for monitoring **Azure
 - [Deployment](#-deployment)
 - [Configuration](#️-configuration)
 - [Usage](#-usage)
-- [Development](#-development)
-- [Infrastructure](#-infrastructure)
+- [Development](#️-development)
+- [Infrastructure](#️-infrastructure)
 - [Health Checks](#-health-checks)
 - [Troubleshooting](#-troubleshooting)
 - [Contributing](#-contributing)
@@ -641,8 +641,6 @@ dotnet ef migrations script --output ./migrations.sql
 Press **F5** to start debugging with breakpoints enabled across all services.
 
 ## 🏗️ Infrastructure
-
-**Overview**
 
 > 💡 **Why Infrastructure as Code**: Bicep templates provide **declarative, idempotent infrastructure definitions** that enable **version control, peer review, and automated deployments**. This approach **eliminates configuration drift** between environments and ensures **reproducible infrastructure provisioning** for disaster recovery scenarios.
 
