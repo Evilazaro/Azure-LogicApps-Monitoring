@@ -1,0 +1,158 @@
+name: 🚀 Feature Request
+description: Suggest a new feature or enhancement for the Azure Logic Apps Monitoring Solution
+title: "[FEATURE]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🚀 Feature Request
+        
+        Thank you for taking the time to suggest a new feature! Please fill out the form below with as much detail as possible.
+        
+        **Before submitting**, please search existing issues to avoid duplicates.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before submitting this feature request
+      options:
+        - label: I have searched existing issues to ensure this feature hasn't been requested before
+          required: true
+        - label: I have read the project documentation
+          required: true
+        - label: This feature request is specific to the Azure Logic Apps Monitoring Solution
+          required: true
+
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: Problem Description
+      description: |
+        A clear and concise description of the problem or limitation you're experiencing.
+        Why is this feature needed? What problem does it solve?
+      placeholder: |
+        Example: "Currently, there's no way to monitor Logic App retry policies in real-time, which makes it difficult to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: |
+        Describe the solution you'd like to see implemented.
+        How should this feature work? What would the user experience be?
+      placeholder: |
+        Example: "Add a dashboard widget that displays retry attempts for Logic Apps with configurable alert thresholds..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: |
+        Have you considered any alternative solutions or workarounds?
+        What other approaches could address this need?
+      placeholder: |
+        Example: "I've tried using Azure Monitor alerts directly, but they don't provide the granular visibility needed for..."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: feature-category
+    attributes:
+      label: Feature Category
+      description: Which area of the solution does this feature relate to?
+      options:
+        - Monitoring & Observability
+        - Dashboard & Visualization
+        - Alerting & Notifications
+        - API & Integration
+        - Infrastructure & Deployment
+        - Security & Compliance
+        - Performance & Optimization
+        - Documentation
+        - Developer Experience
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would significantly improve my workflow
+        - High - Critical for my use case
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case / Scenario
+      description: |
+        Describe the specific use case or scenario where this feature would be beneficial.
+        Who would benefit from this feature?
+      placeholder: |
+        Example: "As a DevOps engineer managing 50+ Logic Apps across multiple environments, I need to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: |
+        What would make this feature complete? Define the criteria for success.
+        Use a checklist format if possible.
+      placeholder: |
+        Example:
+        - [ ] Dashboard displays retry count per Logic App
+        - [ ] Configurable alert thresholds (e.g., notify when retries > 3)
+        - [ ] Historical data retention for at least 30 days
+        - [ ] Exportable reports in CSV/JSON format
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: |
+        Add any other context, screenshots, mockups, or examples about the feature request here.
+        Links to related documentation or resources are also helpful.
+      placeholder: |
+        You can attach images by dragging and dropping them here.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: willing-to-contribute
+    attributes:
+      label: Contribution
+      description: Would you be willing to contribute to implementing this feature?
+      options:
+        - "Yes, I can submit a pull request"
+        - "Yes, I can help with testing"
+        - "Yes, I can help with documentation"
+        - "No, but I can provide feedback during development"
+        - "No, I'm just suggesting the idea"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: code-of-conduct
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
