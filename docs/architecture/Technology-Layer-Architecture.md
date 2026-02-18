@@ -9,54 +9,6 @@
 
 ---
 
-```yaml
-reasoning:
-  phase: "Technology Layer Analysis"
-  inputs_ok: true
-  approach: "IaC file detection (*.bicep in /infra, /infra/shared, /infra/workload)"
-  fallback: "None required – all component types located via Bicep module analysis"
-  gate_threshold: "standard: ≥3 resources, all with deployment model + security posture"
-  proceed: true
-```
-
-```yaml
-technology_layer_reasoning:
-  step1_scope_understood:
-    folder_paths: ["z:/app/infra"]
-    expected_component_types: 11
-    confidence_threshold: 0.7
-  step2_file_evidence_gathered:
-    files_scanned: 13
-    candidates_identified: 23
-  step3_classification_planned:
-    components_by_type:
-      compute: 2
-      storage: 3
-      network: 9
-      container_platforms: 2
-      cloud_services: 3
-      security: 3
-      messaging: 3
-      monitoring_observability: 2
-      identity_access: 2
-      api_management: 0
-      caching: 0
-    relationships_mapped: 18
-  step4_constraints_checked:
-    all_from_folder_paths: true
-    all_have_source_refs: true
-    all_11_types_present: true
-  step5_assumptions_validated:
-    cross_references_valid: true
-    no_fabricated_components: true
-    mermaid_ready: true
-  step6_proceed_to_documentation: true
-```
-
-✅ Pre-execution checklist: 16/16 passed | Ready to analyze Technology layer
-
----
-
 ## Section 1: Executive Summary
 
 The **Azure Logic Apps Monitoring** solution is a cloud-native, event-driven order-processing platform deployed entirely on Microsoft Azure using Infrastructure as Code (Bicep) with Azure Developer CLI (`azd`) orchestration. The infrastructure is structured across two primary deployment layers—**Shared** (identity, networking, monitoring, data) and **Workload** (messaging, container services, Logic Apps workflows)—enabling clean lifecycle separation and operational governance.
