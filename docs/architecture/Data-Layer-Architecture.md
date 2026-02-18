@@ -253,9 +253,9 @@ flowchart TB
     style sharedInfra fill:#FFFFFF,stroke:#00666B,stroke-width:3px
     style workloadInfra fill:#FFFFFF,stroke:#004578,stroke-width:3px
     style localDev fill:#FFFFFF,stroke:#8A6914,stroke-width:3px
-    style relational fill:#F8FFFD,stroke:#00666B,stroke-width:1px
-    style objectStorage fill:#F8FFFD,stroke:#00666B,stroke-width:1px
-    style messaging fill:#F0F6FF,stroke:#004578,stroke-width:1px
+    style relational fill:#C5CAE9,stroke:#3F51B5,stroke-width:1px
+    style objectStorage fill:#C5CAE9,stroke:#3F51B5,stroke-width:1px
+    style messaging fill:#C5CAE9,stroke:#3F51B5,stroke-width:1px
 ```
 
 ### Summary
@@ -463,9 +463,11 @@ Components are organized by functional category with mandatory table schemas ens
 
 ```mermaid
 ---
-title: Data Architecture - Core Entity Relationships
+title: "Data Architecture - Core Entity Relationships"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
 ---
 erDiagram
     %% ═══════════════════════════════════════════════════════════════════════════
