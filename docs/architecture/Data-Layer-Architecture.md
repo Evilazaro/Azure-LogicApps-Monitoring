@@ -246,13 +246,13 @@ flowchart TB
     %% Centralized classDefs
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
-    classDef warningOrange fill:#FFF4CE,stroke:#8A6914,stroke-width:2px,color:#323130
-    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warningOrange fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     %% Centralized style directives for subgraphs
     style sharedInfra fill:#FFFFFF,stroke:#00666B,stroke-width:3px
     style workloadInfra fill:#FFFFFF,stroke:#004578,stroke-width:3px
-    style localDev fill:#FFFFFF,stroke:#8A6914,stroke-width:3px
+    style localDev fill:#FFFFFF,stroke:#F57F17,stroke-width:3px
     style relational fill:#C5CAE9,stroke:#3F51B5,stroke-width:1px
     style objectStorage fill:#C5CAE9,stroke:#3F51B5,stroke-width:1px
     style messaging fill:#C5CAE9,stroke:#3F51B5,stroke-width:1px
@@ -389,8 +389,8 @@ flowchart TB
     %% Centralized classDefs
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
-    classDef warningOrange fill:#FFF4CE,stroke:#8A6914,stroke-width:2px,color:#323130
-    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warningOrange fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     %% Centralized style directives for subgraphs
     style clients fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px
@@ -870,12 +870,12 @@ flowchart LR
     %% Centralized classDefs
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
-    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     %% Centralized style directives for subgraphs
     style producers fill:#FFFFFF,stroke:#004578,stroke-width:3px
     style brokers fill:#FFFFFF,stroke:#00666B,stroke-width:3px
-    style consumers fill:#FFFFFF,stroke:#107C10,stroke-width:3px
+    style consumers fill:#FFFFFF,stroke:#0B6A0B,stroke-width:3px
 ```
 
 ### End-to-End Data Lineage

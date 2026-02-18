@@ -105,7 +105,7 @@ graph TB
 
     classDef visionStyle fill:#E7E2FA,stroke:#5B2F91,stroke-width:3px,color:#323130
     classDef pillarStyle fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef capStyle fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef capStyle fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
     classDef techStyle fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
     class vision visionStyle
@@ -177,8 +177,8 @@ graph TB
     cap5 -->|"checks via"| cap6
     cap2 -->|"publishes via"| cap3
 
-    classDef mature fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef defined fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef mature fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef defined fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
 
     class cap1,cap3,cap4,cap5 mature
     class cap2,cap6 defined
@@ -218,8 +218,8 @@ flowchart LR
     s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> s7
 
     classDef syncStage fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef asyncStage fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
-    classDef workflowStage fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef asyncStage fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
+    classDef workflowStage fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     class s1,s2,s3 syncStage
     class s4 asyncStage
@@ -288,15 +288,15 @@ graph TB
 
     style external fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
     style core fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style integration fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    style integration fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
     style infra fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
-    style observability fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    style observability fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     classDef actorStyle fill:#E7E2FA,stroke:#5B2F91,stroke-width:2px,color:#323130
     classDef serviceStyle fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef integrationStyle fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef integrationStyle fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
     classDef infraStyle fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
-    classDef otelStyle fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef otelStyle fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     class customer,ops actorStyle
     class webapp,api,orderSvc serviceStyle
@@ -454,11 +454,11 @@ graph TB
     p3 -->|"monitors"| p4
 
     style design fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style operational fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    style operational fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     classDef rootStyle fill:#E7E2FA,stroke:#5B2F91,stroke-width:3px,color:#323130
     classDef designPrinciple fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef opsPrinciple fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef opsPrinciple fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     class root rootStyle
     class p1,p2,p6 designPrinciple
@@ -529,8 +529,8 @@ graph LR
     m5["📊 Observability<br/>Level 4 ■■■■□"]
     m6["🏥 Health Monitoring<br/>Level 3 ■■■□□"]
 
-    classDef mature fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef defined fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef mature fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef defined fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
 
     class m1,m3,m4,m5 mature
     class m2,m6 defined
@@ -588,11 +588,11 @@ flowchart LR
     intake --> validate --> persist --> publish --> process --> store --> cleanup
 
     style sync fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style async fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
-    style workflow fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    style async fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
+    style workflow fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
-    classDef measured fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef defined fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef measured fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef defined fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
 
     class intake,validate,persist,publish,process measured
     class store,cleanup defined
@@ -792,11 +792,11 @@ flowchart TB
 
     style customer_lane fill:#E7E2FA,stroke:#5B2F91,stroke-width:2px,color:#323130
     style api_lane fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style workflow_lane fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    style workflow_lane fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
 
-    classDef valueAdd fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef valueAdd fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
     classDef enabling fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef nonValueAdd fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef nonValueAdd fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
 
     class c1,a1,a2,w1 valueAdd
     class a3,w2 enabling
@@ -933,8 +933,8 @@ flowchart TB
 
     classDef processStep fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef decision fill:#FDE7E9,stroke:#A4262C,stroke-width:2px,color:#323130
-    classDef terminal fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef errorStep fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef terminal fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef errorStep fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
 
     class PersistOrder,PublishEvent,TriggerWorkflow,ProcessOrder,CleanupBlobs processStep
     class ValidateOrder,CheckDuplicate decision
@@ -1435,10 +1435,10 @@ graph TB
     adr6 -->|"adapts"| cap_order
 
     style decisions fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style capabilities fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    style capabilities fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     classDef adrStyle fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef capStyle fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef capStyle fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     class adr1,adr2,adr3,adr4,adr5,adr6 adrStyle
     class cap_order,cap_msg,cap_wf,cap_obs,cap_batch,cap_health capStyle
@@ -1517,10 +1517,10 @@ graph LR
     c6 -.->|"cross-cutting"| p1
 
     style caps fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style procs fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    style procs fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     classDef capNode fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef procNode fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef procNode fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     class c1,c2,c3,c4,c5,c6 capNode
     class p1,p2,p3,p4 procNode
@@ -1596,9 +1596,9 @@ flowchart LR
     webapp -.->|"OTLP Export"| monitor
 
     classDef presentation fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef service fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef service fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
     classDef data fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
-    classDef workflow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef workflow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
     classDef orchestrator fill:#E7E2FA,stroke:#5B2F91,stroke-width:2px,color:#323130
 
     class webapp presentation

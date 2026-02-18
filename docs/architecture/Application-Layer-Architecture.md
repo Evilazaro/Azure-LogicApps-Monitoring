@@ -109,8 +109,8 @@ flowchart TD
     aspire -.->|"Discovers + configures"| ordersApi
 
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef warningYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef warningYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
     classDef neutralGrey fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
     class webApp,ordersApi azureBlue
@@ -118,7 +118,7 @@ flowchart TD
     class azureMonitor,aspire warningYellow
     class customer,ops neutralGrey
 
-    style appLayer fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style appLayer fill:#FFFFFF,stroke:#004578,stroke-width:2px,color:#323130
 ```
 
 ### 2.1 Application Services
@@ -410,16 +410,16 @@ flowchart TD
     p7 -->|secures| p5
 
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef warningYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef warningYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
 
     class p1,p2,p8 azureBlue
     class p3,p5 successGreen
     class p4,p6,p7 warningYellow
 
     style design fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style resilience fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    style ops fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    style resilience fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    style ops fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
 ```
 
 ### Summary
@@ -542,8 +542,8 @@ flowchart LR
     otel -->|"OTLP"| azMon
 
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef warningYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef warningYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
     classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
 
     class wPages,wService,wLayout azureBlue
@@ -553,8 +553,8 @@ flowchart LR
     class azMon azureBlue
 
     style webapp fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style ordersapi fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    style defaults fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    style ordersapi fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    style defaults fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
 ```
 
 ### Summary
@@ -1728,8 +1728,8 @@ flowchart TD
     adr6 -->|"instruments"| adr3
 
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef warningYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef warningYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
 
     class adr1,adr2 azureBlue
     class adr3,adr4 successGreen
@@ -1883,13 +1883,13 @@ flowchart LR
     s5 -->|"✅ Provides"| c3
 
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     class s1,s2,s3,s4,s5,s6 azureBlue
     class c1,c2,c3 successGreen
 
     style standards fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style components fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    style components fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 ```
 
 ### Summary
@@ -1969,8 +1969,8 @@ flowchart TD
     otel -->|"OTLP"| mon
 
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef warningYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef warningYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
     classDef neutralGrey fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
     class blazor,apiSvc azureBlue
@@ -1979,8 +1979,8 @@ flowchart TD
     class sql,sb,mon,la neutralGrey
 
     style presentation fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style api fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    style shared fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    style api fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    style shared fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
     style infra fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
@@ -2066,8 +2066,8 @@ flowchart LR
     httpPost -->|"Client spans"| otelCol
 
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef warningYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef warningYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
     classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
     classDef neutralGrey fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
@@ -2079,7 +2079,7 @@ flowchart LR
     class otelCol azureBlue
 
     style webui fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style ordapi fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    style ordapi fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 ```
 
 ### Summary
