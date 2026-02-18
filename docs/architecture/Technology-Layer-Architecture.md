@@ -332,7 +332,7 @@ flowchart LR
 | App Service Plan (WS1)      | 3 instances, elastic        | Max 20 workers (`maximumElasticWorkerCount`) |
 | Container Apps Environment  | Consumption profile         | Scales to zero; auto-scale to demand         |
 | Log Analytics Workspace     | PerGB2018, 30-day retention | Pay-per-GB; no hard cap                      |
-| Service Bus (Standard tier) | Standard tier               | Max 256 KB messages; no geo-redundancy       |
+| Service Bus (Standard tier) | Standard tier               | **Max 256 KB messages**; no geo-redundancy   |
 | SQL Database (GP_Gen5_2)    | 2 vCores, 32 GB             | Scalable within General Purpose tier         |
 
 ---
@@ -752,6 +752,8 @@ flowchart LR
 | **Upgrade Trigger** | Upgrade to Premium if private endpoint isolation for messaging is required                                                                     |
 | **Source**          | `infra/workload/messaging/main.bicep:110-135`                                                                                                  |
 
+> ⚠️ **Tier Limitation**: The Standard tier does **not** support Private Link. If private endpoint network isolation is required for messaging, the tier **must** be upgraded to **Premium**.
+
 ### ADR-004: Logic Apps Standard (WorkflowStandard WS1) over Consumption
 
 | Attribute      | Value                                                                                                                                          |
@@ -784,6 +786,8 @@ flowchart LR
 | **Rationale**  | Consumption profile scales to zero; no minimum instance charges; ideal for event-driven and moderate-throughput APIs |
 | **Trade-offs** | Cold-start latency when scaled to zero; cannot use dedicated hardware profiles without reconfiguration               |
 | **Source**     | `infra/workload/services/main.bicep:181-220`                                                                         |
+
+> 💡 **Cold Start**: The Consumption profile scales to zero, introducing **cold-start latency**. Set minimum replicas if consistent low-latency response is required.
 
 ---
 

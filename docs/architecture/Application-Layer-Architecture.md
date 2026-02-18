@@ -48,7 +48,9 @@ Observability is first-class: distributed tracing spans flow end-to-end from the
 
 ### Coverage Assessment
 
-All 11 TOGAF Application Architecture component types are catalogued with source-evidenced entries. The solution demonstrates strong Level 3–4 maturity across API design, resilience, observability, and messaging integration. Four health check endpoints provide Kubernetes-compatible liveness and readiness probes. The primary improvement pathway is formalising AsyncAPI contracts for Service Bus messages, advancing contract coverage from Level 3 to Level 4.
+All 11 TOGAF Application Architecture component types are catalogued with source-evidenced entries. The solution demonstrates strong Level 3–4 maturity across API design, resilience, observability, and messaging integration. **Four health check endpoints** provide Kubernetes-compatible liveness and readiness probes. The **primary improvement pathway** is formalising AsyncAPI contracts for Service Bus messages, advancing contract coverage from Level 3 to Level 4.
+
+> 📌 **Gap**: AsyncAPI contracts for Service Bus messages are **not yet formalised**. Implement AsyncAPI specifications for the `ordersplaced` topic to enable automated consumer contract testing.
 
 ---
 
@@ -244,7 +246,7 @@ Each principle is evidenced in source code, demonstrating that these are operati
 - `src/eShop.Orders.API/Controllers/OrdersController.cs:44-65` — `[ProducesResponseType]` decorators on all endpoints
 - `src/eShop.Orders.API/eShop.Orders.API.http` — HTTP test file documenting complete API surface
 
-**Implications**: All new business operations MUST have OpenAPI-annotated controller endpoints before service implementation proceeds.
+**Implications**: All new business operations **MUST** have **OpenAPI-annotated controller endpoints** before service implementation proceeds.
 
 ---
 
@@ -261,7 +263,7 @@ Each principle is evidenced in source code, demonstrating that these are operati
 - `src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:1-40` — Messaging contract
 - `src/eShop.Orders.API/Handlers/NoOpOrdersMessageHandler.cs:1-60` — Development stub implementation
 
-**Implications**: No concrete implementation class may be injected directly; dependency injection MUST use interface types.
+**Implications**: No concrete implementation class may be injected directly; dependency injection **MUST** use **interface types**.
 
 ---
 
@@ -278,7 +280,7 @@ Each principle is evidenced in source code, demonstrating that these are operati
 - `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:73-100` — Independent timeout for Service Bus sends to prevent HTTP cancellation propagation
 - `src/eShop.Orders.API/Repositories/OrderRepository.cs:1-80` — Internal timeout handling in repository operations
 
-**Implications**: No raw `HttpClient` calls without resilience wrapper; no `DbContext` without retry-on-failure enabled.
+**Implications**: **No raw `HttpClient` calls** without a **resilience wrapper**; **no `DbContext`** without **retry-on-failure** enabled.
 
 ---
 
@@ -295,7 +297,7 @@ Each principle is evidenced in source code, demonstrating that these are operati
 - `src/eShop.Orders.API/Controllers/OrdersController.cs:74-90` — Activity spans with W3C TraceContext tags for every request
 - `app.ServiceDefaults/Extensions.cs:1-347` — OTLP + Azure Monitor exporters for all telemetry
 
-**Implications**: All new operations MUST create an `Activity` span and increment relevant counters.
+**Implications**: All new operations **MUST** create an **`Activity` span** and increment relevant counters.
 
 ---
 
@@ -311,7 +313,7 @@ Each principle is evidenced in source code, demonstrating that these are operati
 - `src/eShop.Orders.API/Services/OrderService.cs:88-160` — `PlaceOrderAsync` publishes event after successful persistence
 - Configuration: `Azure:ServiceBus:TopicName` (default `ordersplaced`)
 
-**Implications**: No direct service-to-service calls for post-placement processing; all downstream consumers MUST subscribe to the Service Bus topic.
+**Implications**: No direct service-to-service calls for post-placement processing; all downstream consumers **MUST** subscribe to the **Service Bus topic**.
 
 ---
 
@@ -328,7 +330,7 @@ Each principle is evidenced in source code, demonstrating that these are operati
 - `src/eShop.Orders.API/Program.cs:80-82` — `Azure:ServiceBus:HostName` from configuration
 - `app.AppHost/AppHost.cs` — .NET Aspire AppHost orchestration
 
-**Implications**: No infrastructure URLs, credentials, or hostnames in source code; all resolved via configuration providers.
+**Implications**: **No infrastructure URLs, credentials, or hostnames** in source code; all resolved via configuration providers.
 
 ---
 
@@ -344,7 +346,7 @@ Each principle is evidenced in source code, demonstrating that these are operati
 - `app.ServiceDefaults/Extensions.cs:1-347` — Azure Managed Identity (`DefaultAzureCredential`) for Service Bus
 - `.gitignore` in `src/eShop.Orders.API/data/` prevents accidental secret commit
 
-**Implications**: All Azure SDK clients MUST use `DefaultAzureCredential`; TLS is mandatory for all endpoints.
+**Implications**: All Azure SDK clients **MUST** use `DefaultAzureCredential`; **TLS is mandatory** for all endpoints.
 
 ---
 
@@ -434,7 +436,9 @@ Eight architecture principles govern the eShop application layer, all evidenced 
 
 As of February 2026, the eShop application layer is deployed on Azure Container Apps via .NET Aspire infrastructure-as-code (`app.AppHost`). The Orders API runs as a container with SQL Azure for persistence and Azure Service Bus for event publishing. The Web App runs as a separate Blazor Server container consuming the Orders API via typed HTTP client with service discovery. Both services report health via ASP.NET Core health middleware endpoints (`/health`, `/alive`).
 
-The current state demonstrates a Level 4 (Measured) architecture: both services have quantitative SLIs defined via custom OTel metrics, health checks are Kubernetes-compatible, and all infrastructure dependencies are provisioned as code in `infra/`. The primary gap is the absence of formalised AsyncAPI contracts for Service Bus messages, which prevents automated consumer contract testing.
+The current state demonstrates a **Level 4 (Measured)** architecture: both services have quantitative SLIs defined via custom OTel metrics, health checks are Kubernetes-compatible, and all infrastructure dependencies are provisioned as code in `infra/`. The **primary gap** is the absence of formalised AsyncAPI contracts for Service Bus messages, which prevents automated consumer contract testing.
+
+> ⚠️ **Known Gap**: The `DistributedMemoryCache` used by the Web App is **single-instance only** and will cause session loss in multi-replica deployments. Upgrade to **Azure Cache for Redis** before scaling beyond one replica.
 
 ### Current Deployment Topology
 

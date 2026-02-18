@@ -170,6 +170,8 @@ The data zone topology separates concerns into a shared data infrastructure laye
 
 ### 2.11 Data Security
 
+> ⚠️ **Zero Credential Policy**: All authentication uses **Managed Identity** and **Entra ID**. Stored passwords or connection strings are **prohibited** in this architecture.
+
 | Name                                  | Description                                                                        | Source                                                                    | Confidence | Classification |
 | ------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ---------- | -------------- |
 | TLS 1.2 minimum                       | minimumTlsVersion TLS1_2 on Storage Account; minimalTlsVersion 1.2 on SQL Server   | infra/shared/data/main.bicep:80-100                                       | 0.95       | Confidential   |
@@ -280,10 +282,10 @@ The design principles prioritize **Single Source of Truth** through a shared `Co
 
 | Principle                 | Description                                                     | Implementation Evidence                                                     |
 | ------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Single Source of Truth    | Domain models defined once in shared assembly                   | `app.ServiceDefaults/CommonTypes.cs` shared across API and Web App          |
-| Security-First Access     | All data access through Entra ID and managed identity           | `azureADOnlyAuthentication: true` in `infra/shared/data/main.bicep`         |
+| Single Source of Truth    | **Domain models defined once** in shared assembly               | `app.ServiceDefaults/CommonTypes.cs` shared across API and Web App          |
+| Security-First Access     | **All data access** through Entra ID and managed identity       | `azureADOnlyAuthentication: true` in `infra/shared/data/main.bicep`         |
 | Schema-First Design       | EF Core migrations track schema evolution                       | `src/eShop.Orders.API/Migrations/` with compiled model snapshot             |
-| Data Quality at the Gate  | Validation enforced at domain model, entity, and API layers     | `[Required]`, `[Range]`, `[StringLength]` attributes throughout             |
+| Data Quality at the Gate  | **Validation enforced** at domain model, entity, and API layers | `[Required]`, `[Range]`, `[StringLength]` attributes throughout             |
 | Event-Driven Distribution | Asynchronous data flow via Service Bus pub-sub                  | `OrdersMessageHandler` publishes to `ordersplaced` topic                    |
 | Defense in Depth          | Network isolation, TLS, RBAC at infrastructure level            | Private endpoints, TLS 1.2, RBAC roles in Bicep templates                   |
 | Infrastructure as Code    | All data stores provisioned declaratively                       | `infra/shared/data/main.bicep`, `infra/workload/messaging/main.bicep`       |

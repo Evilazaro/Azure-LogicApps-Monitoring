@@ -672,6 +672,8 @@ This subsection provides detailed specifications for the 6 Business Capabilities
 | **Source**          | `src/eShop.Orders.API/Services/OrderService.cs:200-350`         |
 | **Confidence**      | 0.88                                                            |
 
+> 📌 **Concurrency Configuration**: Batch size is fixed at **50 orders** with a **maximum concurrency of 10** via `SemaphoreSlim`. Adjust `OrderService.cs:210-220` when scaling for higher throughput.
+
 #### 5.2.3 Event-Driven Messaging
 
 | Attribute           | Value                                                                             |
@@ -830,11 +832,11 @@ This subsection provides detailed process documentation for the 4 Business Proce
 
 **Business Rules Applied:**
 
-- Rule BR-001: Order ID is required and must be non-empty
-- Rule BR-002: CustomerId is required
-- Rule BR-003: Total must be greater than zero
-- Rule BR-004: At least one product required
-- Rule BR-005: Duplicate orders are detected and handled idempotently
+- Rule BR-001: Order ID is **required** and must be non-empty
+- Rule BR-002: CustomerId is **required**
+- Rule BR-003: Total **must be greater than zero**
+- Rule BR-004: **At least one product** required
+- Rule BR-005: Duplicate orders **must be detected and handled idempotently**
 
 #### 5.4.2 Order Processing Workflow
 
