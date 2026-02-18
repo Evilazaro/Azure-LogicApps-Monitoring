@@ -54,66 +54,71 @@ config:
   flowchart:
     htmlLabels: false
 ---
-flowchart LR
+flowchart TB
     accTitle: Azure Logic Apps Monitoring Application Architecture
-    accDescr: Three-tier microservices architecture showing the Blazor frontend calling the Orders API, which writes to Azure SQL and publishes to Service Bus, which triggers a Logic Apps Standard workflow. All services emit telemetry to Application Insights and Log Analytics.
+    accDescr: Four-layer architecture showing the external client tier, application services tier hosted on Azure Container Apps, Azure platform services tier with SQL, Service Bus and Logic Apps, and the observability tier with Application Insights and Log Analytics. Arrows show HTTPS, HTTP, EF Core, AMQP and OpenTelemetry data flows between layers.
 
     %% ═══════════════════════════════════════════════════════════════════════════
-    %% MICROSOFT FLUENT UI / AZURE COLOR SCHEME v1.1
-    %% (Semantic + Structural + Accessibility Governance)
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
     %% ═══════════════════════════════════════════════════════════════════════════
-    %% neutral   #FAFAFA / stroke #8A8886  — internal services (light gray)
-    %% info      #DEECF9 / stroke #005A9E  — Azure PaaS services (light blue)
-    %% success   #DFF6DD / stroke #107C10  — observability tier (light green)
-    %% warning   #FFF4CE / stroke #986F0B  — external client (light yellow)
-    %% Container #FFFFFF / stroke #8A8886  — system boundary (white)
-    %% Font:     #323130 on neutral/info/success, #3B2C00 on warning — WCAG AA
-    %% Max semantic tones: 4 within 5-color limit
+    %% PHASE 1 - STRUCTURAL: TB direction, 4 peer subgraphs (no nesting), horizontal data flow
+    %% PHASE 2 - SEMANTIC: 4 semantic colors within 5-color limit
+    %%   azureYellow: external client (attention/warning)
+    %%   azureNeutral: app-tier services (neutral/internal)
+    %%   azureBlue: Azure PaaS platform services (informational)
+    %%   azureGreen: observability / monitoring services (success/healthy)
+    %% PHASE 3 - FONT: Dark text #323130 on all light fills — WCAG AA (≥4.5:1)
+    %%   Exception: azureYellow uses #3B2C00 for AA compliance on #FFF4CE
+    %% PHASE 4 - ACCESSIBILITY: accTitle + accDescr present, all nodes have icons
+    %% PHASE 5 - STANDARD: v1.1 format, style directives on all subgraphs, classDefs at end
     %% ═══════════════════════════════════════════════════════════════════════════
 
-    classDef external  fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#3B2C00
-    classDef neutral   fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
-    classDef azure     fill:#DEECF9,stroke:#005A9E,stroke-width:2px,color:#323130
-    classDef observe   fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-
-    subgraph client["👤 Client"]
-        direction TB
-        Browser["🌐 Web Browser"]:::external
+    subgraph clientTier["👤 Client Tier"]
+        direction LR
+        Browser["🌐 Web Browser"]:::azureYellow
     end
 
-    subgraph app["🏗️ Application Services  (Azure Container Apps)"]
-        direction TB
-        WebApp["⚡ eShop Web App\nBlazor Server · Fluent UI"]:::neutral
-        OrdersAPI["🛒 eShop Orders API\nASP.NET Core · Swagger · EF Core"]:::neutral
+    subgraph appTier["🏗️ Application Tier — Azure Container Apps"]
+        direction LR
+        WebApp["⚡ eShop Web App\nBlazor Server · Fluent UI"]:::azureNeutral
+        OrdersAPI["🛒 eShop Orders API\nASP.NET Core · Swagger · EF Core"]:::azureNeutral
     end
 
-    subgraph platform["☁️ Azure Platform Services"]
-        direction TB
-        SQL[("🗄️ Azure SQL Database\nOrder persistence")]:::azure
-        SB["📨 Azure Service Bus\nordersplaced topic"]:::azure
-        LA["⚙️ Logic Apps Standard\nOrder workflow orchestration"]:::azure
+    subgraph platformTier["☁️ Azure Platform Services"]
+        direction LR
+        SQL[("🗄️ Azure SQL Database\nOrder persistence")]:::azureBlue
+        SB["📨 Azure Service Bus\nordersplaced topic"]:::azureBlue
+        LA["⚙️ Logic Apps Standard\nOrder workflow orchestration"]:::azureBlue
     end
 
-    subgraph observability["📊 Observability (Application Insights + Log Analytics)"]
-        direction TB
-        AppInsights["🔍 Application Insights\nDistributed traces · Metrics · Logs"]:::observe
-        LogAnalytics["📋 Log Analytics Workspace\nCentralised log aggregation"]:::observe
+    subgraph observeTier["📊 Observability Tier"]
+        direction LR
+        AppInsights["🔍 Application Insights\nTraces · Metrics · Logs"]:::azureGreen
+        LogAnalytics["📋 Log Analytics Workspace\nCentralised log aggregation"]:::azureGreen
     end
 
-    Browser        -->|"HTTPS"| WebApp
-    WebApp         -->|"HTTP · Service Discovery"| OrdersAPI
-    OrdersAPI      -->|"EF Core · Azure AD auth"| SQL
-    OrdersAPI      -->|"AMQP · Managed Identity"| SB
-    SB             -->|"Service Bus trigger"| LA
-    OrdersAPI      -->|"OpenTelemetry"| AppInsights
-    WebApp         -->|"OpenTelemetry"| AppInsights
-    LA             -->|"Diagnostic settings"| AppInsights
-    AppInsights    -->|"Export"| LogAnalytics
+    Browser     -->|"HTTPS"| WebApp
+    WebApp      -->|"HTTP · service discovery"| OrdersAPI
+    OrdersAPI   -->|"EF Core · Azure AD auth"| SQL
+    OrdersAPI   -->|"AMQP · Managed Identity"| SB
+    SB          -->|"Service Bus trigger"| LA
+    OrdersAPI   -->|"OpenTelemetry"| AppInsights
+    WebApp      -->|"OpenTelemetry"| AppInsights
+    LA          -->|"Diagnostic settings"| AppInsights
+    AppInsights -->|"export"| LogAnalytics
 
-    style client       fill:#FFFFFF,stroke:#8A8886,stroke-width:2px
-    style app          fill:#FFFFFF,stroke:#8A8886,stroke-width:2px
-    style platform     fill:#FFFFFF,stroke:#8A8886,stroke-width:2px
-    style observability fill:#FFFFFF,stroke:#8A8886,stroke-width:2px
+    %% ⚠️ CRITICAL: style directives (NOT class) for all subgraphs
+    style clientTier   fill:#FFFFFF,stroke:#605E5C,stroke-width:3px
+    style appTier      fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
+    style platformTier fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
+    style observeTier  fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
+
+    %% classDef declarations (centralized at end — pattern compliance)
+    classDef azureYellow  fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#3B2C00
+    classDef azureNeutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef azureBlue    fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef azureGreen   fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 ```
 
 ### Deployment Layout
