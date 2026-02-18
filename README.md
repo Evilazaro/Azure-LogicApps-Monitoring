@@ -398,6 +398,8 @@ Deployment to Azure is fully automated through Azure Developer CLI (`azd`) with 
 
 ### Cleanup
 
+> ⚠️ **Destructive Operation**: `azd down --purge` **permanently deletes all Azure resources** and purges soft-deleted resources. This action **cannot be undone**.
+
 ```bash
 azd down --purge
 # Expected: All Azure resources deleted and soft-deleted resources purged
