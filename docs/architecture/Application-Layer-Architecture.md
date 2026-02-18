@@ -383,20 +383,20 @@ flowchart TD
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph design["🎨 Design Principles"]
-        p1["🔌 API-First Design<br/>OpenAPI-documented endpoints"]
-        p2["🔗 Interface-Driven<br/>Programme to abstractions"]
-        p8["📦 Separation of Concerns<br/>Single Responsibility"]
+        p1["🔌 API-First Design\nOpenAPI-documented endpoints"]
+        p2["🔗 Interface-Driven\nProgramme to abstractions"]
+        p8["📦 Separation of Concerns\nSingle Responsibility"]
     end
 
     subgraph resilience["🛡️ Resilience Principles"]
-        p3["🔄 Resilience-by-Default<br/>Retry + circuit breaker"]
-        p5["📨 Event-Driven Coupling<br/>Service Bus pub/sub"]
+        p3["🔄 Resilience-by-Default\nRetry + circuit breaker"]
+        p5["📨 Event-Driven Coupling\nService Bus pub/sub"]
     end
 
     subgraph ops["📊 Operational Principles"]
-        p4["👁️ Observability-First<br/>OTel traces + metrics"]
-        p6["☁️ Platform Portability<br/>12-Factor configuration"]
-        p7["🔒 Security by Design<br/>Managed Identity + TLS"]
+        p4["👁️ Observability-First\nOTel traces + metrics"]
+        p6["☁️ Platform Portability\n12-Factor configuration"]
+        p7["🔒 Security by Design\nManaged Identity + TLS"]
     end
 
     p1 -->|enables| p8
@@ -1711,12 +1711,12 @@ flowchart TD
     %% (Semantic + Structural + Font + Accessibility Governance)
     %% ═══════════════════════════════════════════════════════════════════════════
 
-    adr1["📋 ADR-001<br/>ASP.NET Core REST API"]
-    adr2["🌐 ADR-002<br/>Blazor Server Web App"]
-    adr3["📨 ADR-003<br/>Azure Service Bus Events"]
-    adr4["🗄️ ADR-004<br/>EF Core Repository"]
-    adr5["🔗 ADR-005<br/>Interface-Driven DI"]
-    adr6["👁️ ADR-006<br/>OpenTelemetry"]
+    adr1["📋 ADR-001\nASP.NET Core REST API"]
+    adr2["🌐 ADR-002\nBlazor Server Web App"]
+    adr3["📨 ADR-003\nAzure Service Bus Events"]
+    adr4["🗄️ ADR-004\nEF Core Repository"]
+    adr5["🔗 ADR-005\nInterface-Driven DI"]
+    adr6["👁️ ADR-006\nOpenTelemetry"]
 
     adr5 -->|"enables testability for"| adr1
     adr5 -->|"enables swappability for"| adr3
@@ -1853,12 +1853,12 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph standards["📋 Standards"]
-        s1["🔌 S-001<br/>REST API Design"]
-        s2["💉 S-002<br/>Dependency Injection"]
-        s3["⛔ S-003<br/>Error Handling"]
-        s4["👁️ S-004<br/>Observability"]
-        s5["🔒 S-005<br/>Security"]
-        s6["📝 S-006<br/>Naming Conventions"]
+        s1["🔌 S-001\nREST API Design"]
+        s2["💉 S-002\nDependency Injection"]
+        s3["⛔ S-003\nError Handling"]
+        s4["👁️ S-004\nObservability"]
+        s5["🔒 S-005\nSecurity"]
+        s6["📝 S-006\nNaming Conventions"]
     end
 
     subgraph components["⚙️ Components"]
@@ -1928,34 +1928,34 @@ flowchart TD
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph presentation["🌐 Presentation Tier"]
-        blazor["🖥️ Blazor Pages<br/>ListAllOrders / PlaceOrder<br/>ViewOrder / PlaceOrdersBatch"]
-        apiSvc["⚙️ OrdersAPIService<br/>Typed HTTP Client"]
+        blazor["🖥️ Blazor Pages\nListAllOrders / PlaceOrder\nViewOrder / PlaceOrdersBatch"]
+        apiSvc["⚙️ OrdersAPIService\nTyped HTTP Client"]
     end
 
     subgraph api["⚙️ API Tier (eShop.Orders.API)"]
-        ctrl["🔌 OrdersController<br/>REST routes"]
-        ordSvc["⚙️ OrderService<br/>Business logic + OTel"]
-        ordRepo["🗄️ OrderRepository<br/>EF Core + pagination"]
-        msgHandler["📨 OrdersMessageHandler<br/>Service Bus sender"]
+        ctrl["🔌 OrdersController\nREST routes"]
+        ordSvc["⚙️ OrderService\nBusiness logic + OTel"]
+        ordRepo["🗄️ OrderRepository\nEF Core + pagination"]
+        msgHandler["📨 OrdersMessageHandler\nService Bus sender"]
         hcDb["🏥 DbContextHealthCheck"]
         hcSb["🏥 ServiceBusHealthCheck"]
     end
 
     subgraph shared["📦 app.ServiceDefaults"]
-        otel["👁️ OpenTelemetry<br/>Traces + Metrics"]
-        resil["🔄 Resilience Pipeline<br/>Retry + CB"]
+        otel["👁️ OpenTelemetry\nTraces + Metrics"]
+        resil["🔄 Resilience Pipeline\nRetry + CB"]
         svcDisc["🔍 Service Discovery"]
     end
 
     subgraph infra["☁️ Azure Infrastructure"]
-        sql[("🗄️ Azure SQL<br/>Orders table")]
-        sb["📨 Azure Service Bus<br/>ordersplaced topic"]
-        mon["📊 Azure Monitor<br/>Application Insights"]
-        la["🔄 Azure Logic Apps<br/>Downstream workflows"]
+        sql[("🗄️ Azure SQL\nOrders table")]
+        sb["📨 Azure Service Bus\nordersplaced topic"]
+        mon["📊 Azure Monitor\nApplication Insights"]
+        la["🔄 Azure Logic Apps\nDownstream workflows"]
     end
 
     blazor -->|"DI inject"| apiSvc
-    apiSvc -->|"HTTPS/REST<br/>service discovery"| ctrl
+    apiSvc -->|"HTTPS/REST\nservice discovery"| ctrl
     ctrl -->|"injected"| ordSvc
     ordSvc -->|"injected"| ordRepo
     ordSvc -->|"injected"| msgHandler
@@ -2034,24 +2034,24 @@ flowchart LR
     %% (Semantic + Structural + Font + Accessibility Governance)
     %% ═══════════════════════════════════════════════════════════════════════════
 
-    start(["👤 Customer Input<br/>Order + Products"])
+    start(["👤 Customer Input\nOrder + Products"])
 
     subgraph webui["🌐 Web App (Blazor)"]
-        formVal["📋 Form Validation<br/>(Blazor DataAnnotations)"]
-        httpPost["📤 POST /api/orders<br/>(System.Text.Json)"]
+        formVal["📋 Form Validation\n(Blazor DataAnnotations)"]
+        httpPost["📤 POST /api/orders\n(System.Text.Json)"]
     end
 
     subgraph ordapi["⚙️ Orders API"]
-        ctrl2["🔌 Controller<br/>ModelState + null checks"]
-        svcLogic["⚙️ OrderService<br/>Business validation<br/>+ tracing + metrics"]
-        repoWrite["🗄️ Repository<br/>ORDER INSERT<br/>(EF Core, scoped)"]
-        eventPub["📨 Message Handler<br/>Serialize + set<br/>MessageId + TraceId"]
+        ctrl2["🔌 Controller\nModelState + null checks"]
+        svcLogic["⚙️ OrderService\nBusiness validation\n+ tracing + metrics"]
+        repoWrite["🗄️ Repository\nORDER INSERT\n(EF Core, scoped)"]
+        eventPub["📨 Message Handler\nSerialize + set\nMessageId + TraceId"]
     end
 
-    sqlStore[("🗄️ Azure SQL<br/>Orders / OrderProducts<br/>tables")]
-    sbTopic["📨 Service Bus<br/>ordersplaced topic<br/>+ DLQ"]
-    laConsumer["🔄 Logic Apps<br/>Downstream workflow<br/>processing"]
-    otelCol["📊 Azure Monitor<br/>Traces + Metrics<br/>+ Logs"]
+    sqlStore[("🗄️ Azure SQL\nOrders / OrderProducts\ntables")]
+    sbTopic["📨 Service Bus\nordersplaced topic\n+ DLQ"]
+    laConsumer["🔄 Logic Apps\nDownstream workflow\nprocessing"]
+    otelCol["📊 Azure Monitor\nTraces + Metrics\n+ Logs"]
 
     start --> formVal
     formVal --> httpPost

@@ -207,13 +207,13 @@ flowchart LR
     %% Components: 7
     %% ═══════════════════════════════════════════════════════════════
 
-    s1["🛒 Order Intake<br/>Owner: Web App + API<br/>Instrumented: ✅"]
-    s2["✅ Validation<br/>Owner: OrderService<br/>Instrumented: ✅"]
-    s3["🗄️ Persistence<br/>Owner: OrderRepository<br/>Instrumented: ✅"]
-    s4["📨 Event Publishing<br/>Owner: MessageHandler<br/>Instrumented: ✅"]
-    s5["🔄 Workflow Processing<br/>Owner: Logic App<br/>Instrumented: ✅"]
-    s6["💾 Result Storage<br/>Owner: Logic App<br/>Instrumented: ✅"]
-    s7["🧹 Cleanup<br/>Owner: Logic App<br/>Instrumented: ✅"]
+    s1["🛒 Order Intake\nOwner: Web App + API\nInstrumented: ✅"]
+    s2["✅ Validation\nOwner: OrderService\nInstrumented: ✅"]
+    s3["🗄️ Persistence\nOwner: OrderRepository\nInstrumented: ✅"]
+    s4["📨 Event Publishing\nOwner: MessageHandler\nInstrumented: ✅"]
+    s5["🔄 Workflow Processing\nOwner: Logic App\nInstrumented: ✅"]
+    s6["💾 Result Storage\nOwner: Logic App\nInstrumented: ✅"]
+    s7["🧹 Cleanup\nOwner: Logic App\nInstrumented: ✅"]
 
     s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> s7
 
@@ -570,19 +570,19 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════
 
     subgraph sync ["Synchronous Stages"]
-        intake["🛒 Order Intake<br/>Level 4 ■■■■□<br/>Gap: 1"]
-        validate["✅ Validation<br/>Level 4 ■■■■□<br/>Gap: 1"]
-        persist["🗄️ Persistence<br/>Level 4 ■■■■□<br/>Gap: 1"]
+        intake["🛒 Order Intake\nLevel 4 ■■■■□\nGap: 1"]
+        validate["✅ Validation\nLevel 4 ■■■■□\nGap: 1"]
+        persist["🗄️ Persistence\nLevel 4 ■■■■□\nGap: 1"]
     end
 
     subgraph async ["Async Decoupling Point"]
-        publish["📨 Event Publishing<br/>Level 4 ■■■■□<br/>Gap: 0"]
+        publish["📨 Event Publishing\nLevel 4 ■■■■□\nGap: 0"]
     end
 
     subgraph workflow ["Workflow Stages"]
-        process["🔄 Workflow Processing<br/>Level 4 ■■■■□<br/>Gap: 1"]
-        store["💾 Result Storage<br/>Level 3 ■■■□□<br/>Gap: 1"]
-        cleanup["🧹 Cleanup<br/>Level 3 ■■■□□<br/>Gap: 2"]
+        process["🔄 Workflow Processing\nLevel 4 ■■■■□\nGap: 1"]
+        store["💾 Result Storage\nLevel 3 ■■■□□\nGap: 1"]
+        cleanup["🧹 Cleanup\nLevel 3 ■■■□□\nGap: 2"]
     end
 
     intake --> validate --> persist --> publish --> process --> store --> cleanup
@@ -768,19 +768,19 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════
 
     subgraph customer_lane ["Customer Touchpoint"]
-        c1["🛒 Browse & Order<br/>Value-Add: ✅"]
+        c1["🛒 Browse & Order\nValue-Add: ✅"]
     end
 
     subgraph api_lane ["Orders API"]
-        a1["✅ Validate Order<br/>Value-Add: ✅"]
-        a2["🗄️ Persist Order<br/>Value-Add: ✅"]
-        a3["📨 Publish Event<br/>Enabling: 🔄"]
+        a1["✅ Validate Order\nValue-Add: ✅"]
+        a2["🗄️ Persist Order\nValue-Add: ✅"]
+        a3["📨 Publish Event\nEnabling: 🔄"]
     end
 
     subgraph workflow_lane ["Logic App Workflows"]
-        w1["🔄 Process Order<br/>Value-Add: ✅"]
-        w2["💾 Store Result<br/>Enabling: 🔄"]
-        w3["🧹 Cleanup Blobs<br/>Non-Value-Add: ⚠️"]
+        w1["🔄 Process Order\nValue-Add: ✅"]
+        w2["💾 Store Result\nEnabling: 🔄"]
+        w3["🧹 Cleanup Blobs\nNon-Value-Add: ⚠️"]
     end
 
     c1 -->|"HTTP POST"| a1
