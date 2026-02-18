@@ -64,21 +64,22 @@ The technology ecosystem spans a **single Azure Resource Group** per environment
 
 ```mermaid
 ---
-title: Technology Architecture - Azure Logic Apps Monitoring
+title: "Technology Architecture - Azure Logic Apps Monitoring"
 config:
   theme: base
   themeVariables:
     fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart TB
     accTitle: Technology Architecture - Azure Logic Apps Monitoring Infrastructure Context
     accDescr: Shows shared and workload infrastructure components with their network and dependency relationships
 
+    %% ═══════════════════════════════════════════════════════════════════════════
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
-    %% Structural normalization: neutral containers for hierarchy
-    %% Semantic discipline: color used to distinguish shared vs workload layers
-    %% Font governance: dark text on light neutral surfaces
-    %% Accessibility: accTitle and accDescr present
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph AzCloud["☁️ Azure Cloud - Resource Group"]
         subgraph SharedLayer["🔧 Shared Infrastructure"]
@@ -210,15 +211,22 @@ The solution is a **greenfield, IaC-first** deployment. All resources are provis
 
 ```mermaid
 ---
-title: Network Baseline - Azure Logic Apps Monitoring
+title: "Network Baseline - Azure Logic Apps Monitoring"
 config:
   theme: base
   themeVariables:
     fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart LR
     accTitle: Network Baseline Diagram for Azure Logic Apps Monitoring
     accDescr: Shows virtual network subnets, private endpoints, DNS zones, and service connectivity
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     Internet((🌐 Internet))
 
@@ -760,15 +768,22 @@ flowchart LR
 
 ```mermaid
 ---
-title: Resource Dependency Flow - Azure Logic Apps Monitoring
+title: "Resource Dependency Flow - Azure Logic Apps Monitoring"
 config:
   theme: base
   themeVariables:
-    fontSize: '15px'
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart TD
     accTitle: Resource Dependency Flow for Azure Logic Apps Monitoring deployment
     accDescr: Shows the sequential deployment dependency chain from network through to Logic Apps workflows
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Tier1["🏗️ Tier 1: Foundation (No Dependencies)"]
         RG["📦 Resource Group"]
