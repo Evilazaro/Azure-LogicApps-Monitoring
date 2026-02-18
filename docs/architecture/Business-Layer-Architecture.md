@@ -48,6 +48,69 @@ The system aligns with an **event-driven microservices strategy**, leveraging .N
 
 All 11 TOGAF Business Architecture component types are represented with source-evidenced components. The solution demonstrates strong maturity (Level 3-4) across order management, messaging, and workflow automation capabilities, with quantitative metrics instrumented for continuous measurement.
 
+### Strategy Map
+
+```mermaid
+---
+config:
+  theme: base
+---
+graph TB
+    accTitle: Business Strategy Map
+    accDescr: Shows strategic alignment from business vision through strategic pillars to enabling capabilities and supporting technologies
+
+    %% ═══════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% Generated: 2026-02-18T10:30:00Z
+    %% Layer: Business
+    %% Components: 12
+    %% Semantic classes: 4/5 used (vision, pillar, capability, tech)
+    %% ═══════════════════════════════════════════════════════════════
+
+    vision["🎯 Cloud-Native Order Management<br/>Event-Driven Microservices Strategy"]
+
+    pillar1["📋 Operational Excellence<br/>Automated Processing & Monitoring"]
+    pillar2["📨 Scalable Integration<br/>Decoupled Messaging Architecture"]
+    pillar3["📊 Data-Driven Decisions<br/>Quantitative Observability"]
+
+    cap1["📋 Order Management<br/>Level 4"]
+    cap2["📦 Batch Processing<br/>Level 3"]
+    cap3["📨 Event-Driven Messaging<br/>Level 4"]
+    cap4["🔄 Workflow Automation<br/>Level 4"]
+    cap5["📊 Observability<br/>Level 4"]
+    cap6["🏥 Health Monitoring<br/>Level 3"]
+
+    tech1["☁️ .NET Aspire"]
+    tech2["☁️ Azure Service Bus"]
+    tech3["☁️ Azure Logic Apps"]
+    tech4["☁️ OpenTelemetry"]
+
+    vision --> pillar1
+    vision --> pillar2
+    vision --> pillar3
+    pillar1 --> cap1
+    pillar1 --> cap2
+    pillar1 --> cap4
+    pillar2 --> cap3
+    pillar2 --> cap4
+    pillar3 --> cap5
+    pillar3 --> cap6
+    cap1 --> tech1
+    cap3 --> tech2
+    cap4 --> tech3
+    cap5 --> tech4
+
+    classDef visionStyle fill:#E8DAEF,stroke:#6C3483,stroke-width:3px,color:#323130
+    classDef pillarStyle fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef capStyle fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef techStyle fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+
+    class vision visionStyle
+    class pillar1,pillar2,pillar3 pillarStyle
+    class cap1,cap2,cap3,cap4,cap5,cap6 capStyle
+    class tech1,tech2,tech3,tech4 techStyle
+```
+
 ---
 
 ## 2. Architecture Landscape
@@ -117,6 +180,119 @@ graph TB
 
     class cap1,cap3,cap4,cap5 mature
     class cap2,cap6 defined
+```
+
+### Value Stream Canvas
+
+```mermaid
+---
+config:
+  theme: base
+---
+flowchart LR
+    accTitle: Order-to-Fulfillment Value Stream Canvas
+    accDescr: Shows the 7 stages of the Order-to-Fulfillment value stream from customer order submission through processing and cleanup with stage ownership and instrumentation status
+
+    %% ═══════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% Generated: 2026-02-18T10:30:00Z
+    %% Layer: Business
+    %% Components: 7
+    %% ═══════════════════════════════════════════════════════════════
+
+    s1["🛒 Order Intake<br/>Owner: Web App + API<br/>Instrumented: ✅"]
+    s2["✅ Validation<br/>Owner: OrderService<br/>Instrumented: ✅"]
+    s3["🗄️ Persistence<br/>Owner: OrderRepository<br/>Instrumented: ✅"]
+    s4["📨 Event Publishing<br/>Owner: MessageHandler<br/>Instrumented: ✅"]
+    s5["🔄 Workflow Processing<br/>Owner: Logic App<br/>Instrumented: ✅"]
+    s6["💾 Result Storage<br/>Owner: Logic App<br/>Instrumented: ✅"]
+    s7["🧹 Cleanup<br/>Owner: Logic App<br/>Instrumented: ✅"]
+
+    s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> s7
+
+    classDef syncStage fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef asyncStage fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef workflowStage fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+
+    class s1,s2,s3 syncStage
+    class s4 asyncStage
+    class s5,s6,s7 workflowStage
+```
+
+### Business Ecosystem Diagram
+
+```mermaid
+---
+config:
+  theme: base
+---
+graph TB
+    accTitle: Business Ecosystem Diagram
+    accDescr: Shows the eShop Order Management platform within its broader ecosystem including external actors, core services, infrastructure services, and observability layer
+
+    %% ═══════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% Generated: 2026-02-18T10:30:00Z
+    %% Layer: Business
+    %% Components: 11
+    %% ═══════════════════════════════════════════════════════════════
+
+    subgraph external ["External Actors"]
+        customer["🧑 Customer<br/>Places Orders"]
+        ops["👤 Operations Team<br/>Monitors Health"]
+    end
+
+    subgraph core ["Core Business Services"]
+        webapp["🌐 eShop Web App<br/>Blazor Server + FluentUI"]
+        api["📋 Orders API<br/>.NET 10.0 REST"]
+        orderSvc["⚙️ OrderService<br/>Business Logic"]
+    end
+
+    subgraph integration ["Integration Layer"]
+        sb["📨 Azure Service Bus<br/>Topic: ordersplaced"]
+        la["🔄 Azure Logic Apps<br/>Standard Workflows"]
+    end
+
+    subgraph infra ["Infrastructure Services"]
+        sql[("🗄️ Azure SQL<br/>Order Persistence")]
+        blob["💾 Azure Blob Storage<br/>Processing Results"]
+    end
+
+    subgraph observability ["Observability"]
+        otel["📊 OpenTelemetry<br/>OTLP Export"]
+        monitor["📈 Azure Monitor<br/>Application Insights"]
+    end
+
+    customer --> webapp
+    ops --> monitor
+    webapp --> api
+    api --> orderSvc
+    orderSvc --> sql
+    orderSvc --> sb
+    sb --> la
+    la --> api
+    la --> blob
+    otel --> monitor
+    api -.-> otel
+    webapp -.-> otel
+
+    style external fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style core fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style integration fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    style infra fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style observability fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+
+    classDef actorStyle fill:#E8DAEF,stroke:#6C3483,stroke-width:2px,color:#323130
+    classDef serviceStyle fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef integrationStyle fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef infraStyle fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef otelStyle fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+
+    class customer,ops actorStyle
+    class webapp,api,orderSvc serviceStyle
+    class sb,la integrationStyle
+    class sql,blob infraStyle
+    class otel,monitor otelStyle
 ```
 
 ### 2.3 Value Streams (1)
@@ -225,6 +401,57 @@ These principles serve as governance constraints for future Business Architectur
 | P5  | Idempotent Operations       | **Ensure all write operations are idempotent** through duplicate detection and safe-retry semantics                               | Enables reliable message processing and prevents data corruption from retries                                 | `src/eShop.Orders.API/Services/OrderService.cs:250-300`          |
 | P6  | Infrastructure Abstraction  | **Abstract infrastructure dependencies behind interfaces** with environment-adaptive implementations                              | Allows identical business logic execution across local development (emulators) and cloud (managed services)   | `src/eShop.Orders.API/Handlers/NoOpOrdersMessageHandler.cs:1-67` |
 
+### Principle Hierarchy Diagram
+
+```mermaid
+---
+config:
+  theme: base
+---
+graph TB
+    accTitle: Architecture Principle Hierarchy
+    accDescr: Shows the 6 architecture principles organized by category with dependencies and enforcement relationships
+
+    %% ═══════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% Generated: 2026-02-18T10:30:00Z
+    %% Layer: Business
+    %% Components: 9
+    %% ═══════════════════════════════════════════════════════════════
+
+    root["🏛️ Architecture Principles<br/>6 Governing Principles"]
+
+    subgraph design ["Design Principles"]
+        p1["📨 P1: Event-Driven Decoupling<br/>Asynchronous Messaging"]
+        p2["📋 P2: Capability-Driven Design<br/>Modular Interfaces"]
+        p6["🔌 P6: Infrastructure Abstraction<br/>Environment Adaptive"]
+    end
+
+    subgraph operational ["Operational Principles"]
+        p3["📊 P3: Observability by Default<br/>Tracing + Metrics"]
+        p4["🛡️ P4: Resilience-First Processing<br/>Retry + Circuit Breaker"]
+        p5["🔒 P5: Idempotent Operations<br/>Duplicate Detection"]
+    end
+
+    root --> design
+    root --> operational
+    p2 -->|"interfaces enable"| p6
+    p1 -->|"requires"| p4
+    p1 -->|"requires"| p5
+    p3 -->|"monitors"| p4
+
+    style design fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style operational fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+
+    classDef rootStyle fill:#E8DAEF,stroke:#6C3483,stroke-width:3px,color:#323130
+    classDef designPrinciple fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef opsPrinciple fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+
+    class root rootStyle
+    class p1,p2,p6 designPrinciple
+    class p3,p4,p5 opsPrinciple
+```
+
 ---
 
 ## 4. Current State Baseline
@@ -302,6 +529,53 @@ graph LR
 | HTTP Client (Web → API) | Circuit breaker + retry     | 600s total, 60s per attempt | 3 retries, exponential backoff | ✅ Production |
 | Database Health Check   | Scoped timeout              | 5s                          | None (single check)            | ✅ Production |
 | Logic App Processing    | Workflow engine managed     | Workflow timeout            | Managed by Logic Apps runtime  | ✅ Production |
+
+### Value Stream Performance Chart
+
+```mermaid
+---
+config:
+  theme: base
+---
+flowchart LR
+    accTitle: Value Stream Performance Chart
+    accDescr: Shows the Order-to-Fulfillment value stream stages with current maturity level, instrumentation status, and gap indicators for each stage
+
+    %% ═══════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% Generated: 2026-02-18T10:30:00Z
+    %% Layer: Business
+    %% Components: 7
+    %% ═══════════════════════════════════════════════════════════════
+
+    subgraph sync ["Synchronous Stages"]
+        intake["🛒 Order Intake<br/>Level 4 ■■■■□<br/>Gap: 1"]
+        validate["✅ Validation<br/>Level 4 ■■■■□<br/>Gap: 1"]
+        persist["🗄️ Persistence<br/>Level 4 ■■■■□<br/>Gap: 1"]
+    end
+
+    subgraph async ["Async Decoupling Point"]
+        publish["📨 Event Publishing<br/>Level 4 ■■■■□<br/>Gap: 0"]
+    end
+
+    subgraph workflow ["Workflow Stages"]
+        process["🔄 Workflow Processing<br/>Level 4 ■■■■□<br/>Gap: 1"]
+        store["💾 Result Storage<br/>Level 3 ■■■□□<br/>Gap: 1"]
+        cleanup["🧹 Cleanup<br/>Level 3 ■■■□□<br/>Gap: 2"]
+    end
+
+    intake --> validate --> persist --> publish --> process --> store --> cleanup
+
+    style sync fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style async fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    style workflow fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+
+    classDef measured fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef defined fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+
+    class intake,validate,persist,publish,process measured
+    class store,cleanup defined
+```
 
 ### Summary
 
