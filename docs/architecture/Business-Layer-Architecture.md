@@ -11,43 +11,15 @@
 
 ---
 
-```yaml
-business_layer_reasoning:
-  step1_scope_understood:
-    folder_paths: ["."]
-    expected_component_types: 11
-    confidence_threshold: 0.7
-  step2_file_evidence_gathered:
-    files_scanned: 28
-    candidates_identified: 41
-  step3_classification_planned:
-    components_by_type:
-      strategies: 1
-      capabilities: 6
-      value_streams: 1
-      processes: 4
-      services: 4
-      functions: 3
-      roles: 5
-      rules: 5
-      events: 4
-      objects: 4
-      kpis: 4
-    relationships_mapped: 22
-  step4_constraints_checked:
-    all_from_folder_paths: true
-    all_have_source_refs: true
-    all_11_types_present: true
-  step5_assumptions_validated:
-    cross_references_valid: true
-    no_fabricated_components: true
-    mermaid_ready: true
-  step6_proceed_to_documentation: true
-```
-
----
-
 ## Section 1: Executive Summary
+
+### Overview
+
+The Azure Logic Apps Monitoring repository implements an enterprise-grade eShop order management platform built with .NET Aspire and Azure-native services. This Business Architecture analysis examines 41 components across all 11 TOGAF Business Architecture component types, providing a comprehensive view of capabilities, value streams, processes, services, and governance structures.
+
+The analysis follows the BDAT Framework v3.0 methodology, applying a confidence-weighted classification system to catalog every business component with source-evidenced traceability. Components span order lifecycle management, event-driven messaging, workflow automation, and observability — all orchestrated through Azure Service Bus topics and Azure Logic Apps Standard stateful workflows.
+
+This executive summary synthesizes findings for technical leadership and architecture stakeholders, highlighting a mature (Level 3-4) architecture with strong operational instrumentation and clear improvement pathways toward Level 5 optimization.
 
 The Azure Logic Apps Monitoring solution implements a **cloud-native eShop order management platform** built with .NET Aspire, delivering an event-driven architecture that decouples order intake from processing through Azure Service Bus messaging and Azure Logic Apps Standard workflow automation.
 
@@ -79,6 +51,14 @@ All 11 TOGAF Business Architecture component types are represented with source-e
 ---
 
 ## 2. Architecture Landscape
+
+### Overview
+
+The Architecture Landscape organizes business components into 11 TOGAF-aligned categories spanning strategic planning, capability management, value delivery, and operational governance. Each subsection catalogs components discovered through source file analysis with confidence-weighted classification and maturity assessment.
+
+The eShop Order Management platform demonstrates broad Business Architecture coverage with components identified across all 11 component types. The system's event-driven design creates clear separation between order intake (Web App, Orders API), asynchronous messaging (Service Bus), automated processing (Logic Apps), and operational monitoring (OpenTelemetry), enabling independent assessment of each architectural concern.
+
+The following subsections present summary inventory tables for each component type, with source traceability references linking every component to its originating source file. Detailed specifications are provided in Section 5: Component Catalog.
 
 ### 2.1 Business Strategy (1)
 
@@ -218,11 +198,23 @@ graph TB
 | eShop.orders.processing.errors   | **Counter metric** tracking order processing failures for reliability monitoring              | `src/eShop.Orders.API/Services/OrderService.cs:25-35` | 0.90       | 4 - Measured |
 | eShop.orders.deleted             | **Counter metric** tracking order deletion events for lifecycle analysis                      | `src/eShop.Orders.API/Services/OrderService.cs:25-35` | 0.83       | 4 - Measured |
 
+### Summary
+
+The Architecture Landscape documents **41 components** across all 11 Business Architecture component types, with an average confidence of 0.90. Business Services and Business Roles & Actors demonstrate the strongest detection confidence (0.93–1.00), while Business Strategy (0.73) and Business Events (0.86) present the lowest — reflecting their indirect expression through code rather than explicit documentation artifacts.
+
+The inventory reveals a mature, well-instrumented platform where capabilities are clearly delineated and measurable through custom OpenTelemetry metrics. Primary opportunities for improvement include formalizing the Business Strategy in dedicated documentation and establishing explicit SLA definitions for value stream stages.
+
 ---
 
 ## 3. Architecture Principles
 
-This section documents the Business Architecture principles governing the eShop Order Management platform, derived from source code evidence and architectural decisions embedded in the codebase.
+### Overview
+
+This section documents the Business Architecture principles governing the eShop Order Management platform, derived from source code evidence and architectural decisions embedded in the codebase. Six core principles were identified through analysis of interface design patterns, resilience configurations, and instrumentation practices.
+
+The principles reflect a deliberate architectural stance favoring event-driven decoupling, observability by default, and resilience-first processing. Each principle is traceable to specific implementation patterns observed in the source code, ensuring alignment between architectural intent and delivered capability.
+
+These principles serve as governance constraints for future Business Architecture evolution, providing decision criteria for capability investment, process redesign, and integration pattern selection.
 
 | #   | Principle                   | Description                                                                                                                       | Rationale                                                                                                     | Source Evidence                                                  |
 | --- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
@@ -237,7 +229,13 @@ This section documents the Business Architecture principles governing the eShop 
 
 ## 4. Current State Baseline
 
-This section captures the current maturity and performance characteristics of the Business Architecture based on source code analysis.
+### Overview
+
+This section captures the current maturity and performance characteristics of the Business Architecture based on source code analysis. The assessment evaluates 6 core capabilities against the BDAT Capability Maturity Scale (1 - Initial through 5 - Optimized), identifying current levels, target states, and improvement gaps.
+
+The eShop Order Management platform demonstrates consistent maturity between Level 3 (Defined) and Level 4 (Measured), with quantitative instrumentation active for order throughput, processing duration, and error rates. Event-Driven Messaging achieves Level 4 with zero gap to target, while Order Management, Workflow Automation, and Observability each show a single-level gap toward Level 5 (Optimized).
+
+The Order-to-Fulfillment value stream is fully instrumented across all 7 stages, providing end-to-end operational visibility from customer order submission through workflow processing, result storage, and blob cleanup.
 
 ### 4.1 Capability Maturity Assessment
 
@@ -305,9 +303,23 @@ graph LR
 | Database Health Check   | Scoped timeout              | 5s                          | None (single check)            | ✅ Production |
 | Logic App Processing    | Workflow engine managed     | Workflow timeout            | Managed by Logic Apps runtime  | ✅ Production |
 
+### Summary
+
+The Current State Baseline reveals a well-instrumented platform operating at Level 3-4 maturity across all 6 capabilities. Order Management, Event-Driven Messaging, Workflow Automation, and Observability demonstrate Level 4 (Measured) maturity with active quantitative metrics, while Batch Processing and Health Monitoring operate at Level 3 (Defined) with standardized implementations awaiting dedicated metrics instrumentation.
+
+Primary gaps toward Level 5 (Optimized) include: (1) implementing adaptive batch sizing based on throughput metrics, (2) publishing health check results to the telemetry pipeline for trend analysis, (3) configuring dynamic recurrence intervals for the cleanup workflow based on blob volume, and (4) establishing automated alerting thresholds from the existing custom metrics.
+
 ---
 
 ## 5. Component Catalog
+
+### Overview
+
+The Component Catalog provides detailed specifications for all 41 components identified across the 11 Business Architecture component types. While Section 2 presents summary inventory tables, this section expands each component with full attribute specifications, relationship mappings, embedded process diagrams, and cross-component integration details.
+
+Each subsection (5.1–5.11) begins with a contextual overview, followed by component-level specification tables documenting attributes, configurations, source references, and operational characteristics. Subsections with rich implementation detail include embedded Mermaid diagrams for process visualization.
+
+The catalog serves as the authoritative reference for Business Architecture component specifications, supporting impact analysis, capability planning, and architecture governance activities.
 
 ### 5.1 Business Strategy Specifications
 
@@ -812,6 +824,14 @@ The Component Catalog documents **41 components** across all 11 Business compone
 
 ## 6. Architecture Decisions
 
+### Overview
+
+This section documents the key architectural decisions governing the eShop Order Management platform's Business Architecture. Six Architecture Decision Records (ADRs) capture the rationale for foundational technology choices, integration patterns, and operational strategies that shape the platform's behavior and evolution.
+
+Each ADR follows the mandatory 4-part structure (Context, Decision, Rationale, Consequences) with explicit trade-off analysis. Decisions span event-driven messaging, workflow automation, application orchestration, idempotency patterns, observability instrumentation, and environment-adaptive implementations.
+
+These decisions collectively define the platform's architectural stance and serve as governance constraints for future capability investments and process redesign initiatives.
+
 | ADR#    | Decision                                                                             | Status   | Date       |
 | ------- | ------------------------------------------------------------------------------------ | -------- | ---------- |
 | ADR-001 | **Event-driven architecture** with Azure Service Bus for order processing decoupling | Accepted | 2026-02-18 |
@@ -949,7 +969,13 @@ The Component Catalog documents **41 components** across all 11 Business compone
 
 ## 8. Dependencies & Integration
 
-This section documents capability-to-process mappings, service dependencies, and cross-component integration patterns.
+### Overview
+
+This section documents capability-to-process mappings, service dependencies, and cross-component integration patterns within the eShop Order Management platform. The analysis covers synchronous (HTTP/REST, SQL/TDS), asynchronous (AMQP/Service Bus), and infrastructure (OTLP telemetry, service discovery) integration patterns.
+
+The platform follows a hub-and-spoke integration topology with the Orders API as the central service. The Web App communicates via typed HTTP clients through .NET Aspire service discovery, while Azure Logic Apps connect through managed Service Bus and Blob Storage connectors. All services export telemetry to Azure Monitor via the OTLP protocol, creating a unified observability layer.
+
+Authentication dependencies are uniformly managed through Microsoft Entra ID Managed Identities (both system-assigned and user-assigned), eliminating credential management complexity and aligning with zero-trust security principles.
 
 ### 8.1 Capability-to-Process Mapping
 
@@ -1051,6 +1077,12 @@ flowchart LR
 | 5. Workflow Processing | Logic App, Orders API | Event-triggered               | Processing delayed until Logic App available   |
 |   6. Result Storage    | Azure Blob Storage    | Synchronous (within workflow) | Processing results lost                        |
 |       7. Cleanup       | Azure Blob Storage    | Recurrence-triggered          | Processed blobs accumulate                     |
+
+### Summary
+
+The Dependencies & Integration analysis confirms a well-structured integration topology with clear separation between synchronous service-to-service communication (HTTP/REST via .NET Aspire service discovery), asynchronous event-driven messaging (Azure Service Bus AMQP), and infrastructure telemetry (OTLP to Azure Monitor). All 6 core capabilities map to defined business processes with explicit dependency chains.
+
+The 7-stage value stream dependency chain identifies Event Publishing (Stage 4) as the critical decoupling point — upstream failures block order intake while downstream failures only delay processing. This architecture provides natural resilience boundaries aligned with the Event-Driven Decoupling principle (Section 3, Principle 1).
 
 ---
 
