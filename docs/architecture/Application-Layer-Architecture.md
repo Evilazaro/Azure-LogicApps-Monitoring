@@ -464,7 +464,6 @@ The current state demonstrates a Level 4 (Measured) architecture: both services 
 
 ```mermaid
 ---
-title: eShop Application Layer - Current State Baseline
 config:
   theme: base
   themeVariables:
@@ -477,29 +476,30 @@ flowchart LR
     accDescr: Shows the current deployment topology with two container apps, shared service defaults module, and their connections to Azure SQL, Service Bus, and Azure Monitor
 
     subgraph webapp["🌐 eShop.Web.App (Container App)"]
-        wPages["📄 Blazor Pages<br/>ListAllOrders/PlaceOrder/ViewOrder"]
-        wService["⚙️ OrdersAPIService<br/>Typed HTTP Client"]
-        wLayout["🖼️ Layout & Shared<br/>FluentUI Components"]
+        wPages["📄 Blazor Pages\nListAllOrders / PlaceOrder / ViewOrder"]
+        wService["⚙️ OrdersAPIService\nTyped HTTP Client"]
+        wLayout["🖼️ Layout & Shared\nFluentUI Components"]
     end
 
     subgraph ordersapi["⚙️ eShop.Orders.API (Container App)"]
-        ctrl["🔌 OrdersController<br/>REST endpoints"]
-        svc["⚙️ OrderService<br/>Business logic + metrics"]
-        repo["🗄️ OrderRepository<br/>EF Core + SQL"]
-        handler["📨 OrdersMessageHandler<br/>Service Bus sender"]
-        hc["🏥 Health Checks<br/>DB + Service Bus"]
+        ctrl["🔌 OrdersController\nREST endpoints"]
+        svc["⚙️ OrderService\nBusiness logic + metrics"]
+        repo["🗄️ OrderRepository\nEF Core + SQL"]
+        handler["📨 OrdersMessageHandler\nService Bus sender"]
+        hc["🏥 Health Checks\nDB + Service Bus"]
     end
 
     subgraph defaults["📦 app.ServiceDefaults (Shared)"]
-        otel["👁️ OpenTelemetry<br/>Traces + Metrics"]
-        resilience["🔄 Resilience Policies<br/>Retry + Circuit Breaker"]
-        discovery["🔍 Service Discovery<br/>.NET Aspire"]
+        otel["👁️ OpenTelemetry\nTraces + Metrics"]
+        resilience["🔄 Resilience Policies\nRetry + Circuit Breaker"]
+        discovery["🔍 Service Discovery\n.NET Aspire"]
     end
 
-    azSql[("🗄️ Azure SQL<br/>Database")]
-    azSB["📨 Azure Service Bus<br/>ordersplaced topic"]
-    azMon["📊 Azure Monitor<br/>OTLP exporter"]
+    azSql[("🗄️ Azure SQL\nDatabase")]
+    azSB["📨 Azure Service Bus\nordersplaced topic"]
+    azMon["📊 Azure Monitor\nOTLP exporter"]
 
+    wPages --> wLayout
     wPages --> wService
     wService -->|"HTTPS/REST"| ctrl
     ctrl --> svc
@@ -509,9 +509,11 @@ flowchart LR
     handler -->|"AMQP/TLS"| azSB
     hc -.->|"health probe"| azSql
     hc -.->|"health probe"| azSB
-    ordersapi --> defaults
-    webapp --> defaults
-    defaults -->|"OTLP"| azMon
+    wService -->|"resilience + discovery"| resilience
+    wService -->|"traces"| otel
+    svc -->|"metrics + traces"| otel
+    resilience -.-> discovery
+    otel -->|"OTLP"| azMon
 
     style webapp fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
     style ordersapi fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
