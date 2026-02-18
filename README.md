@@ -120,7 +120,7 @@ flowchart LR
 
 ### Deployment Layout
 
-```
+```text
 Subscription
 └── Resource Group  rg-{solution}-{env}-{location}
     ├── shared/
@@ -467,8 +467,6 @@ Contributions are welcome — whether bug fixes, new observability patterns, or 
 ## License
 
 [MIT](./LICENSE) — Copyright © Evilazaro
-
----
 
 <!-- Validation Report
 Score: 44/44 (100%)
