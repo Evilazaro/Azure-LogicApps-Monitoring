@@ -35,7 +35,7 @@ This solution provides a complete blueprint for building observable, event-drive
 
 **Overview**
 
-The solution follows a cloud-native, event-driven architecture with five logical layers: a Blazor frontend, an ASP.NET Core API and SQL database deployed as Azure Container Apps, an event backbone on Azure Service Bus, Azure Logic Apps Standard workflows for order fulfilment, and a shared observability plane built on Application Insights and Log Analytics.
+The solution follows a top-down, event-driven architecture across four execution layers: user traffic enters through the Blazor Server frontend, flows through the Orders API (hosted in Azure Container Apps), is persisted to Azure SQL and published as an event to Azure Service Bus, which triggers the Logic Apps Standard workflow pipeline. Application Insights and Log Analytics provide a unified observability plane across all layers.
 
 ```mermaid
 ---
@@ -45,25 +45,21 @@ config:
   flowchart:
     htmlLabels: false
 ---
-flowchart LR
+flowchart TD
     accTitle: Azure Logic Apps Monitoring System Architecture
-    accDescr: Event-driven architecture with Blazor Web App and Orders API on Azure Container Apps, Azure SQL for persistence, Service Bus as event backbone, Logic Apps Standard workflows for order fulfilment, and Application Insights plus Log Analytics for end-to-end observability
+    accDescr: Top-down architecture showing user traffic flowing from Blazor frontend through Orders API hosted in Azure Container Apps, persisting to Azure SQL, publishing OrderPlaced events to Azure Service Bus which triggers Logic Apps Standard workflows, with Application Insights and Log Analytics providing unified observability
 
     %% ═══════════════════════════════════════════════════════════════════════════
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
     %% (Semantic + Structural + Font + Accessibility Governance)
     %% ═══════════════════════════════════════════════════════════════════════════
-    %% PHASE 1 - STRUCTURAL: LR direction, five logical subgraphs, nesting ≤ 2
-    %% PHASE 2 - SEMANTIC: 4 colors (within 5-color limit):
-    %%           azureBlue = frontend + api   (user-facing HTTP layer)
-    %%           azureTeal = data store        (persistence)
-    %%           azureGreen = events + workflows (async processing)
-    %%           azureYellow = observability   (monitoring)
-    %%           neutral containers for structural subgraphs
+    %% PHASE 1 - STRUCTURAL: TD direction, layered topology, nesting ≤ 2
+    %% PHASE 2 - SEMANTIC: 4 classes (azureBlue=HTTP, azureTeal=data,
+    %%           azureGreen=async/events, azureYellow=observability)
     %% PHASE 3 - FONT: Dark text (#323130 / #3B2C00) on light fills (WCAG AA ≥4.5:1)
-    %% PHASE 4 - ACCESSIBILITY: accTitle + accDescr present; icons on ALL content nodes
-    %% PHASE 5 - STANDARD: governance block present; classDefs centralized at top;
-    %%           style directives (NOT class) used for all subgraph containers
+    %% PHASE 4 - ACCESSIBILITY: accTitle + accDescr present; icons on ALL nodes
+    %% PHASE 5 - STANDARD: governance block present; classDefs centralized;
+    %%           style directives (NOT class) for all subgraph containers
     %% ═══════════════════════════════════════════════════════════════════════════
 
     classDef azureBlue   fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
@@ -71,56 +67,63 @@ flowchart LR
     classDef azureGreen  fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
     classDef azureYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#3B2C00
 
-    subgraph frontend["🖥️ Frontend"]
-        UI["🌐 eShop Web App\n(Blazor Server)"]:::azureBlue
-    end
+    User["👤 End User"]:::azureBlue
 
     subgraph aca["☁️ Azure Container Apps"]
-        API["⚙️ Orders API\n(ASP.NET Core)"]:::azureBlue
-        DB[("🗄️ Azure SQL\n(Orders DB)")]:::azureTeal
+        direction LR
+        WebApp["🌐 eShop Web App\nBlazor Server · Fluent UI"]:::azureBlue
+        API["⚙️ Orders API\nASP.NET Core · Swagger"]:::azureBlue
+        WebApp -->|"calls REST API"| API
     end
 
-    subgraph messaging["📨 Azure Service Bus"]
-        SBT["📨 orders-placed\nTopic"]:::azureGreen
+    subgraph persistence["🗄️ Data Layer"]
+        SQL[("🗄️ Azure SQL\nOrders DB · EF Core")]:::azureTeal
     end
 
-    subgraph logicapps["⚙️ Azure Logic Apps Standard"]
-        WF1["⚙️ OrdersPlacedProcess"]:::azureGreen
-        WF2["⚙️ OrdersPlacedCompleteProcess"]:::azureGreen
+    subgraph eventing["📨 Azure Service Bus"]
+        SBT["📨 orders-placed\nTopic · Subscriptions"]:::azureGreen
     end
 
-    subgraph observability["📊 Observability"]
-        AI["📊 Application Insights"]:::azureYellow
-        LA["📋 Log Analytics\nWorkspace"]:::azureYellow
+    subgraph workflows["⚡ Azure Logic Apps Standard"]
+        direction LR
+        WF1["⚡ OrdersPlacedProcess"]:::azureGreen
+        WF2["⚡ OrdersPlacedCompleteProcess"]:::azureGreen
+        WF1 -->|"chains into"| WF2
     end
 
-    UI  -->|"HTTP requests"| API
-    API -->|"persists orders to"| DB
-    API -->|"publishes event to"| SBT
-    SBT -->|"triggers"| WF1
-    WF1 -->|"continues to"| WF2
-    API -->|"sends telemetry to"| AI
-    UI  -->|"sends telemetry to"| AI
-    WF1 -->|"streams logs to"| LA
-    WF2 -->|"streams logs to"| LA
-    AI  -->|"aggregates into"| LA
+    subgraph observability["📊 Azure Monitor"]
+        direction LR
+        AppInsights["📊 Application Insights\nDistributed Tracing"]:::azureYellow
+        LogAnalytics["📋 Log Analytics\nCentralized Logs"]:::azureYellow
+        AppInsights -->|"exports to"| LogAnalytics
+    end
 
-    style frontend      fill:#FAFAFA,stroke:#8A8886,stroke-width:2px
-    style aca           fill:#FAFAFA,stroke:#8A8886,stroke-width:2px
-    style messaging     fill:#FAFAFA,stroke:#8A8886,stroke-width:2px
-    style logicapps     fill:#FAFAFA,stroke:#8A8886,stroke-width:2px
-    style observability fill:#FAFAFA,stroke:#8A8886,stroke-width:2px
+    User      -->|"browses orders"| WebApp
+    API       -->|"persists orders"| SQL
+    API       -->|"publishes OrderPlaced event"| SBT
+    SBT       -->|"triggers"| WF1
+    API       -->|"streams telemetry"| AppInsights
+    WebApp    -->|"streams telemetry"| AppInsights
+    WF1       -->|"streams workflow logs"| LogAnalytics
+
+    style aca          fill:#EFF6FC,stroke:#004578,stroke-width:2px,color:#323130
+    style persistence  fill:#F0FBF8,stroke:#00666B,stroke-width:2px,color:#323130
+    style eventing     fill:#F3FBF3,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    style workflows    fill:#F3FBF3,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    style observability fill:#FFFBEE,stroke:#986F0B,stroke-width:2px,color:#3B2C00
 ```
 
 **Component Roles:**
 
-- **eShop Web App** — Blazor Server frontend with Microsoft Fluent UI; references the Orders API via .NET Aspire service discovery (`src/eShop.Web.App/`)
-- **eShop Orders API** — ASP.NET Core REST API with EF Core, OpenAPI/Swagger, and Service Bus publishing (`src/eShop.Orders.API/`)
-- **Azure SQL** — Orders persistence with EF Core migrations, retry-on-failure (5 retries / 30 s), and managed identity auth
-- **Azure Service Bus** — Decoupling backbone; the `orders-placed` topic triggers downstream Logic Apps workflows
-- **Logic Apps Standard** — `OrdersPlacedProcess` → `OrdersPlacedCompleteProcess` event-driven order fulfilment pipeline (`workflows/OrdersManagement/`)
-- **Application Insights + Log Analytics** — End-to-end distributed tracing and centralized log aggregation for all components
-- **.NET Aspire AppHost** — Local orchestration and Azure resource wiring via `azd` (`app.AppHost/`)
+| Component               | Layer         | Description                                                                                                     |
+| ----------------------- | ------------- | --------------------------------------------------------------------------------------------------------------- |
+| 🌐 eShop Web App        | Presentation  | Blazor Server with Fluent UI; service discovery via .NET Aspire (`src/eShop.Web.App/`)                          |
+| ⚙️ Orders API           | Application   | ASP.NET Core REST API with EF Core, OpenAPI/Swagger, and Service Bus publishing (`src/eShop.Orders.API/`)       |
+| 🗄️ Azure SQL            | Data          | Orders persistence with 5-retry resilience, 120 s command timeout, and managed identity auth                    |
+| 📨 Azure Service Bus    | Eventing      | `orders-placed` topic decouples the API from Logic Apps; emulated locally by Aspire                             |
+| ⚡ Logic Apps Standard  | Workflow      | `OrdersPlacedProcess` → `OrdersPlacedCompleteProcess` async fulfilment pipeline (`workflows/OrdersManagement/`) |
+| 📊 Application Insights | Observability | Distributed tracing via OpenTelemetry across all components                                                     |
+| 📋 Log Analytics        | Observability | Centralized log aggregation for all Azure resources and workflow run history                                    |
 
 ## Quick Start
 
