@@ -1668,7 +1668,7 @@ verification:
     decision_impact: true
     capability_process_matrix: true
     dependency_graph: true
-    min_score: 95
+    min_score: 100
   validation:
     all_11_subsections_present: true
     source_traceability_valid: true
