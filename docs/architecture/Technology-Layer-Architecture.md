@@ -140,13 +140,13 @@ flowchart TB
     SBNs -->|contains| SBTopic
     SBTopic -->|contains| SBSub
 
-    style AzCloud fill:#FFFFFF,stroke:#3F51B5,stroke-width:3px,color:#323130
-    style SharedLayer fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#323130
+    style AzCloud fill:#FFFFFF,stroke:#004578,stroke-width:3px,color:#323130
+    style SharedLayer fill:#C5CAE9,stroke:#004578,stroke-width:2px,color:#323130
     style NetZone fill:#DEECF9,stroke:#004578,stroke-width:1px,color:#323130
     style IdZone fill:#FFF9C4,stroke:#F57F17,stroke-width:1px,color:#323130
     style MonZone fill:#DFF6DD,stroke:#0B6A0B,stroke-width:1px,color:#323130
-    style DataZone fill:#F3F2F1,stroke:#8A8886,stroke-width:1px,color:#323130
-    style WorkloadLayer fill:#C5CAE9,stroke:#3F51B5,stroke-width:2px,color:#323130
+    style DataZone fill:#F3F2F1,stroke:#605E5C,stroke-width:1px,color:#323130
+    style WorkloadLayer fill:#C5CAE9,stroke:#004578,stroke-width:2px,color:#323130
     style MsgZone fill:#DEECF9,stroke:#004578,stroke-width:1px,color:#323130
     style ContainerZone fill:#DFF6DD,stroke:#0B6A0B,stroke-width:1px,color:#323130
     style WorkflowZone fill:#FFF9C4,stroke:#F57F17,stroke-width:1px,color:#323130
@@ -154,7 +154,7 @@ flowchart TB
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
     classDef warningYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
-    classDef neutralGrey fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef neutralGrey fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     class VNet,ApiSubnet,DataSubnet,WfSubnet azureBlue
     class MI warningYellow
@@ -291,17 +291,17 @@ flowchart LR
     DNSSQL -->|"DNS resolves to PE"| PESQL
     LANode -->|"Service Bus (public)"| SBNSNode
 
-    style VNetBlock fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style VNetBlock fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
     style ApiSub fill:#DEECF9,stroke:#004578,stroke-width:1px,color:#323130
     style WfSub fill:#FFF9C4,stroke:#F57F17,stroke-width:1px,color:#323130
     style DataSub fill:#DFF6DD,stroke:#0B6A0B,stroke-width:1px,color:#323130
-    style PrivDNS fill:#F3F2F1,stroke:#8A8886,stroke-width:1px,color:#323130
-    style PaaSServices fill:#F3F2F1,stroke:#8A8886,stroke-width:1px,color:#323130
+    style PrivDNS fill:#F3F2F1,stroke:#605E5C,stroke-width:1px,color:#323130
+    style PaaSServices fill:#F3F2F1,stroke:#605E5C,stroke-width:1px,color:#323130
 
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
     classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
-    classDef neutralGrey fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef neutralGrey fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     class Internet neutralGrey
     class CAENode,LANode azureBlue
@@ -870,14 +870,14 @@ flowchart TD
 
     style Tier1 fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     style Tier2 fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
-    style Tier3 fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style Tier3 fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
     style Tier4 fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
-    style Tier5 fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style Tier5 fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
     classDef warningYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
-    classDef neutralGrey fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef neutralGrey fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     class RG,VNetDep,MIDep azureBlue
     class LAWDep,AppInsDep successGreen

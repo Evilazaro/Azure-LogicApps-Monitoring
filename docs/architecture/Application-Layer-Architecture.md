@@ -111,7 +111,7 @@ flowchart TD
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
     classDef warningYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
-    classDef neutralGrey fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef neutralGrey fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     class webApp,ordersApi azureBlue
     class azureSql,serviceBus,logicApps successGreen
@@ -1971,7 +1971,7 @@ flowchart TD
     classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
     classDef warningYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
-    classDef neutralGrey fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef neutralGrey fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     class blazor,apiSvc azureBlue
     class ctrl,ordSvc,ordRepo,msgHandler,hcDb,hcSb successGreen
@@ -1981,7 +1981,7 @@ flowchart TD
     style presentation fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     style api fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
     style shared fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
-    style infra fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style infra fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
 ### Dependency Matrix
@@ -2069,7 +2069,7 @@ flowchart LR
     classDef successGreen fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
     classDef warningYellow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
     classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
-    classDef neutralGrey fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef neutralGrey fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     class start neutralGrey
     class formVal,httpPost azureBlue

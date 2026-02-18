@@ -106,7 +106,7 @@ graph TB
     classDef visionStyle fill:#E7E2FA,stroke:#5B2F91,stroke-width:3px,color:#323130
     classDef pillarStyle fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef capStyle fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
-    classDef techStyle fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef techStyle fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     class vision visionStyle
     class pillar1,pillar2,pillar3 pillarStyle
@@ -286,16 +286,16 @@ graph TB
     api -.-> otel
     webapp -.-> otel
 
-    style external fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style external fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
     style core fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     style integration fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
-    style infra fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style infra fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
     style observability fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     classDef actorStyle fill:#E7E2FA,stroke:#5B2F91,stroke-width:2px,color:#323130
     classDef serviceStyle fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef integrationStyle fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
-    classDef infraStyle fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef infraStyle fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
     classDef otelStyle fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
 
     class customer,ops actorStyle
@@ -1597,7 +1597,7 @@ flowchart LR
 
     classDef presentation fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef service fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
-    classDef data fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef data fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
     classDef workflow fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#323130
     classDef orchestrator fill:#E7E2FA,stroke:#5B2F91,stroke-width:2px,color:#323130
 
