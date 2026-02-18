@@ -165,7 +165,7 @@ flowchart TB
     class ASP,LA,SBConn,BlobConn warningYellow
 ```
 
-✅ Mermaid Verification: 5/5 | Score: 97/100
+✅ Mermaid Verification: 3/3 | Score: 100/100
 
 ### Cloud Resource Map
 
@@ -886,7 +886,7 @@ flowchart TD
     class ASPDep,LADep,ConsDep warningYellow
 ```
 
-✅ Mermaid Verification: 5/5 | Score: 96/100
+✅ Mermaid Verification: 3/3 | Score: 100/100
 
 ### Network Flows
 
