@@ -66,7 +66,6 @@ The system boundaries are well-defined: the Orders API is authoritative for orde
 
 ```mermaid
 ---
-title: eShop Application Layer - System Context (C4)
 config:
   theme: base
   themeVariables:
@@ -76,34 +75,43 @@ config:
     secondaryColor: '#F3F2F1'
     tertiaryColor: '#FFF4CE'
 ---
-C4Context
+flowchart TD
     accTitle: eShop Application Layer C4 System Context Diagram
     accDescr: Shows the external users and systems interacting with the eShop application layer including the Web App and Orders API
 
-    Person(customer, "👤 Customer", "Uses eShop UI to place<br/>and manage orders")
-    Person(ops, "👤 Operations", "Monitors system health<br/>and order processing")
+    customer(["👤 Customer\nUses eShop UI to place\nand manage orders"])
+    ops(["👤 Operations\nMonitors system health\nand order processing"])
 
-    System_Boundary(appLayer, "eShop Application Layer") {
-        System(webApp, "🌐 eShop Web App", "Blazor Server application<br/>for order management UI")
-        System(ordersApi, "⚙️ eShop Orders API", "ASP.NET Core REST API<br/>for order management")
-    }
+    subgraph appLayer["eShop Application Layer"]
+        webApp["🌐 eShop Web App\nBlazer Server application\nfor order management UI"]
+        ordersApi["⚙️ eShop Orders API\nASP.NET Core REST API\nfor order management"]
+    end
 
-    System_Ext(azureSql, "🗄️ Azure SQL Database", "Durable order persistence<br/>with EF Core migrations")
-    System_Ext(serviceBus, "📨 Azure Service Bus", "Topic-based pub/sub<br/>ordersplaced topic")
-    System_Ext(logicApps, "🔄 Azure Logic Apps", "Downstream order<br/>processing workflows")
-    System_Ext(azureMonitor, "📊 Azure Monitor", "OpenTelemetry traces,<br/>metrics, and logs")
-    System_Ext(aspire, "🚀 .NET Aspire", "Orchestration, service<br/>discovery, config")
+    azureSql[("🗄️ Azure SQL Database\nDurable order persistence\nwith EF Core migrations")]
+    serviceBus["📨 Azure Service Bus\nTopic-based pub/sub\nordersplaced topic"]
+    logicApps["🔄 Azure Logic Apps\nDownstream order\nprocessing workflows"]
+    azureMonitor["📊 Azure Monitor\nOpenTelemetry traces,\nmetrics, and logs"]
+    aspire["🚀 .NET Aspire\nOrchestration, service\ndiscovery, config"]
 
-    Rel(customer, webApp, "Places & views orders", "HTTPS/Browser")
-    Rel(ops, azureMonitor, "Monitors dashboards", "Azure Portal")
-    Rel(webApp, ordersApi, "REST calls", "HTTPS/JSON")
-    Rel(ordersApi, azureSql, "Persists orders", "SQL/TLS")
-    Rel(ordersApi, serviceBus, "Publishes OrderPlaced", "AMQP/TLS")
-    Rel(serviceBus, logicApps, "Triggers workflows", "Subscription")
-    Rel(webApp, azureMonitor, "Traces + metrics", "OTLP")
-    Rel(ordersApi, azureMonitor, "Traces + metrics", "OTLP")
-    Rel(aspire, webApp, "Discovers + configures", "Service Discovery")
-    Rel(aspire, ordersApi, "Discovers + configures", "Service Discovery")
+    customer -->|"Places & views orders\nHTTPS/Browser"| webApp
+    ops -->|"Monitors dashboards\nAzure Portal"| azureMonitor
+    webApp -->|"REST calls\nHTTPS/JSON"| ordersApi
+    ordersApi -->|"Persists orders\nSQL/TLS"| azureSql
+    ordersApi -->|"Publishes OrderPlaced\nAMQP/TLS"| serviceBus
+    serviceBus -->|"Triggers workflows\nSubscription"| logicApps
+    webApp -->|"Traces + metrics\nOTLP"| azureMonitor
+    ordersApi -->|"Traces + metrics\nOTLP"| azureMonitor
+    aspire -.->|"Discovers + configures"| webApp
+    aspire -.->|"Discovers + configures"| ordersApi
+
+    style appLayer fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style azureSql fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style serviceBus fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style logicApps fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style azureMonitor fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    style aspire fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    style customer fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style ops fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
 ### 2.1 Application Services
