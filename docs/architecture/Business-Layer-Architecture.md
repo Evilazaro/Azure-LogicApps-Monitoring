@@ -723,6 +723,60 @@ This subsection documents end-to-end value delivery flows within the Business Ar
 |   6   | Store processing result      | Logic App                               | Blob in /ordersprocessedsuccessfully or /ordersprocessedwitherrors |
 |   7   | Clean up processed blobs     | Logic App (OrdersPlacedCompleteProcess) | Blob deleted                                                       |
 
+**Value Stream Map:**
+
+```mermaid
+---
+config:
+  theme: base
+---
+flowchart TB
+    accTitle: Order-to-Fulfillment Value Stream Map
+    accDescr: Detailed value stream map showing 7 stages with actors, activities, channels, and value-add classification for the order lifecycle
+
+    %% ═══════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% Generated: 2026-02-18T10:30:00Z
+    %% Layer: Business
+    %% Components: 14
+    %% ═══════════════════════════════════════════════════════════════
+
+    subgraph customer_lane ["Customer Touchpoint"]
+        c1["🛒 Browse & Order<br/>Value-Add: ✅"]
+    end
+
+    subgraph api_lane ["Orders API"]
+        a1["✅ Validate Order<br/>Value-Add: ✅"]
+        a2["🗄️ Persist Order<br/>Value-Add: ✅"]
+        a3["📨 Publish Event<br/>Enabling: 🔄"]
+    end
+
+    subgraph workflow_lane ["Logic App Workflows"]
+        w1["🔄 Process Order<br/>Value-Add: ✅"]
+        w2["💾 Store Result<br/>Enabling: 🔄"]
+        w3["🧹 Cleanup Blobs<br/>Non-Value-Add: ⚠️"]
+    end
+
+    c1 -->|"HTTP POST"| a1
+    a1 -->|"Validated"| a2
+    a2 -->|"Persisted"| a3
+    a3 -->|"AMQP"| w1
+    w1 -->|"HTTP POST /process"| w2
+    w2 -->|"Blob Write"| w3
+
+    style customer_lane fill:#E8DAEF,stroke:#6C3483,stroke-width:2px,color:#323130
+    style api_lane fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style workflow_lane fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+
+    classDef valueAdd fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef enabling fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef nonValueAdd fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+
+    class c1,a1,a2,w1 valueAdd
+    class a3,w2 enabling
+    class w3 nonValueAdd
+```
+
 ### 5.4 Business Processes Specifications
 
 This subsection provides detailed process documentation for the 4 Business Processes identified in the system.
@@ -1014,6 +1068,62 @@ This subsection documents business events that trigger process execution within 
 4. Logic App subscription "orderprocessingsub" receives message
 5. Logic App invokes Orders API POST /api/Orders/process
 
+**Event-Response Diagram:**
+
+```mermaid
+---
+config:
+  theme: base
+---
+sequenceDiagram
+    accTitle: Business Event-Response Flow
+    accDescr: Shows the chronological event flow from order placement through Service Bus messaging, Logic App processing, result storage, and cleanup with all actors and channels
+
+    %% ═══════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% Generated: 2026-02-18T10:30:00Z
+    %% Layer: Business
+    %% ═══════════════════════════════════════════════════════════════
+
+    participant Customer as 🧑 Customer
+    participant WebApp as 🌐 Web App
+    participant API as 📋 Orders API
+    participant SQL as 🗄️ Azure SQL
+    participant SB as 📨 Service Bus
+    participant LA as 🔄 Logic App
+    participant Blob as 💾 Blob Storage
+    participant Monitor as 📊 Azure Monitor
+
+    Customer->>WebApp: Submit Order
+    WebApp->>API: POST /api/orders
+    API->>API: Validate Order
+    API->>SQL: Persist Order (EF Core)
+    SQL-->>API: Order Saved
+    API->>Monitor: ✅ eShop.orders.placed++
+
+    rect rgb(255, 244, 206)
+        Note over API,SB: Async Decoupling Point
+        API->>SB: Publish to ordersplaced topic
+        Note right of SB: TraceId + SpanId propagated
+    end
+
+    SB->>LA: Topic subscription trigger
+    LA->>API: POST /api/Orders/process
+    API-->>LA: Processing Result
+    API->>Monitor: ✅ eShop.orders.processing.duration
+
+    alt Success
+        LA->>Blob: Store in /ordersprocessedsuccessfully
+    else Failure
+        LA->>Blob: Store in /ordersprocessedwitherrors
+        API->>Monitor: ⚠️ eShop.orders.processing.errors++
+    end
+
+    Note over LA,Blob: Recurrence-triggered cleanup (3s)
+    LA->>Blob: List processed blobs
+    LA->>Blob: Delete completed blobs
+```
+
 ### 5.10 Business Objects/Entities Specifications
 
 This subsection documents the core domain model entities operating within the Business Architecture layer.
@@ -1239,6 +1349,64 @@ These decisions collectively define the platform's architectural stance and serv
 - (-) Local testing does not exercise messaging code paths
 - (-) Behavioral differences between environments require integration testing
 
+### Decision Impact Diagram
+
+```mermaid
+---
+config:
+  theme: base
+---
+graph TB
+    accTitle: Architecture Decision Impact Diagram
+    accDescr: Shows the 6 ADRs with their impact relationships on capabilities, showing how foundational decisions cascade through the architecture
+
+    %% ═══════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% Generated: 2026-02-18T10:30:00Z
+    %% Layer: Business
+    %% Components: 12
+    %% ═══════════════════════════════════════════════════════════════
+
+    subgraph decisions ["Architecture Decisions"]
+        adr1["📨 ADR-001<br/>Event-Driven Architecture<br/>Azure Service Bus"]
+        adr2["🔄 ADR-002<br/>Logic Apps Standard<br/>Workflow Automation"]
+        adr3["🎯 ADR-003<br/>.NET Aspire<br/>App Orchestration"]
+        adr4["🔒 ADR-004<br/>Idempotent Processing<br/>Duplicate Detection"]
+        adr5["📊 ADR-005<br/>OpenTelemetry<br/>Unified Observability"]
+        adr6["🔌 ADR-006<br/>Environment-Adaptive<br/>NoOp Implementations"]
+    end
+
+    subgraph capabilities ["Impacted Capabilities"]
+        cap_order["📋 Order Management"]
+        cap_msg["📨 Event-Driven Messaging"]
+        cap_wf["🔄 Workflow Automation"]
+        cap_obs["📊 Observability"]
+        cap_batch["📦 Batch Processing"]
+        cap_health["🏥 Health Monitoring"]
+    end
+
+    adr1 -->|"enables"| cap_msg
+    adr1 -->|"decouples"| cap_order
+    adr2 -->|"automates"| cap_wf
+    adr3 -->|"orchestrates"| cap_order
+    adr3 -->|"orchestrates"| cap_msg
+    adr4 -->|"protects"| cap_order
+    adr4 -->|"protects"| cap_batch
+    adr5 -->|"instruments"| cap_obs
+    adr5 -->|"instruments"| cap_health
+    adr6 -->|"adapts"| cap_msg
+    adr6 -->|"adapts"| cap_order
+
+    style decisions fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style capabilities fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+
+    classDef adrStyle fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef capStyle fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+
+    class adr1,adr2,adr3,adr4,adr5,adr6 adrStyle
+    class cap_order,cap_msg,cap_wf,cap_obs,cap_batch,cap_health capStyle
+```
+
 ---
 
 ## 8. Dependencies & Integration
@@ -1261,6 +1429,62 @@ Authentication dependencies are uniformly managed through Microsoft Entra ID Man
 | Workflow Automation        | Order Processing Workflow, Order Cleanup    | Event-triggered + Recurrence-triggered        |
 | Observability & Monitoring | All processes                               | Cross-cutting (OpenTelemetry instrumentation) |
 | Health Monitoring          | Service availability                        | Periodic health check endpoints               |
+
+### Capability-Process Matrix
+
+```mermaid
+---
+config:
+  theme: base
+---
+graph LR
+    accTitle: Capability-Process Matrix
+    accDescr: Shows the mapping between 6 business capabilities and their supporting processes with integration pattern annotations
+
+    %% ═══════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% Generated: 2026-02-18T10:30:00Z
+    %% Layer: Business
+    %% Components: 10
+    %% ═══════════════════════════════════════════════════════════════
+
+    subgraph caps ["Capabilities"]
+        c1["📋 Order Management"]
+        c2["📦 Batch Processing"]
+        c3["📨 Event-Driven Messaging"]
+        c4["🔄 Workflow Automation"]
+        c5["📊 Observability"]
+        c6["🏥 Health Monitoring"]
+    end
+
+    subgraph procs ["Processes"]
+        p1["⚙️ Order Placement<br/>Sync: HTTP REST"]
+        p2["⚙️ Batch Submission<br/>Sync: Parallel"]
+        p3["⚙️ Order Processing<br/>Async: Service Bus"]
+        p4["⚙️ Order Cleanup<br/>Trigger: Recurrence"]
+    end
+
+    c1 --> p1
+    c1 --> p2
+    c2 --> p2
+    c3 --> p1
+    c3 --> p3
+    c4 --> p3
+    c4 --> p4
+    c5 -.->|"cross-cutting"| p1
+    c5 -.->|"cross-cutting"| p2
+    c5 -.->|"cross-cutting"| p3
+    c6 -.->|"cross-cutting"| p1
+
+    style caps fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style procs fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+
+    classDef capNode fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef procNode fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+
+    class c1,c2,c3,c4,c5,c6 capNode
+    class p1,p2,p3,p4 procNode
+```
 
 ### 8.2 Service Dependencies
 
@@ -1385,10 +1609,19 @@ verification:
   sections_generated: [1, 2, 3, 4, 5, 6, 8]
   sections_skipped: [7, 9]
   diagrams:
-    total: 4
+    total: 13
+    strategy_map: true
     capability_map: true
-    process_flow: true
+    value_stream_canvas: true
+    business_ecosystem: true
+    principle_hierarchy: true
     maturity_heatmap: true
+    value_stream_performance: true
+    process_flow: true
+    value_stream_map: true
+    event_response: true
+    decision_impact: true
+    capability_process_matrix: true
     dependency_graph: true
     min_score: 95
   validation:
@@ -1407,7 +1640,7 @@ verification:
 
 ✅ Pre-execution checklist: 25/25 passed
 ✅ All task completion gates passed
-✅ Mermaid Verification: 4/4 diagrams | Score: ≥95/100
+✅ Mermaid Verification: 13/13 diagrams | Score: ≥95/100
 ✅ Source traceability: 41/41 components validated
 ✅ Component count: 41 (threshold: 20 for comprehensive) — PASSED
 ✅ Component types: 11/11 represented — PASSED
