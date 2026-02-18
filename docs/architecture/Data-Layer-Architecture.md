@@ -182,6 +182,82 @@ The data zone topology separates concerns into a shared data infrastructure laye
 | Public network access disabled        | publicNetworkAccess Disabled on SQL Server                                         | infra/shared/data/main.bicep:250-260                                      | 0.95       | Confidential   |
 | Dead-letter queue                     | deadLetteringOnMessageExpiration prevents silent message loss                      | infra/workload/messaging/main.bicep:130-145                               | 0.88       | Internal       |
 
+### Storage Tier Diagram
+
+```mermaid
+---
+title: Data Architecture - Storage Tier and Zone Topology
+config:
+  theme: base
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
+---
+flowchart TB
+    accTitle: Data Architecture Storage Tier and Zone Topology
+    accDescr: Shows the three-tier storage architecture with data zones, network isolation, and governance controls
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: TB direction, 3 tiers, shared + workload zones
+    %% PHASE 2 - SEMANTIC: 4 colors (azureBlue, presenceTeal, warningOrange, successGreen)
+    %% PHASE 3 - FONT: Dark text #323130 on light backgrounds (WCAG AA)
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: v1.1 format, style directives for subgraphs
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph sharedInfra["🏗️ Shared Data Infrastructure Zone (infra/shared/)"]
+        subgraph relational["🛢️ Relational Tier"]
+            SQL["🛢️ Azure SQL Database\nOrderDb — GP Gen5 2vCore\nPrivate endpoint · Entra ID-only"]:::presenceTeal
+        end
+        subgraph objectStorage["📦 Object Storage Tier"]
+            STORAGE["💾 Azure Storage Account\nStandard_LRS · TLS 1.2\nPrivate endpoints (blob/file/table/queue)"]:::presenceTeal
+            BLOB_OK["✅ ordersprocessedsuccessfully"]:::successGreen
+            BLOB_ERR["⚠️ ordersprocessedwitherrors"]:::warningOrange
+            BLOB_DONE["📁 ordersprocessedcompleted"]:::successGreen
+            FILESHARE["📂 File share: workflowstate\n5 GB · SMB"]:::presenceTeal
+        end
+        STORAGE --> BLOB_OK
+        STORAGE --> BLOB_ERR
+        STORAGE --> BLOB_DONE
+        STORAGE --> FILESHARE
+    end
+
+    subgraph workloadInfra["⚙️ Workload Messaging Zone (infra/workload/)"]
+        subgraph messaging["📬 Message Broker Tier"]
+            SB["📋 Azure Service Bus\nStandard · RBAC · MSI\nUser Assigned Identity"]:::azureBlue
+            TOPIC["📌 Topic: ordersplaced\nTTL 14d"]:::azureBlue
+            SUB["📥 Sub: orderprocessingsub\nmaxDelivery=10 · lockDuration=5m"]:::azureBlue
+        end
+        SB --> TOPIC --> SUB
+    end
+
+    subgraph localDev["💻 Local Development Zone (app.AppHost/)"]
+        SQL_LOCAL["🐳 SQL Server Container\nAspire AddSqlServer()"]:::warningOrange
+        SB_LOCAL["🐳 Service Bus Emulator\nAspire emulator"]:::warningOrange
+    end
+
+    SQL_LOCAL -.->|"mirrors"| SQL
+    SB_LOCAL -.->|"mirrors"| SB
+
+    %% Centralized classDefs
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
+    classDef warningOrange fill:#FFF4CE,stroke:#8A6914,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+
+    %% Centralized style directives for subgraphs
+    style sharedInfra fill:#FFFFFF,stroke:#00666B,stroke-width:3px
+    style workloadInfra fill:#FFFFFF,stroke:#004578,stroke-width:3px
+    style localDev fill:#FFFFFF,stroke:#8A6914,stroke-width:3px
+    style relational fill:#F8FFFD,stroke:#00666B,stroke-width:1px
+    style objectStorage fill:#F8FFFD,stroke:#00666B,stroke-width:1px
+    style messaging fill:#F0F6FF,stroke:#004578,stroke-width:1px
+```
+
 ### Summary
 
 The architecture landscape encompasses 42 data components across all 11 data component types. The dominant pattern is a transactional order management domain with clear entity-to-store mappings (OrderEntity/OrderProductEntity to Azure SQL), event-driven data flows (Service Bus topics/subscriptions), and blob-based archival. Security controls are comprehensive with zero credential storage — all authentication flows through Microsoft Entra ID and managed identities.
