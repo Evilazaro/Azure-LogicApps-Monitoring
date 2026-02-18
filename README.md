@@ -31,18 +31,18 @@ A production-ready monitoring solution for **Azure Logic Apps Standard** built o
 
 This solution is a complete reference architecture for observing Azure Logic Apps Standard workflows using native Azure services. Every tier — Blazor frontend, ASP.NET Core REST API, Logic Apps workflow engine, and backing Azure platform services — is wired for distributed tracing and metrics from day one, and the entire infrastructure is expressed as Bicep and deployed with a single `azd up`.
 
-| Feature                         | Description                                                                         | Evidence                                                |
-| ------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| .NET Aspire Orchestration       | Service discovery, resource wiring, and local/cloud parity via `AppHost.cs`         | `app.AppHost/AppHost.cs`                                |
-| Orders REST API                 | ASP.NET Core Web API with Swagger, EF Core + Azure SQL, and batch endpoints         | `src/eShop.Orders.API/`                                 |
-| Blazor Server UI                | Microsoft Fluent UI frontend for order placement and monitoring                     | `src/eShop.Web.App/`                                    |
-| Service Bus Messaging           | Order events published from API to Logic Apps via `ordersplaced` topic              | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs` |
-| Logic Apps Standard Workflow    | Workflow engine triggered by Service Bus with Managed Identity API connections      | `workflows/OrdersManagement/`                           |
-| OpenTelemetry Observability     | Distributed traces, custom meters (`eShop.orders.*`), and OTLP/Azure Monitor export | `app.ServiceDefaults/Extensions.cs`                     |
-| Application Insights            | Full telemetry pipeline with connection-string-based export                         | `app.AppHost/AppHost.cs:33`                             |
-| Managed Identity (Passwordless) | All Azure service connections use User-Assigned Managed Identity — no secrets       | `infra/workload/logic-app.bicep`                        |
-| Infrastructure as Code          | Bicep at subscription scope: Container Apps, SQL, Service Bus, Log Analytics, VNet  | `infra/main.bicep`                                      |
-| azd One-Command Deploy          | `azd up` provisions and deploys everything, `postprovision.ps1` wires user secrets  | `azure.yaml`, `hooks/postprovision.ps1`                 |
+| Feature                            | Description                                                                         | Evidence                                                |
+| ---------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| 🧩 .NET Aspire Orchestration       | Service discovery, resource wiring, and local/cloud parity via `AppHost.cs`         | `app.AppHost/AppHost.cs`                                |
+| 🛒 Orders REST API                 | ASP.NET Core Web API with Swagger, EF Core + Azure SQL, and batch endpoints         | `src/eShop.Orders.API/`                                 |
+| 🖥️ Blazor Server UI                | Microsoft Fluent UI frontend for order placement and monitoring                     | `src/eShop.Web.App/`                                    |
+| 📨 Service Bus Messaging           | Order events published from API to Logic Apps via `ordersplaced` topic              | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs` |
+| ⚙️ Logic Apps Standard Workflow    | Workflow engine triggered by Service Bus with Managed Identity API connections      | `workflows/OrdersManagement/`                           |
+| 🔭 OpenTelemetry Observability     | Distributed traces, custom meters (`eShop.orders.*`), and OTLP/Azure Monitor export | `app.ServiceDefaults/Extensions.cs`                     |
+| 📊 Application Insights            | Full telemetry pipeline with connection-string-based export                         | `app.AppHost/AppHost.cs:33`                             |
+| 🔐 Managed Identity (Passwordless) | All Azure service connections use User-Assigned Managed Identity — no secrets       | `infra/workload/logic-app.bicep`                        |
+| 🏗️ Infrastructure as Code          | Bicep at subscription scope: Container Apps, SQL, Service Bus, Log Analytics, VNet  | `infra/main.bicep`                                      |
+| 🚀 azd One-Command Deploy          | `azd up` provisions and deploys everything, `postprovision.ps1` wires user secrets  | `azure.yaml`, `hooks/postprovision.ps1`                 |
 
 ## Architecture
 
@@ -51,8 +51,6 @@ This solution is a complete reference architecture for observing Azure Logic App
 title: Azure Logic Apps Monitoring — Application Architecture
 config:
   theme: base
-  themeVariables:
-    fontSize: '16px'
   flowchart:
     htmlLabels: false
 ---
