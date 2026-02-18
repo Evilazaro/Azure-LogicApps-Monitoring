@@ -52,8 +52,11 @@ All 11 TOGAF Business Architecture component types are represented with source-e
 
 ```mermaid
 ---
+title: "Business Strategy Map"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
 ---
 graph TB
     accTitle: Business Strategy Map
@@ -100,9 +103,9 @@ graph TB
     cap4 --> tech3
     cap5 --> tech4
 
-    classDef visionStyle fill:#E8DAEF,stroke:#6C3483,stroke-width:3px,color:#323130
+    classDef visionStyle fill:#E7E2FA,stroke:#5B2F91,stroke-width:3px,color:#323130
     classDef pillarStyle fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef capStyle fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef capStyle fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef techStyle fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
     class vision visionStyle
@@ -142,12 +145,11 @@ The following subsections present summary inventory tables for each component ty
 
 ```mermaid
 ---
+title: "Business Capability Map"
 config:
   theme: base
   themeVariables:
-    primaryColor: '#E8F4F8'
-    primaryBorderColor: '#0078D4'
-    primaryTextColor: '#004578'
+    fontSize: '16px'
 ---
 graph TB
     accTitle: Business Capability Map
@@ -175,7 +177,7 @@ graph TB
     cap5 -->|"checks via"| cap6
     cap2 -->|"publishes via"| cap3
 
-    classDef mature fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef mature fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef defined fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
 
     class cap1,cap3,cap4,cap5 mature
@@ -186,8 +188,13 @@ graph TB
 
 ```mermaid
 ---
+title: "Order-to-Fulfillment Value Stream Canvas"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart LR
     accTitle: Order-to-Fulfillment Value Stream Canvas
@@ -212,7 +219,7 @@ flowchart LR
 
     classDef syncStage fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef asyncStage fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
-    classDef workflowStage fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef workflowStage fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 
     class s1,s2,s3 syncStage
     class s4 asyncStage
@@ -223,8 +230,11 @@ flowchart LR
 
 ```mermaid
 ---
+title: "Business Ecosystem Diagram"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
 ---
 graph TB
     accTitle: Business Ecosystem Diagram
@@ -280,13 +290,13 @@ graph TB
     style core fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     style integration fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
     style infra fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
-    style observability fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    style observability fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 
-    classDef actorStyle fill:#E8DAEF,stroke:#6C3483,stroke-width:2px,color:#323130
+    classDef actorStyle fill:#E7E2FA,stroke:#5B2F91,stroke-width:2px,color:#323130
     classDef serviceStyle fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef integrationStyle fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
     classDef infraStyle fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
-    classDef otelStyle fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef otelStyle fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 
     class customer,ops actorStyle
     class webapp,api,orderSvc serviceStyle
@@ -405,8 +415,11 @@ These principles serve as governance constraints for future Business Architectur
 
 ```mermaid
 ---
+title: "Architecture Principle Hierarchy"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
 ---
 graph TB
     accTitle: Architecture Principle Hierarchy
@@ -441,11 +454,11 @@ graph TB
     p3 -->|"monitors"| p4
 
     style design fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style operational fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    style operational fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 
-    classDef rootStyle fill:#E8DAEF,stroke:#6C3483,stroke-width:3px,color:#323130
+    classDef rootStyle fill:#E7E2FA,stroke:#5B2F91,stroke-width:3px,color:#323130
     classDef designPrinciple fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef opsPrinciple fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef opsPrinciple fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 
     class root rootStyle
     class p1,p2,p6 designPrinciple
@@ -491,8 +504,11 @@ The **Order-to-Fulfillment** value stream demonstrates end-to-end instrumentatio
 
 ```mermaid
 ---
+title: "Capability Maturity Heatmap"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
 ---
 graph LR
     accTitle: Capability Maturity Heatmap
@@ -513,7 +529,7 @@ graph LR
     m5["📊 Observability<br/>Level 4 ■■■■□"]
     m6["🏥 Health Monitoring<br/>Level 3 ■■■□□"]
 
-    classDef mature fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef mature fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef defined fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
 
     class m1,m3,m4,m5 mature
@@ -534,8 +550,13 @@ graph LR
 
 ```mermaid
 ---
+title: "Value Stream Performance Chart"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart LR
     accTitle: Value Stream Performance Chart
@@ -568,9 +589,9 @@ flowchart LR
 
     style sync fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     style async fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
-    style workflow fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    style workflow fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 
-    classDef measured fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef measured fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef defined fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
 
     class intake,validate,persist,publish,process measured
@@ -727,8 +748,13 @@ This subsection documents end-to-end value delivery flows within the Business Ar
 
 ```mermaid
 ---
+title: "Order-to-Fulfillment Value Stream Map"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart TB
     accTitle: Order-to-Fulfillment Value Stream Map
@@ -764,11 +790,11 @@ flowchart TB
     w1 -->|"HTTP POST /process"| w2
     w2 -->|"Blob Write"| w3
 
-    style customer_lane fill:#E8DAEF,stroke:#6C3483,stroke-width:2px,color:#323130
+    style customer_lane fill:#E7E2FA,stroke:#5B2F91,stroke-width:2px,color:#323130
     style api_lane fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     style workflow_lane fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
 
-    classDef valueAdd fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef valueAdd fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef enabling fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
     classDef nonValueAdd fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
 
@@ -858,8 +884,13 @@ This subsection provides detailed process documentation for the 4 Business Proce
 
 ```mermaid
 ---
+title: "Order Placement Process Flow"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart TB
     accTitle: Order Placement Process Flow
@@ -901,8 +932,8 @@ flowchart TB
     RejectOrder --> End
 
     classDef processStep fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef decision fill:#FDE7E9,stroke:#C62828,stroke-width:2px,color:#323130
-    classDef terminal fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef decision fill:#FDE7E9,stroke:#A4262C,stroke-width:2px,color:#323130
+    classDef terminal fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef errorStep fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
 
     class PersistOrder,PublishEvent,TriggerWorkflow,ProcessOrder,CleanupBlobs processStep
@@ -1072,8 +1103,11 @@ This subsection documents business events that trigger process execution within 
 
 ```mermaid
 ---
+title: "Business Event-Response Flow"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
 ---
 sequenceDiagram
     accTitle: Business Event-Response Flow
@@ -1353,8 +1387,11 @@ These decisions collectively define the platform's architectural stance and serv
 
 ```mermaid
 ---
+title: "Architecture Decision Impact Diagram"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
 ---
 graph TB
     accTitle: Architecture Decision Impact Diagram
@@ -1398,10 +1435,10 @@ graph TB
     adr6 -->|"adapts"| cap_order
 
     style decisions fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style capabilities fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    style capabilities fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 
     classDef adrStyle fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef capStyle fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef capStyle fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 
     class adr1,adr2,adr3,adr4,adr5,adr6 adrStyle
     class cap_order,cap_msg,cap_wf,cap_obs,cap_batch,cap_health capStyle
@@ -1434,8 +1471,11 @@ Authentication dependencies are uniformly managed through Microsoft Entra ID Man
 
 ```mermaid
 ---
+title: "Capability-Process Matrix"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
 ---
 graph LR
     accTitle: Capability-Process Matrix
@@ -1477,10 +1517,10 @@ graph LR
     c6 -.->|"cross-cutting"| p1
 
     style caps fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    style procs fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    style procs fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 
     classDef capNode fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef procNode fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef procNode fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 
     class c1,c2,c3,c4,c5,c6 capNode
     class p1,p2,p3,p4 procNode
@@ -1513,8 +1553,13 @@ graph LR
 
 ```mermaid
 ---
+title: "Service Dependency Graph"
 config:
   theme: base
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart LR
     accTitle: Service Dependency Graph
@@ -1551,10 +1596,10 @@ flowchart LR
     webapp -.->|"OTLP Export"| monitor
 
     classDef presentation fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
-    classDef service fill:#DFF6DD,stroke:#0B6A0B,stroke-width:2px,color:#323130
+    classDef service fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef data fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef workflow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
-    classDef orchestrator fill:#E8DAEF,stroke:#6C3483,stroke-width:2px,color:#323130
+    classDef orchestrator fill:#E7E2FA,stroke:#5B2F91,stroke-width:2px,color:#323130
 
     class webapp presentation
     class api service
