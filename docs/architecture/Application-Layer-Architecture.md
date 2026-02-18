@@ -62,7 +62,7 @@ The architecture follows a three-tier pattern: Presentation (`eShop.Web.App`), B
 
 The system boundaries are well-defined: the Orders API is authoritative for order state, the Web App is stateless beyond its Blazor circuit, and all inter-system communication is materialised through typed contracts (OpenAPI for REST, JSON serialisation for messages).
 
-### C4 System Context Diagram
+### System Context Diagram
 
 ```mermaid
 ---
