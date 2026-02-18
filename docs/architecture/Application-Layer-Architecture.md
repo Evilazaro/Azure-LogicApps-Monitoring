@@ -66,18 +66,22 @@ The system boundaries are well-defined: the Orders API is authoritative for orde
 
 ```mermaid
 ---
+title: "eShop Application Layer - System Context"
 config:
   theme: base
   themeVariables:
-    primaryColor: '#DEECF9'
-    primaryBorderColor: '#0078D4'
-    primaryTextColor: '#004578'
-    secondaryColor: '#F3F2F1'
-    tertiaryColor: '#FFF4CE'
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart TD
     accTitle: eShop Application Layer C4 System Context Diagram
     accDescr: Shows the external users and systems interacting with the eShop application layer including the Web App and Orders API
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     customer(["👤 Customer\nUses eShop UI to place\nand manage orders"])
     ops(["👤 Operations\nMonitors system health\nand order processing"])
@@ -104,14 +108,17 @@ flowchart TD
     aspire -.->|"Discovers + configures"| webApp
     aspire -.->|"Discovers + configures"| ordersApi
 
-    style appLayer fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style azureSql fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    style serviceBus fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    style logicApps fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    style azureMonitor fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
-    style aspire fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
-    style customer fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
-    style ops fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warningYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef neutralGrey fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+
+    class webApp,ordersApi azureBlue
+    class azureSql,serviceBus,logicApps successGreen
+    class azureMonitor,aspire warningYellow
+    class customer,ops neutralGrey
+
+    style appLayer fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
 ```
 
 ### 2.1 Application Services
@@ -358,17 +365,22 @@ Each principle is evidenced in source code, demonstrating that these are operati
 
 ```mermaid
 ---
-title: Application Architecture Principles Relationship
+title: "Application Architecture Principles Relationship"
 config:
   theme: base
   themeVariables:
-    primaryColor: '#DEECF9'
-    primaryBorderColor: '#0078D4'
-    primaryTextColor: '#004578'
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart TD
     accTitle: Application Architecture Principles Relationship Diagram
     accDescr: Shows the eight architecture principles and their relationships grouped by pillar
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph design["🎨 Design Principles"]
         p1["🔌 API-First Design<br/>OpenAPI-documented endpoints"]
@@ -397,9 +409,17 @@ flowchart TD
     p7 -->|secures| p1
     p7 -->|secures| p5
 
-    style design fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style resilience fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    style ops fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warningYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+
+    class p1,p2,p8 azureBlue
+    class p3,p5 successGreen
+    class p4,p6,p7 warningYellow
+
+    style design fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style resilience fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    style ops fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
 ```
 
 ### Summary
@@ -464,16 +484,22 @@ The current state demonstrates a Level 4 (Measured) architecture: both services 
 
 ```mermaid
 ---
+title: "eShop Application Layer - Current State Baseline"
 config:
   theme: base
   themeVariables:
-    primaryColor: '#DEECF9'
-    primaryBorderColor: '#0078D4'
-    primaryTextColor: '#004578'
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart LR
     accTitle: eShop Application Layer Current State Baseline Architecture
     accDescr: Shows the current deployment topology with two container apps, shared service defaults module, and their connections to Azure SQL, Service Bus, and Azure Monitor
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph webapp["🌐 eShop.Web.App (Container App)"]
         wPages["📄 Blazor Pages\nListAllOrders / PlaceOrder / ViewOrder"]
@@ -515,9 +541,20 @@ flowchart LR
     resilience -.-> discovery
     otel -->|"OTLP"| azMon
 
-    style webapp fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style ordersapi fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    style defaults fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warningYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
+
+    class wPages,wService,wLayout azureBlue
+    class ctrl,svc,repo,handler,hc successGreen
+    class otel,resilience,discovery warningYellow
+    class azSql,azSB presenceTeal
+    class azMon azureBlue
+
+    style webapp fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style ordersapi fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    style defaults fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
 ```
 
 ### Summary
@@ -1427,17 +1464,20 @@ All dependencies: **Resilience** — Not applicable (libraries); **Scaling** —
 
 ```mermaid
 ---
-title: Order Placement End-to-End Sequence
+title: "Order Placement End-to-End Sequence"
 config:
   theme: base
   themeVariables:
-    primaryColor: '#DEECF9'
-    primaryBorderColor: '#0078D4'
-    primaryTextColor: '#004578'
+    fontSize: '16px'
 ---
 sequenceDiagram
     accTitle: Order Placement End-to-End Sequence Diagram
     accDescr: Shows the complete sequence of a single order placement from UI through Web App, Orders API, SQL Database, and Service Bus
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     actor U as 👤 Customer
     participant W as 🌐 Web.App<br/>Blazor Page
@@ -1654,16 +1694,22 @@ This section captures the key Architecture Decision Records (ADRs) governing the
 
 ```mermaid
 ---
-title: Architecture Decision Relationships
+title: "Architecture Decision Relationships"
 config:
   theme: base
   themeVariables:
-    primaryColor: '#DEECF9'
-    primaryBorderColor: '#0078D4'
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart TD
     accTitle: Architecture Decision Relationships Diagram
     accDescr: Shows the six architecture decisions and their relationships and dependencies
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     adr1["📋 ADR-001<br/>ASP.NET Core REST API"]
     adr2["🌐 ADR-002<br/>Blazor Server Web App"]
@@ -1681,12 +1727,13 @@ flowchart TD
     adr6 -->|"instruments"| adr2
     adr6 -->|"instruments"| adr3
 
-    style adr1 fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style adr2 fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style adr3 fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    style adr4 fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    style adr5 fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
-    style adr6 fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warningYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+
+    class adr1,adr2 azureBlue
+    class adr3,adr4 successGreen
+    class adr5,adr6 warningYellow
 ```
 
 ### Summary
@@ -1788,16 +1835,22 @@ Standards are enforced through code reviews, automated linting, and the patterns
 
 ```mermaid
 ---
-title: Architecture Standards Compliance Matrix
+title: "Architecture Standards Compliance Matrix"
 config:
   theme: base
   themeVariables:
-    primaryColor: '#DEECF9'
-    primaryBorderColor: '#0078D4'
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart LR
     accTitle: Architecture Standards Compliance Matrix
     accDescr: Shows the compliance status of six standards across the three main application components
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph standards["📋 Standards"]
         s1["🔌 S-001<br/>REST API Design"]
@@ -1829,8 +1882,14 @@ flowchart LR
     s4 -->|"✅ Provides"| c3
     s5 -->|"✅ Provides"| c3
 
-    style standards fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style components fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+
+    class s1,s2,s3,s4,s5,s6 azureBlue
+    class c1,c2,c3 successGreen
+
+    style standards fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style components fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 ```
 
 ### Summary
@@ -1851,17 +1910,22 @@ Cross-component communication flows through three channels: synchronous REST/HTT
 
 ```mermaid
 ---
-title: eShop Application Layer Dependency & Data Flow Graph
+title: "eShop Application Layer Dependency & Data Flow Graph"
 config:
   theme: base
   themeVariables:
-    primaryColor: '#DEECF9'
-    primaryBorderColor: '#0078D4'
-    primaryTextColor: '#004578'
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart TD
     accTitle: eShop Application Layer Dependency and Data Flow Graph
     accDescr: Shows all service-to-service dependencies and data flows from UI through API to infrastructure services
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph presentation["🌐 Presentation Tier"]
         blazor["🖥️ Blazor Pages<br/>ListAllOrders / PlaceOrder<br/>ViewOrder / PlaceOrdersBatch"]
@@ -1904,9 +1968,19 @@ flowchart TD
     apiSvc -->|"traces"| otel
     otel -->|"OTLP"| mon
 
-    style presentation fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style api fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    style shared fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warningYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef neutralGrey fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+
+    class blazor,apiSvc azureBlue
+    class ctrl,ordSvc,ordRepo,msgHandler,hcDb,hcSb successGreen
+    class otel,resil,svcDisc warningYellow
+    class sql,sb,mon,la neutralGrey
+
+    style presentation fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style api fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    style shared fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
     style infra fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
@@ -1943,16 +2017,22 @@ flowchart TD
 
 ```mermaid
 ---
-title: eShop Order Data Flow
+title: "eShop Order Data Flow"
 config:
   theme: base
   themeVariables:
-    primaryColor: '#DEECF9'
-    primaryBorderColor: '#0078D4'
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: false
 ---
 flowchart LR
     accTitle: eShop Application Order Data Flow Diagram
     accDescr: Shows how order data flows from customer input through UI validation, API processing, SQL persistence, and Service Bus publication to downstream Logic Apps
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     start(["👤 Customer Input<br/>Order + Products"])
 
@@ -1984,6 +2064,22 @@ flowchart LR
     sbTopic -->|"subscription"| laConsumer
     svcLogic -->|"Spans + Counters"| otelCol
     httpPost -->|"Client spans"| otelCol
+
+    classDef azureBlue fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    classDef successGreen fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warningYellow fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef presenceTeal fill:#C8F0E7,stroke:#00666B,stroke-width:2px,color:#323130
+    classDef neutralGrey fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+
+    class start neutralGrey
+    class formVal,httpPost azureBlue
+    class ctrl2,svcLogic,repoWrite,eventPub successGreen
+    class sqlStore,sbTopic presenceTeal
+    class laConsumer warningYellow
+    class otelCol azureBlue
+
+    style webui fill:#DEECF9,stroke:#004578,stroke-width:2px,color:#323130
+    style ordapi fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 ```
 
 ### Summary
@@ -2119,16 +2215,20 @@ _Reference:_ `src/eShop.Orders.API/MIGRATION_GUIDE.md`
 
 ```mermaid
 ---
-title: Application Layer Service Lifecycle
+title: "Application Layer Service Lifecycle"
 config:
   theme: base
   themeVariables:
-    primaryColor: '#DEECF9'
-    primaryBorderColor: '#0078D4'
+    fontSize: '16px'
 ---
 timeline
     accTitle: eShop Application Layer Service Lifecycle Timeline
     accDescr: Shows the planned lifecycle milestones for eShop Orders API and Web App services across development, stabilization, and future roadmap phases
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     section 2025-Q4 Initial Release
         eShop.Orders.API v1 : REST API + EF Core + Service Bus
