@@ -291,7 +291,7 @@ flowchart LR
     DNSSQL -->|"DNS resolves to PE"| PESQL
     LANode -->|"Service Bus (public)"| SBNSNode
 
-    style VNetBlock fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style VNetBlock fill:#FFFFFF,stroke:#605E5C,stroke-width:2px,color:#323130
     style ApiSub fill:#DEECF9,stroke:#004578,stroke-width:1px,color:#323130
     style WfSub fill:#FFF9C4,stroke:#F57F17,stroke-width:1px,color:#323130
     style DataSub fill:#DFF6DD,stroke:#0B6A0B,stroke-width:1px,color:#323130
