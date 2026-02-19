@@ -84,7 +84,7 @@ flowchart TB
     end
 
     subgraph azure["☁️ Azure Cloud — Managed Services"]
-        direction TB
+        direction LR
         subgraph messaging["📨 Messaging"]
             ServiceBus["🔄 Azure Service Bus\nordersplaced topic\norderprocessingsub"]:::core
         end
@@ -111,12 +111,12 @@ flowchart TB
     WF2 -.->|Telemetry| AppInsights
 
     %% Subgraph styling (6 subgraphs = 6 style directives)
-    style aspire fill:#F3F2F1,stroke:#8A8886,stroke-width:3px,color:#323130
+    style aspire fill:#F3F2F1,stroke:#0078D4,stroke-width:3px,color:#323130
     style azure fill:#F3F2F1,stroke:#8A8886,stroke-width:3px,color:#323130
-    style messaging fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
-    style data fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
-    style workflows fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
-    style monitoring fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style messaging fill:#F3F2F1,stroke:#0078D4,stroke-width:2px,color:#323130
+    style data fill:#F3F2F1,stroke:#8378DE,stroke-width:2px,color:#323130
+    style workflows fill:#F3F2F1,stroke:#107C10,stroke-width:2px,color:#323130
+    style monitoring fill:#F3F2F1,stroke:#0078D4,stroke-width:2px,color:#323130
 
     %% Centralized classDefs
     classDef external fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
