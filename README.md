@@ -12,39 +12,39 @@ End-to-end order monitoring solution built with **.NET Aspire** orchestration, d
 
 ## Table of Contents
 
-- [Features](#features)
-- [Architecture](#architecture)
-- [Quick Start](#quick-start)
+- [✨ Features](#-features)
+- [🏗️ Architecture](#️-architecture)
+- [🚀 Quick Start](#-quick-start)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Running Locally](#running-locally)
   - [Deploying to Azure](#deploying-to-azure)
-- [Configuration](#configuration)
-- [Project Structure](#project-structure)
-- [Testing](#testing)
-- [Contributing](#contributing)
-- [License](#license)
+- [🔧 Configuration](#-configuration)
+- [📁 Project Structure](#-project-structure)
+- [🧪 Testing](#-testing)
+- [🤝 Contributing](#-contributing)
+- [📝 License](#-license)
 
-## Features
+## ✨ Features
 
 **Overview**
 
 This solution delivers a production-ready reference architecture for monitoring Azure Logic Apps Standard workflows within an event-driven microservices system. It combines a Blazor Server UI, an ASP.NET Core Orders API, and two Logic App workflows — all orchestrated by .NET Aspire and deployed to Azure Container Apps via the Azure Developer CLI. Every component emits telemetry to Application Insights, enabling end-to-end distributed tracing and diagnostics.
 
-| Feature                        | Description                                                                                 | Source                            |
-| ------------------------------ | ------------------------------------------------------------------------------------------- | --------------------------------- |
-| .NET Aspire Orchestration      | Multi-service startup, service discovery, and dependency coordination                       | `app.AppHost/AppHost.cs`          |
-| Orders REST API                | ASP.NET Core Web API with Entity Framework Core, Swagger/OpenAPI, and Azure SQL resilience  | `src/eShop.Orders.API/Program.cs` |
-| Blazor Server UI               | Interactive frontend using Microsoft Fluent UI components with session management           | `src/eShop.Web.App/Program.cs`    |
-| Event-Driven Messaging         | Azure Service Bus with `ordersplaced` topic and `orderprocessingsub` subscription           | `app.AppHost/AppHost.cs`          |
-| Logic Apps Standard Monitoring | `OrdersPlacedProcess` and `OrdersPlacedCompleteProcess` workflows triggered via Service Bus | `workflows/OrdersManagement/`     |
-| Distributed Observability      | Application Insights + Log Analytics for all services including Logic Apps                  | `app.AppHost/AppHost.cs`          |
-| Passwordless SQL Access        | Managed Identity (Entra ID) authentication for Azure SQL — no secrets in code               | `app.AppHost/AppHost.cs`          |
-| Infrastructure as Code         | Bicep templates for shared and workload modules with environment-aware parameters           | `infra/main.bicep`                |
-| One-Command Deployment         | Full provision and deploy via `azd up` with lifecycle hooks for automated configuration     | `azure.yaml`                      |
-| Test Projects                  | Four dedicated test projects covering AppHost, ServiceDefaults, Orders API, and Web App     | `src/tests/`                      |
+| Feature                          | Description                                                                                 | Source                            |
+| -------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------- |
+| 🏗️ **.NET Aspire Orchestration** | Multi-service startup, service discovery, and dependency coordination                       | `app.AppHost/AppHost.cs`          |
+| ⚙️ **Orders REST API**           | ASP.NET Core Web API with Entity Framework Core, Swagger/OpenAPI, and Azure SQL resilience  | `src/eShop.Orders.API/Program.cs` |
+| ⚡ **Blazor Server UI**          | Interactive frontend using Microsoft Fluent UI components with session management           | `src/eShop.Web.App/Program.cs`    |
+| 🔄 **Event-Driven Messaging**    | Azure Service Bus with `ordersplaced` topic and `orderprocessingsub` subscription           | `app.AppHost/AppHost.cs`          |
+| 🔁 **Logic Apps Monitoring**     | `OrdersPlacedProcess` and `OrdersPlacedCompleteProcess` workflows triggered via Service Bus | `workflows/OrdersManagement/`     |
+| 🔍 **Distributed Observability** | Application Insights + Log Analytics for all services including Logic Apps                  | `app.AppHost/AppHost.cs`          |
+| 🔒 **Passwordless SQL Access**   | Managed Identity (Entra ID) authentication for Azure SQL — no secrets in code               | `app.AppHost/AppHost.cs`          |
+| 📄 **Infrastructure as Code**    | Bicep templates for shared and workload modules with environment-aware parameters           | `infra/main.bicep`                |
+| 🚀 **One-Command Deployment**    | Full provision and deploy via `azd up` with lifecycle hooks for automated configuration     | `azure.yaml`                      |
+| 🧪 **Test Projects**             | Four dedicated test projects covering AppHost, ServiceDefaults, Orders API, and Web App     | `src/tests/`                      |
 
-## Architecture
+## 🏗️ Architecture
 
 ```mermaid
 ---
@@ -109,7 +109,7 @@ flowchart TB
     style monitoring fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
 **Overview**
 
@@ -121,15 +121,19 @@ The solution runs entirely locally using .NET Aspire, which automatically starts
 
 All tools listed below are required before provisioning or running the solution locally. The .NET SDK version is pinned in [`global.json`](./global.json) to `10.0.100`, and the Azure Developer CLI minimum version is enforced in [`azure.yaml`](./azure.yaml).
 
-| Tool                                                                                                     | Minimum Version | Purpose                                               |
-| -------------------------------------------------------------------------------------------------------- | --------------- | ----------------------------------------------------- |
-| [.NET SDK](https://dotnet.microsoft.com/download)                                                        | 10.0.100        | Build and run all projects                            |
-| [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) | 1.11.0          | Provision and deploy to Azure                         |
-| [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)                                     | 2.60.0          | Authenticate and manage Azure resources               |
-| [Docker](https://docs.docker.com/get-docker/)                                                            | Latest          | Run local service emulators (SQL Server, Service Bus) |
-| [PowerShell](https://github.com/PowerShell/PowerShell)                                                   | 7.0             | Execute lifecycle hook scripts                        |
+| Tool                                                                                                            | Minimum Version | Purpose                                               |
+| --------------------------------------------------------------------------------------------------------------- | --------------- | ----------------------------------------------------- |
+| Tool                                                                                                            | Minimum Version | Purpose                                               |
+| ---                                                                                                             | ---             | ---                                                   |
+| 🟣 [**.NET SDK**](https://dotnet.microsoft.com/download)                                                        | 10.0.100        | Build and run all projects                            |
+| 🚀 [**Azure Developer CLI (azd)**](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) | 1.11.0          | Provision and deploy to Azure                         |
+| ☁️ [**Azure CLI**](https://learn.microsoft.com/cli/azure/install-azure-cli)                                     | 2.60.0          | Authenticate and manage Azure resources               |
+| 🐳 [**Docker**](https://docs.docker.com/get-docker/)                                                            | Latest          | Run local service emulators (SQL Server, Service Bus) |
+| 💻 [**PowerShell**](https://github.com/PowerShell/PowerShell)                                                   | 7.0             | Execute lifecycle hook scripts                        |
 
-> **Note:** Docker is required for local development only. The .NET Aspire host (`app.AppHost`) automatically pulls and starts the SQL Server and Service Bus emulator containers on first run. See `app.AppHost/AppHost.cs` for container configuration.
+> 💡 **Why This Matters:** Missing or outdated prerequisites cause mid-deployment failures. Pre-validating all tools — especially matching the exact .NET SDK version pinned in `global.json` — eliminates the most common source of broken builds and `azd up` errors.
+
+> 📌 **How It Works:** The `preprovision.ps1` hook in `hooks/` validates your Azure CLI version and authentication before any Bicep templates are deployed, halting execution with a clear error message if requirements are unmet.
 
 ### Installation
 
@@ -191,7 +195,7 @@ azd up
 SUCCESS: Your application was provisioned and deployed to Azure in 8 minutes 42 seconds.
 ```
 
-## Configuration
+## 🔧 Configuration
 
 **Overview**
 
@@ -213,7 +217,7 @@ After running `azd up`, the `postprovision.ps1` hook automatically populates all
 
 > **Security:** No credentials or connection strings are ever stored in source files or the repository. Azure SQL and Azure Service Bus use [Managed Identity (Entra ID)](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) for all service-to-service authentication, both in Azure and during local development via the Azure credentials flow configured in `app.AppHost/AppHost.cs`.
 
-## Project Structure
+## 📁 Project Structure
 
 ```text
 ├── app.AppHost/               # .NET Aspire orchestration host
@@ -238,7 +242,7 @@ After running `azd up`, the `postprovision.ps1` hook automatically populates all
 └── global.json                # .NET SDK version pin (10.0.100)
 ```
 
-## Testing
+## 🧪 Testing
 
 **Overview**
 
@@ -270,7 +274,7 @@ Test run for eShop.Orders.API.Tests (.NETCoreApp, Version=v10.0)
 Passed! - Failed: 0, Passed: N, Skipped: 0, Total: N
 ```
 
-## Contributing
+## 🤝 Contributing
 
 **Overview**
 
@@ -290,6 +294,6 @@ dotnet test
 
 5. Open a pull request describing your changes and referencing any related issues.
 
-## License
+## 📝 License
 
 [MIT](./LICENSE) — Copyright (c) 2025 Evilázaro Alves
