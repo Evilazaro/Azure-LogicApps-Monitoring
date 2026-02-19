@@ -69,6 +69,7 @@ flowchart TB
     %% PHASE 2 - SEMANTIC: 4 colors (external, neutral, core, success) within 5 limit
     %%           external: User entry point | neutral: App-layer services
     %%           core: Azure PaaS (Bus, SQL, Insights) | success: Logic Apps workflows
+    %%           MRM-C005: child subgraph fills match contained node colors
     %% PHASE 3 - FONT: Dark text #323130/#004578/#0B6A0B on 100-level fills (WCAG AA 4.5:1)
     %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, semantic icons on all 8 nodes
     %% PHASE 5 - STANDARD: v1.1 format, 6 style directives for 6 subgraphs, classDefs centralized
@@ -113,10 +114,10 @@ flowchart TB
     %% Subgraph styling (6 subgraphs = 6 style directives)
     style aspire fill:#F3F2F1,stroke:#0078D4,stroke-width:3px,color:#323130
     style azure fill:#F3F2F1,stroke:#8A8886,stroke-width:3px,color:#323130
-    style messaging fill:#F3F2F1,stroke:#0078D4,stroke-width:2px,color:#323130
-    style data fill:#F3F2F1,stroke:#8378DE,stroke-width:2px,color:#323130
-    style workflows fill:#F3F2F1,stroke:#107C10,stroke-width:2px,color:#323130
-    style monitoring fill:#F3F2F1,stroke:#0078D4,stroke-width:2px,color:#323130
+    style messaging fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style data fill:#DEECF9,stroke:#8378DE,stroke-width:2px,color:#004578
+    style workflows fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style monitoring fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
 
     %% Centralized classDefs
     classDef external fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
