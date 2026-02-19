@@ -60,10 +60,19 @@ flowchart TB
     accTitle: Azure Logic Apps Monitoring Solution Architecture
     accDescr: Full-stack .NET Aspire application with eShop Web App and Orders API integrated with Azure Service Bus, Logic Apps Standard, Azure SQL Database, and Application Insights for end-to-end order monitoring
 
-    classDef external fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#986F0B
-    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
-    classDef info fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: TB direction explicit, 2-level nesting, 6 subgraphs
+    %%           aspire (LR) + azure (TB) containing messaging/data/workflows/monitoring
+    %% PHASE 2 - SEMANTIC: 4 colors (external, neutral, info, success) within 5 limit
+    %%           external: User entry point | neutral: App-layer services
+    %%           info: Azure PaaS (Bus, SQL, Insights) | success: Logic Apps workflows
+    %% PHASE 3 - FONT: Dark text #323130/#004578/#0B6A0B on 100-level fills (WCAG AA 4.5:1)
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, semantic icons on all 9 nodes
+    %% PHASE 5 - STANDARD: v1.1 format, 6 style directives for 6 subgraphs, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     User["👤 User\nBrowser"]:::external
 
@@ -101,12 +110,19 @@ flowchart TB
     WF1 -.->|Telemetry| AppInsights
     WF2 -.->|Telemetry| AppInsights
 
+    %% Subgraph styling (6 subgraphs = 6 style directives)
     style aspire fill:#F3F2F1,stroke:#8A8886,stroke-width:3px,color:#323130
     style azure fill:#F3F2F1,stroke:#8A8886,stroke-width:3px,color:#323130
-    style messaging fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
-    style data fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
-    style workflows fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
-    style monitoring fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
+    style messaging fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style data fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style workflows fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style monitoring fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+
+    %% Centralized classDefs
+    classDef external fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef info fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
 ```
 
 ## 🚀 Quick Start
