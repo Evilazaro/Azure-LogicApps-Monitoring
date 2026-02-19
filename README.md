@@ -60,10 +60,10 @@ flowchart TB
     accTitle: Azure Logic Apps Monitoring Solution Architecture
     accDescr: Full-stack .NET Aspire application with eShop Web App and Orders API integrated with Azure Service Bus, Logic Apps Standard, Azure SQL Database, and Application Insights for end-to-end order monitoring
 
-    classDef external fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#3B2C00
+    classDef external fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#986F0B
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
-    classDef info fill:#E7F3FF,stroke:#0F6CBD,stroke-width:2px,color:#002E5D
-    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#054B16
+    classDef info fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
 
     User["👤 User\nBrowser"]:::external
 
@@ -102,7 +102,7 @@ flowchart TB
     WF2 -.->|Telemetry| AppInsights
 
     style aspire fill:#F3F2F1,stroke:#8A8886,stroke-width:3px,color:#323130
-    style azure fill:#FFFFFF,stroke:#0F6CBD,stroke-width:3px,color:#002E5D
+    style azure fill:#F3F2F1,stroke:#8A8886,stroke-width:3px,color:#323130
     style messaging fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
     style data fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
     style workflows fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
