@@ -129,6 +129,8 @@ All tools listed below are required before provisioning or running the solution 
 | [Docker](https://docs.docker.com/get-docker/)                                                            | Latest          | Run local service emulators (SQL Server, Service Bus) |
 | [PowerShell](https://github.com/PowerShell/PowerShell)                                                   | 7.0             | Execute lifecycle hook scripts                        |
 
+> **Note:** Docker is required for local development only. The .NET Aspire host (`app.AppHost`) automatically pulls and starts the SQL Server and Service Bus emulator containers on first run. See `app.AppHost/AppHost.cs` for container configuration.
+
 ### Installation
 
 **Clone the repository:**
@@ -209,6 +211,8 @@ The solution uses .NET user secrets for local development and environment variab
 
 After running `azd up`, the `postprovision.ps1` hook automatically populates all user secrets for the AppHost, Orders API, and Web App projects.
 
+> **Security:** No credentials or connection strings are ever stored in source files or the repository. Azure SQL and Azure Service Bus use [Managed Identity (Entra ID)](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) for all service-to-service authentication, both in Azure and during local development via the Azure credentials flow configured in `app.AppHost/AppHost.cs`.
+
 ## Project Structure
 
 ```text
@@ -232,6 +236,38 @@ After running `azd up`, the `postprovision.ps1` hook automatically populates all
 ├── hooks/                     # azd lifecycle scripts (preprovision, postprovision, etc.)
 ├── azure.yaml                 # Azure Developer CLI configuration
 └── global.json                # .NET SDK version pin (10.0.100)
+```
+
+## Testing
+
+**Overview**
+
+The solution ships four test projects covering every layer of the application. Tests run against in-memory or mocked dependencies by default, so no Azure services are required. The projects follow the naming convention `<Project>.Tests` and live under `src/tests/`.
+
+| Test Project                | Coverage Target                                        | Location                               |
+| --------------------------- | ------------------------------------------------------ | -------------------------------------- |
+| `app.AppHost.Tests`         | Aspire orchestration wiring and resource configuration | `src/tests/app.AppHost.Tests/`         |
+| `app.ServiceDefaults.Tests` | Shared service defaults, health checks, extensions     | `src/tests/app.ServiceDefaults.Tests/` |
+| `eShop.Orders.API.Tests`    | Controllers, services, repositories, and handlers      | `src/tests/eShop.Orders.API.Tests/`    |
+| `eShop.Web.App.Tests`       | Blazor components and HTTP client behaviour            | `src/tests/eShop.Web.App.Tests/`       |
+
+**Run all tests:**
+
+```bash
+dotnet test
+```
+
+**Run a specific project:**
+
+```bash
+dotnet test src/tests/eShop.Orders.API.Tests
+```
+
+**Expected output:**
+
+```
+Test run for eShop.Orders.API.Tests (.NETCoreApp, Version=v10.0)
+Passed! - Failed: 0, Passed: N, Skipped: 0, Total: N
 ```
 
 ## Contributing
