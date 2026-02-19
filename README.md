@@ -65,18 +65,18 @@ flowchart TB
     %% (Semantic + Structural + Font + Accessibility Governance)
     %% ═══════════════════════════════════════════════════════════════════════════
     %% PHASE 1 - STRUCTURAL: TB direction explicit, 2-level nesting, 6 subgraphs
-    %%           aspire (LR) + azure (TB) containing messaging/data/workflows/monitoring
-    %% PHASE 2 - SEMANTIC: 4 colors (external, neutral, info, success) within 5 limit
+    %%           aspire (LR, label ≤40 chars) + azure (TB) containing messaging/data/workflows/monitoring
+    %% PHASE 2 - SEMANTIC: 4 colors (external, neutral, core, success) within 5 limit
     %%           external: User entry point | neutral: App-layer services
-    %%           info: Azure PaaS (Bus, SQL, Insights) | success: Logic Apps workflows
+    %%           core: Azure PaaS (Bus, SQL, Insights) | success: Logic Apps workflows
     %% PHASE 3 - FONT: Dark text #323130/#004578/#0B6A0B on 100-level fills (WCAG AA 4.5:1)
-    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, semantic icons on all 9 nodes
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, semantic icons on all 8 nodes
     %% PHASE 5 - STANDARD: v1.1 format, 6 style directives for 6 subgraphs, classDefs centralized
     %% ═══════════════════════════════════════════════════════════════════════════
 
     User["👤 User\nBrowser"]:::external
 
-    subgraph aspire["🏗️ .NET Aspire AppHost — Orchestration Layer"]
+    subgraph aspire["🏗️ .NET Aspire Orchestration Layer"]
         direction LR
         WebApp["⚡ eShop Web App\nBlazor Server\nMicrosoft Fluent UI"]:::neutral
         OrdersAPI["⚙️ eShop Orders API\nASP.NET Core\nEntity Framework Core"]:::neutral
@@ -86,17 +86,17 @@ flowchart TB
     subgraph azure["☁️ Azure Cloud — Managed Services"]
         direction TB
         subgraph messaging["📨 Messaging"]
-            ServiceBus["🔄 Azure Service Bus\nordersplaced topic\norderprocessingsub"]:::info
+            ServiceBus["🔄 Azure Service Bus\nordersplaced topic\norderprocessingsub"]:::core
         end
         subgraph data["🗄️ Data"]
-            SqlDB[("🗃️ Azure SQL Database\nOrderDb")]:::info
+            SqlDB[("🗃️ Azure SQL Database\nOrderDb")]:::core
         end
         subgraph workflows["🔁 Logic Apps Standard"]
             WF1["📋 OrdersPlacedProcess"]:::success
             WF2["✅ OrdersPlacedCompleteProcess"]:::success
         end
         subgraph monitoring["📊 Observability"]
-            AppInsights["🔍 Application Insights\nLog Analytics Workspace"]:::info
+            AppInsights["🔍 Application Insights\nLog Analytics Workspace"]:::core
         end
     end
 
@@ -121,7 +121,7 @@ flowchart TB
     %% Centralized classDefs
     classDef external fill:#FFF4CE,stroke:#986F0B,stroke-width:2px,color:#323130
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
-    classDef info fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
 ```
 
