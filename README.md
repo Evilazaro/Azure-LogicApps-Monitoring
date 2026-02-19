@@ -4,10 +4,26 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![.NET Aspire](https://img.shields.io/badge/.NET%20Aspire-13.1.0-512BD4?logo=dotnet)](https://learn.microsoft.com/dotnet/aspire/)
-[![Azure Developer CLI](https://img.shields.io/badge/azd-%3E%3D1.11.0-0078D4?logo=microsoft-azure)](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+[![azd](https://img.shields.io/badge/azd-%3E%3D1.11.0-0078D4?logo=microsoft-azure)](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
 [![IaC: Bicep](https://img.shields.io/badge/IaC-Bicep-0078D4?logo=microsoft-azure)](https://learn.microsoft.com/azure/azure-resource-manager/bicep/)
+[![SDK: 10.0.100](https://img.shields.io/badge/SDK-10.0.100-512BD4?logo=dotnet)](https://dotnet.microsoft.com/download)
 
 End-to-end order monitoring solution built with **.NET Aspire** orchestration, demonstrating how **Azure Logic Apps Standard** integrates with Azure Service Bus, Azure SQL Database, and Application Insights to provide full observability across distributed microservices workflows.
+
+## Table of Contents
+
+- [Features](#features)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running Locally](#running-locally)
+  - [Deploying to Azure](#deploying-to-azure)
+- [Configuration](#configuration)
+- [Project Structure](#project-structure)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
@@ -94,6 +110,10 @@ flowchart TB
 ```
 
 ## Quick Start
+
+**Overview**
+
+The solution runs entirely locally using .NET Aspire, which automatically starts a SQL Server container and a Service Bus emulator via Docker — no manual service setup is required. For Azure deployment, the Azure Developer CLI provisions and wires all resources in a single command using the Bicep templates in `infra/`.
 
 ### Prerequisites
 
