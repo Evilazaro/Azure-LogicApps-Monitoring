@@ -737,29 +737,35 @@ flowchart LR
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
     %% (Semantic + Structural + Font + Accessibility Governance)
     %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Stage1["📥 1. Place"]
-        S1["🛒 Customer submits order<br/>via Web App or API"]
+        S1["🛒 Customer submits order<br/>via Web App or API"]:::core
     end
 
     subgraph Stage2["📨 2. Publish"]
-        S2["📬 OrderPlaced event<br/>→ Service Bus topic"]
+        S2["📬 OrderPlaced event<br/>→ Service Bus topic"]:::core
     end
 
     subgraph Stage3["⚡ 3. Trigger"]
-        S3["🔔 Logic App polls<br/>subscription (1s)"]
+        S3["🔔 Logic App polls<br/>subscription (1s)"]:::warning
     end
 
     subgraph Stage4["⚙️ 4. Process"]
-        S4["🔧 HTTP POST to API<br/>Process order"]
+        S4["🔧 HTTP POST to API<br/>Process order"]:::core
     end
 
     subgraph Stage5["📝 5. Audit"]
-        S5["📦 Create audit blob<br/>(success/error)"]
+        S5["📦 Create audit blob<br/>(success/error)"]:::success
     end
 
     subgraph Stage6["🧹 6. Cleanup"]
-        S6["🗑️ Delete processed<br/>audit blobs"]
+        S6["🗑️ Delete processed<br/>audit blobs"]:::neutral
     end
 
     Stage1 -->|"Order JSON"| Stage2
@@ -768,13 +774,16 @@ flowchart LR
     Stage4 -->|"Result"| Stage5
     Stage5 -->|"Timer 3s"| Stage6
 
-    style Stage1 fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style Stage2 fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style Stage3 fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
-    style Stage4 fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style Stage5 fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style Stage1 fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Stage2 fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Stage3 fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Stage4 fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Stage5 fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
     style Stage6 fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
@@ -825,18 +834,24 @@ flowchart TB
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
     %% (Semantic + Structural + Font + Accessibility Governance)
     %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
 
-    Start(["🚀 HTTP POST /api/Orders"]):::start
-    Validate["🔍 ValidateOrder<br/>(ID, CustomerID, Total, Products)"]:::process
-    ValidOK{"⚡ Valid?"}:::decision
-    IdempCheck["🔒 Check Order Exists<br/>(Idempotency)"]:::process
-    Exists{"⚡ Already Exists?"}:::decision
-    SaveDB["💾 SaveOrderAsync<br/>(SQL via Repository)"]:::process
-    PublishSB["📨 SendOrderMessageAsync<br/>(Service Bus Topic)"]:::process
-    RecordMetrics["📊 Record Metrics<br/>(Counter + Histogram)"]:::process
+    Start(["🚀 HTTP POST /api/Orders"]):::core
+    Validate["🔍 ValidateOrder<br/>(ID, CustomerID, Total, Products)"]:::neutral
+    ValidOK{"⚡ Valid?"}:::warning
+    IdempCheck["🔒 Check Order Exists<br/>(Idempotency)"]:::neutral
+    Exists{"⚡ Already Exists?"}:::warning
+    SaveDB["💾 SaveOrderAsync<br/>(SQL via Repository)"]:::neutral
+    PublishSB["📨 SendOrderMessageAsync<br/>(Service Bus Topic)"]:::neutral
+    RecordMetrics["📊 Record Metrics<br/>(Counter + Histogram)"]:::neutral
     Success(["✅ Order Placed Successfully"]):::success
     Skip(["⏭️ Already Exists — Skipped"]):::warning
-    Error(["❌ Validation Error 400"]):::error
+    Error(["❌ Validation Error 400"]):::danger
 
     Start --> Validate
     Validate --> ValidOK
@@ -849,12 +864,11 @@ flowchart TB
     PublishSB --> RecordMetrics
     RecordMetrics --> Success
 
-    classDef start fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    classDef process fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
-    classDef decision fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
-    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
-    classDef error fill:#FDE7E9,stroke:#E81123,stroke-width:2px,color:#A4262C
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef danger fill:#FDE7E9,stroke:#E81123,stroke-width:2px,color:#A4262C
 ```
 
 #### 5.4.2 Logic App: Order Processing Workflow
@@ -1009,6 +1023,12 @@ flowchart LR
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
     %% (Semantic + Structural + Font + Accessibility Governance)
     %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Trigger["🎯 Event Trigger"]
         E1["📤 OrderPlaced<br/>Domain Event"]:::core
@@ -1042,14 +1062,14 @@ flowchart LR
     CLEAN -->|"Emit"| METRIC
     METRIC --> DONE
 
-    style Trigger fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style Trigger fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
     style Transport fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
-    style Processing fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style Completion fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style Processing fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Completion fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    classDef data fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
-    classDef neutral fill:#FAF9F8,stroke:#8A8886,stroke-width:1px,color:#323130
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
 ```
 
@@ -1169,32 +1189,39 @@ flowchart LR
 
     %% ═══════════════════════════════════════════════════════════════════════════
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph UserLayer["👤 User Layer"]
-        WebApp["🌐 eShop Web App<br/>(Blazor)"]
+        WebApp["🌐 eShop Web App<br/>(Blazor)"]:::core
     end
 
     subgraph APILayer["⚙️ API Layer"]
-        Controller["📡 OrdersController<br/>(REST API)"]
-        Service["🔧 OrderService"]
-        Repo["💾 OrderRepository"]
-        MsgHandler["📨 OrdersMessageHandler"]
+        Controller["📡 OrdersController<br/>(REST API)"]:::core
+        Service["🔧 OrderService"]:::core
+        Repo["💾 OrderRepository"]:::core
+        MsgHandler["📨 OrdersMessageHandler"]:::core
     end
 
     subgraph DataLayer["🗄️ Data Layer"]
-        SQL["🗃️ Azure SQL<br/>(Orders DB)"]
-        ServiceBus["📬 Azure Service Bus<br/>(ordersplaced topic)"]
+        SQL["🗃️ Azure SQL<br/>(Orders DB)"]:::data
+        ServiceBus["📬 Azure Service Bus<br/>(ordersplaced topic)"]:::data
     end
 
     subgraph WorkflowLayer["🔄 Workflow Layer"]
-        LogicApp1["⚡ OrdersPlacedProcess<br/>(Logic App)"]
-        LogicApp2["🧹 AuditCleanup<br/>(Logic App)"]
-        Blob["📦 Azure Blob Storage<br/>(Audit Trail)"]
+        LogicApp1["⚡ OrdersPlacedProcess<br/>(Logic App)"]:::warning
+        LogicApp2["🧹 AuditCleanup<br/>(Logic App)"]:::warning
+        Blob["📦 Azure Blob Storage<br/>(Audit Trail)"]:::data
     end
 
     subgraph ObservabilityLayer["📡 Observability"]
-        AppInsights["📊 Application Insights<br/>(OpenTelemetry)"]
+        AppInsights["📊 Application Insights<br/>(OpenTelemetry)"]:::success
     end
 
     WebApp -->|"HTTPS/JSON"| Controller
@@ -1210,13 +1237,16 @@ flowchart LR
     Service -.->|"Metrics/Traces"| AppInsights
     LogicApp1 -.->|"Telemetry"| AppInsights
 
-    style UserLayer fill:#E8DEF8,stroke:#7B61BC,stroke-width:2px,color:#3B2E58
-    style APILayer fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style DataLayer fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    style WorkflowLayer fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    style UserLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style APILayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style DataLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style WorkflowLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
     style ObservabilityLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
-    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
 ```
 
 ### Integration Patterns Summary
