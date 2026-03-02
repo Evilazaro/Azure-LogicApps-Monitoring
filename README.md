@@ -61,6 +61,8 @@ flowchart TB
 
     %% ═══════════════════════════════════════════════════════════════════════════
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
     %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
     %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
     %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
@@ -82,28 +84,28 @@ flowchart TB
 
     subgraph messagingLayer["📨 Messaging"]
         direction LR
-        serviceBus["📬 Azure Service Bus<br/>ordersplaced topic"]:::messaging
+        serviceBus["📬 Azure Service Bus<br/>ordersplaced topic"]:::warning
     end
 
     subgraph workflowLayer["⚡ Workflow Processing"]
         direction LR
-        logicApp["🔄 Logic Apps Standard<br/>OrdersPlacedProcess"]:::workflow
-        logicAppCleanup["🧹 Logic Apps Standard<br/>OrdersPlacedCompleteProcess"]:::workflow
+        logicApp["🔄 Logic Apps Standard<br/>OrdersPlacedProcess"]:::core
+        logicAppCleanup["🧹 Logic Apps Standard<br/>OrdersPlacedCompleteProcess"]:::core
         blobSuccess["📁 Blob Storage<br/>ordersprocessedsuccessfully"]:::data
         blobErrors["📁 Blob Storage<br/>ordersprocessedwitherrors"]:::data
     end
 
     subgraph observability["📊 Observability"]
         direction LR
-        appInsights["📈 Application Insights<br/>OpenTelemetry"]:::monitoring
-        logAnalytics["📋 Log Analytics<br/>Workspace"]:::monitoring
+        appInsights["📈 Application Insights<br/>OpenTelemetry"]:::danger
+        logAnalytics["📋 Log Analytics<br/>Workspace"]:::danger
     end
 
     subgraph infraLayer["🏗️ Infrastructure"]
         direction LR
-        containerApps["🐳 Container Apps<br/>Environment"]:::infra
-        vnet["🔒 Virtual Network<br/>3 Subnets"]:::infra
-        identity["🔑 Managed Identity<br/>User-Assigned"]:::infra
+        containerApps["🐳 Container Apps<br/>Environment"]:::external
+        vnet["🔒 Virtual Network<br/>3 Subnets"]:::external
+        identity["🔑 Managed Identity<br/>User-Assigned"]:::external
     end
 
     user -->|"HTTPS"| webapp
@@ -133,13 +135,12 @@ flowchart TB
     style observability fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
     style infraLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
 
-    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    classDef data fill:#E8F5E9,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    classDef messaging fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
-    classDef workflow fill:#EDE7F6,stroke:#8661C5,stroke-width:2px,color:#5C2D91
-    classDef monitoring fill:#FCE4EC,stroke:#E81123,stroke-width:2px,color:#A4262C
-    classDef infra fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef danger fill:#FDE7E9,stroke:#E81123,stroke-width:2px,color:#A4262C
+    classDef external fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
 **Component Roles**
