@@ -230,40 +230,40 @@ flowchart TB
 
 ### 2.9 Business Events (7)
 
-| Name                          | Description                                                                                                                              | Source                                                                                               | Confidence | Maturity     |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------- | ------------ |
-| OrderPlaced Event             | **Domain event**: Subject="OrderPlaced", ContentType=application/json, MessageId=order.Id; published to Service Bus topic "ordersplaced" | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:100-150`                                      | 0.95       | 4 - Measured |
-| Service Bus Message Received  | **Trigger event**: topic "ordersplaced", subscription "orderprocessingsub", poll interval 1 second                                       | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:5-30`         | 0.95       | 4 - Measured |
-| Recurrence Timer Event        | **Scheduled trigger**: 3-second interval for blob cleanup workflow                                                                       | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:5-15` | 0.80       | 3 - Defined  |
-| Order Placed Activity Event   | **Telemetry event**: ActivityEvent with tags order.id, order.total, order.products.count; counter incremented                            | `src/eShop.Orders.API/Services/OrderService.cs:100-145`                                              | 0.90       | 4 - Measured |
-| Order Operation Failed Events | **Error telemetry**: GetOrdersFailed/GetOrderByIdFailed/DeleteOrderFailed with error.type, exception.message tags                        | `src/eShop.Orders.API/Services/OrderService.cs:350-475`                                              | 0.80       | 3 - Defined  |
-| Event Metadata Schema         | **Event envelope**: MessageId, SequenceNumber, EnqueuedTime, ContentType, Subject, CorrelationId, MessageSize                            | `src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:1-56`                                     | 0.90       | 4 - Measured |
-| Trace Context Propagation     | **W3C standard**: TraceId, SpanId, TraceParent, traceparent, tracestate in ApplicationProperties for distributed correlation             | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:130-170`                                      | 0.85       | 4 - Measured |
+| Name                          | Description                                                                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| OrderPlaced Event             | **Domain event**: Subject="OrderPlaced", ContentType=application/json, MessageId=order.Id; published to Service Bus topic "ordersplaced" |
+| Service Bus Message Received  | **Trigger event**: topic "ordersplaced", subscription "orderprocessingsub", poll interval 1 second                                       |
+| Recurrence Timer Event        | **Scheduled trigger**: 3-second interval for blob cleanup workflow                                                                       |
+| Order Placed Activity Event   | **Telemetry event**: ActivityEvent with tags order.id, order.total, order.products.count; counter incremented                            |
+| Order Operation Failed Events | **Error telemetry**: GetOrdersFailed/GetOrderByIdFailed/DeleteOrderFailed with error.type, exception.message tags                        |
+| Event Metadata Schema         | **Event envelope**: MessageId, SequenceNumber, EnqueuedTime, ContentType, Subject, CorrelationId, MessageSize                            |
+| Trace Context Propagation     | **W3C standard**: TraceId, SpanId, TraceParent, traceparent, tracestate in ApplicationProperties for distributed correlation             |
 
 ### 2.10 Business Objects/Entities (8)
 
-| Name                             | Description                                                                                                       | Source                                                           | Confidence | Maturity     |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ---------- | ------------ |
-| Order (Domain Model)             | **Core business entity**: Id, CustomerId, Date, DeliveryAddress, Total, Products; shared across all services      | `app.ServiceDefaults/CommonTypes.cs:77-112`                      | 0.95       | 4 - Measured |
-| OrderProduct (Domain Model)      | **Line item entity**: Id, OrderId, ProductId, ProductDescription, Quantity, Price                                 | `app.ServiceDefaults/CommonTypes.cs:118-155`                     | 0.95       | 4 - Measured |
-| OrderEntity (Persistence)        | **DB model**: Id(PK, 100), CustomerId(100), Date, DeliveryAddress(500), Total; navigation: Products               | `src/eShop.Orders.API/data/Entities/OrderEntity.cs:1-63`         | 0.95       | 4 - Measured |
-| OrderProductEntity (Persistence) | **DB model**: Id(PK, 100), OrderId(FK, 100), ProductId(100), ProductDescription(500), Quantity, Price             | `src/eShop.Orders.API/data/Entities/OrderProductEntity.cs:1-70`  | 0.95       | 4 - Measured |
-| OrderMessageWithMetadata         | **Messaging model**: wraps Order + MessageId, SequenceNumber, EnqueuedTime, ContentType, Subject, CorrelationId   | `src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:1-56` | 0.90       | 4 - Measured |
-| OrdersWrapper                    | **Response envelope**: `List<Order> Orders` for API batch response                                                | `src/eShop.Orders.API/Services/OrdersWrapper.cs:1-22`            | 0.75       | 3 - Defined  |
-| OrderDb Database Schema          | **Schema definition**: Tables "Orders" + "OrderProducts"; 1-to-many cascade delete; indexes on CustomerId, Date   | `src/eShop.Orders.API/data/OrderDbContext.cs:1-129`              | 0.90       | 4 - Measured |
-| Object Mapping Layer             | **Transformation**: ToEntity/ToDomain bidirectional for Order and OrderProduct; separates persistence from domain | `src/eShop.Orders.API/data/OrderMapper.cs:1-102`                 | 0.80       | 3 - Defined  |
+| Name                             | Description                                                                                                       |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Order (Domain Model)             | **Core business entity**: Id, CustomerId, Date, DeliveryAddress, Total, Products; shared across all services      |
+| OrderProduct (Domain Model)      | **Line item entity**: Id, OrderId, ProductId, ProductDescription, Quantity, Price                                 |
+| OrderEntity (Persistence)        | **DB model**: Id(PK, 100), CustomerId(100), Date, DeliveryAddress(500), Total; navigation: Products               |
+| OrderProductEntity (Persistence) | **DB model**: Id(PK, 100), OrderId(FK, 100), ProductId(100), ProductDescription(500), Quantity, Price             |
+| OrderMessageWithMetadata         | **Messaging model**: wraps Order + MessageId, SequenceNumber, EnqueuedTime, ContentType, Subject, CorrelationId   |
+| OrdersWrapper                    | **Response envelope**: `List<Order> Orders` for API batch response                                                |
+| OrderDb Database Schema          | **Schema definition**: Tables "Orders" + "OrderProducts"; 1-to-many cascade delete; indexes on CustomerId, Date   |
+| Object Mapping Layer             | **Transformation**: ToEntity/ToDomain bidirectional for Order and OrderProduct; separates persistence from domain |
 
 ### 2.11 KPIs & Metrics (7)
 
-| Name                            | Description                                                                                                                                                                          | Source                                                              | Confidence | Maturity     |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- | ---------- | ------------ |
-| Custom Business Metrics         | **4 metrics defined**: `eShop.orders.placed` (Counter), `eShop.orders.processing.duration` (Histogram), `eShop.orders.processing.errors` (Counter), `eShop.orders.deleted` (Counter) | `src/eShop.Orders.API/Services/OrderService.cs:66-80`               | 0.95       | 4 - Measured |
-| Order Placed Metric Emission    | **Counter increment**: `_ordersPlacedCounter.Add(1)` with order.id tag; `_orderProcessingDuration.Record(elapsed)`                                                                   | `src/eShop.Orders.API/Services/OrderService.cs:130-145`             | 0.95       | 4 - Measured |
-| Batch Results Metrics           | **Aggregate tracking**: logs Success/Failed/Skipped counts per batch execution                                                                                                       | `src/eShop.Orders.API/Services/OrderService.cs:250-260`             | 0.85       | 3 - Defined  |
-| Order Deleted Metric            | **Counter**: `_ordersDeletedCounter.Add(1, { "order.status", "success" })`                                                                                                           | `src/eShop.Orders.API/Services/OrderService.cs:460-465`             | 0.90       | 4 - Measured |
-| Infrastructure Metrics Pipeline | **OpenTelemetry**: AddRuntimeInstrumentation, AddAspNetCoreInstrumentation, AddHttpClientInstrumentation; Azure Monitor exporter                                                     | `app.ServiceDefaults/Extensions.cs:100-180`                         | 0.90       | 4 - Measured |
-| Database Health KPI             | **Health check metric**: reports ResponseTimeMs with Healthy/Degraded/Unhealthy states                                                                                               | `src/eShop.Orders.API/HealthChecks/DbContextHealthCheck.cs:70-90`   | 0.80       | 3 - Defined  |
-| Service Bus Health KPI          | **Connectivity metric**: pass/fail connectivity with description in health report                                                                                                    | `src/eShop.Orders.API/HealthChecks/ServiceBusHealthCheck.cs:80-120` | 0.80       | 3 - Defined  |
+| Name                            | Description                                                                                                                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Custom Business Metrics         | **4 metrics defined**: `eShop.orders.placed` (Counter), `eShop.orders.processing.duration` (Histogram), `eShop.orders.processing.errors` (Counter), `eShop.orders.deleted` (Counter) |
+| Order Placed Metric Emission    | **Counter increment**: `_ordersPlacedCounter.Add(1)` with order.id tag; `_orderProcessingDuration.Record(elapsed)`                                                                   |
+| Batch Results Metrics           | **Aggregate tracking**: logs Success/Failed/Skipped counts per batch execution                                                                                                       |
+| Order Deleted Metric            | **Counter**: `_ordersDeletedCounter.Add(1, { "order.status", "success" })`                                                                                                           |
+| Infrastructure Metrics Pipeline | **OpenTelemetry**: AddRuntimeInstrumentation, AddAspNetCoreInstrumentation, AddHttpClientInstrumentation; Azure Monitor exporter                                                     |
+| Database Health KPI             | **Health check metric**: reports ResponseTimeMs with Healthy/Degraded/Unhealthy states                                                                                               |
+| Service Bus Health KPI          | **Connectivity metric**: pass/fail connectivity with description in health report                                                                                                    |
 
 ### Summary
 
