@@ -128,12 +128,12 @@ flowchart TB
     vnet -->|"Isolates"| containerApps
     identity -->|"Authenticates"| ordersApi
 
-    style userLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
-    style apiLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
-    style messagingLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
-    style workflowLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
-    style observability fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
-    style infraLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
+    style userLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style apiLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style messagingLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style workflowLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style observability fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style infraLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578

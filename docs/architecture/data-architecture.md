@@ -927,7 +927,7 @@ flowchart LR
     subgraph INGEST ["📥 Ingestion"]
         WEB["🌐 eShop Web App<br/>Blazor SSR"]:::core
     end
-    style INGEST fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style INGEST fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph TRANSFORM ["🔄 Transformation"]
         CTRL["⚙️ OrdersController<br/>Model Validation"]:::core
@@ -935,26 +935,26 @@ flowchart LR
         MAP["🔀 OrderMapper<br/>Domain ↔ Entity"]:::core
         SER["📝 JSON Serialization<br/>BinaryData"]:::core
     end
-    style TRANSFORM fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style TRANSFORM fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph PERSIST ["💾 Persistence"]
         SQL["🗄️ Azure SQL<br/>Orders + OrderProducts"]:::data
         SB["📨 Service Bus<br/>ordersplaced Topic"]:::messaging
     end
-    style PERSIST fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    style PERSIST fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph PROCESS ["⚡ Processing"]
         LA["⚡ OrdersPlacedProcess<br/>ContentType Check"]:::workflow
         CB["🔄 HTTP Callback<br/>POST /api/Orders/process"]:::workflow
     end
-    style PROCESS fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    style PROCESS fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph AUDIT ["📦 Audit Trail"]
         BS["✅ Success Blob"]:::storage
         BE["❌ Error Blob"]:::storage
         BC["📁 Completed Blob"]:::storage
     end
-    style AUDIT fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    style AUDIT fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     WEB -->|"HTTP POST"| CTRL
     CTRL -->|"validated"| SVC
@@ -971,7 +971,7 @@ flowchart LR
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
     classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
     classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
     classDef storage fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
@@ -1001,27 +1001,27 @@ flowchart TB
         E1["📨 Service Bus Message<br/>JSON body, OrderPlaced subject"]:::messaging
         E2["🔍 ContentType Check<br/>application/json validation"]:::messaging
     end
-    style EXTRACT fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style EXTRACT fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph TRANSFORM_ETL ["🔄 Transform"]
         T1["⚡ OrdersPlacedProcess<br/>Logic App Workflow"]:::workflow
         T2["🔄 HTTP POST Callback<br/>/api/Orders/process"]:::workflow
         T3["📋 Response Evaluation<br/>Success vs Error routing"]:::workflow
     end
-    style TRANSFORM_ETL fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    style TRANSFORM_ETL fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph LOAD ["💾 Load"]
         L1["✅ ordersprocessedsuccessfully<br/>Blob Container"]:::storage
         L2["❌ ordersprocessedwitherrors<br/>Blob Container"]:::storage
     end
-    style LOAD fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    style LOAD fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph CLEANUP ["🧹 Cleanup (Batch)"]
         CL1["🕐 Recurrence Trigger<br/>Every 3 seconds"]:::core
         CL2["📋 List Blobs<br/>ordersprocessedsuccessfully"]:::core
         CL3["🗑️ Delete + Archive<br/>→ ordersprocessedcompleted"]:::core
     end
-    style CLEANUP fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style CLEANUP fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     E1 --> E2
     E2 --> T1
@@ -1035,7 +1035,7 @@ flowchart TB
 
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
     classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
     classDef storage fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
 ```
 
