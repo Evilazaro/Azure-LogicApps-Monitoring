@@ -1201,17 +1201,180 @@ The Component Catalog complements Section 2 (Architecture Landscape) by providin
 | eShop.Web.App    | app.ServiceDefaults             | ProjectReference (shared library) |
 | app.AppHost      | eShop.Orders.API, eShop.Web.App | Orchestration references          |
 
+### Summary
+
+The Component Catalog documents 31 components across all 11 Application Architecture component types, with the highest density in Application Data Objects (7) and Application Components (7). The dominant architectural patterns are interface-driven design with dependency injection, repository-based data access with EF Core, and event-driven messaging with Azure Service Bus. All components demonstrate consistent observability instrumentation through OpenTelemetry with custom metrics, distributed tracing spans, and structured logging with trace context correlation.
+
+Coverage gaps include the absence of formal API versioning (Section 5.10), no dead letter queue configuration for Service Bus messaging (Section 5.7), and limited runtime SLA definitions across all service components. Recommended next steps include implementing API versioning with URL segment or header-based strategies, configuring dead letter queues with automated alerting, and establishing formal SLO targets with automated monitoring for each service endpoint.
+
 ---
 
 ## Section 6: Architecture Decisions
 
-Out of scope for this analysis.
+### Overview
+
+This section documents Architecture Decision Records (ADRs) inferred from the source code, configuration files, and infrastructure definitions. Each ADR captures a significant architectural choice, its context, the decision rationale, and its consequences as observed in the implementation.
+
+Five architecture decisions were identified through source analysis, covering technology stack selection, integration patterns, data access strategy, infrastructure configuration, and observability approach. All decisions reflect an Accepted status based on their consistent implementation across the codebase.
+
+These decisions collectively establish a cloud-native, event-driven architecture with strong observability and developer experience priorities. No rejected or superseded decisions were detected in the current codebase, suggesting a greenfield implementation rather than an evolved system with historical technology pivots.
+
+### ADR Summary
+
+| ADR ID  | Title                                         | Status   | Date         | Source                                                      |
+| ------- | --------------------------------------------- | -------- | ------------ | ----------------------------------------------------------- |
+| ADR-001 | .NET Aspire for Distributed Orchestration     | Accepted | Not detected | app.AppHost/AppHost.cs:1-290                                |
+| ADR-002 | Event-Driven Architecture with Service Bus    | Accepted | Not detected | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425 |
+| ADR-003 | Repository Pattern with Entity Framework Core | Accepted | Not detected | src/eShop.Orders.API/Repositories/OrderRepository.cs:1-549  |
+| ADR-004 | Dual-Mode Infrastructure (Local/Azure)        | Accepted | Not detected | app.AppHost/AppHost.cs:1-290                                |
+| ADR-005 | OpenTelemetry with Dual Export                | Accepted | Not detected | app.ServiceDefaults/Extensions.cs:44-163                    |
+
+### ADR-001: .NET Aspire for Distributed Application Orchestration
+
+| Attribute        | Value                                                                                                                                                                                                                              |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ID**           | ADR-001                                                                                                                                                                                                                            |
+| **Title**        | Adopt .NET Aspire for Distributed Application Orchestration                                                                                                                                                                        |
+| **Status**       | Accepted                                                                                                                                                                                                                           |
+| **Context**      | The platform requires orchestration of multiple services (Web App, Orders API) with shared infrastructure (SQL, Service Bus, Application Insights). Manual configuration creates deployment complexity and developer friction.     |
+| **Decision**     | Use .NET Aspire AppHost to declaratively configure all service dependencies, Azure resources, and local development containers in a single orchestration point.                                                                    |
+| **Consequences** | Simplified developer experience with one-click F5 debugging, automated dependency resolution via WaitFor, service discovery integration. Introduces coupling to .NET Aspire tooling and requires Aspire-compatible NuGet packages. |
+| **Source**       | app.AppHost/AppHost.cs:1-290                                                                                                                                                                                                       |
+
+### ADR-002: Event-Driven Architecture with Azure Service Bus Pub/Sub
+
+| Attribute        | Value                                                                                                                                                                                                                                                    |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ID**           | ADR-002                                                                                                                                                                                                                                                  |
+| **Title**        | Adopt Azure Service Bus Topic/Subscription for Order Event Distribution                                                                                                                                                                                  |
+| **Status**       | Accepted                                                                                                                                                                                                                                                 |
+| **Context**      | Order creation needs to trigger downstream processing (Logic App workflows, blob storage persistence) without tight coupling between the Orders API and workflow services.                                                                               |
+| **Decision**     | Use Azure Service Bus topic/subscription (ordersplaced topic, orderprocessingsub subscription) for asynchronous event distribution with trace context propagation via ApplicationProperties.                                                             |
+| **Consequences** | Decoupled order processing enables independent scaling and failure isolation. Distributed tracing spans across service boundaries via propagated TraceId/SpanId. No formal event schema contract (AsyncAPI) or dead letter queue configuration detected. |
+| **Source**       | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425                                                                                                                                                                                              |
+
+### ADR-003: Repository Pattern with Entity Framework Core
+
+| Attribute        | Value                                                                                                                                                                                                                                    |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ID**           | ADR-003                                                                                                                                                                                                                                  |
+| **Title**        | Implement Repository Pattern with Interface Contracts for Data Access                                                                                                                                                                    |
+| **Status**       | Accepted                                                                                                                                                                                                                                 |
+| **Context**      | Data access needs abstraction for testability, separation of concerns, and to decouple business logic from Entity Framework Core persistence implementation.                                                                             |
+| **Decision**     | Implement the Repository pattern with formal interface contracts (IOrderRepository to OrderRepository) using EF Core with retry-on-failure execution strategy, split query optimization, and no-tracking reads.                          |
+| **Consequences** | Clean separation between business logic (OrderService) and data access (OrderRepository). Enables mock injection for unit testing and runtime substitution. Adds an abstraction layer over EF Core built-in patterns (DbContext, DbSet). |
+| **Source**       | src/eShop.Orders.API/Repositories/OrderRepository.cs:1-549                                                                                                                                                                               |
+
+### ADR-004: Dual-Mode Infrastructure Configuration (Local/Azure)
+
+| Attribute        | Value                                                                                                                                                                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ID**           | ADR-004                                                                                                                                                                                                                               |
+| **Title**        | Support Dual-Mode Infrastructure Provisioning in AppHost                                                                                                                                                                              |
+| **Status**       | Accepted                                                                                                                                                                                                                              |
+| **Context**      | Development teams need production-like infrastructure locally without requiring Azure subscriptions. Production deployments need Azure PaaS services with managed identity.                                                           |
+| **Decision**     | AppHost conditionally provisions local SQL Server containers and Service Bus emulator (when Azure:ResourceGroup is not configured) or connects to Azure SQL with Entra ID authentication and Azure Service Bus with managed identity. |
+| **Consequences** | Developer experience parity with production infrastructure. Zero Azure cost during local development. Requires maintaining two provisioning code paths in AppHost with conditional configuration logic.                               |
+| **Source**       | app.AppHost/AppHost.cs:1-290                                                                                                                                                                                                          |
+
+### ADR-005: OpenTelemetry with Dual Export (OTLP + Azure Monitor)
+
+| Attribute        | Value                                                                                                                                                                                                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **ID**           | ADR-005                                                                                                                                                                                                                                                                                                |
+| **Title**        | Adopt OpenTelemetry with OTLP and Azure Monitor Dual Export                                                                                                                                                                                                                                            |
+| **Status**       | Accepted                                                                                                                                                                                                                                                                                               |
+| **Context**      | Distributed tracing, custom metrics, and structured logging are required across all services. Local development uses the Aspire Dashboard (OTLP) while production uses Application Insights (Azure Monitor).                                                                                           |
+| **Decision**     | Configure OpenTelemetry with ASP.NET Core, HTTP client, SQL client, and runtime auto-instrumentation. Export to both OTLP (for Aspire Dashboard and third-party backends) and Azure Monitor (for Application Insights) when available.                                                                 |
+| **Consequences** | Full-stack observability with trace correlation across HTTP, SQL, and Service Bus boundaries. Custom business metrics (orders.placed, processing.duration, processing.errors, orders.deleted) tracked alongside infrastructure metrics. Dual export increases telemetry volume and cost in production. |
+| **Source**       | app.ServiceDefaults/Extensions.cs:44-163                                                                                                                                                                                                                                                               |
 
 ---
 
 ## Section 7: Architecture Standards
 
-Out of scope for this analysis.
+### Overview
+
+This section documents architecture standards observed in the source code through pattern analysis. Standards are inferred from consistent implementation patterns across multiple components rather than from explicit standards documentation. Each standard includes its description, the components that demonstrate compliance, and the source evidence.
+
+Seven architecture standards were identified across API design, error handling, authentication, data access, dependency management, health monitoring, and observability. All standards show consistent application across the codebase, indicating established engineering practices rather than ad-hoc implementation choices.
+
+These standards collectively define the engineering culture of the eShop Orders Management platform: API-first design with OpenAPI documentation, managed identity for Azure service authentication, structured logging with trace correlation, and resilience-first integration patterns.
+
+### Observed Standards
+
+| Standard ID | Standard Name                   | Category      | Compliance Level | Components Demonstrating                                          |
+| ----------- | ------------------------------- | ------------- | ---------------- | ----------------------------------------------------------------- |
+| STD-001     | RESTful API Design              | API Design    | Full             | OrdersController                                                  |
+| STD-002     | Interface-First Architecture    | Code Design   | Full             | IOrderService, IOrderRepository, IOrdersMessageHandler            |
+| STD-003     | Structured Logging with Tracing | Observability | Full             | OrderService, OrderRepository, OrdersController, OrdersAPIService |
+| STD-004     | Health Check Implementation     | Operations    | Full             | DbContextHealthCheck, ServiceBusHealthCheck                       |
+| STD-005     | Managed Identity Authentication | Security      | Full             | ServiceDefaults, AppHost                                          |
+| STD-006     | Code-First Database Management  | Data Access   | Full             | OrderDbContext, OrderRepository                                   |
+| STD-007     | Resilience Pattern Application  | Reliability   | Full             | ServiceDefaults (Polly), OrderDbContext (EF Core retry)           |
+
+### STD-001: RESTful API Design
+
+| Attribute      | Value                                                                                                                                     |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Standard**   | RESTful API routes follow /api/{resource} convention with HTTP method alignment                                                           |
+| **Evidence**   | All endpoints use /api/orders pattern, POST for creation, GET for retrieval, DELETE for removal, with ProducesResponseType on all actions |
+| **Source**     | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501                                                                                |
+| **Compliance** | Full                                                                                                                                      |
+
+### STD-002: Interface-First Architecture
+
+| Attribute      | Value                                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Standard**   | All service, repository, and handler components implement formal interface contracts registered through dependency injection               |
+| **Evidence**   | IOrderService to OrderService, IOrderRepository to OrderRepository, IOrdersMessageHandler to OrdersMessageHandler/NoOpOrdersMessageHandler |
+| **Source**     | src/eShop.Orders.API/Interfaces/IOrderService.cs:1-68                                                                                      |
+| **Compliance** | Full                                                                                                                                       |
+
+### STD-003: Structured Logging with Trace Context
+
+| Attribute      | Value                                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Standard**   | All components use ILogger with structured properties and include TraceId correlation via ILogger.BeginScope()                  |
+| **Evidence**   | Log entries include operation names, entity IDs, timing metrics, and trace context in every service, repository, and controller |
+| **Source**     | src/eShop.Orders.API/Services/OrderService.cs:1-606                                                                             |
+| **Compliance** | Full                                                                                                                            |
+
+### STD-004: Health Check Implementation Pattern
+
+| Attribute      | Value                                                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Standard**   | External dependencies monitored via IHealthCheck implementations with configurable timeouts and Healthy/Unhealthy/Degraded responses |
+| **Evidence**   | DbContextHealthCheck (5s timeout, 3 status codes), ServiceBusHealthCheck (5s timeout, sender + batch verification)                   |
+| **Source**     | src/eShop.Orders.API/HealthChecks/DbContextHealthCheck.cs:1-102                                                                      |
+| **Compliance** | Full                                                                                                                                 |
+
+### STD-005: Managed Identity for Azure Services
+
+| Attribute      | Value                                                                                                                      |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Standard**   | Azure services authenticate using DefaultAzureCredential with managed identity, falling back to connection strings locally |
+| **Evidence**   | Azure SQL uses Entra ID authentication, Service Bus uses managed identity, Application Insights uses connection string     |
+| **Source**     | app.ServiceDefaults/Extensions.cs:1-347                                                                                    |
+| **Compliance** | Full                                                                                                                       |
+
+### STD-006: Code-First Database Management
+
+| Attribute      | Value                                                                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Standard**   | Database schema managed via EF Core code-first with Fluent API configuration, automatic migrations at startup with retry logic     |
+| **Evidence**   | OnModelCreating configures indexes, cascade delete, and column constraints. Startup applies EnsureCreated with 10-retry, 10s delay |
+| **Source**     | src/eShop.Orders.API/data/OrderDbContext.cs:1-136                                                                                  |
+| **Compliance** | Full                                                                                                                               |
+
+### STD-007: Resilience Pattern Application
+
+| Attribute      | Value                                                                                                                                        |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Standard**   | All external integration points protected by configured resilience policies: retry with exponential backoff, circuit breakers, timeouts      |
+| **Evidence**   | HTTP: Polly (3 retries, 120s circuit breaker), SQL: EF Core retry (5 retries, 30s max), Service Bus: exponential backoff (3 retries, 1s-10s) |
+| **Source**     | app.ServiceDefaults/Extensions.cs:1-347                                                                                                      |
+| **Compliance** | Full                                                                                                                                         |
 
 ---
 
