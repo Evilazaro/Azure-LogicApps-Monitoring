@@ -65,6 +65,125 @@ Each domain maintains clear separation of concerns with dedicated storage tiers:
 
 The following subsections catalog all 11 Data component types discovered through source file analysis, with confidence scores and data classification for each component. Components are scored using the weighted formula: 30% filename match + 25% path context + 35% content analysis + 10% cross-reference.
 
+### Data Domain Map
+
+```mermaid
+---
+title: Data Domain Map - Order Management Bounded Context
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart TB
+    accTitle: Data Domain Map
+    accDescr: Shows the four data domains within the Order Management bounded context and their relationships
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    BC["🏢 Order Management<br/>Bounded Context"]:::core
+
+    subgraph TD ["💳 Transactional Data"]
+        T1["📋 Order"]:::data
+        T2["📋 OrderProduct"]:::data
+        T3["🗄️ Azure SQL Database"]:::data
+    end
+    style TD fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+
+    subgraph ED ["📨 Event Data"]
+        E1["📌 ordersplaced Topic"]:::messaging
+        E2["📬 orderprocessingsub"]:::messaging
+        E3["📨 Service Bus Namespace"]:::messaging
+    end
+    style ED fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+
+    subgraph AD ["📦 Audit Data"]
+        A1["✅ Success Blob"]:::storage
+        A2["❌ Error Blob"]:::storage
+        A3["📁 Completed Blob"]:::storage
+    end
+    style AD fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+
+    subgraph OD ["📊 Observability Data"]
+        O1["📊 Application Insights"]:::monitoring
+        O2["📋 Log Analytics"]:::monitoring
+    end
+    style OD fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+
+    BC --> TD
+    BC --> ED
+    BC --> AD
+    BC --> OD
+    TD -->|"publish events"| ED
+    ED -->|"trigger workflow"| AD
+    TD -.->|"telemetry"| OD
+    ED -.->|"diagnostics"| OD
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef storage fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef monitoring fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+```
+
+### Data Zone Topology
+
+```mermaid
+---
+title: Data Zone Topology - Storage Tier Classification
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart LR
+    accTitle: Data Zone Topology
+    accDescr: Shows the data zone classification across hot, warm, and cold storage tiers with data movement patterns
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph HOT ["🔥 Hot Zone - Real-time"]
+        H1["🗄️ Azure SQL Database<br/>OrderDb - GP_Gen5_2"]:::data
+        H2["📨 Service Bus<br/>ordersplaced Topic"]:::messaging
+        H3["📁 File Share<br/>workflowstate (5 GB)"]:::storage
+    end
+    style HOT fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#A80000
+
+    subgraph WARM ["🌡️ Warm Zone - Near-line"]
+        W1["✅ Blob: Success"]:::storage
+        W2["❌ Blob: Errors"]:::storage
+        W3["📊 Application Insights"]:::monitoring
+    end
+    style WARM fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+
+    subgraph COLD ["❄️ Cold Zone - Archive"]
+        C1["📁 Blob: Completed"]:::storage
+        C2["📋 Log Analytics<br/>Long-term Retention"]:::monitoring
+    end
+    style COLD fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+
+    HOT -->|"event trigger"| WARM
+    WARM -->|"cleanup sweep"| COLD
+    HOT -.->|"telemetry"| WARM
+
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef storage fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef monitoring fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+```
+
 ### 2.1 Data Entities
 
 | Name               | Description                                                                     | Source                                                        | Confidence | Classification  |
@@ -285,6 +404,64 @@ The following principles are derived from observable patterns in the source code
 - **Index Strategy**: Indexes on CustomerId, Date, OrderId, ProductId for query optimization
 - **Source**: `src/eShop.Orders.API/data/OrderDbContext.cs:54-129`
 
+### Data Principle Hierarchy
+
+```mermaid
+---
+title: Data Principle Hierarchy
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart TB
+    accTitle: Data Principle Hierarchy
+    accDescr: Shows the hierarchy of data architecture principles from foundational pillars to specific implementation patterns
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    ROOT["🏛️ Data Architecture Principles"]:::core
+
+    subgraph P1 ["🔒 Security First"]
+        S1["🛡️ Entra ID-Only Auth"]:::data
+        S2["🔐 Private Endpoints"]:::data
+        S3["🔑 Managed Identities"]:::data
+        S4["🔒 TLS 1.2 Enforcement"]:::data
+    end
+    style P1 fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+
+    subgraph P2 ["✅ Data Quality at Source"]
+        Q1["📝 Data Annotations"]:::messaging
+        Q2["⚙️ Fluent API Constraints"]:::messaging
+        Q3["📬 Dead-Letter Queues"]:::messaging
+        Q4["🔄 Idempotency Checks"]:::messaging
+    end
+    style P2 fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+
+    subgraph P3 ["🔄 Event-Driven Decoupling"]
+        D1["📌 Service Bus Topics"]:::workflow
+        D2["⚡ Logic App Workflows"]:::workflow
+        D3["📋 Interface Contracts"]:::workflow
+        D4["🗄️ Repository Pattern"]:::workflow
+    end
+    style P3 fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+
+    ROOT --> P1
+    ROOT --> P2
+    ROOT --> P3
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+```
+
 ### Data Classification Taxonomy
 
 | Classification | Description                               | Examples in System                                        |
@@ -391,6 +568,83 @@ flowchart LR
 | Network Isolation     | Implemented | Private endpoints + DNS zones              | infra/shared/data/main.bicep:252-590 |
 | Audit Logging         | Implemented | Diagnostic settings on all resources       | infra/shared/data/main.bicep:230-240 |
 | Data Classification   | Partial     | Implicit in code; no formal taxonomy       | Not detected                         |
+
+### Quality Heatmap
+
+```mermaid
+---
+title: Data Quality Heatmap
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+---
+quadrantChart
+    accTitle: Data Quality Heatmap
+    accDescr: Shows data quality dimensions plotted by coverage and maturity level
+    title Data Quality Assessment
+    x-axis Low Coverage --> High Coverage
+    y-axis Low Maturity --> High Maturity
+    quadrant-1 Strong
+    quadrant-2 Invest
+    quadrant-3 Monitor
+    quadrant-4 Improve
+    Schema Validation: [0.85, 0.90]
+    Access Control: [0.90, 0.90]
+    Error Handling: [0.80, 0.80]
+    Schema Evolution: [0.65, 0.70]
+    Data Classification: [0.55, 0.70]
+    Data Lineage: [0.30, 0.40]
+```
+
+### Governance Maturity Matrix
+
+```mermaid
+---
+title: Governance Maturity Matrix - Current vs Target
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart LR
+    accTitle: Governance Maturity Matrix
+    accDescr: Shows current Level 2 governance maturity compared to target Level 3 across key governance dimensions
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph CURRENT ["📊 Level 2 - Managed (Current)"]
+        C1["✅ Schema Migrations<br/>EF Core Code-First"]:::core
+        C2["✅ Role-Based Access<br/>Managed Identities"]:::core
+        C3["✅ Basic Data Dictionary<br/>Model Annotations"]:::core
+        C4["✅ Scheduled ETL<br/>Logic App Recurrence"]:::core
+    end
+    style CURRENT fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+
+    subgraph TARGET ["🎯 Level 3 - Defined (Target)"]
+        T1["❌ Centralized Data Catalog<br/>Azure Purview"]:::workflow
+        T2["❌ Automated Quality Checks<br/>Validation Dashboards"]:::workflow
+        T3["❌ Schema Registry<br/>Service Bus Contracts"]:::workflow
+        T4["❌ Data Lineage Tracking<br/>Automated Lineage"]:::workflow
+    end
+    style TARGET fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+
+    C1 -->|"gap"| T3
+    C2 -->|"gap"| T1
+    C3 -->|"gap"| T2
+    C4 -->|"gap"| T4
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+```
 
 ### Summary
 
@@ -556,6 +810,103 @@ erDiagram
     }
 ```
 
+### Schema Evolution Timeline
+
+```mermaid
+---
+title: Schema Evolution Timeline
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart LR
+    accTitle: Schema Evolution Timeline
+    accDescr: Shows the EF Core migration history and schema versioning timeline for the OrderDb database
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    V0["📋 Empty Schema<br/>Initial State"]:::monitoring -->|"2025-12-27"| V1["🗄️ OrderDbV1<br/>Orders + OrderProducts<br/>4 indexes, FK cascade"]:::core
+    V1 -->|"current"| LIVE["✅ Production<br/>GP_Gen5_2, 32 GB"]:::data
+    LIVE -.->|"planned"| V2["🎯 Future: Schema Registry<br/>+ Data Catalog"]:::workflow
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef monitoring fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+```
+
+### Data Contract Maps
+
+```mermaid
+---
+title: Data Contract Maps - Interface Relationships
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart TB
+    accTitle: Data Contract Maps
+    accDescr: Shows the relationship between data contracts interfaces and their implementations across the system
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph CONTRACTS ["📋 Data Contracts"]
+        IR["📜 IOrderRepository<br/>Save, Get, Delete, Exists"]:::core
+        IS["📜 IOrderService<br/>Place, Batch, Get, Delete"]:::core
+        IM["📜 IOrdersMessageHandler<br/>Send, SendBatch, List"]:::core
+    end
+    style CONTRACTS fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+
+    subgraph IMPL ["⚙️ Implementations"]
+        OR["🗄️ OrderRepository<br/>EF Core + SQL"]:::data
+        OS["🔧 OrderService<br/>Business Logic"]:::data
+        OM["📨 OrdersMessageHandler<br/>Service Bus JSON"]:::messaging
+        NOP["🚫 NoOpMessageHandler<br/>Test/Fallback"]:::monitoring
+    end
+    style IMPL fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+
+    subgraph REST ["🌐 REST Contract"]
+        API["⚙️ OrdersController<br/>8 endpoints<br/>ProducesResponseType"]:::core
+    end
+    style REST fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+
+    subgraph MSI ["🔐 API Connections"]
+        SBC["📨 Service Bus MSI"]:::messaging
+        BLC["📦 Blob Storage MSI"]:::storage
+    end
+    style MSI fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+
+    IR -->|"implements"| OR
+    IS -->|"implements"| OS
+    IM -->|"implements"| OM
+    IM -->|"implements"| NOP
+    OS -->|"depends on"| IR
+    OS -->|"depends on"| IM
+    API -->|"depends on"| IS
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef storage fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef monitoring fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+```
+
+> **Note**: Dimensional model diagrams are not applicable — this system uses an OLTP relational model (EF Core Code-First) rather than a dimensional/star schema data warehouse pattern.
+
 ### Summary
 
 The Component Catalog documents 47 components across all 11 Data component types, with the strongest representation in Data Entities (5), Data Stores (8), Data Services (5), Data Contracts (5), and Data Security (5). The dominant pattern is a multi-tier event-driven architecture with clean separation between domain models, persistence entities, and data transfer objects. Every component has verifiable source file evidence, and data quality enforcement is applied at three layers: domain model annotations, EF Core Fluent API, and infrastructure-level dead-letter policies.
@@ -584,6 +935,145 @@ The following subsections document detected integration patterns with their char
 | Workflow HTTP Callback      | Request/Response | Logic App Workflow   | Orders API                         | HTTP POST /api/Orders/process                                | ContentType equals application/json condition            | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:40-70        |
 | Blob Audit Write            | Event-Driven     | Logic App Workflow   | Blob Storage                       | Blob create (success/error container routing)                | Container-level public access disabled                   | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-155        |
 | Blob Cleanup Sweep          | Batch            | Logic App Recurrence | Blob Storage (success → completed) | List + Delete blob operations, concurrency 20                | Stateful workflow with retry                             | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-95 |
+
+### Data Lineage Diagram
+
+```mermaid
+---
+title: Data Lineage - End-to-End Order Data Flow
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart LR
+    accTitle: Data Lineage Diagram
+    accDescr: Shows end-to-end data lineage from ingestion through transformation to final storage destinations
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph INGEST ["📥 Ingestion"]
+        WEB["🌐 eShop Web App<br/>Blazor SSR"]:::core
+    end
+    style INGEST fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+
+    subgraph TRANSFORM ["🔄 Transformation"]
+        CTRL["⚙️ OrdersController<br/>Model Validation"]:::core
+        SVC["🔧 OrderService<br/>Business Rules"]:::core
+        MAP["🔀 OrderMapper<br/>Domain ↔ Entity"]:::core
+        SER["📝 JSON Serialization<br/>BinaryData"]:::core
+    end
+    style TRANSFORM fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+
+    subgraph PERSIST ["💾 Persistence"]
+        SQL["🗄️ Azure SQL<br/>Orders + OrderProducts"]:::data
+        SB["📨 Service Bus<br/>ordersplaced Topic"]:::messaging
+    end
+    style PERSIST fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+
+    subgraph PROCESS ["⚡ Processing"]
+        LA["⚡ OrdersPlacedProcess<br/>ContentType Check"]:::workflow
+        CB["🔄 HTTP Callback<br/>POST /api/Orders/process"]:::workflow
+    end
+    style PROCESS fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+
+    subgraph AUDIT ["📦 Audit Trail"]
+        BS["✅ Success Blob"]:::storage
+        BE["❌ Error Blob"]:::storage
+        BC["📁 Completed Blob"]:::storage
+    end
+    style AUDIT fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+
+    WEB -->|"HTTP POST"| CTRL
+    CTRL -->|"validated"| SVC
+    SVC -->|"ToEntity()"| MAP
+    MAP -->|"EF Core Save"| SQL
+    SVC -->|"serialize"| SER
+    SER -->|"publish"| SB
+    SB -->|"trigger"| LA
+    LA -->|"callback"| CB
+    LA -->|"route"| BS
+    LA -->|"route"| BE
+    BS -->|"cleanup"| BC
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef storage fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+```
+
+### ETL/ELT Flow Diagram
+
+```mermaid
+---
+title: ETL/ELT Flow - Event-Driven Processing Pipeline
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart TB
+    accTitle: ETL ELT Flow Diagram
+    accDescr: Shows the event-driven ETL processing pipeline from order ingestion through Service Bus to Logic App workflow processing and blob storage
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph EXTRACT ["📥 Extract"]
+        E1["📨 Service Bus Message<br/>JSON body, OrderPlaced subject"]:::messaging
+        E2["🔍 ContentType Check<br/>application/json validation"]:::messaging
+    end
+    style EXTRACT fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+
+    subgraph TRANSFORM_ETL ["🔄 Transform"]
+        T1["⚡ OrdersPlacedProcess<br/>Logic App Workflow"]:::workflow
+        T2["🔄 HTTP POST Callback<br/>/api/Orders/process"]:::workflow
+        T3["📋 Response Evaluation<br/>Success vs Error routing"]:::workflow
+    end
+    style TRANSFORM_ETL fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+
+    subgraph LOAD ["💾 Load"]
+        L1["✅ ordersprocessedsuccessfully<br/>Blob Container"]:::storage
+        L2["❌ ordersprocessedwitherrors<br/>Blob Container"]:::storage
+    end
+    style LOAD fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+
+    subgraph CLEANUP ["🧹 Cleanup (Batch)"]
+        CL1["🕐 Recurrence Trigger<br/>Every 3 seconds"]:::core
+        CL2["📋 List Blobs<br/>ordersprocessedsuccessfully"]:::core
+        CL3["🗑️ Delete + Archive<br/>→ ordersprocessedcompleted"]:::core
+    end
+    style CLEANUP fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+
+    E1 --> E2
+    E2 --> T1
+    T1 --> T2
+    T2 --> T3
+    T3 -->|"success"| L1
+    T3 -->|"error"| L2
+    CL1 --> CL2
+    CL2 --> L1
+    CL2 --> CL3
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef storage fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+```
+
+> **Note**: CDC (Change Data Capture) topology is not applicable — this system uses event-driven messaging via Service Bus publish-subscribe rather than database-level CDC.
 
 ### Producer-Consumer Relationships
 
