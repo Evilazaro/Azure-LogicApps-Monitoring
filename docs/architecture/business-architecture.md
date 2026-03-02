@@ -379,6 +379,81 @@ The maturity assessment below uses the standard 1-5 scale (Initial → Optimized
 | Retry + Circuit Breaker   | Polly-based HTTP resilience, EF Core retry, messaging retry | 4 - Measured | `app.ServiceDefaults/Extensions.cs:200-280`                                                  |
 | Managed Identity          | User-assigned MSI for Service Bus and Blob Storage          | 4 - Measured | `workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:16-23`                 |
 
+```mermaid
+---
+title: Capability Maturity Heatmap — Current vs Target
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart TB
+    accTitle: Capability Maturity Heatmap
+    accDescr: Shows current maturity levels versus target maturity for 10 business capabilities using color-coded indicators from Level 2 (red) through Level 4 (green)
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph Legend["📊 Maturity Legend"]
+        L5["⭐ 5 - Optimized"]:::optimized
+        L4["✅ 4 - Measured"]:::success
+        L3["⚠️ 3 - Defined"]:::warning
+        L2["🔴 2 - Repeatable"]:::danger
+    end
+
+    subgraph CurrentState["📋 Current Maturity"]
+        C1["📊 Order Placement<br/>Current: 4"]:::success
+        C2["📊 Batch Order Processing<br/>Current: 4"]:::success
+        C3["📊 Order Inquiry<br/>Current: 3"]:::warning
+        C4["📊 Order Lifecycle Mgmt<br/>Current: 4"]:::success
+        C5["📊 Automated Processing<br/>Current: 4"]:::success
+        C6["📊 Audit Trail Mgmt<br/>Current: 3"]:::warning
+        C7["📊 Health Monitor — DB<br/>Current: 3"]:::warning
+        C8["📊 Health Monitor — Msg<br/>Current: 3"]:::warning
+        C9["📊 Self-Service Entry<br/>Current: 3"]:::warning
+        C10["📊 Test Data Gen<br/>Current: 2"]:::danger
+    end
+
+    subgraph TargetState["🎯 Target Maturity"]
+        T1["⭐ Order Placement<br/>Target: 5"]:::optimized
+        T2["⭐ Batch Processing<br/>Target: 5"]:::optimized
+        T3["✅ Order Inquiry<br/>Target: 4"]:::success
+        T4["⭐ Lifecycle Mgmt<br/>Target: 5"]:::optimized
+        T5["⭐ Automated Processing<br/>Target: 5"]:::optimized
+        T6["✅ Audit Trail<br/>Target: 4"]:::success
+        T7["✅ Health — DB<br/>Target: 4"]:::success
+        T8["✅ Health — Msg<br/>Target: 4"]:::success
+        T9["✅ Self-Service<br/>Target: 4"]:::success
+        T10["✅ Test Data Gen<br/>Target: 4"]:::success
+    end
+
+    C1 -->|"Gap: +1"| T1
+    C2 -->|"Gap: +1"| T2
+    C3 -->|"Gap: +1"| T3
+    C4 -->|"Gap: +1"| T4
+    C5 -->|"Gap: +1"| T5
+    C6 -->|"Gap: +1"| T6
+    C7 -->|"Gap: +1"| T7
+    C8 -->|"Gap: +1"| T8
+    C9 -->|"Gap: +1"| T9
+    C10 -->|"Gap: +2"| T10
+
+    style Legend fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style CurrentState fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style TargetState fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+
+    classDef optimized fill:#C8E6C9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef danger fill:#FDE7E9,stroke:#E81123,stroke-width:2px,color:#A4262C
+```
+
 ### Summary
 
 The Current State Baseline reveals a mature event-driven order management platform at **Level 3-4 governance maturity**. Core strengths include comprehensive data validation (dual declarative + imperative), distributed tracing with W3C context propagation, and automated infrastructure provisioning. The architecture properly separates domain, persistence, and messaging models.
