@@ -15,9 +15,9 @@ An enterprise-grade reference architecture demonstrating end-to-end order monito
 
 **Overview**
 
-Azure Logic Apps Monitoring is a reference architecture designed for platform engineers and cloud architects who need a battle-tested pattern for building event-driven order processing systems on Azure. It demonstrates how to combine the visual workflow capabilities of Azure Logic Apps Standard with containerized .NET microservices, providing both low-code automation and full-code control in a single deployable solution.
+Azure Logic Apps Monitoring is a reference architecture designed for platform engineers and cloud architects who need a battle-tested pattern for building event-driven order processing systems on Azure. It demonstrates how to combine the visual workflow capabilities of Azure Logic Apps Standard with containerized .NET microservices, providing both **low-code automation** and **full-code control** in a single deployable solution.
 
-The solution integrates .NET Aspire 13.1 for local development orchestration with the Azure Developer CLI (`azd`) for one-command cloud deployment. Orders flow from a Blazor Server UI through an ASP.NET Core API to Azure Service Bus, are processed by Logic Apps workflows, and audited in Blob Storage — with every step traced end-to-end through OpenTelemetry and Application Insights. All infrastructure is defined as code using Bicep with VNet isolation, private endpoints, and user-assigned managed identity for zero-secret authentication.
+The solution integrates .NET Aspire 13.1 for local development orchestration with the Azure Developer CLI (`azd`) for **one-command cloud deployment**. Orders flow from a Blazor Server UI through an ASP.NET Core API to Azure Service Bus, are processed by Logic Apps workflows, and audited in Blob Storage — with every step traced end-to-end through OpenTelemetry and Application Insights. All infrastructure is defined as code using Bicep with VNet isolation, private endpoints, and user-assigned managed identity for zero-secret authentication.
 
 ## Table of Contents
 
@@ -39,7 +39,7 @@ The solution integrates .NET Aspire 13.1 for local development orchestration wit
 
 **Overview**
 
-The system follows an event-driven architecture where orders placed through the Blazor Server frontend flow through an ASP.NET Core API, are published to Azure Service Bus, and are asynchronously processed by Azure Logic Apps Standard workflows. All components report telemetry to Application Insights via OpenTelemetry, and infrastructure is provisioned as code using Bicep.
+The system follows an **event-driven architecture** where orders placed through the Blazor Server frontend flow through an ASP.NET Core API, are published to Azure Service Bus, and are asynchronously processed by Azure Logic Apps Standard workflows. All components report telemetry to Application Insights via OpenTelemetry, and infrastructure is provisioned as code using Bicep.
 
 > 📌 **How It Works**: Orders are submitted via the web app, persisted in Azure SQL, published to a Service Bus topic, consumed by Logic Apps workflows that call back into the API for processing, and results are stored in Azure Blob Storage for auditability.
 
@@ -199,7 +199,7 @@ The project requires specific tooling for local development and Azure deployment
 **Azure Subscription Requirements**
 
 - An active Azure subscription with sufficient quota
-- Required resource providers registered: `Microsoft.App`, `Microsoft.Web`, `Microsoft.Sql`, `Microsoft.ServiceBus`, `Microsoft.Storage`, `Microsoft.Insights`
+- **Required resource providers** registered: `Microsoft.App`, `Microsoft.Web`, `Microsoft.Sql`, `Microsoft.ServiceBus`, `Microsoft.Storage`, `Microsoft.Insights`
 
 Validate your workstation automatically:
 
@@ -287,7 +287,7 @@ The Aspire Dashboard at `https://localhost:17267` provides:
 
 **Overview**
 
-The application uses a layered configuration model with `appsettings.json` files, environment variables, and .NET user secrets. .NET Aspire automatically wires service discovery and connection strings in local development; Azure deployment uses managed identity for all service-to-service authentication.
+The application uses a **layered configuration model** with `appsettings.json` files, environment variables, and .NET user secrets. .NET Aspire automatically wires service discovery and connection strings in local development; Azure deployment uses managed identity for all service-to-service authentication.
 
 > 📌 **Note**: In local development mode, Aspire uses containerized SQL Server and the Service Bus emulator. In Azure mode, all connections use user-assigned managed identity with Entra ID authentication — no connection string secrets are needed.
 
@@ -394,7 +394,7 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 
 **Overview**
 
-The project uses the Azure Developer CLI (`azd`) for one-command deployment of all infrastructure and application components. Bicep templates provision a VNet-isolated environment with private endpoints, managed identity, and complete monitoring.
+The project uses the Azure Developer CLI (`azd`) for **one-command deployment** of all infrastructure and application components. Bicep templates provision a VNet-isolated environment with private endpoints, managed identity, and complete monitoring.
 
 > ⚠️ **Important**: Ensure all [requirements](#requirements) are met before deploying. The `preprovision` hook automatically validates prerequisites, runs tests, and generates code coverage reports.
 
