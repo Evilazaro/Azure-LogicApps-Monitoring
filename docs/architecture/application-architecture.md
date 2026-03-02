@@ -573,36 +573,36 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph UserLayer["User Layer"]
-        User["👤 User"]
+        User["👤 User"]:::external
     end
 
     subgraph FrontendLayer["Frontend Layer"]
-        WebApp["🌐 eShop.Web.App\n(Blazor Server)"]
+        WebApp["🌐 eShop.Web.App\n(Blazor Server)"]:::core
     end
 
     subgraph APILayer["API Layer"]
-        OrdersAPI["⚙️ eShop.Orders.API\n(ASP.NET Core Web API)"]
+        OrdersAPI["⚙️ eShop.Orders.API\n(ASP.NET Core Web API)"]:::core
     end
 
     subgraph DataLayer["Data Layer"]
-        SQLAzure["🗄️ Azure SQL Database\n(OrderDb)"]
+        SQLAzure["🗄️ Azure SQL Database\n(OrderDb)"]:::data
     end
 
     subgraph MessagingLayer["Messaging Layer"]
-        ServiceBus["📨 Azure Service Bus\n(ordersplaced topic)"]
+        ServiceBus["📨 Azure Service Bus\n(ordersplaced topic)"]:::warning
     end
 
     subgraph WorkflowLayer["Workflow Layer"]
-        LogicApp1["🔄 OrdersPlacedProcess\n(Logic App)"]
-        LogicApp2["🧹 OrdersPlacedCompleteProcess\n(Logic App)"]
+        LogicApp1["🔄 OrdersPlacedProcess\n(Logic App)"]:::core
+        LogicApp2["🧹 OrdersPlacedCompleteProcess\n(Logic App)"]:::core
     end
 
     subgraph StorageLayer["Storage Layer"]
-        BlobStorage["📦 Azure Blob Storage\n(processed orders)"]
+        BlobStorage["📦 Azure Blob Storage\n(processed orders)"]:::data
     end
 
     subgraph ObservabilityLayer["Observability Layer"]
-        AppInsights["📊 Application Insights\n(OpenTelemetry)"]
+        AppInsights["📊 Application Insights\n(OpenTelemetry)"]:::success
     end
 
     User -->|"HTTPS"| WebApp
@@ -616,14 +616,20 @@ flowchart TB
     OrdersAPI -.->|"OTLP"| AppInsights
     WebApp -.->|"OTLP"| AppInsights
 
-    style UserLayer fill:#f0f0f0,stroke:#666,color:#333
-    style FrontendLayer fill:#e1f0ff,stroke:#0078d4,color:#333
-    style APILayer fill:#e6f4ea,stroke:#107c10,color:#333
-    style DataLayer fill:#fff4e0,stroke:#ffb900,color:#333
-    style MessagingLayer fill:#fde7ef,stroke:#e3008c,color:#333
-    style WorkflowLayer fill:#f3e8ff,stroke:#8661c5,color:#333
-    style StorageLayer fill:#fff0e0,stroke:#ff8c00,color:#333
-    style ObservabilityLayer fill:#f0f0f0,stroke:#666,color:#333
+    style UserLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style FrontendLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style APILayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style DataLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style MessagingLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style WorkflowLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style StorageLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style ObservabilityLayer fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef external fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
 ### Architecture Diagram — Gap Heatmap
@@ -654,31 +660,35 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Mature["✅ Mature (No Gaps)"]
-        M1["📊 Observability\n(OpenTelemetry Full Stack)"]
-        M2["🛡️ Resilience\n(Polly + EF Retry)"]
-        M3["🗄️ Data Access\n(EF Core Repository)"]
-        M4["🔧 Service Discovery\n(.NET Aspire)"]
+        M1["📊 Observability\n(OpenTelemetry Full Stack)"]:::success
+        M2["🛡️ Resilience\n(Polly + EF Retry)"]:::success
+        M3["🗄️ Data Access\n(EF Core Repository)"]:::success
+        M4["🔧 Service Discovery\n(.NET Aspire)"]:::success
     end
 
     subgraph Adequate["🟡 Adequate (Minor Gaps)"]
-        A1["🔐 Authentication\n(No AuthZ middleware)"]
-        A2["📨 Messaging\n(No DLQ config)"]
-        A3["📝 API Documentation\n(Swagger, no versioning)"]
+        A1["🔐 Authentication\n(No AuthZ middleware)"]:::warning
+        A2["📨 Messaging\n(No DLQ config)"]:::warning
+        A3["📝 API Documentation\n(Swagger, no versioning)"]:::warning
     end
 
     subgraph GapAreas["🔴 Gap (Requires Action)"]
-        G1["🚫 API Gateway\n(Not implemented)"]
-        G2["📋 SLO Tracking\n(Not formalized)"]
-        G3["🔄 Event Schema Versioning\n(Not defined)"]
-        G4["🧪 Contract Testing\n(Not detected)"]
+        G1["🚫 API Gateway\n(Not implemented)"]:::danger
+        G2["📋 SLO Tracking\n(Not formalized)"]:::danger
+        G3["🔄 Event Schema Versioning\n(Not defined)"]:::danger
+        G4["🧪 Contract Testing\n(Not detected)"]:::danger
     end
 
     Mature ---|"Strong foundation"| Adequate
     Adequate ---|"Improvement needed"| GapAreas
 
-    style Mature fill:#e6f4ea,stroke:#107c10,color:#333
-    style Adequate fill:#fff4e0,stroke:#ffb900,color:#333
-    style GapAreas fill:#fde7ef,stroke:#e3008c,color:#333
+    style Mature fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Adequate fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style GapAreas fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef danger fill:#FDE7E9,stroke:#E81123,stroke-width:2px,color:#A4262C
 ```
 
 ### Architecture Diagram — Protocol Matrix
