@@ -257,6 +257,31 @@ info: Aspire.Hosting.DistributedApplication[0]
       Dashboard running at: https://localhost:17267
 ```
 
+## Demo
+
+**Overview**
+
+The application provides an interactive Blazor Server web interface styled with Microsoft Fluent UI for managing orders. The .NET Aspire Dashboard serves as the primary observability experience, offering real-time distributed traces, metrics, and structured logs across all services.
+
+> 💡 **Try it locally**: Run `dotnet run --project app.AppHost` and open the Aspire Dashboard to observe the full order lifecycle — from placement through Service Bus publishing to Logic Apps workflow processing — with correlated distributed traces.
+
+**Interactive Pages**
+
+- **Home Dashboard** — Feature overview with technology stack cards and navigation
+- **Place Order** — Submit individual orders with customer details and product line items
+- **Batch Orders** — High-throughput order submission for load testing and demo scenarios
+- **View Orders** — Browse all orders with details, powered by paginated API queries
+- **Order Details** — Inspect individual order records including products and processing status
+
+**Observability Dashboard**
+
+The Aspire Dashboard at `https://localhost:17267` provides:
+
+- 📊 **Distributed Traces** — End-to-end request traces across Web App → API → SQL → Service Bus
+- 📈 **Live Metrics** — Custom counters for `eShop.orders.placed`, `eShop.orders.processing.duration`, and error rates
+- 📋 **Structured Logs** — Correlated log entries from all services with severity filtering
+- ⚙️ **Resource Overview** — Health status of all orchestrated services and containers
+
 ## Configuration
 
 **Overview**
@@ -493,31 +518,6 @@ curl -X POST https://<orders-api-url>/api/orders \
 GET /health    # Comprehensive health check (DB + Service Bus)
 GET /alive     # Liveness probe
 ```
-
-## Demo
-
-**Overview**
-
-The application provides an interactive Blazor Server web interface styled with Microsoft Fluent UI for managing orders. The .NET Aspire Dashboard serves as the primary observability experience, offering real-time distributed traces, metrics, and structured logs across all services.
-
-> 💡 **Try it locally**: Run `dotnet run --project app.AppHost` and open the Aspire Dashboard to observe the full order lifecycle — from placement through Service Bus publishing to Logic Apps workflow processing — with correlated distributed traces.
-
-**Interactive Pages**
-
-- **Home Dashboard** — Feature overview with technology stack cards and navigation
-- **Place Order** — Submit individual orders with customer details and product line items
-- **Batch Orders** — High-throughput order submission for load testing and demo scenarios
-- **View Orders** — Browse all orders with details, powered by paginated API queries
-- **Order Details** — Inspect individual order records including products and processing status
-
-**Observability Dashboard**
-
-The Aspire Dashboard at `https://localhost:17267` provides:
-
-- 📊 **Distributed Traces** — End-to-end request traces across Web App → API → SQL → Service Bus
-- 📈 **Live Metrics** — Custom counters for `eShop.orders.placed`, `eShop.orders.processing.duration`, and error rates
-- 📋 **Structured Logs** — Correlated log entries from all services with severity filtering
-- ⚙️ **Resource Overview** — Health status of all orchestrated services and containers
 
 ## Testing
 
