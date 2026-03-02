@@ -382,6 +382,11 @@ The Component Catalog complements Section 2 (Architecture Landscape) by providin
 
 ### 5.1 Application Services
 
+| Component        | Description                             | Type                | Technology             | Version | Dependencies                            | API Endpoints         | SLA           | Owner        | Source File                                                     |
+| ---------------- | --------------------------------------- | ------------------- | ---------------------- | ------- | --------------------------------------- | --------------------- | ------------- | ------------ | --------------------------------------------------------------- |
+| OrderService     | Core order management business logic    | Application Service | .NET 10.0 / C#         | 10.0    | IOrderRepository, IOrdersMessageHandler | 7 service methods     | Not specified | Not detected | src/eShop.Orders.API/Services/OrderService.cs:1-606             |
+| OrdersAPIService | Typed HTTP client for API communication | HTTP Client Service | .NET 10.0 / HttpClient | 10.0    | eShop.Orders.API (HTTP/REST)            | 7 HTTP client methods | Not specified | Not detected | src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-479 |
+
 #### 5.1.1 OrderService
 
 | Attribute          | Value                                               |
@@ -449,6 +454,16 @@ The Component Catalog complements Section 2 (Architecture Landscape) by providin
 ---
 
 ### 5.2 Application Components
+
+| Component                | Description                                 | Type             | Technology         | Version | Dependencies                            | API Endpoints                 | SLA            | Owner        | Source File                                                    |
+| ------------------------ | ------------------------------------------- | ---------------- | ------------------ | ------- | --------------------------------------- | ----------------------------- | -------------- | ------------ | -------------------------------------------------------------- |
+| eShop.Orders.API         | Order management Web API                    | Web API          | ASP.NET Core 10.0  | 10.0    | Azure SQL, Service Bus, ServiceDefaults | 6 REST + 2 health + 1 OpenAPI | Not specified  | Not detected | src/eShop.Orders.API/Program.cs:1-226                          |
+| eShop.Web.App            | Interactive order management frontend       | Blazor Server    | .NET 10.0 / Blazor | 10.0    | eShop.Orders.API, ServiceDefaults       | 7 Razor pages + 2 health      | Not specified  | Not detected | src/eShop.Web.App/Program.cs:1-109                             |
+| OrderRepository          | EF Core data access with repository pattern | Data Access      | EF Core 10.0.3     | 10.0.3  | OrderDbContext, Azure SQL               | 6 repository methods          | Not specified  | Not detected | src/eShop.Orders.API/Repositories/OrderRepository.cs:1-549     |
+| OrderDbContext           | Database context with Fluent API config     | Data Context     | EF Core 10.0.3     | 10.0.3  | Azure SQL                               | 2 DbSets                      | Not specified  | Not detected | src/eShop.Orders.API/data/OrderDbContext.cs:1-136              |
+| ServiceDefaults          | Cross-cutting concerns shared library       | Shared Library   | .NET 10.0          | 10.0    | OpenTelemetry, Azure Identity, Polly    | 5 extension methods           | Not specified  | Not detected | app.ServiceDefaults/Extensions.cs:1-347                        |
+| NoOpOrdersMessageHandler | Development fallback message handler        | Development Stub | .NET 10.0          | 10.0    | ILogger                                 | 3 no-op methods               | Not applicable | Not detected | src/eShop.Orders.API/Handlers/NoOpOrdersMessageHandler.cs:1-65 |
+| FluentDesignSystem       | UI design tokens and spacing constants      | UI Configuration | .NET 10.0          | 10.0    | None                                    | 6 static constant classes     | Not applicable | Not detected | src/eShop.Web.App/Shared/FluentDesignSystem.cs:1-103           |
 
 #### 5.2.1 eShop.Orders.API
 
@@ -673,6 +688,13 @@ The Component Catalog complements Section 2 (Architecture Landscape) by providin
 
 ### 5.3 Application Interfaces
 
+| Component             | Description                             | Type                | Technology        | Version | Dependencies     | API Endpoints      | SLA           | Owner        | Source File                                                   |
+| --------------------- | --------------------------------------- | ------------------- | ----------------- | ------- | ---------------- | ------------------ | ------------- | ------------ | ------------------------------------------------------------- |
+| OrdersController      | RESTful API controller for orders       | REST API Controller | ASP.NET Core 10.0 | 10.0    | IOrderService    | 6 REST endpoints   | Not specified | Not detected | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501    |
+| IOrderService         | Service contract for order operations   | Service Contract    | .NET 10.0 / C#    | 10.0    | None (interface) | 7 contract methods | Not specified | Not detected | src/eShop.Orders.API/Interfaces/IOrderService.cs:1-68         |
+| IOrderRepository      | Repository contract for data access     | Repository Contract | .NET 10.0 / C#    | 10.0    | None (interface) | 6 contract methods | Not specified | Not detected | src/eShop.Orders.API/Interfaces/IOrderRepository.cs:1-69      |
+| IOrdersMessageHandler | Messaging contract for event publishing | Messaging Contract  | .NET 10.0 / C#    | 10.0    | None (interface) | 3 contract methods | Not specified | Not detected | src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:1-40 |
+
 #### 5.3.1 OrdersController
 
 | Attribute          | Value                                                      |
@@ -775,6 +797,10 @@ The Component Catalog complements Section 2 (Architecture Landscape) by providin
 
 ### 5.4 Application Collaborations
 
+| Component | Description                          | Type         | Technology       | Version | Dependencies                                                          | API Endpoints                          | SLA           | Owner        | Source File                  |
+| --------- | ------------------------------------ | ------------ | ---------------- | ------- | --------------------------------------------------------------------- | -------------------------------------- | ------------- | ------------ | ---------------------------- |
+| AppHost   | Distributed application orchestrator | Orchestrator | .NET Aspire 10.0 | 10.0    | eShop.Orders.API, eShop.Web.App, Azure SQL, Service Bus, App Insights | 2 project resources, 3 Azure resources | Not specified | Not detected | app.AppHost/AppHost.cs:1-290 |
+
 #### 5.4.1 AppHost (.NET Aspire Orchestrator)
 
 | Attribute          | Value                                |
@@ -811,6 +837,13 @@ The Component Catalog complements Section 2 (Architecture Landscape) by providin
 ---
 
 ### 5.5 Application Functions
+
+| Component              | Description                             | Type                | Technology           | Version | Dependencies                 | API Endpoints        | SLA            | Owner        | Source File                                                      |
+| ---------------------- | --------------------------------------- | ------------------- | -------------------- | ------- | ---------------------------- | -------------------- | -------------- | ------------ | ---------------------------------------------------------------- |
+| DbContextHealthCheck   | Database connectivity health monitor    | Health Check        | ASP.NET Core 10.0    | 10.0    | OrderDbContext               | /health (composite)  | 5s timeout     | Not detected | src/eShop.Orders.API/HealthChecks/DbContextHealthCheck.cs:1-102  |
+| ServiceBusHealthCheck  | Service Bus connectivity health monitor | Health Check        | ASP.NET Core 10.0    | 10.0    | ServiceBusClient             | /health (composite)  | 5s timeout     | Not detected | src/eShop.Orders.API/HealthChecks/ServiceBusHealthCheck.cs:1-183 |
+| OrderMapper            | Domain-to-entity bidirectional mapper   | Data Mapper         | .NET 10.0 / C#       | 10.0    | Order, OrderEntity           | 2 extension methods  | Not applicable | Not detected | src/eShop.Orders.API/data/OrderMapper.cs:1-102                   |
+| ConfigureOpenTelemetry | OpenTelemetry configuration function    | Observability Setup | OpenTelemetry 1.15.0 | 1.15.0  | OTLP Exporter, Azure Monitor | Configuration method | Not applicable | Not detected | app.ServiceDefaults/Extensions.cs:44-163                         |
 
 #### 5.5.1 DbContextHealthCheck
 
@@ -892,6 +925,10 @@ The Component Catalog complements Section 2 (Architecture Landscape) by providin
 
 ### 5.6 Application Interactions
 
+| Component       | Description                                | Type             | Technology             | Version | Dependencies            | API Endpoints                   | SLA           | Owner        | Source File                        |
+| --------------- | ------------------------------------------ | ---------------- | ---------------------- | ------- | ----------------------- | ------------------------------- | ------------- | ------------ | ---------------------------------- |
+| Web-to-API HTTP | Service discovery-based HTTP communication | Request/Response | .NET 10.0 / HttpClient | 10.0    | eShop.Orders.API, Polly | HTTP/REST via Service Discovery | Not specified | Not detected | src/eShop.Web.App/Program.cs:80-92 |
+
 #### 5.6.1 Web-to-API HTTP Communication
 
 | Attribute          | Value                              |
@@ -912,6 +949,10 @@ The Component Catalog complements Section 2 (Architecture Landscape) by providin
 ---
 
 ### 5.7 Application Events
+
+| Component         | Description                     | Type         | Technology               | Version | Dependencies     | API Endpoints      | SLA           | Owner        | Source File                                                 |
+| ----------------- | ------------------------------- | ------------ | ------------------------ | ------- | ---------------- | ------------------ | ------------- | ------------ | ----------------------------------------------------------- |
+| OrderPlaced Event | Domain event for order creation | Domain Event | Azure Service Bus 7.20.1 | 7.20.1  | ServiceBusClient | ordersplaced topic | Not specified | Not detected | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425 |
 
 #### 5.7.1 OrderPlaced Event
 
@@ -939,6 +980,16 @@ The Component Catalog complements Section 2 (Architecture Landscape) by providin
 ---
 
 ### 5.8 Application Data Objects
+
+| Component                | Description                                | Type               | Technology            | Version | Dependencies       | API Endpoints        | SLA            | Owner        | Source File                                                    |
+| ------------------------ | ------------------------------------------ | ------------------ | --------------------- | ------- | ------------------ | -------------------- | -------------- | ------------ | -------------------------------------------------------------- |
+| Order                    | Shared domain record for orders            | Domain Model       | .NET 10.0 / C# record | 10.0    | None               | Not applicable       | Not applicable | Not detected | app.ServiceDefaults/CommonTypes.cs:77-127                      |
+| OrderProduct             | Product line item within an order          | Domain Model       | .NET 10.0 / C# record | 10.0    | None               | Not applicable       | Not applicable | Not detected | app.ServiceDefaults/CommonTypes.cs:132-175                     |
+| OrderEntity              | EF Core persistence entity for orders      | Persistence Entity | EF Core 10.0.3        | 10.0.3  | OrderProductEntity | DbSet mapping        | Not applicable | Not detected | src/eShop.Orders.API/data/Entities/OrderEntity.cs:1-56         |
+| OrderProductEntity       | EF Core persistence entity for line items  | Persistence Entity | EF Core 10.0.3        | 10.0.3  | OrderEntity        | DbSet mapping        | Not applicable | Not detected | src/eShop.Orders.API/data/Entities/OrderProductEntity.cs:1-65  |
+| OrderMessageWithMetadata | Service Bus message wrapper DTO            | Message DTO        | .NET 10.0 / C#        | 10.0    | Order              | Not applicable       | Not applicable | Not detected | src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:1-49 |
+| OrdersWrapper            | API response wrapper for order collections | Response DTO       | .NET 10.0 / C#        | 10.0    | Order              | Not applicable       | Not applicable | Not detected | src/eShop.Orders.API/Services/OrdersWrapper.cs:1-21            |
+| WeatherForecast          | Demo data model for health verification    | Demo Model         | .NET 10.0 / C#        | 10.0    | None               | GET /WeatherForecast | Not applicable | Not detected | app.ServiceDefaults/CommonTypes.cs:14-72                       |
 
 #### 5.8.1 Order (Domain Record)
 
@@ -1070,6 +1121,12 @@ The Component Catalog complements Section 2 (Architecture Landscape) by providin
 
 ### 5.9 Integration Patterns
 
+| Component                             | Description                             | Type                 | Technology                | Version   | Dependencies                          | API Endpoints                                       | SLA           | Owner        | Source File                                                                                         |
+| ------------------------------------- | --------------------------------------- | -------------------- | ------------------------- | --------- | ------------------------------------- | --------------------------------------------------- | ------------- | ------------ | --------------------------------------------------------------------------------------------------- |
+| Azure Service Bus Pub/Sub             | Topic-based publish/subscribe messaging | Message Broker       | Azure Service Bus 7.20.1  | 7.20.1    | ServiceBusClient                      | ordersplaced topic, orderprocessingsub subscription | Not specified | Not detected | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425                                         |
+| Logic App OrdersPlacedProcess         | Event-driven order processing workflow  | Workflow Integration | Azure Logic Apps Standard | 1.x-2.0.0 | Service Bus, Orders API, Blob Storage | SB trigger, HTTP callback, Blob write               | Not specified | Not detected | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-163         |
+| Logic App OrdersPlacedCompleteProcess | Scheduled blob cleanup workflow         | Workflow Integration | Azure Logic Apps Standard | 1.x-2.0.0 | Blob Storage                          | Timer trigger, Blob list/delete                     | Not specified | Not detected | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-105 |
+
 #### 5.9.1 Azure Service Bus Pub/Sub
 
 | Attribute          | Value                                                       |
@@ -1146,6 +1203,10 @@ The Component Catalog complements Section 2 (Architecture Landscape) by providin
 ---
 
 ### 5.10 Service Contracts
+
+| Component                | Description                          | Type                  | Technology                  | Version | Dependencies     | API Endpoints               | SLA           | Owner        | Source File                                                |
+| ------------------------ | ------------------------------------ | --------------------- | --------------------------- | ------- | ---------------- | --------------------------- | ------------- | ------------ | ---------------------------------------------------------- |
+| Orders REST API Contract | OpenAPI-documented REST API contract | OpenAPI Specification | ASP.NET Core 10.0 / Swagger | 10.0    | OrdersController | 6 REST endpoints + /swagger | Not specified | Not detected | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501 |
 
 #### 5.10.1 Orders REST API Contract
 
@@ -1527,4 +1588,59 @@ All synchronous integration points (HTTP and database) are protected by resilien
 
 ## Section 9: Governance & Management
 
-Out of scope for this analysis.
+### Overview
+
+This section documents the governance and management structures observed in the source code and project configuration. Governance aspects are inferred from project organization, configuration patterns, dependency management, and operational tooling rather than from explicit governance documentation.
+
+The eShop Orders Management platform demonstrates implicit governance through its project structure (separated concerns across 4 .NET projects), shared configuration (ServiceDefaults enforces cross-cutting standards), and Azure resource management (Bicep infrastructure-as-code with parameterized deployments). No formal architecture governance board, ADR review process, or component lifecycle policy was detected in the source files.
+
+The following subsections document the ownership model, change control approach, monitoring strategy, and lifecycle management practices as inferred from the repository structure and configuration files.
+
+### Ownership Model
+
+| Domain               | Owner (Inferred)     | Scope                                                     | Source                                                  |
+| -------------------- | -------------------- | --------------------------------------------------------- | ------------------------------------------------------- |
+| Orders API           | API Team             | OrdersController, OrderService, OrderRepository, Handlers | src/eShop.Orders.API/eShop.Orders.API.csproj:\*         |
+| Web Frontend         | Frontend Team        | Blazor pages, OrdersAPIService, FluentDesignSystem        | src/eShop.Web.App/eShop.Web.App.csproj:\*               |
+| Platform Services    | Platform Team        | ServiceDefaults, OpenTelemetry, resilience, health checks | app.ServiceDefaults/app.ServiceDefaults.csproj:\*       |
+| Infrastructure       | DevOps/Platform Team | AppHost orchestration, Bicep templates, deployment hooks  | app.AppHost/AppHost.cs:1-290                            |
+| Workflow Integration | Integration Team     | Logic App workflows, Service Bus topology                 | workflows/OrdersManagement/OrdersManagementLogicApp/_:_ |
+
+### Change Control
+
+| Aspect                   | Mechanism                                              | Source                                            |
+| ------------------------ | ------------------------------------------------------ | ------------------------------------------------- |
+| Version Control          | Git-based repository management                        | Repository root                                   |
+| Infrastructure Changes   | Bicep infrastructure-as-code with parameterization     | infra/main.bicep:\*                               |
+| Dependency Management    | NuGet package references with explicit versioning      | src/eShop.Orders.API/eShop.Orders.API.csproj:\*   |
+| Configuration Management | appsettings.json with environment-specific overrides   | app.AppHost/appsettings.json:\*                   |
+| Schema Management        | EF Core code-first with automatic migration at startup | src/eShop.Orders.API/data/OrderDbContext.cs:1-136 |
+
+### Monitoring & Observability Governance
+
+| Aspect                  | Implementation                                                           | Source                                              |
+| ----------------------- | ------------------------------------------------------------------------ | --------------------------------------------------- |
+| Distributed Tracing     | OpenTelemetry with ActivitySource per component                          | app.ServiceDefaults/Extensions.cs:44-163            |
+| Custom Business Metrics | Meter-based counters and histograms (orders.placed, processing.duration) | src/eShop.Orders.API/Services/OrderService.cs:1-606 |
+| Health Monitoring       | IHealthCheck implementations for DB and Service Bus (5s timeouts)        | src/eShop.Orders.API/HealthChecks/_:_               |
+| Telemetry Export        | Dual export: OTLP (local/Aspire Dashboard) + Azure Monitor (production)  | app.ServiceDefaults/Extensions.cs:44-163            |
+| SLO Tracking            | Not formalized — health checks provide basic availability signals        | Not detected                                        |
+
+### Lifecycle Management
+
+| Component             | Current Version | Support Status | Upgrade Path                             | Source                                                           |
+| --------------------- | --------------- | -------------- | ---------------------------------------- | ---------------------------------------------------------------- |
+| .NET Runtime          | 10.0            | Current (LTS)  | Standard .NET release cadence            | global.json:\*                                                   |
+| Entity Framework Core | 10.0.3          | Current        | Aligned with .NET runtime                | src/eShop.Orders.API/eShop.Orders.API.csproj:17                  |
+| Azure Service Bus SDK | 7.20.1          | Current        | Azure SDK release cadence                | app.ServiceDefaults/app.ServiceDefaults.csproj:13                |
+| OpenTelemetry         | 1.15.0          | Current        | OpenTelemetry .NET release cadence       | app.ServiceDefaults/app.ServiceDefaults.csproj:17                |
+| Fluent UI Blazor      | 4.14.0          | Current        | Microsoft FluentUI release cadence       | src/eShop.Web.App/eShop.Web.App.csproj:11                        |
+| Logic Apps Runtime    | 1.x-2.0.0       | Current        | Azure Functions Extension Bundle updates | workflows/OrdersManagement/OrdersManagementLogicApp/host.json:\* |
+
+### Deprecation & Feature Toggling
+
+| Pattern                    | Implementation                                                                                        | Source                                                           |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Feature Toggle (Messaging) | NoOpOrdersMessageHandler provides development fallback when Service Bus is unavailable                | src/eShop.Orders.API/Handlers/NoOpOrdersMessageHandler.cs:1-65   |
+| Environment Switching      | AppHost conditionally provisions local containers or Azure resources based on Azure:ResourceGroup key | app.AppHost/AppHost.cs:1-290                                     |
+| Graceful Degradation       | Service Bus health check failure (Unhealthy) does not prevent API from serving read operations        | src/eShop.Orders.API/HealthChecks/ServiceBusHealthCheck.cs:1-183 |
