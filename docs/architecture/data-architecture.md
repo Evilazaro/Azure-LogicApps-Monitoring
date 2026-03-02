@@ -285,32 +285,32 @@ flowchart TB
         C["🗄️ OrderRepository"]:::data
         D["📨 OrdersMessageHandler"]:::core
     end
-    style API fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style API fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph SQL ["🗄️ Azure SQL Database"]
         E["📋 Orders Table"]:::data
         F["📋 OrderProducts Table"]:::data
     end
-    style SQL fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    style SQL fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph SB ["📨 Azure Service Bus"]
         G["📌 ordersplaced Topic"]:::messaging
         H["📬 orderprocessingsub Subscription"]:::messaging
     end
-    style SB fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style SB fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph WF ["⚡ Logic App Workflows"]
         I["🔄 OrdersPlacedProcess"]:::workflow
         J["🧹 OrdersPlacedCompleteProcess"]:::workflow
     end
-    style WF fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    style WF fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph BLOB ["📦 Azure Blob Storage"]
         K["✅ ordersprocessedsuccessfully"]:::storage
         L["❌ ordersprocessedwitherrors"]:::storage
         M["📁 ordersprocessedcompleted"]:::storage
     end
-    style BLOB fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    style BLOB fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     A --> B
     B --> C
@@ -328,7 +328,7 @@ flowchart TB
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
     classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
     classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
     classDef storage fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
 ```
 
@@ -400,7 +400,7 @@ flowchart TB
         S3["🔑 Managed Identities"]:::data
         S4["🔒 TLS 1.2 Enforcement"]:::data
     end
-    style P1 fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style P1 fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph P2 ["✅ Data Quality at Source"]
         Q1["📝 Data Annotations"]:::messaging
@@ -408,7 +408,7 @@ flowchart TB
         Q3["📬 Dead-Letter Queues"]:::messaging
         Q4["🔄 Idempotency Checks"]:::messaging
     end
-    style P2 fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style P2 fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph P3 ["🔄 Event-Driven Decoupling"]
         D1["📌 Service Bus Topics"]:::workflow
@@ -416,7 +416,7 @@ flowchart TB
         D3["📋 Interface Contracts"]:::workflow
         D4["🗄️ Repository Pattern"]:::workflow
     end
-    style P3 fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    style P3 fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     ROOT --> P1
     ROOT --> P2
@@ -425,7 +425,7 @@ flowchart TB
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
     classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
     classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
 ```
 
 ### Data Classification Taxonomy
@@ -494,7 +494,7 @@ flowchart LR
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
     classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
     classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
     classDef storage fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
     classDef monitoring fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
@@ -593,7 +593,7 @@ flowchart LR
         C3["✅ Basic Data Dictionary<br/>Model Annotations"]:::core
         C4["✅ Scheduled ETL<br/>Logic App Recurrence"]:::core
     end
-    style CURRENT fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style CURRENT fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph TARGET ["🎯 Level 3 - Defined (Target)"]
         T1["❌ Centralized Data Catalog<br/>Azure Purview"]:::workflow
@@ -601,7 +601,7 @@ flowchart LR
         T3["❌ Schema Registry<br/>Service Bus Contracts"]:::workflow
         T4["❌ Data Lineage Tracking<br/>Automated Lineage"]:::workflow
     end
-    style TARGET fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    style TARGET fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     C1 -->|"gap"| T3
     C2 -->|"gap"| T1
@@ -609,7 +609,7 @@ flowchart LR
     C4 -->|"gap"| T4
 
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
 ```
 
 ### Summary
@@ -1086,7 +1086,7 @@ flowchart LR
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
     classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
     classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
     classDef storage fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
 ```
 
