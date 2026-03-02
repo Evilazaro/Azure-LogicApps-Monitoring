@@ -692,9 +692,6 @@ This subsection documents the 6 value streams that deliver end-to-end business v
 | **Stages**               | Recurrence (3s) → List Blobs → ForEach (20 concurrent) → Get Metadata → Delete Blob                   |
 | **Entry Point**          | Recurrence timer trigger (3-second interval)                                                          |
 | **Exit Point**           | All processed audit blobs deleted from Azure Blob Storage                                             |
-| **Maturity**             | 3 - Defined                                                                                           |
-| **Source**               | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-100` |
-| **Confidence**           | 0.85                                                                                                  |
 | **Processes Referenced** | Logic App: Audit Cleanup (§2.4)                                                                       |
 | **Measurable Outcome**   | All audit blobs deleted from storage container, blob count returns to zero after cleanup cycle        |
 
