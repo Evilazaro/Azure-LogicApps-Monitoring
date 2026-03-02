@@ -19,6 +19,8 @@ This analysis identifies 47 data components across all Data Architecture compone
 
 The data governance posture is strong at the infrastructure level — Entra ID-only authentication, private endpoints for all data stores, TLS 1.2 enforcement, and mandatory resource tagging — but lacks formal data lineage tracking and automated data quality dashboards. The overall data maturity is assessed at **Level 2 (Managed)**: schema migrations are tracked via EF Core, role-based access is enforced through managed identities, and a basic data dictionary exists in domain model annotations. The system lacks a centralized data catalog, automated data quality checks, schema registry, and tracked data lineage required for Level 3 (Defined).
 
+> ⚠️ **Level 3 Blockers**: Centralized data catalog, automated data quality checks, schema registry, and tracked data lineage are all required to advance from Level 2 to Level 3.
+
 ---
 
 ## Section 2: Architecture Landscape
@@ -337,6 +339,8 @@ flowchart TB
 The Architecture Landscape reveals a well-structured, event-driven data architecture with 47 components spanning all Data component types. The dominant pattern is a three-tier storage architecture: Azure SQL Database for relational persistence, Azure Service Bus for asynchronous event distribution, and Azure Blob Storage for audit trails. All tiers are secured with managed identity authentication and private endpoints.
 
 The strongest coverage is in Data Entities (5), Data Stores (8), Data Services (5), and Data Contracts (5), reflecting a mature domain model with clean service abstractions. The weakest areas are Data Governance (2) and Master Data (2), which are configuration-driven rather than formally cataloged. Recommended enhancements include implementing a formal data catalog and automated data lineage tracking.
+
+> 📌 **Coverage Gaps**: Data Governance (2 components) and Master Data (2 components) are the weakest areas — prioritize a formal data catalog and automated lineage tracking.
 
 ---
 
@@ -878,6 +882,8 @@ flowchart TB
 The Component Catalog documents 47 components across all 11 Data component types, with the strongest representation in Data Entities (5), Data Stores (8), Data Services (5), Data Contracts (5), and Data Security (5). The dominant pattern is a multi-tier event-driven architecture with clean separation between domain models, persistence entities, and data transfer objects. Every component has verifiable source file evidence, and data quality enforcement is applied at three layers: domain model annotations, EF Core Fluent API, and infrastructure-level dead-letter policies.
 
 Gaps include: (1) no formal data ownership assignments (Owner column shows "Not detected" across all components), (2) no explicit retention policies beyond Service Bus TTL (14 days), (3) limited master data management with only 2 reference data components, and (4) no formal data catalog or schema registry. Recommended next steps: assign data stewards per domain, define retention policies for SQL and Blob data, and implement a schema registry for Service Bus message contracts.
+
+> ⚠️ **Data Stewardship Required**: No data ownership assignments detected across all 47 components. Assign data stewards per domain and define explicit retention policies for SQL and Blob data.
 
 ---
 

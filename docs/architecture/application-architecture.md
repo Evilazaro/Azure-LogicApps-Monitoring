@@ -392,6 +392,8 @@ Every service implementation is registered against its interface: `IOrderService
 
 Resilience is implemented at multiple levels: HTTP client resilience via Polly (600s total timeout, 60s per-attempt timeout, 3 retries with exponential backoff, 120s circuit breaker sampling), EF Core retry-on-failure (5 retries, 30s max delay, 120s command timeout), Service Bus retry (3 attempts, exponential backoff), and database migration retry (10 attempts). Health checks monitor both database and Service Bus connectivity with 5-second timeouts.
 
+> 💡 **Defense in Depth**: Four resilience layers (HTTP/Polly, EF Core retry, Service Bus retry, migration retry) ensure fault tolerance at every integration point.
+
 ### 3.4 Observability First
 
 | Attribute      | Value                                                       |
@@ -762,6 +764,8 @@ flowchart LR
 The current state baseline reveals a well-architected distributed system with clear service boundaries, comprehensive observability, and production-ready resilience patterns. All critical integration points (database, Service Bus) are monitored via health checks. The dual-mode configuration (local containers vs. Azure PaaS) ensures developer productivity without compromising production fidelity.
 
 The primary architectural gap is the absence of formalized SLO tracking and a centralized API gateway. The Logic App integration layer operates independently from the .NET Aspire orchestration, creating a bridged architecture pattern where event-driven workflows extend beyond the primary application boundary.
+
+> ⚠️ **Architectural Gaps**: No formalized SLO tracking, no centralized API gateway, and Logic App workflows operate outside .NET Aspire orchestration boundary.
 
 ---
 
@@ -1823,6 +1827,8 @@ flowchart LR
 **Versioning:** No explicit API versioning detected. Single version exposed.
 
 **Breaking Change Policy:** Not specified in source — requires operational documentation.
+
+> ⚠️ **API Governance Gap**: No API versioning strategy detected. Implement URL segment or header-based versioning before exposing the API to external consumers.
 
 ---
 

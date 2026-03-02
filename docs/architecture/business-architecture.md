@@ -4,9 +4,11 @@
 
 ### Overview
 
-The Azure-LogicApps-Monitoring repository implements an enterprise-grade, event-driven order management and monitoring reference architecture built on Azure Logic Apps, Azure Service Bus, Azure SQL, and .NET Aspire. This Business Architecture analysis identifies **88 components** across all ** Business Architecture component types**, demonstrating a mature, well-structured business domain centered on e-commerce order lifecycle management with comprehensive observability.
+The Azure-LogicApps-Monitoring repository implements an enterprise-grade, event-driven order management and monitoring reference architecture built on Azure Logic Apps, Azure Service Bus, Azure SQL, and .NET Aspire. This Business Architecture analysis identifies **88 components** across all **Business Architecture component types**, demonstrating a mature, well-structured business domain centered on e-commerce order lifecycle management with comprehensive observability.
 
 The analysis reveals strong coverage in Business Rules (10 components, avg. confidence 0.89), Business Capabilities (10 components, avg. confidence 0.88), Business Processes (9 components, avg. confidence 0.88), and KPIs & Metrics (10 components, avg. confidence 0.85). The system implements a six-stage value stream — **Place → Publish → Trigger → Process → Audit → Cleanup** — supported by stateful Logic App workflows, typed HTTP clients, and distributed tracing via OpenTelemetry and Azure Application Insights.
+
+> 💡 **Architecture Pattern**: The six-stage value stream decouples order placement from processing via Service Bus pub/sub, enabling independent scaling and failure isolation.
 
 Strategic alignment demonstrates **Level 3–4 governance maturity** with tag-based compliance (`CostCenter`, `Owner`, `BusinessUnit`), managed identity security (zero-secret), environment-tiered deployment (`dev`, `test`, `staging`, `prod`), and automated infrastructure-as-code via Bicep. The primary maturity gap is the absence of formal L2/L3 capability decomposition documentation and explicit business KPI dashboards beyond health checks and counters.
 
@@ -323,6 +325,8 @@ Six architecture principles govern the eShop platform: event-driven asynchronous
 This section captures the current maturity and performance characteristics of the Business Architecture. The assessment is based on source code analysis, infrastructure definitions, and workflow configurations across the three primary domains: Order Management, Monitoring, and Platform Operations.
 
 The overall architecture demonstrates **Level 3 (Defined) to Level 4 (Measured) maturity** for core business operations, with standardized patterns for order processing, comprehensive validation rules, and instrumented telemetry. The event-driven processing pipeline (Service Bus + Logic Apps) represents the highest maturity area, while test data generation and formal governance documentation represent improvement opportunities.
+
+> ⚠️ **Maturity Gaps**: Event-driven processing needs dead-letter handling, order inquiry needs pagination metrics, audit trail needs retention policy, and health monitoring needs SLA alerting to reach target maturity.
 
 The maturity assessment below uses the standard 1-5 scale (Initial → Optimized) applied consistently across all capability areas.
 
