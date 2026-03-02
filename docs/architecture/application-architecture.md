@@ -60,14 +60,14 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph ExternalActors["External Actors"]
-        User["👤 End User\n(Browser Client)"]:::external
+        User["👤 End User</br>(Browser Client)"]:::external
     end
 
     subgraph SystemBoundary["eShop Orders Management"]
-        WebApp["🌐 eShop.Web.App\n(Blazor Server)"]:::core
-        OrdersAPI["⚙️ eShop.Orders.API\n(ASP.NET Core)"]:::core
-        ServiceDefaults["🔧 ServiceDefaults\n(Shared Library)"]:::core
-        AppHost["🚀 AppHost\n(.NET Aspire)"]:::core
+        WebApp["🌐 eShop.Web.App</br>(Blazor Server)"]:::core
+        OrdersAPI["⚙️ eShop.Orders.API</br>(ASP.NET Core)"]:::core
+        ServiceDefaults["🔧 ServiceDefaults</br>(Shared Library)"]:::core
+        AppHost["🚀 AppHost</br>(.NET Aspire)"]:::core
     end
 
     subgraph ExternalServices["Azure PaaS Services"]
@@ -212,24 +212,24 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph SyncTier["Synchronous Tier (HTTP/REST)"]
-        S1["🌐 Blazor → Orders API\n(Typed HTTP Client)"]:::core
-        S2["⚙️ Orders API → SQL\n(EF Core / TDS)"]:::data
-        S3["🔄 Logic App → Orders API\n(HTTP POST Callback)"]:::core
+        S1["🌐 Blazor → Orders API</br>(Typed HTTP Client)"]:::core
+        S2["⚙️ Orders API → SQL</br>(EF Core / TDS)"]:::data
+        S3["🔄 Logic App → Orders API</br>(HTTP POST Callback)"]:::core
     end
 
     subgraph AsyncTier["Asynchronous Tier (AMQP)"]
-        A1["📨 Orders API → Service Bus\n(Topic Publish)"]:::warning
-        A2["📨 Service Bus → Logic App\n(Subscription Trigger)"]:::warning
+        A1["📨 Orders API → Service Bus</br>(Topic Publish)"]:::warning
+        A2["📨 Service Bus → Logic App</br>(Subscription Trigger)"]:::warning
     end
 
     subgraph StorageTier["Storage Tier (REST)"]
-        ST1["📦 Logic App → Blob Storage\n(Write Results)"]:::data
-        ST2["🧹 Cleanup WF → Blob\n(Read/Delete)"]:::data
+        ST1["📦 Logic App → Blob Storage</br>(Write Results)"]:::data
+        ST2["🧹 Cleanup WF → Blob</br>(Read/Delete)"]:::data
     end
 
     subgraph TelemetryTier["Telemetry Tier (OTLP)"]
-        T1["📊 Web App → App Insights\n(Traces/Metrics)"]:::success
-        T2["📊 Orders API → App Insights\n(Traces/Metrics)"]:::success
+        T1["📊 Web App → App Insights</br>(Traces/Metrics)"]:::success
+        T2["📊 Orders API → App Insights</br>(Traces/Metrics)"]:::success
     end
 
     SyncTier -->|"Request/Response"| AsyncTier
@@ -456,19 +456,19 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph FoundationalPrinciples["Foundational Principles"]
-        P1["🏗️ Separation of Concerns\n(Full Compliance)"]:::core
-        P2["🔌 Interface-Driven Design\n(Full Compliance)"]:::core
+        P1["🏗️ Separation of Concerns</br>(Full Compliance)"]:::core
+        P2["🔌 Interface-Driven Design</br>(Full Compliance)"]:::core
     end
 
     subgraph QualityPrinciples["Quality Principles"]
-        P3["🛡️ Resilience by Design\n(Full Compliance)"]:::success
-        P4["📊 Observability First\n(Full Compliance)"]:::success
+        P3["🛡️ Resilience by Design</br>(Full Compliance)"]:::success
+        P4["📊 Observability First</br>(Full Compliance)"]:::success
     end
 
     subgraph DesignPrinciples["Design Principles"]
-        P5["⚙️ Dual-Mode Configuration\n(Full Compliance)"]:::neutral
-        P6["📝 API-First Design\n(Full Compliance)"]:::neutral
-        P7["📨 Event-Driven Architecture\n(Partial Compliance)"]:::warning
+        P5["⚙️ Dual-Mode Configuration</br>(Full Compliance)"]:::neutral
+        P6["📝 API-First Design</br>(Full Compliance)"]:::neutral
+        P7["📨 Event-Driven Architecture</br>(Partial Compliance)"]:::warning
     end
 
     P1 -->|"Enables"| P2
@@ -577,42 +577,42 @@ flowchart TB
     end
 
     subgraph FrontendLayer["Frontend Layer"]
-        WebApp["🌐 eShop.Web.App\n(Blazor Server)"]:::core
+        WebApp["🌐 eShop.Web.App</br>(Blazor Server)"]:::core
     end
 
     subgraph APILayer["API Layer"]
-        OrdersAPI["⚙️ eShop.Orders.API\n(ASP.NET Core Web API)"]:::core
+        OrdersAPI["⚙️ eShop.Orders.API</br>(ASP.NET Core Web API)"]:::core
     end
 
     subgraph DataLayer["Data Layer"]
-        SQLAzure["🗄️ Azure SQL Database\n(OrderDb)"]:::data
+        SQLAzure["🗄️ Azure SQL Database</br>(OrderDb)"]:::data
     end
 
     subgraph MessagingLayer["Messaging Layer"]
-        ServiceBus["📨 Azure Service Bus\n(ordersplaced topic)"]:::warning
+        ServiceBus["📨 Azure Service Bus</br>(ordersplaced topic)"]:::warning
     end
 
     subgraph WorkflowLayer["Workflow Layer"]
-        LogicApp1["🔄 OrdersPlacedProcess\n(Logic App)"]:::core
-        LogicApp2["🧹 OrdersPlacedCompleteProcess\n(Logic App)"]:::core
+        LogicApp1["🔄 OrdersPlacedProcess</br>(Logic App)"]:::core
+        LogicApp2["🧹 OrdersPlacedCompleteProcess</br>(Logic App)"]:::core
     end
 
     subgraph StorageLayer["Storage Layer"]
-        BlobStorage["📦 Azure Blob Storage\n(processed orders)"]:::data
+        BlobStorage["📦 Azure Blob Storage</br>(processed orders)"]:::data
     end
 
     subgraph ObservabilityLayer["Observability Layer"]
-        AppInsights["📊 Application Insights\n(OpenTelemetry)"]:::success
+        AppInsights["📊 Application Insights</br>(OpenTelemetry)"]:::success
     end
 
     User -->|"HTTPS"| WebApp
-    WebApp -->|"HTTP/REST\n(Service Discovery)"| OrdersAPI
-    OrdersAPI -->|"EF Core\n(TDS)"| SQLAzure
-    OrdersAPI -->|"AMQP\n(Publish)"| ServiceBus
-    ServiceBus -->|"Trigger\n(Subscribe)"| LogicApp1
-    LogicApp1 -->|"HTTP POST\n(Callback)"| OrdersAPI
-    LogicApp1 -->|"REST\n(Write)"| BlobStorage
-    LogicApp2 -->|"REST\n(Read/Delete)"| BlobStorage
+    WebApp -->|"HTTP/REST</br>(Service Discovery)"| OrdersAPI
+    OrdersAPI -->|"EF Core</br>(TDS)"| SQLAzure
+    OrdersAPI -->|"AMQP</br>(Publish)"| ServiceBus
+    ServiceBus -->|"Trigger</br>(Subscribe)"| LogicApp1
+    LogicApp1 -->|"HTTP POST</br>(Callback)"| OrdersAPI
+    LogicApp1 -->|"REST</br>(Write)"| BlobStorage
+    LogicApp2 -->|"REST</br>(Read/Delete)"| BlobStorage
     OrdersAPI -.->|"OTLP"| AppInsights
     WebApp -.->|"OTLP"| AppInsights
 
@@ -660,23 +660,23 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Mature["✅ Mature (No Gaps)"]
-        M1["📊 Observability\n(OpenTelemetry Full Stack)"]:::success
-        M2["🛡️ Resilience\n(Polly + EF Retry)"]:::success
-        M3["🗄️ Data Access\n(EF Core Repository)"]:::success
-        M4["🔧 Service Discovery\n(.NET Aspire)"]:::success
+        M1["📊 Observability</br>(OpenTelemetry Full Stack)"]:::success
+        M2["🛡️ Resilience</br>(Polly + EF Retry)"]:::success
+        M3["🗄️ Data Access</br>(EF Core Repository)"]:::success
+        M4["🔧 Service Discovery</br>(.NET Aspire)"]:::success
     end
 
     subgraph Adequate["🟡 Adequate (Minor Gaps)"]
-        A1["🔐 Authentication\n(No AuthZ middleware)"]:::warning
-        A2["📨 Messaging\n(No DLQ config)"]:::warning
-        A3["📝 API Documentation\n(Swagger, no versioning)"]:::warning
+        A1["🔐 Authentication</br>(No AuthZ middleware)"]:::warning
+        A2["📨 Messaging</br>(No DLQ config)"]:::warning
+        A3["📝 API Documentation</br>(Swagger, no versioning)"]:::warning
     end
 
     subgraph GapAreas["🔴 Gap (Requires Action)"]
-        G1["🚫 API Gateway\n(Not implemented)"]:::danger
-        G2["📋 SLO Tracking\n(Not formalized)"]:::danger
-        G3["🔄 Event Schema Versioning\n(Not defined)"]:::danger
-        G4["🧪 Contract Testing\n(Not detected)"]:::danger
+        G1["🚫 API Gateway</br>(Not implemented)"]:::danger
+        G2["📋 SLO Tracking</br>(Not formalized)"]:::danger
+        G3["🔄 Event Schema Versioning</br>(Not defined)"]:::danger
+        G4["🧪 Contract Testing</br>(Not detected)"]:::danger
     end
 
     Mature ---|"Strong foundation"| Adequate
@@ -719,26 +719,26 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph HTTPProtocols["HTTP Protocols"]
-        HP1["🌐 HTTPS\n(User → Web App)"]:::core
-        HP2["⚙️ HTTP/REST\n(Web App → API)"]:::core
-        HP3["🔄 HTTP POST\n(Logic App → API)"]:::core
-        HP4["📦 REST\n(Logic App → Blob)"]:::core
+        HP1["🌐 HTTPS</br>(User → Web App)"]:::core
+        HP2["⚙️ HTTP/REST</br>(Web App → API)"]:::core
+        HP3["🔄 HTTP POST</br>(Logic App → API)"]:::core
+        HP4["📦 REST</br>(Logic App → Blob)"]:::core
     end
 
     subgraph DataProtocols["Data Protocols"]
-        DP1["🗄️ TDS/SQL\n(API → Azure SQL)"]:::data
-        DP2["🗄️ EF Core Retry\n(Transient Fault)"]:::data
+        DP1["🗄️ TDS/SQL</br>(API → Azure SQL)"]:::data
+        DP2["🗄️ EF Core Retry</br>(Transient Fault)"]:::data
     end
 
     subgraph MessagingProtocols["Messaging Protocols"]
-        MP1["📨 AMQP 1.0\n(API → Service Bus)"]:::warning
-        MP2["📨 SB Trigger\n(Service Bus → Logic App)"]:::warning
+        MP1["📨 AMQP 1.0</br>(API → Service Bus)"]:::warning
+        MP2["📨 SB Trigger</br>(Service Bus → Logic App)"]:::warning
     end
 
     subgraph TelemetryProtocols["Telemetry Protocols"]
-        TP1["📊 OTLP/gRPC\n(Traces Export)"]:::success
-        TP2["📊 OTLP/gRPC\n(Metrics Export)"]:::success
-        TP3["📊 OTLP/gRPC\n(Logs Export)"]:::success
+        TP1["📊 OTLP/gRPC</br>(Traces Export)"]:::success
+        TP2["📊 OTLP/gRPC</br>(Metrics Export)"]:::success
+        TP3["📊 OTLP/gRPC</br>(Logs Export)"]:::success
     end
 
     HTTPProtocols -->|"Synchronous"| DataProtocols
@@ -804,22 +804,22 @@ flowchart TB
 
     subgraph OrdersAPIBoundary["eShop.Orders.API"]
         subgraph PresentationLayer["Presentation"]
-            Controller["🔌 OrdersController\n(REST Endpoints)"]:::core
+            Controller["🔌 OrdersController</br>(REST Endpoints)"]:::core
         end
 
         subgraph BusinessLayer["Business Logic"]
-            Service["⚙️ OrderService\n(Orchestration)"]:::core
-            Validator["✅ Validation Logic\n(Model State)"]:::success
-            Metrics["📊 Custom Metrics\n(OTel Counters)"]:::success
+            Service["⚙️ OrderService</br>(Orchestration)"]:::core
+            Validator["✅ Validation Logic</br>(Model State)"]:::success
+            Metrics["📊 Custom Metrics</br>(OTel Counters)"]:::success
         end
 
         subgraph DataAccessLayer["Data Access"]
-            Repo["🗄️ OrderRepository\n(EF Core)"]:::data
-            DbCtx["🗄️ OrderDbContext\n(Fluent API Config)"]:::data
+            Repo["🗄️ OrderRepository</br>(EF Core)"]:::data
+            DbCtx["🗄️ OrderDbContext</br>(Fluent API Config)"]:::data
         end
 
         subgraph MessagingLayer["Messaging"]
-            MsgHandler["📨 OrdersMessageHandler\n(Service Bus Client)"]:::warning
+            MsgHandler["📨 OrdersMessageHandler</br>(Service Bus Client)"]:::warning
         end
     end
 
@@ -993,25 +993,25 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Endpoints["REST Endpoints (/api/orders)"]
-        E1["📝 GET /\n(List Orders)"]:::core
-        E2["📝 GET /{id}\n(Get Order)"]:::core
-        E3["📝 POST /\n(Create Order)"]:::core
-        E4["📝 PUT /{id}\n(Update Order)"]:::core
-        E5["📝 DELETE /{id}\n(Delete Order)"]:::core
-        E6["📝 POST /{id}/status\n(Update Status)"]:::core
-        E7["📝 POST /batch\n(Batch Create)"]:::core
+        E1["📝 GET /</br>(List Orders)"]:::core
+        E2["📝 GET /{id}</br>(Get Order)"]:::core
+        E3["📝 POST /</br>(Create Order)"]:::core
+        E4["📝 PUT /{id}</br>(Update Order)"]:::core
+        E5["📝 DELETE /{id}</br>(Delete Order)"]:::core
+        E6["📝 POST /{id}/status</br>(Update Status)"]:::core
+        E7["📝 POST /batch</br>(Batch Create)"]:::core
     end
 
     subgraph RequestTypes["Request DTOs"]
-        R1["📋 CreateOrderRequest\n(Name, Items, Total)"]:::success
-        R2["📋 UpdateOrderRequest\n(Status, Items)"]:::success
-        R3["📋 PaginationParams\n(Page, PageSize)"]:::success
+        R1["📋 CreateOrderRequest</br>(Name, Items, Total)"]:::success
+        R2["📋 UpdateOrderRequest</br>(Status, Items)"]:::success
+        R3["📋 PaginationParams</br>(Page, PageSize)"]:::success
     end
 
     subgraph ResponseTypes["Response DTOs"]
-        RS1["📋 OrderResponse\n(Id, Name, Status, Items)"]:::warning
-        RS2["📋 PagedResult\n(Items, Total, Page)"]:::warning
-        RS3["📋 ProblemDetails\n(Status, Title, Detail)"]:::warning
+        RS1["📋 OrderResponse</br>(Id, Name, Status, Items)"]:::warning
+        RS2["📋 PagedResult</br>(Items, Total, Page)"]:::warning
+        RS3["📋 ProblemDetails</br>(Status, Title, Detail)"]:::warning
     end
 
     E1 -->|"Returns"| RS2
@@ -1955,23 +1955,23 @@ flowchart LR
 
     subgraph Frontend["Frontend (Blazor Server)"]
         WebApp["🌐 eShop.Web.App"]:::core
-        OrdersAPIClient["📡 OrdersAPIService\n(Typed HttpClient)"]:::core
+        OrdersAPIClient["📡 OrdersAPIService</br>(Typed HttpClient)"]:::core
     end
 
     subgraph Backend["Backend (ASP.NET Core API)"]
-        Controller["🎯 OrdersController\n(REST API)"]:::core
-        Service["⚙️ OrderService\n(Business Logic)"]:::core
-        Repository["🗃️ OrderRepository\n(Data Access)"]:::core
-        MsgHandler["📨 OrdersMessageHandler\n(Event Publisher)"]:::core
+        Controller["🎯 OrdersController</br>(REST API)"]:::core
+        Service["⚙️ OrderService</br>(Business Logic)"]:::core
+        Repository["🗃️ OrderRepository</br>(Data Access)"]:::core
+        MsgHandler["📨 OrdersMessageHandler</br>(Event Publisher)"]:::core
     end
 
     subgraph Data["Data Layer"]
-        SQL["🗄️ Azure SQL\n(OrderDb)"]:::data
+        SQL["🗄️ Azure SQL</br>(OrderDb)"]:::data
     end
 
     subgraph Messaging["Messaging Layer"]
-        SBTopic["📫 Service Bus Topic\n(ordersplaced)"]:::warning
-        SBSub["📬 Subscription\n(orderprocessingsub)"]:::warning
+        SBTopic["📫 Service Bus Topic</br>(ordersplaced)"]:::warning
+        SBSub["📬 Subscription</br>(orderprocessingsub)"]:::warning
     end
 
     subgraph Workflows["Logic App Workflows"]
@@ -1989,12 +1989,12 @@ flowchart LR
     end
 
     WebApp --> OrdersAPIClient
-    OrdersAPIClient -->|"HTTP/REST\n(Polly Resilience)"| Controller
+    OrdersAPIClient -->|"HTTP/REST</br>(Polly Resilience)"| Controller
     Controller --> Service
     Service --> Repository
     Service --> MsgHandler
-    Repository -->|"EF Core\n(Retry on Failure)"| SQL
-    MsgHandler -->|"AMQP\n(3 retries)"| SBTopic
+    Repository -->|"EF Core</br>(Retry on Failure)"| SQL
+    MsgHandler -->|"AMQP</br>(3 retries)"| SBTopic
     SBTopic --> SBSub
     SBSub -->|"1s polling"| WF1
     WF1 -->|"HTTP POST"| Controller
@@ -2047,35 +2047,35 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Publishers["Event Publishers"]
-        PUB1["⚙️ OrderService\n(OrdersMessageHandler)"]:::core
+        PUB1["⚙️ OrderService</br>(OrdersMessageHandler)"]:::core
     end
 
     subgraph ServiceBusTopology["Azure Service Bus"]
         subgraph Topics["Topics"]
-            T1["📨 ordersplaced\n(Order Events)"]:::warning
+            T1["📨 ordersplaced</br>(Order Events)"]:::warning
         end
         subgraph Subscriptions["Subscriptions"]
-            SUB1["📥 orderprocessingsub\n(Order Processing)"]:::warning
+            SUB1["📥 orderprocessingsub</br>(Order Processing)"]:::warning
         end
     end
 
     subgraph Subscribers["Event Subscribers"]
-        S1["🔄 OrdersPlacedProcess\n(Logic App Workflow)"]:::core
+        S1["🔄 OrdersPlacedProcess</br>(Logic App Workflow)"]:::core
     end
 
     subgraph Callbacks["Event Callbacks"]
-        CB1["⚙️ Orders API\n(POST /api/orders/status)"]:::core
+        CB1["⚙️ Orders API</br>(POST /api/orders/status)"]:::core
     end
 
     subgraph ResultStorage["Result Storage"]
-        RS1["📦 Blob: order-success\n(Processed Orders)"]:::success
-        RS2["📦 Blob: order-error\n(Failed Orders)"]:::danger
+        RS1["📦 Blob: order-success</br>(Processed Orders)"]:::success
+        RS2["📦 Blob: order-error</br>(Failed Orders)"]:::danger
     end
 
-    PUB1 -->|"AMQP Publish\n(3 retries)"| T1
+    PUB1 -->|"AMQP Publish</br>(3 retries)"| T1
     T1 -->|"Fan-out"| SUB1
-    SUB1 -->|"SB Trigger\n(1s polling)"| S1
-    S1 -->|"HTTP POST\n(Status Update)"| CB1
+    SUB1 -->|"SB Trigger</br>(1s polling)"| S1
+    S1 -->|"HTTP POST</br>(Status Update)"| CB1
     S1 -->|"Success Path"| RS1
     S1 -->|"Error Path"| RS2
 
@@ -2121,29 +2121,29 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph ReqResp["Request/Response Pattern"]
-        RR1["🌐 Blazor → Orders API\n(HTTP/REST, Polly)"]:::core
-        RR2["🔄 Logic App → Orders API\n(HTTP POST Callback)"]:::core
+        RR1["🌐 Blazor → Orders API</br>(HTTP/REST, Polly)"]:::core
+        RR2["🔄 Logic App → Orders API</br>(HTTP POST Callback)"]:::core
     end
 
     subgraph PubSub["Publish/Subscribe Pattern"]
-        PS1["📨 OrderService → SB Topic\n(AMQP, 3 retries)"]:::warning
-        PS2["📥 SB Sub → Logic App\n(Trigger, 1s poll)"]:::warning
+        PS1["📨 OrderService → SB Topic</br>(AMQP, 3 retries)"]:::warning
+        PS2["📥 SB Sub → Logic App</br>(Trigger, 1s poll)"]:::warning
     end
 
     subgraph DataAccess["Data Access Pattern"]
-        DA1["🗄️ Repository → DbContext\n(EF Core, Split Queries)"]:::data
-        DA2["🗄️ DbContext → Azure SQL\n(TDS, Retry on Failure)"]:::data
+        DA1["🗄️ Repository → DbContext</br>(EF Core, Split Queries)"]:::data
+        DA2["🗄️ DbContext → Azure SQL</br>(TDS, Retry on Failure)"]:::data
     end
 
     subgraph WorkflowOrch["Workflow Orchestration"]
-        WO1["🔄 OrdersPlacedProcess\n(Stateful Logic App)"]:::core
-        WO2["🧹 OrdersPlacedComplete\n(Cleanup Workflow)"]:::core
+        WO1["🔄 OrdersPlacedProcess</br>(Stateful Logic App)"]:::core
+        WO2["🧹 OrdersPlacedComplete</br>(Cleanup Workflow)"]:::core
     end
 
     subgraph Resilience["Resilience Mechanisms"]
-        RM1["🛡️ Circuit Breaker\n(5 failures / 30s)"]:::success
-        RM2["🛡️ Retry Policy\n(Exponential Backoff)"]:::success
-        RM3["🛡️ Timeout\n(30s default)"]:::success
+        RM1["🛡️ Circuit Breaker</br>(5 failures / 30s)"]:::success
+        RM2["🛡️ Retry Policy</br>(Exponential Backoff)"]:::success
+        RM3["🛡️ Timeout</br>(30s default)"]:::success
     end
 
     ReqResp -->|"Protected by"| Resilience

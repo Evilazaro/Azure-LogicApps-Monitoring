@@ -60,27 +60,27 @@ flowchart TB
         T2["📋 OrderProduct"]:::data
         T3["🗄️ Azure SQL Database"]:::data
     end
-    style TD fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style TD fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph ED ["📨 Event Data"]
         E1["📌 ordersplaced Topic"]:::messaging
         E2["📬 orderprocessingsub"]:::messaging
         E3["📨 Service Bus Namespace"]:::messaging
     end
-    style ED fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style ED fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph AD ["📦 Audit Data"]
         A1["✅ Success Blob"]:::storage
         A2["❌ Error Blob"]:::storage
         A3["📁 Completed Blob"]:::storage
     end
-    style AD fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    style AD fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph OD ["📊 Observability Data"]
         O1["📊 Application Insights"]:::monitoring
         O2["📋 Log Analytics"]:::monitoring
     end
-    style OD fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    style OD fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     BC --> TD
     BC --> ED
@@ -94,7 +94,7 @@ flowchart TB
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
     classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
     classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    classDef storage fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef storage fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
     classDef monitoring fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
@@ -125,20 +125,20 @@ flowchart LR
         H2["📨 Service Bus<br/>ordersplaced Topic"]:::messaging
         H3["📁 File Share<br/>workflowstate (5 GB)"]:::storage
     end
-    style HOT fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#A80000
+    style HOT fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph WARM ["🌡️ Warm Zone - Near-line"]
         W1["✅ Blob: Success"]:::storage
         W2["❌ Blob: Errors"]:::storage
         W3["📊 Application Insights"]:::monitoring
     end
-    style WARM fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    style WARM fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph COLD ["❄️ Cold Zone - Archive"]
         C1["📁 Blob: Completed"]:::storage
         C2["📋 Log Analytics<br/>Long-term Retention"]:::monitoring
     end
-    style COLD fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style COLD fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     HOT -->|"event trigger"| WARM
     WARM -->|"cleanup sweep"| COLD
@@ -146,7 +146,7 @@ flowchart LR
 
     classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
     classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    classDef storage fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef storage fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
     classDef monitoring fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
@@ -804,7 +804,7 @@ flowchart LR
 
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
     classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
-    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef workflow fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
     classDef monitoring fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
@@ -835,7 +835,7 @@ flowchart TB
         IS["📜 IOrderService<br/>Place, Batch, Get, Delete"]:::core
         IM["📜 IOrdersMessageHandler<br/>Send, SendBatch, List"]:::core
     end
-    style CONTRACTS fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style CONTRACTS fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph IMPL ["⚙️ Implementations"]
         OR["🗄️ OrderRepository<br/>EF Core + SQL"]:::data
@@ -843,18 +843,18 @@ flowchart TB
         OM["📨 OrdersMessageHandler<br/>Service Bus JSON"]:::messaging
         NOP["🚫 NoOpMessageHandler<br/>Test/Fallback"]:::monitoring
     end
-    style IMPL fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    style IMPL fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph REST ["🌐 REST Contract"]
         API["⚙️ OrdersController<br/>8 endpoints<br/>ProducesResponseType"]:::core
     end
-    style REST fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style REST fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     subgraph MSI ["🔐 API Connections"]
         SBC["📨 Service Bus MSI"]:::messaging
         BLC["📦 Blob Storage MSI"]:::storage
     end
-    style MSI fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    style MSI fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     IR -->|"implements"| OR
     IS -->|"implements"| OS
@@ -867,7 +867,7 @@ flowchart TB
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
     classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
     classDef messaging fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
-    classDef storage fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#6B5700
+    classDef storage fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
     classDef monitoring fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
