@@ -60,22 +60,22 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph ExternalActors["External Actors"]
-        User["👤 End User\n(Browser Client)"]
+        User["👤 End User\n(Browser Client)"]:::external
     end
 
     subgraph SystemBoundary["eShop Orders Management"]
-        WebApp["🌐 eShop.Web.App\n(Blazor Server)"]
-        OrdersAPI["⚙️ eShop.Orders.API\n(ASP.NET Core)"]
-        ServiceDefaults["🔧 ServiceDefaults\n(Shared Library)"]
-        AppHost["🚀 AppHost\n(.NET Aspire)"]
+        WebApp["🌐 eShop.Web.App\n(Blazor Server)"]:::core
+        OrdersAPI["⚙️ eShop.Orders.API\n(ASP.NET Core)"]:::core
+        ServiceDefaults["🔧 ServiceDefaults\n(Shared Library)"]:::core
+        AppHost["🚀 AppHost\n(.NET Aspire)"]:::core
     end
 
     subgraph ExternalServices["Azure PaaS Services"]
-        SQLDb["🗄️ Azure SQL Database"]
-        ServiceBus["📨 Azure Service Bus"]
-        LogicApps["🔄 Azure Logic Apps"]
-        BlobStorage["📦 Azure Blob Storage"]
-        AppInsights["📊 Application Insights"]
+        SQLDb["🗄️ Azure SQL Database"]:::data
+        ServiceBus["📨 Azure Service Bus"]:::data
+        LogicApps["🔄 Azure Logic Apps"]:::warning
+        BlobStorage["📦 Azure Blob Storage"]:::data
+        AppInsights["📊 Application Insights"]:::success
     end
 
     User -->|"HTTPS"| WebApp
@@ -90,9 +90,15 @@ flowchart TB
     AppHost -.->|"Orchestrates"| WebApp
     AppHost -.->|"Orchestrates"| OrdersAPI
 
-    style ExternalActors fill:#f0f0f0,stroke:#666,color:#333
-    style SystemBoundary fill:#e1f0ff,stroke:#0078d4,color:#333
-    style ExternalServices fill:#fff4e0,stroke:#ffb900,color:#333
+    style ExternalActors fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style SystemBoundary fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style ExternalServices fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef external fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
 ### Service Ecosystem Map
@@ -123,42 +129,42 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Services["Application Services (2)"]
-        SVC1["⚙️ OrderService"]
-        SVC2["⚙️ OrdersAPIService"]
+        SVC1["⚙️ OrderService"]:::core
+        SVC2["⚙️ OrdersAPIService"]:::core
     end
 
     subgraph Components["Application Components (7)"]
-        CMP1["📦 eShop.Orders.API"]
-        CMP2["📦 eShop.Web.App"]
-        CMP3["📦 OrderRepository"]
-        CMP4["📦 OrderDbContext"]
-        CMP5["📦 AppHost"]
-        CMP6["📦 ServiceDefaults"]
-        CMP7["📦 OrdersMessageHandler"]
+        CMP1["📦 eShop.Orders.API"]:::core
+        CMP2["📦 eShop.Web.App"]:::core
+        CMP3["📦 OrderRepository"]:::data
+        CMP4["📦 OrderDbContext"]:::data
+        CMP5["📦 AppHost"]:::core
+        CMP6["📦 ServiceDefaults"]:::core
+        CMP7["📦 OrdersMessageHandler"]:::core
     end
 
     subgraph Interfaces["Application Interfaces (3)"]
-        INT1["🔌 OrdersController"]
-        INT2["🔌 IOrderRepository"]
-        INT3["🔌 API Endpoints"]
+        INT1["🔌 OrdersController"]:::neutral
+        INT2["🔌 IOrderRepository"]:::neutral
+        INT3["🔌 API Endpoints"]:::neutral
     end
 
     subgraph DataObjects["Data Objects (7)"]
-        DTO1["📋 Order Entity"]
-        DTO2["📋 OrderItem Entity"]
-        DTO3["📋 CreateOrderRequest"]
-        DTO4["📋 UpdateOrderRequest"]
-        DTO5["📋 OrderResponse"]
-        DTO6["📋 PagedResult"]
-        DTO7["📋 OrderStatus Enum"]
+        DTO1["📋 Order Entity"]:::data
+        DTO2["📋 OrderItem Entity"]:::data
+        DTO3["📋 CreateOrderRequest"]:::data
+        DTO4["📋 UpdateOrderRequest"]:::data
+        DTO5["📋 OrderResponse"]:::data
+        DTO6["📋 PagedResult"]:::data
+        DTO7["📋 OrderStatus Enum"]:::data
     end
 
     subgraph Integration["Integration & Events (5)"]
-        EVT1["📨 Service Bus Publish"]
-        EVT2["📨 Service Bus Subscribe"]
-        PAT1["🔄 Pub/Sub Pattern"]
-        PAT2["🔄 Request/Response"]
-        PAT3["🔄 Workflow Orchestration"]
+        EVT1["📨 Service Bus Publish"]:::warning
+        EVT2["📨 Service Bus Subscribe"]:::warning
+        PAT1["🔄 Pub/Sub Pattern"]:::warning
+        PAT2["🔄 Request/Response"]:::warning
+        PAT3["🔄 Workflow Orchestration"]:::warning
     end
 
     Services --> Components
@@ -166,11 +172,16 @@ flowchart LR
     Components --> DataObjects
     Components --> Integration
 
-    style Services fill:#e6f4ea,stroke:#107c10,color:#333
-    style Components fill:#e1f0ff,stroke:#0078d4,color:#333
-    style Interfaces fill:#fff4e0,stroke:#ffb900,color:#333
-    style DataObjects fill:#fde7ef,stroke:#e3008c,color:#333
-    style Integration fill:#f3e8ff,stroke:#8661c5,color:#333
+    style Services fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Components fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Interfaces fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style DataObjects fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Integration fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
 ```
 
 ### Integration Tier Diagram
@@ -201,24 +212,24 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph SyncTier["Synchronous Tier (HTTP/REST)"]
-        S1["🌐 Blazor → Orders API\n(Typed HTTP Client)"]
-        S2["⚙️ Orders API → SQL\n(EF Core / TDS)"]
-        S3["🔄 Logic App → Orders API\n(HTTP POST Callback)"]
+        S1["🌐 Blazor → Orders API\n(Typed HTTP Client)"]:::core
+        S2["⚙️ Orders API → SQL\n(EF Core / TDS)"]:::data
+        S3["🔄 Logic App → Orders API\n(HTTP POST Callback)"]:::core
     end
 
     subgraph AsyncTier["Asynchronous Tier (AMQP)"]
-        A1["📨 Orders API → Service Bus\n(Topic Publish)"]
-        A2["📨 Service Bus → Logic App\n(Subscription Trigger)"]
+        A1["📨 Orders API → Service Bus\n(Topic Publish)"]:::warning
+        A2["📨 Service Bus → Logic App\n(Subscription Trigger)"]:::warning
     end
 
     subgraph StorageTier["Storage Tier (REST)"]
-        ST1["📦 Logic App → Blob Storage\n(Write Results)"]
-        ST2["🧹 Cleanup WF → Blob\n(Read/Delete)"]
+        ST1["📦 Logic App → Blob Storage\n(Write Results)"]:::data
+        ST2["🧹 Cleanup WF → Blob\n(Read/Delete)"]:::data
     end
 
     subgraph TelemetryTier["Telemetry Tier (OTLP)"]
-        T1["📊 Web App → App Insights\n(Traces/Metrics)"]
-        T2["📊 Orders API → App Insights\n(Traces/Metrics)"]
+        T1["📊 Web App → App Insights\n(Traces/Metrics)"]:::success
+        T2["📊 Orders API → App Insights\n(Traces/Metrics)"]:::success
     end
 
     SyncTier -->|"Request/Response"| AsyncTier
@@ -226,10 +237,15 @@ flowchart TB
     SyncTier -.->|"Observability"| TelemetryTier
     AsyncTier -.->|"Observability"| TelemetryTier
 
-    style SyncTier fill:#e1f0ff,stroke:#0078d4,color:#333
-    style AsyncTier fill:#fde7ef,stroke:#e3008c,color:#333
-    style StorageTier fill:#fff0e0,stroke:#ff8c00,color:#333
-    style TelemetryTier fill:#f0f0f0,stroke:#666,color:#333
+    style SyncTier fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style AsyncTier fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style StorageTier fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style TelemetryTier fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
 ```
 
 ### 2.1 Application Services
@@ -440,19 +456,19 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph FoundationalPrinciples["Foundational Principles"]
-        P1["🏗️ Separation of Concerns\n(Full Compliance)"]
-        P2["🔌 Interface-Driven Design\n(Full Compliance)"]
+        P1["🏗️ Separation of Concerns\n(Full Compliance)"]:::core
+        P2["🔌 Interface-Driven Design\n(Full Compliance)"]:::core
     end
 
     subgraph QualityPrinciples["Quality Principles"]
-        P3["🛡️ Resilience by Design\n(Full Compliance)"]
-        P4["📊 Observability First\n(Full Compliance)"]
+        P3["🛡️ Resilience by Design\n(Full Compliance)"]:::success
+        P4["📊 Observability First\n(Full Compliance)"]:::success
     end
 
     subgraph DesignPrinciples["Design Principles"]
-        P5["⚙️ Dual-Mode Configuration\n(Full Compliance)"]
-        P6["📝 API-First Design\n(Full Compliance)"]
-        P7["📨 Event-Driven Architecture\n(Partial Compliance)"]
+        P5["⚙️ Dual-Mode Configuration\n(Full Compliance)"]:::neutral
+        P6["📝 API-First Design\n(Full Compliance)"]:::neutral
+        P7["📨 Event-Driven Architecture\n(Partial Compliance)"]:::warning
     end
 
     P1 -->|"Enables"| P2
@@ -465,9 +481,14 @@ flowchart TB
     P5 -->|"Configures"| P3
     P2 -->|"Abstracts"| P3
 
-    style FoundationalPrinciples fill:#e1f0ff,stroke:#0078d4,color:#333
-    style QualityPrinciples fill:#e6f4ea,stroke:#107c10,color:#333
-    style DesignPrinciples fill:#fff4e0,stroke:#ffb900,color:#333
+    style FoundationalPrinciples fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style QualityPrinciples fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style DesignPrinciples fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
 ```
 
 ---
