@@ -719,26 +719,26 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph HTTPProtocols["HTTP Protocols"]
-        HP1["🌐 HTTPS\n(User → Web App)"]
-        HP2["⚙️ HTTP/REST\n(Web App → API)"]
-        HP3["🔄 HTTP POST\n(Logic App → API)"]
-        HP4["📦 REST\n(Logic App → Blob)"]
+        HP1["🌐 HTTPS\n(User → Web App)"]:::core
+        HP2["⚙️ HTTP/REST\n(Web App → API)"]:::core
+        HP3["🔄 HTTP POST\n(Logic App → API)"]:::core
+        HP4["📦 REST\n(Logic App → Blob)"]:::core
     end
 
     subgraph DataProtocols["Data Protocols"]
-        DP1["🗄️ TDS/SQL\n(API → Azure SQL)"]
-        DP2["🗄️ EF Core Retry\n(Transient Fault)"]
+        DP1["🗄️ TDS/SQL\n(API → Azure SQL)"]:::data
+        DP2["🗄️ EF Core Retry\n(Transient Fault)"]:::data
     end
 
     subgraph MessagingProtocols["Messaging Protocols"]
-        MP1["📨 AMQP 1.0\n(API → Service Bus)"]
-        MP2["📨 SB Trigger\n(Service Bus → Logic App)"]
+        MP1["📨 AMQP 1.0\n(API → Service Bus)"]:::warning
+        MP2["📨 SB Trigger\n(Service Bus → Logic App)"]:::warning
     end
 
     subgraph TelemetryProtocols["Telemetry Protocols"]
-        TP1["📊 OTLP/gRPC\n(Traces Export)"]
-        TP2["📊 OTLP/gRPC\n(Metrics Export)"]
-        TP3["📊 OTLP/gRPC\n(Logs Export)"]
+        TP1["📊 OTLP/gRPC\n(Traces Export)"]:::success
+        TP2["📊 OTLP/gRPC\n(Metrics Export)"]:::success
+        TP3["📊 OTLP/gRPC\n(Logs Export)"]:::success
     end
 
     HTTPProtocols -->|"Synchronous"| DataProtocols
@@ -746,10 +746,15 @@ flowchart LR
     HTTPProtocols -.->|"Instrumented"| TelemetryProtocols
     MessagingProtocols -.->|"Instrumented"| TelemetryProtocols
 
-    style HTTPProtocols fill:#e1f0ff,stroke:#0078d4,color:#333
-    style DataProtocols fill:#fff4e0,stroke:#ffb900,color:#333
-    style MessagingProtocols fill:#fde7ef,stroke:#e3008c,color:#333
-    style TelemetryProtocols fill:#f0f0f0,stroke:#666,color:#333
+    style HTTPProtocols fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style DataProtocols fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style MessagingProtocols fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style TelemetryProtocols fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
 ```
 
 ### Summary
@@ -799,29 +804,29 @@ flowchart TB
 
     subgraph OrdersAPIBoundary["eShop.Orders.API"]
         subgraph PresentationLayer["Presentation"]
-            Controller["🔌 OrdersController\n(REST Endpoints)"]
+            Controller["🔌 OrdersController\n(REST Endpoints)"]:::core
         end
 
         subgraph BusinessLayer["Business Logic"]
-            Service["⚙️ OrderService\n(Orchestration)"]
-            Validator["✅ Validation Logic\n(Model State)"]
-            Metrics["📊 Custom Metrics\n(OTel Counters)"]
+            Service["⚙️ OrderService\n(Orchestration)"]:::core
+            Validator["✅ Validation Logic\n(Model State)"]:::success
+            Metrics["📊 Custom Metrics\n(OTel Counters)"]:::success
         end
 
         subgraph DataAccessLayer["Data Access"]
-            Repo["🗄️ OrderRepository\n(EF Core)"]
-            DbCtx["🗄️ OrderDbContext\n(Fluent API Config)"]
+            Repo["🗄️ OrderRepository\n(EF Core)"]:::data
+            DbCtx["🗄️ OrderDbContext\n(Fluent API Config)"]:::data
         end
 
         subgraph MessagingLayer["Messaging"]
-            MsgHandler["📨 OrdersMessageHandler\n(Service Bus Client)"]
+            MsgHandler["📨 OrdersMessageHandler\n(Service Bus Client)"]:::warning
         end
     end
 
     subgraph ExternalDeps["External Dependencies"]
-        SQL["🗄️ Azure SQL Database"]
-        SBus["📨 Azure Service Bus"]
-        OTel["📊 Application Insights"]
+        SQL["🗄️ Azure SQL Database"]:::data
+        SBus["📨 Azure Service Bus"]:::warning
+        OTel["📊 Application Insights"]:::success
     end
 
     Controller -->|"Delegates"| Service
@@ -834,12 +839,17 @@ flowchart TB
     MsgHandler -->|"AMQP"| SBus
     Metrics -.->|"OTLP"| OTel
 
-    style OrdersAPIBoundary fill:#e6f4ea,stroke:#107c10,color:#333
-    style PresentationLayer fill:#e1f0ff,stroke:#0078d4,color:#333
-    style BusinessLayer fill:#fff4e0,stroke:#ffb900,color:#333
-    style DataAccessLayer fill:#fde7ef,stroke:#e3008c,color:#333
-    style MessagingLayer fill:#f3e8ff,stroke:#8661c5,color:#333
-    style ExternalDeps fill:#f0f0f0,stroke:#666,color:#333
+    style OrdersAPIBoundary fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style PresentationLayer fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
+    style BusinessLayer fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
+    style DataAccessLayer fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
+    style MessagingLayer fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
+    style ExternalDeps fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
 ```
 
 ### Sequence Diagram — Order Creation Flow
@@ -983,25 +993,25 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Endpoints["REST Endpoints (/api/orders)"]
-        E1["📝 GET /\n(List Orders)"]
-        E2["📝 GET /{id}\n(Get Order)"]
-        E3["📝 POST /\n(Create Order)"]
-        E4["📝 PUT /{id}\n(Update Order)"]
-        E5["📝 DELETE /{id}\n(Delete Order)"]
-        E6["📝 POST /{id}/status\n(Update Status)"]
-        E7["📝 POST /batch\n(Batch Create)"]
+        E1["📝 GET /\n(List Orders)"]:::core
+        E2["📝 GET /{id}\n(Get Order)"]:::core
+        E3["📝 POST /\n(Create Order)"]:::core
+        E4["📝 PUT /{id}\n(Update Order)"]:::core
+        E5["📝 DELETE /{id}\n(Delete Order)"]:::core
+        E6["📝 POST /{id}/status\n(Update Status)"]:::core
+        E7["📝 POST /batch\n(Batch Create)"]:::core
     end
 
     subgraph RequestTypes["Request DTOs"]
-        R1["📋 CreateOrderRequest\n(Name, Items, Total)"]
-        R2["📋 UpdateOrderRequest\n(Status, Items)"]
-        R3["📋 PaginationParams\n(Page, PageSize)"]
+        R1["📋 CreateOrderRequest\n(Name, Items, Total)"]:::success
+        R2["📋 UpdateOrderRequest\n(Status, Items)"]:::success
+        R3["📋 PaginationParams\n(Page, PageSize)"]:::success
     end
 
     subgraph ResponseTypes["Response DTOs"]
-        RS1["📋 OrderResponse\n(Id, Name, Status, Items)"]
-        RS2["📋 PagedResult\n(Items, Total, Page)"]
-        RS3["📋 ProblemDetails\n(Status, Title, Detail)"]
+        RS1["📋 OrderResponse\n(Id, Name, Status, Items)"]:::warning
+        RS2["📋 PagedResult\n(Items, Total, Page)"]:::warning
+        RS3["📋 ProblemDetails\n(Status, Title, Detail)"]:::warning
     end
 
     E1 -->|"Returns"| RS2
@@ -1015,9 +1025,13 @@ flowchart LR
     E7 -->|"Accepts"| R1
     E1 -->|"Accepts"| R3
 
-    style Endpoints fill:#e1f0ff,stroke:#0078d4,color:#333
-    style RequestTypes fill:#e6f4ea,stroke:#107c10,color:#333
-    style ResponseTypes fill:#fff4e0,stroke:#ffb900,color:#333
+    style Endpoints fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style RequestTypes fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style ResponseTypes fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
 ```
 
 ### 5.1 Application Services
@@ -1940,38 +1954,38 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Frontend["Frontend (Blazor Server)"]
-        WebApp["🌐 eShop.Web.App"]
-        OrdersAPIClient["📡 OrdersAPIService\n(Typed HttpClient)"]
+        WebApp["🌐 eShop.Web.App"]:::core
+        OrdersAPIClient["📡 OrdersAPIService\n(Typed HttpClient)"]:::core
     end
 
     subgraph Backend["Backend (ASP.NET Core API)"]
-        Controller["🎯 OrdersController\n(REST API)"]
-        Service["⚙️ OrderService\n(Business Logic)"]
-        Repository["🗃️ OrderRepository\n(Data Access)"]
-        MsgHandler["📨 OrdersMessageHandler\n(Event Publisher)"]
+        Controller["🎯 OrdersController\n(REST API)"]:::core
+        Service["⚙️ OrderService\n(Business Logic)"]:::core
+        Repository["🗃️ OrderRepository\n(Data Access)"]:::core
+        MsgHandler["📨 OrdersMessageHandler\n(Event Publisher)"]:::core
     end
 
     subgraph Data["Data Layer"]
-        SQL["🗄️ Azure SQL\n(OrderDb)"]
+        SQL["🗄️ Azure SQL\n(OrderDb)"]:::data
     end
 
     subgraph Messaging["Messaging Layer"]
-        SBTopic["📫 Service Bus Topic\n(ordersplaced)"]
-        SBSub["📬 Subscription\n(orderprocessingsub)"]
+        SBTopic["📫 Service Bus Topic\n(ordersplaced)"]:::warning
+        SBSub["📬 Subscription\n(orderprocessingsub)"]:::warning
     end
 
     subgraph Workflows["Logic App Workflows"]
-        WF1["🔄 OrdersPlacedProcess"]
-        WF2["🧹 OrdersPlacedCompleteProcess"]
+        WF1["🔄 OrdersPlacedProcess"]:::core
+        WF2["🧹 OrdersPlacedCompleteProcess"]:::core
     end
 
     subgraph Storage["Blob Storage"]
-        BlobSuccess["✅ /ordersprocessedsuccessfully"]
-        BlobError["❌ /ordersprocessedwitherrors"]
+        BlobSuccess["✅ /ordersprocessedsuccessfully"]:::success
+        BlobError["❌ /ordersprocessedwitherrors"]:::danger
     end
 
     subgraph Observability["Observability"]
-        AppInsights["📊 Application Insights"]
+        AppInsights["📊 Application Insights"]:::success
     end
 
     WebApp --> OrdersAPIClient
@@ -1990,13 +2004,19 @@ flowchart LR
     WebApp -.->|"OTLP"| AppInsights
     Controller -.->|"OTLP"| AppInsights
 
-    style Frontend fill:#e1f0ff,stroke:#0078d4,color:#333
-    style Backend fill:#e6f4ea,stroke:#107c10,color:#333
-    style Data fill:#fff4e0,stroke:#ffb900,color:#333
-    style Messaging fill:#fde7ef,stroke:#e3008c,color:#333
-    style Workflows fill:#f3e8ff,stroke:#8661c5,color:#333
-    style Storage fill:#fff0e0,stroke:#ff8c00,color:#333
-    style Observability fill:#f0f0f0,stroke:#666,color:#333
+    style Frontend fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Backend fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Data fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Messaging fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Workflows fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Storage fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Observability fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef danger fill:#FDE7E9,stroke:#E81123,stroke-width:2px,color:#A4262C
 ```
 
 ### Event Subscription Map
@@ -2027,29 +2047,29 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Publishers["Event Publishers"]
-        PUB1["⚙️ OrderService\n(OrdersMessageHandler)"]
+        PUB1["⚙️ OrderService\n(OrdersMessageHandler)"]:::core
     end
 
     subgraph ServiceBusTopology["Azure Service Bus"]
         subgraph Topics["Topics"]
-            T1["📨 ordersplaced\n(Order Events)"]
+            T1["📨 ordersplaced\n(Order Events)"]:::warning
         end
         subgraph Subscriptions["Subscriptions"]
-            SUB1["📥 orderprocessingsub\n(Order Processing)"]
+            SUB1["📥 orderprocessingsub\n(Order Processing)"]:::warning
         end
     end
 
     subgraph Subscribers["Event Subscribers"]
-        S1["🔄 OrdersPlacedProcess\n(Logic App Workflow)"]
+        S1["🔄 OrdersPlacedProcess\n(Logic App Workflow)"]:::core
     end
 
     subgraph Callbacks["Event Callbacks"]
-        CB1["⚙️ Orders API\n(POST /api/orders/status)"]
+        CB1["⚙️ Orders API\n(POST /api/orders/status)"]:::core
     end
 
     subgraph ResultStorage["Result Storage"]
-        RS1["📦 Blob: order-success\n(Processed Orders)"]
-        RS2["📦 Blob: order-error\n(Failed Orders)"]
+        RS1["📦 Blob: order-success\n(Processed Orders)"]:::success
+        RS2["📦 Blob: order-error\n(Failed Orders)"]:::danger
     end
 
     PUB1 -->|"AMQP Publish\n(3 retries)"| T1
@@ -2059,13 +2079,18 @@ flowchart LR
     S1 -->|"Success Path"| RS1
     S1 -->|"Error Path"| RS2
 
-    style Publishers fill:#e6f4ea,stroke:#107c10,color:#333
-    style ServiceBusTopology fill:#fde7ef,stroke:#e3008c,color:#333
-    style Topics fill:#fde7ef,stroke:#e3008c,color:#333
-    style Subscriptions fill:#fde7ef,stroke:#e3008c,color:#333
-    style Subscribers fill:#f3e8ff,stroke:#8661c5,color:#333
-    style Callbacks fill:#e1f0ff,stroke:#0078d4,color:#333
-    style ResultStorage fill:#fff0e0,stroke:#ff8c00,color:#333
+    style Publishers fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style ServiceBusTopology fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Topics fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
+    style Subscriptions fill:#EDEBE9,stroke:#8A8886,stroke-width:2px,color:#323130
+    style Subscribers fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Callbacks fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style ResultStorage fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef danger fill:#FDE7E9,stroke:#E81123,stroke-width:2px,color:#A4262C
 ```
 
 ### Integration Pattern Matrix
@@ -2096,29 +2121,29 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph ReqResp["Request/Response Pattern"]
-        RR1["🌐 Blazor → Orders API\n(HTTP/REST, Polly)"]
-        RR2["🔄 Logic App → Orders API\n(HTTP POST Callback)"]
+        RR1["🌐 Blazor → Orders API\n(HTTP/REST, Polly)"]:::core
+        RR2["🔄 Logic App → Orders API\n(HTTP POST Callback)"]:::core
     end
 
     subgraph PubSub["Publish/Subscribe Pattern"]
-        PS1["📨 OrderService → SB Topic\n(AMQP, 3 retries)"]
-        PS2["📥 SB Sub → Logic App\n(Trigger, 1s poll)"]
+        PS1["📨 OrderService → SB Topic\n(AMQP, 3 retries)"]:::warning
+        PS2["📥 SB Sub → Logic App\n(Trigger, 1s poll)"]:::warning
     end
 
     subgraph DataAccess["Data Access Pattern"]
-        DA1["🗄️ Repository → DbContext\n(EF Core, Split Queries)"]
-        DA2["🗄️ DbContext → Azure SQL\n(TDS, Retry on Failure)"]
+        DA1["🗄️ Repository → DbContext\n(EF Core, Split Queries)"]:::data
+        DA2["🗄️ DbContext → Azure SQL\n(TDS, Retry on Failure)"]:::data
     end
 
     subgraph WorkflowOrch["Workflow Orchestration"]
-        WO1["🔄 OrdersPlacedProcess\n(Stateful Logic App)"]
-        WO2["🧹 OrdersPlacedComplete\n(Cleanup Workflow)"]
+        WO1["🔄 OrdersPlacedProcess\n(Stateful Logic App)"]:::core
+        WO2["🧹 OrdersPlacedComplete\n(Cleanup Workflow)"]:::core
     end
 
     subgraph Resilience["Resilience Mechanisms"]
-        RM1["🛡️ Circuit Breaker\n(5 failures / 30s)"]
-        RM2["🛡️ Retry Policy\n(Exponential Backoff)"]
-        RM3["🛡️ Timeout\n(30s default)"]
+        RM1["🛡️ Circuit Breaker\n(5 failures / 30s)"]:::success
+        RM2["🛡️ Retry Policy\n(Exponential Backoff)"]:::success
+        RM3["🛡️ Timeout\n(30s default)"]:::success
     end
 
     ReqResp -->|"Protected by"| Resilience
@@ -2126,11 +2151,16 @@ flowchart TB
     DataAccess -->|"Protected by"| Resilience
     WorkflowOrch -->|"Calls back"| ReqResp
 
-    style ReqResp fill:#e1f0ff,stroke:#0078d4,color:#333
-    style PubSub fill:#fde7ef,stroke:#e3008c,color:#333
-    style DataAccess fill:#fff4e0,stroke:#ffb900,color:#333
-    style WorkflowOrch fill:#f3e8ff,stroke:#8661c5,color:#333
-    style Resilience fill:#e6f4ea,stroke:#107c10,color:#333
+    style ReqResp fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style PubSub fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style DataAccess fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style WorkflowOrch fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Resilience fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
 ```
 
 ### Summary
