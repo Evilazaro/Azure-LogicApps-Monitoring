@@ -46,6 +46,10 @@ Strategic alignment demonstrates **Level 3–4 governance maturity** with tag-ba
 | 10  | Business Objects/Entities | 8     | 0.88            | 4 - Measured |
 | 11  | KPIs & Metrics            | 7     | 0.86            | 3 - Defined  |
 
+### Summary
+
+The eShop Order Management platform exhibits **Level 3–4 maturity** across 88 components spanning all 11 TOGAF Business Architecture types. The primary strengths lie in event-driven processing, typed domain models, and comprehensive observability. Key gaps include formal L2/L3 capability documentation and explicit business KPI dashboards.
+
 ---
 
 ## 2. Architecture Landscape
@@ -339,6 +343,10 @@ The principles are organized into four categories: Value-Driven Design (ensuring
 **Evidence**: `app.ServiceDefaults/CommonTypes.cs:77-155` — shared domain types; `src/eShop.Orders.API/data/Entities/OrderEntity.cs:1-63` — persistence model; `src/eShop.Orders.API/data/OrderMapper.cs:1-102` — bidirectional mapping.
 
 **Implications**: New entity types must maintain this three-layer separation. Domain types live in ServiceDefaults; persistence types in data/Entities.
+
+### Summary
+
+Six architecture principles govern the eShop platform: event-driven asynchronous processing, comprehensive observability, domain-driven design, zero-secret security, infrastructure-as-code, and domain model separation. Each principle is evidenced by concrete source code implementations and enforces clear guardrails for future development.
 
 ---
 
