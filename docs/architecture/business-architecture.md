@@ -487,9 +487,6 @@ This subsection documents the strategic components driving the eShop order manag
 | **Strategy Type**   | Architectural Vision                                                                                         |
 | **Objective**       | Provide an enterprise-grade reference architecture for event-driven order processing and monitoring on Azure |
 | **Target Audience** | Platform engineers and cloud architects                                                                      |
-| **Maturity**        | 3 - Defined                                                                                                  |
-| **Source**          | `README.md:1-20`                                                                                             |
-| **Confidence**      | 0.95                                                                                                         |
 
 #### 5.1.2 Feature Stability Strategy
 
@@ -639,9 +636,6 @@ This subsection documents the 6 value streams that deliver end-to-end business v
 | **Entry Point**          | Customer places order via Web App or API                                                                                                                                                                                            |
 | **Exit Point**           | Audit blob created and eventually cleaned up                                                                                                                                                                                        |
 | **Stage Owners**         | Web App (Place), API (Publish), Logic App (Trigger/Process/Audit), Logic App (Cleanup)                                                                                                                                              |
-| **Maturity**             | 4 - Measured                                                                                                                                                                                                                        |
-| **Source**               | `README.md:415-420`                                                                                                                                                                                                                 |
-| **Confidence**           | 0.95                                                                                                                                                                                                                                |
 | **Processes Referenced** | Order Placement (§5.4.1), Logic App Order Processing (§5.4.2)                                                                                                                                                                       |
 | **Measurable Outcome**   | Order persisted in SQL, OrderPlaced event published to Service Bus, audit blob created in Blob Storage, and blob cleaned up — validated by `eShop.orders.placed` counter increment and `eShop.orders.processing.duration` histogram |
 
@@ -664,9 +658,6 @@ This subsection documents the 6 value streams that deliver end-to-end business v
 | **Stages**               | Validate → Check Existence → Save to SQL → Publish to Service Bus → Record Metrics                        |
 | **Entry Point**          | HTTP POST /api/Orders received by OrdersController                                                        |
 | **Exit Point**           | OrderPlaced event published to Service Bus topic and metrics recorded                                     |
-| **Maturity**             | 4 - Measured                                                                                              |
-| **Source**               | `src/eShop.Orders.API/Services/OrderService.cs:87-145`                                                    |
-| **Confidence**           | 0.95                                                                                                      |
 | **Processes Referenced** | Order Placement Process (§5.4.1)                                                                          |
 | **Measurable Outcome**   | Order persisted to SQL (verified by GetOrderByIdAsync) and `eShop.orders.placed` counter incremented by 1 |
 
@@ -678,9 +669,6 @@ This subsection documents the 6 value streams that deliver end-to-end business v
 | **Stages**               | Service Bus Poll (1s) → Validate JSON → POST /api/Orders/process → Branch: Success Blob or Error Blob               |
 | **Entry Point**          | Service Bus message received on subscription "orderprocessingsub"                                                   |
 | **Exit Point**           | Audit blob created in Azure Blob Storage (success or error path)                                                    |
-| **Maturity**             | 4 - Measured                                                                                                        |
-| **Source**               | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-175`                       |
-| **Confidence**           | 0.95                                                                                                                |
 | **Processes Referenced** | Logic App: Order Processing Workflow (§5.4.2)                                                                       |
 | **Measurable Outcome**   | Audit blob created in Blob Storage with processing result, duration recorded via `eShop.orders.processing.duration` |
 
@@ -703,9 +691,6 @@ This subsection documents the 6 value streams that deliver end-to-end business v
 | **Stages**               | User Input → Form Validation → PlaceOrderAsync → API Response → UI Feedback                                |
 | **Entry Point**          | Customer submits order form in Web App                                                                     |
 | **Exit Point**           | Order confirmation displayed to user with success/error status                                             |
-| **Maturity**             | 3 - Defined                                                                                                |
-| **Source**               | `src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-479`                                          |
-| **Confidence**           | 0.80                                                                                                       |
 | **Processes Referenced** | Order Placement Process (§5.4.1)                                                                           |
 | **Measurable Outcome**   | HTTP 200 response returned to Web App with order confirmation, distributed trace created via OpenTelemetry |
 
@@ -717,9 +702,6 @@ This subsection documents the 6 value streams that deliver end-to-end business v
 | **Stages**               | Serialize → Set Properties → Propagate Trace Context → Send (3-attempt retry, exponential backoff)                  |
 | **Entry Point**          | OrderService calls SendOrderMessageAsync after successful order persistence                                         |
 | **Exit Point**           | ServiceBusMessage delivered to topic "ordersplaced" with W3C trace context                                          |
-| **Maturity**             | 4 - Measured                                                                                                        |
-| **Source**               | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425`                                                       |
-| **Confidence**           | 0.90                                                                                                                |
 | **Processes Referenced** | Order Placement Process (§5.4.1)                                                                                    |
 | **Measurable Outcome**   | ServiceBusMessage published to topic with Subject="OrderPlaced", W3C TraceParent propagated for distributed tracing |
 
@@ -796,9 +778,6 @@ This subsection documents the 9 business processes governing order lifecycle ope
 | **Process Type** | Core Business Process                                  |
 | **Trigger**      | HTTP POST /api/Orders                                  |
 | **Owner**        | Orders API Service                                     |
-| **Maturity**     | 4 - Measured                                           |
-| **Source**       | `src/eShop.Orders.API/Services/OrderService.cs:87-145` |
-| **Confidence**   | 0.95                                                   |
 
 **Process Steps:**
 
@@ -874,9 +853,6 @@ flowchart TB
 | **Process Type** | Automated Stateful Workflow                                                                   |
 | **Trigger**      | Service Bus topic "ordersplaced", subscription "orderprocessingsub"                           |
 | **Owner**        | Azure Logic App (OrdersManagementLogicApp)                                                    |
-| **Maturity**     | 4 - Measured                                                                                  |
-| **Source**       | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-175` |
-| **Confidence**   | 0.95                                                                                          |
 
 **Process Steps:**
 
@@ -898,9 +874,6 @@ This subsection documents the 7 business services providing the contractual inte
 | **Contract Type** | C# Interface (IOrderService)                                                                                                                     |
 | **Operations**    | PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync, ListMessagesFromTopicsAsync |
 | **Consumers**     | OrdersController, Web App (via OrdersAPIService)                                                                                                 |
-| **Maturity**      | 4 - Measured                                                                                                                                     |
-| **Source**        | `src/eShop.Orders.API/Interfaces/IOrderService.cs:1-68`                                                                                          |
-| **Confidence**    | 0.95                                                                                                                                             |
 
 #### 5.5.2 Order Messaging Service Contract
 
@@ -910,9 +883,6 @@ This subsection documents the 7 business services providing the contractual inte
 | **Contract Type**   | C# Interface (IOrdersMessageHandler)                                      |
 | **Operations**      | SendOrderMessageAsync, SendOrdersBatchMessageAsync, ListMessagesAsync     |
 | **Implementations** | OrdersMessageHandler (production), NoOpOrdersMessageHandler (development) |
-| **Maturity**        | 4 - Measured                                                              |
-| **Source**          | `src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:1-37`           |
-| **Confidence**      | 0.95                                                                      |
 
 ### 5.6 Business Functions Specifications
 
@@ -951,9 +921,6 @@ This subsection documents the 10 business rules governing data integrity, operat
 | **Rule Name**  | Order Validation (Declarative)                  |
 | **Rule Type**  | Data Annotations / Validation Attributes        |
 | **Scope**      | Order domain model (shared across all services) |
-| **Maturity**   | 4 - Measured                                    |
-| **Source**     | `app.ServiceDefaults/CommonTypes.cs:77-112`     |
-| **Confidence** | 0.95                                            |
 
 **Validation Constraints:**
 
@@ -973,9 +940,6 @@ This subsection documents the 10 business rules governing data integrity, operat
 | **Rule Type**  | Imperative / Runtime Check                                                                                                                |
 | **Scope**      | Order placement operation                                                                                                                 |
 | **Logic**      | Check if order ID exists before saving → skip with AlreadyExists result if duplicate; repository backup via duplicate key exception catch |
-| **Maturity**   | 4 - Measured                                                                                                                              |
-| **Source**     | `src/eShop.Orders.API/Services/OrderService.cs:270-320`                                                                                   |
-| **Confidence** | 0.90                                                                                                                                      |
 
 #### 5.8.3 Batch Concurrency Rules
 
@@ -986,9 +950,6 @@ This subsection documents the 10 business rules governing data integrity, operat
 | **Max Concurrency** | SemaphoreSlim(10) — 10 parallel operations              |
 | **Batch Size**      | 50 items per processing batch                           |
 | **Timeout**         | 5 minutes per batch execution                           |
-| **Maturity**        | 4 - Measured                                            |
-| **Source**          | `src/eShop.Orders.API/Services/OrderService.cs:160-200` |
-| **Confidence**      | 0.85                                                    |
 
 ### 5.9 Business Events Specifications
 
@@ -1005,9 +966,6 @@ This subsection documents the 7 business events that trigger process execution a
 | **Properties**    | Subject="OrderPlaced", ContentType="application/json", MessageId=order.Id |
 | **Trace Context** | W3C TraceParent, TraceId, SpanId propagated in ApplicationProperties      |
 | **Consumers**     | Logic App OrdersPlacedProcess (subscription "orderprocessingsub")         |
-| **Maturity**      | 4 - Measured                                                              |
-| **Source**        | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:100-150`           |
-| **Confidence**    | 0.95                                                                      |
 
 #### 5.9.2 Service Bus Message Received
 
@@ -1018,9 +976,6 @@ This subsection documents the 7 business events that trigger process execution a
 | **Channel**       | Service Bus subscription "orderprocessingsub" on topic "ordersplaced"                        |
 | **Poll Interval** | 1 second                                                                                     |
 | **Consumer**      | Logic App OrdersPlacedProcess workflow                                                       |
-| **Maturity**      | 4 - Measured                                                                                 |
-| **Source**        | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:5-30` |
-| **Confidence**    | 0.95                                                                                         |
 
 ```mermaid
 ---
@@ -1101,9 +1056,6 @@ This subsection documents the 8 business objects forming the domain model of the
 | **Validation**          | Declarative data annotations (see Rule 5.8.1)                                                                                     |
 | **Persistence Mapping** | Order → OrderEntity via OrderMapper                                                                                               |
 | **Messaging Mapping**   | Order → OrderMessageWithMetadata (adds envelope properties)                                                                       |
-| **Maturity**            | 4 - Measured                                                                                                                      |
-| **Source**              | `app.ServiceDefaults/CommonTypes.cs:77-112`                                                                                       |
-| **Confidence**          | 0.95                                                                                                                              |
 
 #### 5.10.2 OrderProduct (Domain Model)
 
@@ -1113,9 +1065,6 @@ This subsection documents the 8 business objects forming the domain model of the
 | **Entity Type**         | Core Domain Model (shared)                                                                                      |
 | **Properties**          | Id (string), OrderId (string), ProductId (string), ProductDescription (string), Quantity (int), Price (decimal) |
 | **Persistence Mapping** | OrderProduct → OrderProductEntity via OrderMapper                                                               |
-| **Maturity**            | 4 - Measured                                                                                                    |
-| **Source**              | `app.ServiceDefaults/CommonTypes.cs:118-155`                                                                    |
-| **Confidence**          | 0.95                                                                                                            |
 
 #### 5.10.3 OrderDb Database Schema
 
@@ -1127,9 +1076,6 @@ This subsection documents the 8 business objects forming the domain model of the
 | **Relationships** | Orders 1:N OrderProducts (cascade delete)           |
 | **Indexes**       | CustomerId, Date                                    |
 | **Constraints**   | Total decimal(18,2), PK max length 100 chars        |
-| **Maturity**      | 4 - Measured                                        |
-| **Source**        | `src/eShop.Orders.API/data/OrderDbContext.cs:1-129` |
-| **Confidence**    | 0.90                                                |
 
 ### 5.11 KPIs & Metrics Specifications
 
@@ -1141,9 +1087,6 @@ This subsection documents the 7 KPI and metric components providing business obs
 | ---------------- | ----------------------------------------------------- |
 | **Metric Group** | eShop.Orders.API Custom Metrics                       |
 | **Meter Name**   | eShop.Orders.API                                      |
-| **Maturity**     | 4 - Measured                                          |
-| **Source**       | `src/eShop.Orders.API/Services/OrderService.cs:66-80` |
-| **Confidence**   | 0.95                                                  |
 
 **Metrics Defined:**
 
@@ -1162,9 +1105,6 @@ This subsection documents the 7 KPI and metric components providing business obs
 | **Instruments**      | Runtime, ASP.NET Core, HTTP Client, custom Meter                                    |
 | **Exporter**         | Azure Monitor via APPLICATIONINSIGHTS_CONNECTION_STRING                             |
 | **Activity Sources** | eShop.Orders.API, ASP.NET Core, HTTP Client, SQL Client, Azure.Messaging.ServiceBus |
-| **Maturity**         | 4 - Measured                                                                        |
-| **Source**           | `app.ServiceDefaults/Extensions.cs:100-180`                                         |
-| **Confidence**       | 0.90                                                                                |
 
 ### Summary
 
