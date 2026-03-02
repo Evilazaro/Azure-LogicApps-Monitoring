@@ -186,105 +186,105 @@ flowchart LR
 
 ### 2.1 Data Entities
 
-| Name               | Description                                                                     | Source                                                        | Confidence | Classification  |
-| ------------------ | ------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------- | --------------- |
-| Order              | Core domain record with Id, CustomerId, Date, DeliveryAddress, Total, Products  | app.ServiceDefaults/CommonTypes.cs:75-120                     | 0.92       | PII + Financial |
-| OrderProduct       | Line-item record with Id, OrderId, ProductId, Description, Quantity, Price      | app.ServiceDefaults/CommonTypes.cs:126-155                    | 0.92       | Financial       |
-| OrderEntity        | EF Core persistence entity mapped to Orders table                               | src/eShop.Orders.API/data/Entities/OrderEntity.cs:1-60        | 0.95       | PII + Financial |
-| OrderProductEntity | EF Core persistence entity mapped to OrderProducts table with FK to OrderEntity | src/eShop.Orders.API/data/Entities/OrderProductEntity.cs:1-65 | 0.95       | Financial       |
-| WeatherForecast    | Demo model with Date, TemperatureC, TemperatureF (computed), Summary            | app.ServiceDefaults/CommonTypes.cs:46-68                      | 0.75       | Public          |
+| Name               | Description                                                                     | Classification  |
+| ------------------ | ------------------------------------------------------------------------------- | --------------- |
+| Order              | Core domain record with Id, CustomerId, Date, DeliveryAddress, Total, Products  | PII + Financial |
+| OrderProduct       | Line-item record with Id, OrderId, ProductId, Description, Quantity, Price      | Financial       |
+| OrderEntity        | EF Core persistence entity mapped to Orders table                               | PII + Financial |
+| OrderProductEntity | EF Core persistence entity mapped to OrderProducts table with FK to OrderEntity | Financial       |
+| WeatherForecast    | Demo model with Date, TemperatureC, TemperatureF (computed), Summary            | Public          |
 
 ### 2.2 Data Models
 
-| Name                | Description                                                                         | Source                                                           | Confidence | Classification |
-| ------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ---------- | -------------- |
-| OrderDbContext      | EF Core DbContext with Fluent API configuration for Orders and OrderProducts tables | src/eShop.Orders.API/data/OrderDbContext.cs:1-129                | 0.95       | Internal       |
-| OrderDbV1 Migration | Physical DDL: Orders and OrderProducts tables with indexes and FK constraints       | src/eShop.Orders.API/Migrations/20251227014858_OrderDbV1.cs:1-87 | 0.90       | Internal       |
-| Bicep Type System   | Custom Bicep types: tagsType, storageAccountConfig, triggersType, connectionType    | infra/types.bicep:1-116                                          | 0.82       | Internal       |
+| Name                | Description                                                                         | Classification |
+| ------------------- | ----------------------------------------------------------------------------------- | -------------- |
+| OrderDbContext      | EF Core DbContext with Fluent API configuration for Orders and OrderProducts tables | Internal       |
+| OrderDbV1 Migration | Physical DDL: Orders and OrderProducts tables with indexes and FK constraints       | Internal       |
+| Bicep Type System   | Custom Bicep types: tagsType, storageAccountConfig, triggersType, connectionType    | Internal       |
 
 ### 2.3 Data Stores
 
-| Name                                         | Description                                                                  | Source                                     | Confidence | Classification                 |
-| -------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ | ---------- | ------------------------------ |
-| Azure SQL Database (OrderDb)                 | GP_Gen5_2, 32 GB, SQL_Latin1_General_CP1_CI_AS collation, Entra ID-only auth | infra/shared/data/main.bicep:596-635       | 0.95       | PII + Financial + Confidential |
-| Azure Storage Account (Workflow)             | StorageV2, Standard_LRS, TLS 1.2, Hot tier for workflow data                 | infra/shared/data/main.bicep:153-179       | 0.92       | Internal                       |
-| Blob Container (ordersprocessedsuccessfully) | Audit trail for successfully processed orders                                | infra/shared/data/main.bicep:197-202       | 0.88       | Financial                      |
-| Blob Container (ordersprocessedwitherrors)   | Error tracking for failed order processing                                   | infra/shared/data/main.bicep:207-212       | 0.88       | Financial                      |
-| Blob Container (ordersprocessedcompleted)    | Tracking for completed order cleanup                                         | infra/shared/data/main.bicep:217-222       | 0.88       | Financial                      |
-| File Share (workflowstate)                   | 5 GB SMB share for Logic Apps content/state persistence                      | infra/shared/data/main.bicep:186-193       | 0.85       | Internal                       |
-| Azure Service Bus Namespace                  | Standard tier message broker for order event distribution                    | infra/workload/messaging/main.bicep:96-115 | 0.90       | Internal                       |
-| Application Insights + Log Analytics         | Telemetry store for traces, metrics, and distributed tracing                 | infra/shared/main.bicep:\*                 | 0.80       | Internal                       |
+| Name                                         | Description                                                                  | Classification                 |
+| -------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------ |
+| Azure SQL Database (OrderDb)                 | GP_Gen5_2, 32 GB, SQL_Latin1_General_CP1_CI_AS collation, Entra ID-only auth | PII + Financial + Confidential |
+| Azure Storage Account (Workflow)             | StorageV2, Standard_LRS, TLS 1.2, Hot tier for workflow data                 | Internal                       |
+| Blob Container (ordersprocessedsuccessfully) | Audit trail for successfully processed orders                                | Financial                      |
+| Blob Container (ordersprocessedwitherrors)   | Error tracking for failed order processing                                   | Financial                      |
+| Blob Container (ordersprocessedcompleted)    | Tracking for completed order cleanup                                         | Financial                      |
+| File Share (workflowstate)                   | 5 GB SMB share for Logic Apps content/state persistence                      | Internal                       |
+| Azure Service Bus Namespace                  | Standard tier message broker for order event distribution                    | Internal                       |
+| Application Insights + Log Analytics         | Telemetry store for traces, metrics, and distributed tracing                 | Internal                       |
 
 ### 2.4 Data Flows
 
-| Name                                 | Description                                                                   | Source                                                                                             | Confidence | Classification |
-| ------------------------------------ | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------- | -------------- |
-| Order Placement Flow                 | API → validate → SQL save → Service Bus publish                               | src/eShop.Orders.API/Services/OrderService.cs:80-150                                               | 0.92       | Financial      |
-| Batch Order Flow                     | Parallel processing with SemaphoreSlim(10), scoped DbContext, batch size 50   | src/eShop.Orders.API/Services/OrderService.cs:160-310                                              | 0.90       | Financial      |
-| OrdersPlacedProcess Workflow         | Service Bus trigger → ContentType check → HTTP POST → Route to blob container | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-155        | 0.95       | Financial      |
-| OrdersPlacedCompleteProcess Workflow | Recurrence trigger → List blobs → Delete processed blobs, concurrency 20      | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-95 | 0.90       | Internal       |
-| Web App → Orders API                 | Typed HttpClient with service discovery for CRUD + batch operations           | src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-479                                    | 0.88       | Financial      |
+| Name                                 | Description                                                                   | Classification |
+| ------------------------------------ | ----------------------------------------------------------------------------- | -------------- |
+| Order Placement Flow                 | API → validate → SQL save → Service Bus publish                               | Financial      |
+| Batch Order Flow                     | Parallel processing with SemaphoreSlim(10), scoped DbContext, batch size 50   | Financial      |
+| OrdersPlacedProcess Workflow         | Service Bus trigger → ContentType check → HTTP POST → Route to blob container | Financial      |
+| OrdersPlacedCompleteProcess Workflow | Recurrence trigger → List blobs → Delete processed blobs, concurrency 20      | Internal       |
+| Web App → Orders API                 | Typed HttpClient with service discovery for CRUD + batch operations           | Financial      |
 
 ### 2.5 Data Services
 
-| Name                 | Description                                                                 | Source                                                          | Confidence | Classification |
-| -------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------- | ---------- | -------------- |
-| OrderService         | Business logic orchestrator: place, batch-place, get, delete, list messages | src/eShop.Orders.API/Services/OrderService.cs:1-606             | 0.95       | Financial      |
-| OrderRepository      | EF Core data access: save, paged query, get by ID, delete, exists check     | src/eShop.Orders.API/Repositories/OrderRepository.cs:1-549      | 0.95       | Financial      |
-| OrdersMessageHandler | Service Bus producer: send single, send batch, peek messages                | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425     | 0.92       | Financial      |
-| OrdersController     | REST API: 8 endpoints with ProducesResponseType contracts                   | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501      | 0.90       | Financial      |
-| OrdersAPIService     | Typed HttpClient for Web App frontend communication                         | src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-479 | 0.88       | Financial      |
+| Name                 | Description                                                                 | Classification |
+| -------------------- | --------------------------------------------------------------------------- | -------------- |
+| OrderService         | Business logic orchestrator: place, batch-place, get, delete, list messages | Financial      |
+| OrderRepository      | EF Core data access: save, paged query, get by ID, delete, exists check     | Financial      |
+| OrdersMessageHandler | Service Bus producer: send single, send batch, peek messages                | Financial      |
+| OrdersController     | REST API: 8 endpoints with ProducesResponseType contracts                   | Financial      |
+| OrdersAPIService     | Typed HttpClient for Web App frontend communication                         | Financial      |
 
 ### 2.6 Data Governance
 
-| Name                            | Description                                                                                        | Source                               | Confidence | Classification |
-| ------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ | ---------- | -------------- |
-| Resource Tagging Policy         | Mandatory tags: Solution, Environment, CostCenter, Owner, BusinessUnit, DeploymentDate, Repository | infra/types.bicep:1-50               | 0.85       | Internal       |
-| Diagnostic Settings Enforcement | allLogsSettings and allMetricsSettings applied to all infrastructure resources                     | infra/shared/data/main.bicep:230-240 | 0.82       | Internal       |
+| Name                            | Description                                                                                        | Classification |
+| ------------------------------- | -------------------------------------------------------------------------------------------------- | -------------- |
+| Resource Tagging Policy         | Mandatory tags: Solution, Environment, CostCenter, Owner, BusinessUnit, DeploymentDate, Repository | Internal       |
+| Diagnostic Settings Enforcement | allLogsSettings and allMetricsSettings applied to all infrastructure resources                     | Internal       |
 
 ### 2.7 Data Quality Rules
 
-| Name                             | Description                                                                                      | Source                                             | Confidence | Classification |
-| -------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------- | ---------- | -------------- |
-| Domain Validation (Order)        | Data annotations: Required, StringLength, Range on all Order properties                          | app.ServiceDefaults/CommonTypes.cs:75-120          | 0.92       | Financial      |
-| Domain Validation (OrderProduct) | Data annotations: Required, StringLength, Range on OrderProduct                                  | app.ServiceDefaults/CommonTypes.cs:126-155         | 0.92       | Financial      |
-| Fluent API Constraints           | MaxLength, Precision(18,2), required fields, cascade delete, indexes                             | src/eShop.Orders.API/data/OrderDbContext.cs:50-129 | 0.90       | Financial      |
-| Dead-Letter Configuration        | maxDeliveryCount 10, deadLetteringOnMessageExpiration, deadLetteringOnFilterEvaluationExceptions | infra/workload/messaging/main.bicep:125-142        | 0.85       | Financial      |
+| Name                             | Description                                                                                      | Classification |
+| -------------------------------- | ------------------------------------------------------------------------------------------------ | -------------- |
+| Domain Validation (Order)        | Data annotations: Required, StringLength, Range on all Order properties                          | Financial      |
+| Domain Validation (OrderProduct) | Data annotations: Required, StringLength, Range on OrderProduct                                  | Financial      |
+| Fluent API Constraints           | MaxLength, Precision(18,2), required fields, cascade delete, indexes                             | Financial      |
+| Dead-Letter Configuration        | maxDeliveryCount 10, deadLetteringOnMessageExpiration, deadLetteringOnFilterEvaluationExceptions | Financial      |
 
 ### 2.8 Master Data
 
-| Name                                 | Description                                                                                    | Source                                      | Confidence | Classification |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------- | ---------- | -------------- |
-| Service Bus Topic/Subscription Names | ordersplaced topic, orderprocessingsub subscription — centrally configured                     | infra/workload/messaging/main.bicep:121-142 | 0.80       | Internal       |
-| Blob Container Names                 | ordersprocessedsuccessfully, ordersprocessedwitherrors, ordersprocessedcompleted — fixed names | infra/shared/data/main.bicep:197-222        | 0.78       | Internal       |
+| Name                                 | Description                                                                                    | Classification |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------- | -------------- |
+| Service Bus Topic/Subscription Names | ordersplaced topic, orderprocessingsub subscription — centrally configured                     | Internal       |
+| Blob Container Names                 | ordersprocessedsuccessfully, ordersprocessedwitherrors, ordersprocessedcompleted — fixed names | Internal       |
 
 ### 2.9 Data Transformations
 
-| Name                             | Description                                                              | Source                                                        | Confidence | Classification |
-| -------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------- | ---------- | -------------- |
-| OrderMapper.ToEntity()           | Maps Order domain → OrderEntity persistence, including child collections | src/eShop.Orders.API/data/OrderMapper.cs:29-44                | 0.95       | Internal       |
-| OrderMapper.ToDomainModel()      | Maps OrderEntity persistence → Order domain, including child collections | src/eShop.Orders.API/data/OrderMapper.cs:52-67                | 0.95       | Internal       |
-| JSON Serialization (Service Bus) | Serializes Order to JSON BinaryData for Service Bus messages             | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:100-150 | 0.85       | Financial      |
+| Name                             | Description                                                              | Classification |
+| -------------------------------- | ------------------------------------------------------------------------ | -------------- |
+| OrderMapper.ToEntity()           | Maps Order domain → OrderEntity persistence, including child collections | Internal       |
+| OrderMapper.ToDomainModel()      | Maps OrderEntity persistence → Order domain, including child collections | Internal       |
+| JSON Serialization (Service Bus) | Serializes Order to JSON BinaryData for Service Bus messages             | Financial      |
 
 ### 2.10 Data Contracts
 
-| Name                      | Description                                                                        | Source                                                                    | Confidence | Classification |
-| ------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ---------- | -------------- |
-| IOrderRepository          | Data access contract: Save, GetAll, GetPaged, GetById, Delete, Exists              | src/eShop.Orders.API/Interfaces/IOrderRepository.cs:1-77                  | 0.95       | Internal       |
-| IOrderService             | Business logic contract: Place, BatchPlace, Get, Delete, BatchDelete, ListMessages | src/eShop.Orders.API/Interfaces/IOrderService.cs:1-76                     | 0.95       | Internal       |
-| IOrdersMessageHandler     | Messaging contract: SendMessage, SendBatch, ListMessages                           | src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:1-42             | 0.95       | Internal       |
-| REST API Contract         | ProducesResponseType attributes: 200, 201, 204, 400, 404, 409, 500                 | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501                | 0.88       | Internal       |
-| Logic App API Connections | Managed API connections: servicebus (MSI), azureblob (MSI)                         | workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:1-65 | 0.82       | Internal       |
+| Name                      | Description                                                                        | Classification |
+| ------------------------- | ---------------------------------------------------------------------------------- | -------------- |
+| IOrderRepository          | Data access contract: Save, GetAll, GetPaged, GetById, Delete, Exists              | Internal       |
+| IOrderService             | Business logic contract: Place, BatchPlace, Get, Delete, BatchDelete, ListMessages | Internal       |
+| IOrdersMessageHandler     | Messaging contract: SendMessage, SendBatch, ListMessages                           | Internal       |
+| REST API Contract         | ProducesResponseType attributes: 200, 201, 204, 400, 404, 409, 500                 | Internal       |
+| Logic App API Connections | Managed API connections: servicebus (MSI), azureblob (MSI)                         | Internal       |
 
 ### 2.11 Data Security
 
-| Name                              | Description                                                                   | Source                               | Confidence | Classification |
-| --------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------ | ---------- | -------------- |
-| Entra ID-Only SQL Authentication  | azureADOnlyAuthentication: true, Entra admin via managed identity             | infra/shared/data/main.bicep:530-575 | 0.95       | Confidential   |
-| User-Assigned Managed Identity    | Single identity for SQL, Service Bus, Storage, Logic App, Container Apps      | infra/shared/main.bicep:\*           | 0.92       | Confidential   |
-| Private Endpoints                 | Five private endpoints (Blob, File, Table, Queue, SQL) with Private DNS Zones | infra/shared/data/main.bicep:252-590 | 0.95       | Confidential   |
-| TLS 1.2 Enforcement               | minimumTlsVersion TLS1_2 on Storage Account and SQL Server                    | infra/shared/data/main.bicep:167-168 | 0.92       | Confidential   |
-| Service Bus Managed Identity Auth | DefaultAzureCredential with retry, AMQP WebSockets, exponential backoff       | app.ServiceDefaults/Extensions.cs:\* | 0.88       | Confidential   |
+| Name                              | Description                                                                   | Classification |
+| --------------------------------- | ----------------------------------------------------------------------------- | -------------- |
+| Entra ID-Only SQL Authentication  | azureADOnlyAuthentication: true, Entra admin via managed identity             | Confidential   |
+| User-Assigned Managed Identity    | Single identity for SQL, Service Bus, Storage, Logic App, Container Apps      | Confidential   |
+| Private Endpoints                 | Five private endpoints (Blob, File, Table, Queue, SQL) with Private DNS Zones | Confidential   |
+| TLS 1.2 Enforcement               | minimumTlsVersion TLS1_2 on Storage Account and SQL Server                    | Confidential   |
+| Service Bus Managed Identity Auth | DefaultAzureCredential with retry, AMQP WebSockets, exponential backoff       | Confidential   |
 
 ```mermaid
 ---
@@ -386,14 +386,14 @@ The following principles are derived from observable patterns in the source code
 
 ### Core Data Principles
 
-| Principle                    | Description                                                                                                          | Implementation Evidence                                                   | Source                                                           |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Security by Default          | All data stores use Entra ID-only authentication with managed identities — no passwords or connection strings stored | Entra-only SQL auth, DefaultAzureCredential, MSI for Service Bus and Blob | infra/shared/data/main.bicep:530-575                             |
-| Data Quality at Source       | Validation enforced at domain model, persistence, and infrastructure layers                                          | Data annotations, Fluent API constraints, dead-letter policies            | app.ServiceDefaults/CommonTypes.cs:75-155                        |
-| Event-Driven Decoupling      | Order processing decoupled via Service Bus topics; Logic Apps handle async workflows                                 | Service Bus topic + subscription, Logic App workflow triggers             | infra/workload/messaging/main.bicep:121-142                      |
-| Schema Versioning            | Database schema changes tracked through EF Core Code-First Migrations                                                | Migration file OrderDbV1 with timestamp-based naming                      | src/eShop.Orders.API/Migrations/20251227014858_OrderDbV1.cs:1-87 |
-| Network Isolation            | All data stores accessed via private endpoints with Private DNS Zones                                                | Blob, File, Table, Queue, SQL private endpoints                           | infra/shared/data/main.bicep:252-590                             |
-| Interface-Driven Data Access | All data operations defined through contracts (interfaces) before implementation                                     | IOrderRepository, IOrderService, IOrdersMessageHandler                    | src/eShop.Orders.API/Interfaces/IOrderRepository.cs:1-77         |
+| Principle                    | Description                                                                                                          |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Security by Default          | All data stores use Entra ID-only authentication with managed identities — no passwords or connection strings stored |
+| Data Quality at Source       | Validation enforced at domain model, persistence, and infrastructure layers                                          |
+| Event-Driven Decoupling      | Order processing decoupled via Service Bus topics; Logic Apps handle async workflows                                 |
+| Schema Versioning            | Database schema changes tracked through EF Core Code-First Migrations                                                |
+| Network Isolation            | All data stores accessed via private endpoints with Private DNS Zones                                                |
+| Interface-Driven Data Access | All data operations defined through contracts (interfaces) before implementation                                     |
 
 ### Data Schema Design Standards
 
@@ -535,12 +535,12 @@ flowchart LR
 
 ### Storage Distribution
 
-| Store            | Type            | Storage Engine             | Capacity        | Encryption             | Network                                      | Source                                     |
-| ---------------- | --------------- | -------------------------- | --------------- | ---------------------- | -------------------------------------------- | ------------------------------------------ |
-| OrderDb          | Relational DB   | Azure SQL GP_Gen5_2        | 32 GB           | TDE (platform-managed) | Private Endpoint                             | infra/shared/data/main.bicep:596-635       |
-| Workflow Storage | Object Storage  | Azure Blob StorageV2       | Standard_LRS    | SSE (platform-managed) | Private Endpoints (Blob, File, Table, Queue) | infra/shared/data/main.bicep:153-179       |
-| Service Bus      | Message Broker  | Azure Service Bus Standard | Auto-managed    | TLS 1.2 in transit     | Public (Standard tier)                       | infra/workload/messaging/main.bicep:96-115 |
-| Log Analytics    | Telemetry Store | Azure Monitor              | Retention-based | Platform-managed       | Azure backbone                               | infra/shared/main.bicep:\*                 |
+| Store            | Type            | Storage Engine             | Capacity        | Encryption             | Network                                      |
+| ---------------- | --------------- | -------------------------- | --------------- | ---------------------- | -------------------------------------------- |
+| OrderDb          | Relational DB   | Azure SQL GP_Gen5_2        | 32 GB           | TDE (platform-managed) | Private Endpoint                             |
+| Workflow Storage | Object Storage  | Azure Blob StorageV2       | Standard_LRS    | SSE (platform-managed) | Private Endpoints (Blob, File, Table, Queue) |
+| Service Bus      | Message Broker  | Azure Service Bus Standard | Auto-managed    | TLS 1.2 in transit     | Public (Standard tier)                       |
+| Log Analytics    | Telemetry Store | Azure Monitor              | Retention-based | Platform-managed       | Azure backbone                               |
 
 ### Quality Baseline
 
@@ -560,14 +560,14 @@ flowchart LR
 
 ### Compliance Posture
 
-| Control               | Status      | Implementation                             | Source                               |
-| --------------------- | ----------- | ------------------------------------------ | ------------------------------------ |
-| Encryption at Rest    | Implemented | Azure-managed TDE for SQL, SSE for Storage | infra/shared/data/main.bicep:596-635 |
-| Encryption in Transit | Implemented | TLS 1.2 minimum on all services            | infra/shared/data/main.bicep:167-168 |
-| Authentication        | Implemented | Entra ID-only, no SQL passwords            | infra/shared/data/main.bicep:530-575 |
-| Network Isolation     | Implemented | Private endpoints + DNS zones              | infra/shared/data/main.bicep:252-590 |
-| Audit Logging         | Implemented | Diagnostic settings on all resources       | infra/shared/data/main.bicep:230-240 |
-| Data Classification   | Partial     | Implicit in code; no formal taxonomy       | Not detected                         |
+| Control               | Status      | Implementation                             |
+| --------------------- | ----------- | ------------------------------------------ |
+| Encryption at Rest    | Implemented | Azure-managed TDE for SQL, SSE for Storage |
+| Encryption in Transit | Implemented | TLS 1.2 minimum on all services            |
+| Authentication        | Implemented | Entra ID-only, no SQL passwords            |
+| Network Isolation     | Implemented | Private endpoints + DNS zones              |
+| Audit Logging         | Implemented | Diagnostic settings on all resources       |
+| Data Classification   | Partial     | Implicit in code; no formal taxonomy       |
 
 ### Quality Heatmap
 
@@ -666,105 +666,105 @@ The catalog reflects a production-ready order management system with strong cove
 
 ### 5.1 Data Entities
 
-| Component          | Description                                                                                                      | Classification  | Storage       | Owner        | Retention    | Freshness SLA | Source Systems            | Consumers                                           | Source File                                                   |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------- | --------------- | ------------- | ------------ | ------------ | ------------- | ------------------------- | --------------------------------------------------- | ------------------------------------------------------------- |
-| Order              | Core domain record: Id, CustomerId, Date, DeliveryAddress, Total, Products list with data validation annotations | PII + Financial | Relational DB | Not detected | Not detected | real-time     | eShop Web App, Orders API | OrderRepository, OrderService, OrdersMessageHandler | app.ServiceDefaults/CommonTypes.cs:75-120                     |
-| OrderProduct       | Line-item record: Id, OrderId, ProductId, ProductDescription, Quantity, Price with validation                    | Financial       | Relational DB | Not detected | Not detected | real-time     | Order entity              | OrderRepository, OrderService                       | app.ServiceDefaults/CommonTypes.cs:126-155                    |
-| OrderEntity        | EF Core persistence entity mapped to Orders table with Key, Required, MaxLength attributes                       | PII + Financial | Relational DB | Not detected | Not detected | real-time     | OrderRepository           | OrderMapper, OrderDbContext                         | src/eShop.Orders.API/data/Entities/OrderEntity.cs:1-60        |
-| OrderProductEntity | EF Core persistence entity mapped to OrderProducts table with FK navigation to OrderEntity                       | Financial       | Relational DB | Not detected | Not detected | real-time     | OrderRepository           | OrderMapper, OrderDbContext                         | src/eShop.Orders.API/data/Entities/OrderProductEntity.cs:1-65 |
-| WeatherForecast    | Demo model: Date, TemperatureC, TemperatureF (computed), Summary with Range and MaxLength validation             | Public          | Not detected  | Not detected | Not detected | Not detected  | WeatherForecastController | eShop Web App                                       | app.ServiceDefaults/CommonTypes.cs:46-68                      |
+| Component          | Description                                                                                                      | Classification  | Storage       | Owner        | Retention    | Freshness SLA | Source Systems            | Consumers                                           |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------- | --------------- | ------------- | ------------ | ------------ | ------------- | ------------------------- | --------------------------------------------------- |
+| Order              | Core domain record: Id, CustomerId, Date, DeliveryAddress, Total, Products list with data validation annotations | PII + Financial | Relational DB | Not detected | Not detected | real-time     | eShop Web App, Orders API | OrderRepository, OrderService, OrdersMessageHandler |
+| OrderProduct       | Line-item record: Id, OrderId, ProductId, ProductDescription, Quantity, Price with validation                    | Financial       | Relational DB | Not detected | Not detected | real-time     | Order entity              | OrderRepository, OrderService                       |
+| OrderEntity        | EF Core persistence entity mapped to Orders table with Key, Required, MaxLength attributes                       | PII + Financial | Relational DB | Not detected | Not detected | real-time     | OrderRepository           | OrderMapper, OrderDbContext                         |
+| OrderProductEntity | EF Core persistence entity mapped to OrderProducts table with FK navigation to OrderEntity                       | Financial       | Relational DB | Not detected | Not detected | real-time     | OrderRepository           | OrderMapper, OrderDbContext                         |
+| WeatherForecast    | Demo model: Date, TemperatureC, TemperatureF (computed), Summary with Range and MaxLength validation             | Public          | Not detected  | Not detected | Not detected | Not detected  | WeatherForecastController | eShop Web App                                       |
 
 ### 5.2 Data Models
 
-| Component           | Description                                                                                                                                  | Classification | Storage       | Owner        | Retention    | Freshness SLA | Source Systems      | Consumers                         | Source File                                                      |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------- | ------------ | ------------ | ------------- | ------------------- | --------------------------------- | ---------------------------------------------------------------- |
-| OrderDbContext      | EF Core DbContext: DbSets for Orders and OrderProducts, Fluent API with table names, PK, MaxLength, Precision(18,2), cascade delete, indexes | Internal       | Relational DB | Not detected | Not detected | Not detected  | EF Core framework   | OrderRepository, Migration engine | src/eShop.Orders.API/data/OrderDbContext.cs:1-129                |
-| OrderDbV1 Migration | Physical DDL: Orders table (nvarchar PK, datetime2, decimal(18,2)), OrderProducts table with FK cascade, 4 indexes                           | Internal       | Relational DB | Not detected | Not detected | Not detected  | OrderDbContext      | Azure SQL Database                | src/eShop.Orders.API/Migrations/20251227014858_OrderDbV1.cs:1-87 |
-| Bicep Type System   | Custom types: tagsType (7 fields), storageAccountConfig (5 fields), triggersType, connectionType for Logic App triggers                      | Internal       | Not detected  | Not detected | Not detected | Not detected  | Infrastructure team | All Bicep modules                 | infra/types.bicep:1-116                                          |
+| Component           | Description                                                                                                                                  | Classification | Storage       | Owner        | Retention    | Freshness SLA | Source Systems      | Consumers                         |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------- | ------------ | ------------ | ------------- | ------------------- | --------------------------------- |
+| OrderDbContext      | EF Core DbContext: DbSets for Orders and OrderProducts, Fluent API with table names, PK, MaxLength, Precision(18,2), cascade delete, indexes | Internal       | Relational DB | Not detected | Not detected | Not detected  | EF Core framework   | OrderRepository, Migration engine |
+| OrderDbV1 Migration | Physical DDL: Orders table (nvarchar PK, datetime2, decimal(18,2)), OrderProducts table with FK cascade, 4 indexes                           | Internal       | Relational DB | Not detected | Not detected | Not detected  | OrderDbContext      | Azure SQL Database                |
+| Bicep Type System   | Custom types: tagsType (7 fields), storageAccountConfig (5 fields), triggersType, connectionType for Logic App triggers                      | Internal       | Not detected  | Not detected | Not detected | Not detected  | Infrastructure team | All Bicep modules                 |
 
 ### 5.3 Data Stores
 
-| Component                            | Description                                                                                             | Classification                 | Storage        | Owner        | Retention    | Freshness SLA | Source Systems                       | Consumers                            | Source File                                |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------ | -------------- | ------------ | ------------ | ------------- | ------------------------------------ | ------------------------------------ | ------------------------------------------ |
-| Azure SQL Database (OrderDb)         | GP_Gen5_2, 32 GB, SQL_Latin1_General_CP1_CI_AS, Entra ID-only auth, User-Assigned Managed Identity      | PII + Financial + Confidential | Relational DB  | Not detected | Not detected | real-time     | Orders API (EF Core)                 | OrderRepository, Logic App workflows | infra/shared/data/main.bicep:596-635       |
-| Azure Storage Account                | StorageV2, Standard_LRS, TLS 1.2, Hot tier, private endpoints for Blob/File/Table/Queue                 | Internal                       | Object Storage | Not detected | Not detected | Not detected  | Logic App workflows                  | Blob containers, File share          | infra/shared/data/main.bicep:153-179       |
-| Blob: ordersprocessedsuccessfully    | Audit container for successfully processed orders, publicAccess None                                    | Financial                      | Object Storage | Not detected | Not detected | batch         | OrdersPlacedProcess workflow         | OrdersPlacedCompleteProcess workflow | infra/shared/data/main.bicep:197-202       |
-| Blob: ordersprocessedwitherrors      | Error tracking container for failed order processing, publicAccess None                                 | Financial                      | Object Storage | Not detected | Not detected | batch         | OrdersPlacedProcess workflow         | Operations team                      | infra/shared/data/main.bicep:207-212       |
-| Blob: ordersprocessedcompleted       | Container for completed order cleanup tracking, publicAccess None                                       | Financial                      | Object Storage | Not detected | Not detected | batch         | OrdersPlacedCompleteProcess workflow | Audit systems                        | infra/shared/data/main.bicep:217-222       |
-| File Share: workflowstate            | 5 GB SMB file share for Logic Apps Standard content and state persistence                               | Internal                       | Object Storage | Not detected | Not detected | real-time     | Logic App runtime                    | Logic App workflows                  | infra/shared/data/main.bicep:186-193       |
-| Azure Service Bus Namespace          | Standard tier, User-Assigned Managed Identity, TLS, topic-based pub/sub                                 | Internal                       | Message Broker | Not detected | 14d          | 1s            | Orders API                           | Logic App workflows                  | infra/workload/messaging/main.bicep:96-115 |
-| Application Insights + Log Analytics | Centralized telemetry: traces, metrics, custom events, distributed tracing correlation, diagnostic logs | Internal                       | Data Lake      | Not detected | Not detected | real-time     | All Azure resources                  | Operations team, dashboards          | infra/shared/main.bicep:\*                 |
+| Component                            | Description                                                                                             | Classification                 | Storage        | Owner        | Retention    | Freshness SLA | Source Systems                       | Consumers                            |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------ | -------------- | ------------ | ------------ | ------------- | ------------------------------------ | ------------------------------------ |
+| Azure SQL Database (OrderDb)         | GP_Gen5_2, 32 GB, SQL_Latin1_General_CP1_CI_AS, Entra ID-only auth, User-Assigned Managed Identity      | PII + Financial + Confidential | Relational DB  | Not detected | Not detected | real-time     | Orders API (EF Core)                 | OrderRepository, Logic App workflows |
+| Azure Storage Account                | StorageV2, Standard_LRS, TLS 1.2, Hot tier, private endpoints for Blob/File/Table/Queue                 | Internal                       | Object Storage | Not detected | Not detected | Not detected  | Logic App workflows                  | Blob containers, File share          |
+| Blob: ordersprocessedsuccessfully    | Audit container for successfully processed orders, publicAccess None                                    | Financial                      | Object Storage | Not detected | Not detected | batch         | OrdersPlacedProcess workflow         | OrdersPlacedCompleteProcess workflow |
+| Blob: ordersprocessedwitherrors      | Error tracking container for failed order processing, publicAccess None                                 | Financial                      | Object Storage | Not detected | Not detected | batch         | OrdersPlacedProcess workflow         | Operations team                      |
+| Blob: ordersprocessedcompleted       | Container for completed order cleanup tracking, publicAccess None                                       | Financial                      | Object Storage | Not detected | Not detected | batch         | OrdersPlacedCompleteProcess workflow | Audit systems                        |
+| File Share: workflowstate            | 5 GB SMB file share for Logic Apps Standard content and state persistence                               | Internal                       | Object Storage | Not detected | Not detected | real-time     | Logic App runtime                    | Logic App workflows                  |
+| Azure Service Bus Namespace          | Standard tier, User-Assigned Managed Identity, TLS, topic-based pub/sub                                 | Internal                       | Message Broker | Not detected | 14d          | 1s            | Orders API                           | Logic App workflows                  |
+| Application Insights + Log Analytics | Centralized telemetry: traces, metrics, custom events, distributed tracing correlation, diagnostic logs | Internal                       | Data Lake      | Not detected | Not detected | real-time     | All Azure resources                  | Operations team, dashboards          |
 
 ### 5.4 Data Flows
 
-| Component                            | Description                                                                                                | Classification | Storage                         | Owner        | Retention    | Freshness SLA | Source Systems                    | Consumers                       | Source File                                                                                        |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------- | ------------ | ------------ | ------------- | --------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Order Placement Flow                 | Validate order → Save to SQL via repository → Publish to Service Bus topic ordersplaced                    | Financial      | Relational DB + Message Broker  | Not detected | Not detected | real-time     | eShop Web App                     | OrderDb, Service Bus, Logic App | src/eShop.Orders.API/Services/OrderService.cs:80-150                                               |
-| Batch Order Flow                     | Parallel processing: SemaphoreSlim(10), scoped DbContext per order, idempotency check, batch size 50       | Financial      | Relational DB + Message Broker  | Not detected | Not detected | batch         | eShop Web App                     | OrderDb, Service Bus            | src/eShop.Orders.API/Services/OrderService.cs:160-310                                              |
-| OrdersPlacedProcess Workflow         | Service Bus trigger → Check ContentType → HTTP POST to /api/Orders/process → Route to success/error blob   | Financial      | Message Broker + Object Storage | Not detected | Not detected | 1s            | Service Bus subscription          | Blob containers, Orders API     | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-155        |
-| OrdersPlacedCompleteProcess Workflow | Recurrence trigger (3s) → List blobs in ordersprocessedsuccessfully → Delete each blob. Concurrency 20     | Internal       | Object Storage                  | Not detected | Not detected | 3s            | Blob: ordersprocessedsuccessfully | Blob: ordersprocessedcompleted  | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-95 |
-| Web App HTTP Client Flow             | Typed HttpClient with service discovery: PlaceOrder, GetOrders, UpdateOrder, DeleteOrder, batch operations | Financial      | Not detected                    | Not detected | Not detected | real-time     | eShop Web App                     | Orders API                      | src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-479                                    |
+| Component                            | Description                                                                                                | Classification | Storage                         | Owner        | Retention    | Freshness SLA | Source Systems                    | Consumers                       |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------- | ------------ | ------------ | ------------- | --------------------------------- | ------------------------------- |
+| Order Placement Flow                 | Validate order → Save to SQL via repository → Publish to Service Bus topic ordersplaced                    | Financial      | Relational DB + Message Broker  | Not detected | Not detected | real-time     | eShop Web App                     | OrderDb, Service Bus, Logic App |
+| Batch Order Flow                     | Parallel processing: SemaphoreSlim(10), scoped DbContext per order, idempotency check, batch size 50       | Financial      | Relational DB + Message Broker  | Not detected | Not detected | batch         | eShop Web App                     | OrderDb, Service Bus            |
+| OrdersPlacedProcess Workflow         | Service Bus trigger → Check ContentType → HTTP POST to /api/Orders/process → Route to success/error blob   | Financial      | Message Broker + Object Storage | Not detected | Not detected | 1s            | Service Bus subscription          | Blob containers, Orders API     |
+| OrdersPlacedCompleteProcess Workflow | Recurrence trigger (3s) → List blobs in ordersprocessedsuccessfully → Delete each blob. Concurrency 20     | Internal       | Object Storage                  | Not detected | Not detected | 3s            | Blob: ordersprocessedsuccessfully | Blob: ordersprocessedcompleted  |
+| Web App HTTP Client Flow             | Typed HttpClient with service discovery: PlaceOrder, GetOrders, UpdateOrder, DeleteOrder, batch operations | Financial      | Not detected                    | Not detected | Not detected | real-time     | eShop Web App                     | Orders API                      |
 
 ### 5.5 Data Services
 
-| Component            | Description                                                                                                                                                                                           | Classification | Storage        | Owner        | Retention    | Freshness SLA | Source Systems           | Consumers                             | Source File                                                     |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------- | ------------ | ------------ | ------------- | ------------------------ | ------------------------------------- | --------------------------------------------------------------- |
-| OrderService         | Business logic orchestrator: PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, DeleteOrderAsync, custom metrics (orders.placed, orders.deleted)                                                 | Financial      | Not detected   | Not detected | Not detected | real-time     | OrdersController         | OrderRepository, OrdersMessageHandler | src/eShop.Orders.API/Services/OrderService.cs:1-606             |
-| OrderRepository      | EF Core data access: SaveOrder, GetAllOrders, GetOrdersPaged, GetOrderById, DeleteOrder, OrderExists. Split queries, no-tracking reads, pagination                                                    | Financial      | Relational DB  | Not detected | Not detected | real-time     | OrderService             | Azure SQL Database (OrderDb)          | src/eShop.Orders.API/Repositories/OrderRepository.cs:1-549      |
-| OrdersMessageHandler | Service Bus producer: SendOrderMessage, SendOrdersBatch, ListMessages (peek). JSON serialization, trace context propagation, exponential backoff retry                                                | Financial      | Message Broker | Not detected | Not detected | real-time     | OrderService             | Azure Service Bus                     | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425     |
-| OrdersController     | REST API: POST /api/orders, POST /api/orders/batch, GET /api/orders, GET /api/orders/{id}, DELETE /api/orders/{id}, POST /api/orders/batch/delete, POST /api/orders/process, GET /api/orders/messages | Financial      | Not detected   | Not detected | Not detected | real-time     | eShop Web App, Logic App | OrderService                          | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501      |
-| OrdersAPIService     | Typed HttpClient for frontend: PlaceOrder, PlaceOrdersBatch, GetOrders, GetOrderById, UpdateOrder, DeleteOrder, DeleteOrdersBatch, GetWeatherForecast                                                 | Financial      | Not detected   | Not detected | Not detected | real-time     | eShop Web App (Blazor)   | Orders API                            | src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-479 |
+| Component            | Description                                                                                                                                                                                           | Classification | Storage        | Owner        | Retention    | Freshness SLA | Source Systems           | Consumers                             |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------- | ------------ | ------------ | ------------- | ------------------------ | ------------------------------------- |
+| OrderService         | Business logic orchestrator: PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, DeleteOrderAsync, custom metrics (orders.placed, orders.deleted)                                                 | Financial      | Not detected   | Not detected | Not detected | real-time     | OrdersController         | OrderRepository, OrdersMessageHandler |
+| OrderRepository      | EF Core data access: SaveOrder, GetAllOrders, GetOrdersPaged, GetOrderById, DeleteOrder, OrderExists. Split queries, no-tracking reads, pagination                                                    | Financial      | Relational DB  | Not detected | Not detected | real-time     | OrderService             | Azure SQL Database (OrderDb)          |
+| OrdersMessageHandler | Service Bus producer: SendOrderMessage, SendOrdersBatch, ListMessages (peek). JSON serialization, trace context propagation, exponential backoff retry                                                | Financial      | Message Broker | Not detected | Not detected | real-time     | OrderService             | Azure Service Bus                     |
+| OrdersController     | REST API: POST /api/orders, POST /api/orders/batch, GET /api/orders, GET /api/orders/{id}, DELETE /api/orders/{id}, POST /api/orders/batch/delete, POST /api/orders/process, GET /api/orders/messages | Financial      | Not detected   | Not detected | Not detected | real-time     | eShop Web App, Logic App | OrderService                          |
+| OrdersAPIService     | Typed HttpClient for frontend: PlaceOrder, PlaceOrdersBatch, GetOrders, GetOrderById, UpdateOrder, DeleteOrder, DeleteOrdersBatch, GetWeatherForecast                                                 | Financial      | Not detected   | Not detected | Not detected | real-time     | eShop Web App (Blazor)   | Orders API                            |
 
 ### 5.6 Data Governance
 
-| Component                       | Description                                                                                                                                               | Classification | Storage      | Owner        | Retention    | Freshness SLA | Source Systems      | Consumers                      | Source File                          |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------ | ------------ | ------------ | ------------- | ------------------- | ------------------------------ | ------------------------------------ |
-| Resource Tagging Policy         | Mandatory 7-field tag schema: Solution, Environment, CostCenter, Owner, BusinessUnit, DeploymentDate, Repository. Applied to all infrastructure resources | Internal       | Not detected | Not detected | Not detected | Not detected  | Infrastructure team | All Bicep modules              | infra/types.bicep:1-50               |
-| Diagnostic Settings Enforcement | allLogsSettings and allMetricsSettings variables enforce comprehensive diagnostic capture on SQL, Storage, and Service Bus                                | Internal       | Not detected | Not detected | Not detected | Not detected  | Infrastructure team | Log Analytics, Storage Account | infra/shared/data/main.bicep:230-240 |
+| Component                       | Description                                                                                                                                               | Classification | Storage      | Owner        | Retention    | Freshness SLA | Source Systems      | Consumers                      |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------ | ------------ | ------------ | ------------- | ------------------- | ------------------------------ |
+| Resource Tagging Policy         | Mandatory 7-field tag schema: Solution, Environment, CostCenter, Owner, BusinessUnit, DeploymentDate, Repository. Applied to all infrastructure resources | Internal       | Not detected | Not detected | Not detected | Not detected  | Infrastructure team | All Bicep modules              |
+| Diagnostic Settings Enforcement | allLogsSettings and allMetricsSettings variables enforce comprehensive diagnostic capture on SQL, Storage, and Service Bus                                | Internal       | Not detected | Not detected | Not detected | Not detected  | Infrastructure team | Log Analytics, Storage Account |
 
 ### 5.7 Data Quality Rules
 
-| Component                      | Description                                                                                                                                 | Classification | Storage        | Owner        | Retention    | Freshness SLA | Source Systems           | Consumers                          | Source File                                        |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------- | ------------ | ------------ | ------------- | ------------------------ | ---------------------------------- | -------------------------------------------------- |
-| Order Domain Validation        | Data annotations: [Required], [StringLength(100)], [MinLength(1)], [MaxLength(500)], [Range(0.01, double.MaxValue)] on all Order properties | Financial      | Not detected   | Not detected | Not detected | Not detected  | Domain model layer       | OrderService, API model binding    | app.ServiceDefaults/CommonTypes.cs:75-120          |
-| OrderProduct Domain Validation | Data annotations: [Required], [StringLength(500)], [Range(1, int.MaxValue)] for Quantity, [Range(0.01, ...)] for Price                      | Financial      | Not detected   | Not detected | Not detected | Not detected  | Domain model layer       | OrderService, API model binding    | app.ServiceDefaults/CommonTypes.cs:126-155         |
-| EF Core Fluent API Constraints | MaxLength enforcement, Precision(18,2) for decimals, required fields, cascade delete rules, index definitions at database level             | Financial      | Relational DB  | Not detected | Not detected | Not detected  | OrderDbContext           | Azure SQL Database                 | src/eShop.Orders.API/data/OrderDbContext.cs:50-129 |
-| Service Bus Dead-Letter Policy | maxDeliveryCount 10, deadLetteringOnMessageExpiration true, lockDuration PT5M, defaultMessageTimeToLive P14D                                | Financial      | Message Broker | Not detected | 14d          | Not detected  | Service Bus subscription | Dead-letter queue, Operations team | infra/workload/messaging/main.bicep:125-142        |
+| Component                      | Description                                                                                                                                 | Classification | Storage        | Owner        | Retention    | Freshness SLA | Source Systems           | Consumers                          |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------- | ------------ | ------------ | ------------- | ------------------------ | ---------------------------------- |
+| Order Domain Validation        | Data annotations: [Required], [StringLength(100)], [MinLength(1)], [MaxLength(500)], [Range(0.01, double.MaxValue)] on all Order properties | Financial      | Not detected   | Not detected | Not detected | Not detected  | Domain model layer       | OrderService, API model binding    |
+| OrderProduct Domain Validation | Data annotations: [Required], [StringLength(500)], [Range(1, int.MaxValue)] for Quantity, [Range(0.01, ...)] for Price                      | Financial      | Not detected   | Not detected | Not detected | Not detected  | Domain model layer       | OrderService, API model binding    |
+| EF Core Fluent API Constraints | MaxLength enforcement, Precision(18,2) for decimals, required fields, cascade delete rules, index definitions at database level             | Financial      | Relational DB  | Not detected | Not detected | Not detected  | OrderDbContext           | Azure SQL Database                 |
+| Service Bus Dead-Letter Policy | maxDeliveryCount 10, deadLetteringOnMessageExpiration true, lockDuration PT5M, defaultMessageTimeToLive P14D                                | Financial      | Message Broker | Not detected | 14d          | Not detected  | Service Bus subscription | Dead-letter queue, Operations team |
 
 ### 5.8 Master Data
 
-| Component                                | Description                                                                                                                    | Classification | Storage      | Owner        | Retention  | Freshness SLA | Source Systems             | Consumers                                                | Source File                                 |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------- | ------------ | ------------ | ---------- | ------------- | -------------------------- | -------------------------------------------------------- | ------------------------------------------- |
-| Service Bus Topic and Subscription Names | ordersplaced (topic), orderprocessingsub (subscription) — canonical names referenced across API, workflows, and infrastructure | Internal       | Not detected | Not detected | indefinite | Not detected  | Infrastructure definitions | OrdersMessageHandler, Logic App workflows, Bicep modules | infra/workload/messaging/main.bicep:121-142 |
-| Blob Container Reference Names           | ordersprocessedsuccessfully, ordersprocessedwitherrors, ordersprocessedcompleted — fixed names for workflow routing            | Internal       | Not detected | Not detected | indefinite | Not detected  | Infrastructure definitions | Logic App workflows, Operations team                     | infra/shared/data/main.bicep:197-222        |
+| Component                                | Description                                                                                                                    | Classification | Storage      | Owner        | Retention  | Freshness SLA | Source Systems             | Consumers                                                |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------- | ------------ | ------------ | ---------- | ------------- | -------------------------- | -------------------------------------------------------- |
+| Service Bus Topic and Subscription Names | ordersplaced (topic), orderprocessingsub (subscription) — canonical names referenced across API, workflows, and infrastructure | Internal       | Not detected | Not detected | indefinite | Not detected  | Infrastructure definitions | OrdersMessageHandler, Logic App workflows, Bicep modules |
+| Blob Container Reference Names           | ordersprocessedsuccessfully, ordersprocessedwitherrors, ordersprocessedcompleted — fixed names for workflow routing            | Internal       | Not detected | Not detected | indefinite | Not detected  | Infrastructure definitions | Logic App workflows, Operations team                     |
 
 ### 5.9 Data Transformations
 
-| Component                          | Description                                                                                                                                | Classification | Storage      | Owner        | Retention    | Freshness SLA | Source Systems     | Consumers                        | Source File                                                   |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------- | ------------ | ------------ | ------------ | ------------- | ------------------ | -------------------------------- | ------------------------------------------------------------- |
-| OrderMapper.ToEntity()             | Maps Order domain → OrderEntity persistence including OrderProduct → OrderProductEntity list mapping. Null-safe with ArgumentNullException | Internal       | Not detected | Not detected | Not detected | Not detected  | Order domain model | OrderRepository (SaveOrderAsync) | src/eShop.Orders.API/data/OrderMapper.cs:29-44                |
-| OrderMapper.ToDomainModel()        | Maps OrderEntity persistence → Order domain including OrderProductEntity → OrderProduct list mapping. Null-safe                            | Internal       | Not detected | Not detected | Not detected | Not detected  | Azure SQL Database | OrderRepository (Get operations) | src/eShop.Orders.API/data/OrderMapper.cs:52-67                |
-| JSON Serialization for Service Bus | Serializes Order to JSON BinaryData for Service Bus message body. Sets ContentType application/json, Subject OrderPlaced                   | Financial      | Not detected | Not detected | Not detected | Not detected  | OrderService       | Azure Service Bus topic          | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:100-150 |
+| Component                          | Description                                                                                                                                | Classification | Storage      | Owner        | Retention    | Freshness SLA | Source Systems     | Consumers                        |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------- | ------------ | ------------ | ------------ | ------------- | ------------------ | -------------------------------- |
+| OrderMapper.ToEntity()             | Maps Order domain → OrderEntity persistence including OrderProduct → OrderProductEntity list mapping. Null-safe with ArgumentNullException | Internal       | Not detected | Not detected | Not detected | Not detected  | Order domain model | OrderRepository (SaveOrderAsync) |
+| OrderMapper.ToDomainModel()        | Maps OrderEntity persistence → Order domain including OrderProductEntity → OrderProduct list mapping. Null-safe                            | Internal       | Not detected | Not detected | Not detected | Not detected  | Azure SQL Database | OrderRepository (Get operations) |
+| JSON Serialization for Service Bus | Serializes Order to JSON BinaryData for Service Bus message body. Sets ContentType application/json, Subject OrderPlaced                   | Financial      | Not detected | Not detected | Not detected | Not detected  | OrderService       | Azure Service Bus topic          |
 
 ### 5.10 Data Contracts
 
-| Component                  | Description                                                                                                                                                               | Classification | Storage      | Owner        | Retention    | Freshness SLA | Source Systems      | Consumers                                      | Source File                                                               |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------ | ------------ | ------------ | ------------- | ------------------- | ---------------------------------------------- | ------------------------------------------------------------------------- |
-| IOrderRepository           | Data access contract: SaveOrderAsync, GetAllOrdersAsync, GetOrdersPagedAsync, GetOrderByIdAsync, DeleteOrderAsync, OrderExistsAsync                                       | Internal       | Not detected | Not detected | Not detected | Not detected  | Contract definition | OrderRepository implementation                 | src/eShop.Orders.API/Interfaces/IOrderRepository.cs:1-77                  |
-| IOrderService              | Business logic contract: PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync, ListMessagesFromTopicsAsync | Internal       | Not detected | Not detected | Not detected | Not detected  | Contract definition | OrderService implementation                    | src/eShop.Orders.API/Interfaces/IOrderService.cs:1-76                     |
-| IOrdersMessageHandler      | Messaging contract: SendOrderMessageAsync, SendOrdersBatchMessageAsync, ListMessagesAsync                                                                                 | Internal       | Not detected | Not detected | Not detected | Not detected  | Contract definition | OrdersMessageHandler, NoOpOrdersMessageHandler | src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:1-42             |
-| REST API Response Contract | ProducesResponseType attributes defining HTTP response contracts: 200, 201, 204, 400, 404, 409, 500 across 8 endpoints                                                    | Internal       | Not detected | Not detected | Not detected | Not detected  | OrdersController    | eShop Web App, Logic App workflows             | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501                |
-| Logic App API Connections  | Managed API connections: servicebus (ManagedServiceIdentity, audience servicebus.azure.net), azureblob (ManagedServiceIdentity, audience storage.azure.com)               | Internal       | Not detected | Not detected | Not detected | Not detected  | Logic App runtime   | Service Bus, Blob Storage                      | workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:1-65 |
+| Component                  | Description                                                                                                                                                               | Classification | Storage      | Owner        | Retention    | Freshness SLA | Source Systems      | Consumers                                      |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------ | ------------ | ------------ | ------------- | ------------------- | ---------------------------------------------- |
+| IOrderRepository           | Data access contract: SaveOrderAsync, GetAllOrdersAsync, GetOrdersPagedAsync, GetOrderByIdAsync, DeleteOrderAsync, OrderExistsAsync                                       | Internal       | Not detected | Not detected | Not detected | Not detected  | Contract definition | OrderRepository implementation                 |
+| IOrderService              | Business logic contract: PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync, ListMessagesFromTopicsAsync | Internal       | Not detected | Not detected | Not detected | Not detected  | Contract definition | OrderService implementation                    |
+| IOrdersMessageHandler      | Messaging contract: SendOrderMessageAsync, SendOrdersBatchMessageAsync, ListMessagesAsync                                                                                 | Internal       | Not detected | Not detected | Not detected | Not detected  | Contract definition | OrdersMessageHandler, NoOpOrdersMessageHandler |
+| REST API Response Contract | ProducesResponseType attributes defining HTTP response contracts: 200, 201, 204, 400, 404, 409, 500 across 8 endpoints                                                    | Internal       | Not detected | Not detected | Not detected | Not detected  | OrdersController    | eShop Web App, Logic App workflows             |
+| Logic App API Connections  | Managed API connections: servicebus (ManagedServiceIdentity, audience servicebus.azure.net), azureblob (ManagedServiceIdentity, audience storage.azure.com)               | Internal       | Not detected | Not detected | Not detected | Not detected  | Logic App runtime   | Service Bus, Blob Storage                      |
 
 ### 5.11 Data Security
 
-| Component                         | Description                                                                                                                                     | Classification | Storage      | Owner        | Retention    | Freshness SLA | Source Systems        | Consumers                 | Source File                          |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------ | ------------ | ------------ | ------------- | --------------------- | ------------------------- | ------------------------------------ |
-| Entra ID-Only SQL Authentication  | azureADOnlyAuthentication true, Entra admin configured via User-Assigned Managed Identity, SQL password auth completely disabled                | Confidential   | Not detected | Not detected | Not detected | Not detected  | Azure Entra ID        | SQL Server, Orders API    | infra/shared/data/main.bicep:530-575 |
-| User-Assigned Managed Identity    | Single managed identity shared across SQL Server, Service Bus, Storage, Logic App, Container Apps — eliminates credential management            | Confidential   | Not detected | Not detected | Not detected | Not detected  | Azure Entra ID        | All Azure resources       | infra/shared/main.bicep:\*           |
-| Private Endpoints (5x)            | Blob, File, Table, Queue, SQL private endpoints with Private DNS Zones linked to VNet. Full network isolation for data plane                    | Confidential   | Not detected | Not detected | Not detected | Not detected  | Azure VNet            | All data stores           | infra/shared/data/main.bicep:252-590 |
-| TLS 1.2 Enforcement               | minimumTlsVersion TLS1_2 on Storage Account and SQL Server. supportsHttpsTrafficOnly true on Storage                                            | Confidential   | Not detected | Not detected | Not detected | Not detected  | Infrastructure policy | All network communication | infra/shared/data/main.bicep:167-168 |
-| Service Bus Managed Identity Auth | DefaultAzureCredential with retry (3 max, 30s timeout), AMQP WebSockets transport, exponential backoff. Excludes interactive auth in production | Confidential   | Not detected | Not detected | Not detected | Not detected  | Azure Entra ID        | Orders API, Logic App     | app.ServiceDefaults/Extensions.cs:\* |
+| Component                         | Description                                                                                                                                     | Classification | Storage      | Owner        | Retention    | Freshness SLA | Source Systems        | Consumers                 |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------ | ------------ | ------------ | ------------- | --------------------- | ------------------------- |
+| Entra ID-Only SQL Authentication  | azureADOnlyAuthentication true, Entra admin configured via User-Assigned Managed Identity, SQL password auth completely disabled                | Confidential   | Not detected | Not detected | Not detected | Not detected  | Azure Entra ID        | SQL Server, Orders API    |
+| User-Assigned Managed Identity    | Single managed identity shared across SQL Server, Service Bus, Storage, Logic App, Container Apps — eliminates credential management            | Confidential   | Not detected | Not detected | Not detected | Not detected  | Azure Entra ID        | All Azure resources       |
+| Private Endpoints (5x)            | Blob, File, Table, Queue, SQL private endpoints with Private DNS Zones linked to VNet. Full network isolation for data plane                    | Confidential   | Not detected | Not detected | Not detected | Not detected  | Azure VNet            | All data stores           |
+| TLS 1.2 Enforcement               | minimumTlsVersion TLS1_2 on Storage Account and SQL Server. supportsHttpsTrafficOnly true on Storage                                            | Confidential   | Not detected | Not detected | Not detected | Not detected  | Infrastructure policy | All network communication |
+| Service Bus Managed Identity Auth | DefaultAzureCredential with retry (3 max, 30s timeout), AMQP WebSockets transport, exponential backoff. Excludes interactive auth in production | Confidential   | Not detected | Not detected | Not detected | Not detected  | Azure Entra ID        | Orders API, Logic App     |
 
 ```mermaid
 ---
@@ -927,14 +927,14 @@ The following subsections document detected integration patterns with their char
 
 ### Data Flow Patterns
 
-| Pattern                     | Type             | Producer             | Consumer                           | Contract                                                     | Quality Gate                                             | Source                                                                                             |
-| --------------------------- | ---------------- | -------------------- | ---------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Order API Call              | Request/Response | eShop Web App        | Orders API                         | REST (ProducesResponseType)                                  | HTTP status codes, model validation                      | src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-479                                    |
-| Order Event Publishing      | Event-Driven     | OrderService         | Service Bus Topic                  | JSON body, ContentType application/json, Subject OrderPlaced | Exponential backoff retry                                | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425                                        |
-| Topic Subscription Delivery | Event-Driven     | Service Bus Topic    | Logic App Workflow                 | Service Bus message with ContentType check                   | Dead-letter on expiry/filter errors, maxDeliveryCount 10 | infra/workload/messaging/main.bicep:125-142                                                        |
-| Workflow HTTP Callback      | Request/Response | Logic App Workflow   | Orders API                         | HTTP POST /api/Orders/process                                | ContentType equals application/json condition            | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:40-70        |
-| Blob Audit Write            | Event-Driven     | Logic App Workflow   | Blob Storage                       | Blob create (success/error container routing)                | Container-level public access disabled                   | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-155        |
-| Blob Cleanup Sweep          | Batch            | Logic App Recurrence | Blob Storage (success → completed) | List + Delete blob operations, concurrency 20                | Stateful workflow with retry                             | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-95 |
+| Pattern                     | Type             | Producer             | Consumer                           | Contract                                                     | Quality Gate                                             |
+| --------------------------- | ---------------- | -------------------- | ---------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------- |
+| Order API Call              | Request/Response | eShop Web App        | Orders API                         | REST (ProducesResponseType)                                  | HTTP status codes, model validation                      |
+| Order Event Publishing      | Event-Driven     | OrderService         | Service Bus Topic                  | JSON body, ContentType application/json, Subject OrderPlaced | Exponential backoff retry                                |
+| Topic Subscription Delivery | Event-Driven     | Service Bus Topic    | Logic App Workflow                 | Service Bus message with ContentType check                   | Dead-letter on expiry/filter errors, maxDeliveryCount 10 |
+| Workflow HTTP Callback      | Request/Response | Logic App Workflow   | Orders API                         | HTTP POST /api/Orders/process                                | ContentType equals application/json condition            |
+| Blob Audit Write            | Event-Driven     | Logic App Workflow   | Blob Storage                       | Blob create (success/error container routing)                | Container-level public access disabled                   |
+| Blob Cleanup Sweep          | Batch            | Logic App Recurrence | Blob Storage (success → completed) | List + Delete blob operations, concurrency 20                | Stateful workflow with retry                             |
 
 ### Data Lineage Diagram
 
