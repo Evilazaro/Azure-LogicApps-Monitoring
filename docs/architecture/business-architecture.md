@@ -552,9 +552,6 @@ This subsection documents the 10 business capabilities providing the functional 
 | **Description**     | Processes up to 10,000 orders in parallel with SemaphoreSlim(10) concurrency control, 50-item batches, and 5-minute timeout |
 | **UI Support**      | Manual entry or JSON file upload with progress indicators                                                                   |
 | **Dependencies**    | Order Placement Capability, Order Management Service                                                                        |
-| **Maturity**        | 4 - Measured                                                                                                                |
-| **Source**          | `src/eShop.Web.App/Components/Pages/PlaceOrdersBatch.razor:1-686`                                                           |
-| **Confidence**      | 0.90                                                                                                                        |
 | **KPIs**            | Batch Results Metrics — Success/Failed/Skipped counts per batch execution — see §2.11                                       |
 
 **L2/L3 Capability Decomposition:**
@@ -573,9 +570,6 @@ This subsection documents the 10 business capabilities providing the functional 
 | **Description**     | Full CRUD operations for orders: place, get, delete (single and batch) via REST API          |
 | **Key Operations**  | PlaceOrderAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync |
 | **Dependencies**    | Order Repository Service, Order Messaging Service                                            |
-| **Maturity**        | 4 - Measured                                                                                 |
-| **Source**          | `src/eShop.Orders.API/Interfaces/IOrderService.cs:1-68`                                      |
-| **Confidence**      | 0.95                                                                                         |
 | **KPIs**            | `eShop.orders.placed` (Counter), `eShop.orders.deleted` (Counter) — see §2.11                |
 
 **L2/L3 Capability Decomposition:**
@@ -593,9 +587,6 @@ This subsection documents the 10 business capabilities providing the functional 
 | **Level**           | L1                                                                                                                     |
 | **Description**     | Verifies connectivity and responsiveness of SQL Database and Service Bus dependencies with timeout-based health checks |
 | **Dependencies**    | Azure SQL Database, Azure Service Bus                                                                                  |
-| **Maturity**        | 3 - Defined                                                                                                            |
-| **Source**          | `src/eShop.Orders.API/HealthChecks/DbContextHealthCheck.cs:1-102`                                                      |
-| **Confidence**      | 0.80                                                                                                                   |
 | **KPIs**            | Database Health KPI (ResponseTimeMs), Service Bus Health KPI (connectivity pass/fail) — see §2.11                      |
 
 **L2/L3 Capability Decomposition:**
@@ -613,9 +604,6 @@ This subsection documents the 10 business capabilities providing the functional 
 | **Level**           | L1                                                                                                    |
 | **Description**     | Recurrence-triggered blob cleanup with concurrent metadata retrieval and deletion (concurrency: 20)   |
 | **Dependencies**    | Azure Blob Storage, Automated Order Processing                                                        |
-| **Maturity**        | 3 - Defined                                                                                           |
-| **Source**          | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-100` |
-| **Confidence**      | 0.85                                                                                                  |
 | **KPIs**            | Audit blob operation count (inferred from blob list/delete cycle) — see §2.11 Infrastructure Metrics  |
 
 #### 5.2.7 Self-Service Order Entry Capability
@@ -626,9 +614,6 @@ This subsection documents the 10 business capabilities providing the functional 
 | **Level**           | L1                                                                                                   |
 | **Description**     | Web-based order creation with OrderID, CustomerID, DeliveryAddress, dynamic product list, validation |
 | **Dependencies**    | Order Placement Capability, Web App UI                                                               |
-| **Maturity**        | 3 - Defined                                                                                          |
-| **Source**          | `src/eShop.Web.App/Components/Pages/PlaceOrder.razor:1-269`                                          |
-| **Confidence**      | 0.90                                                                                                 |
 | **KPIs**            | `eShop.orders.placed` (Counter — orders placed via UI) — see §2.11                                   |
 
 #### 5.2.8 Test Data Generation Capability
@@ -639,9 +624,6 @@ This subsection documents the 10 business capabilities providing the functional 
 | **Level**           | L1                                                                                     |
 | **Description**     | Configurable synthetic order generation (1-10000 orders) with product count and prices |
 | **Dependencies**    | Order Placement Capability (via API)                                                   |
-| **Maturity**        | 2 - Repeatable                                                                         |
-| **Source**          | `hooks/Generate-Orders.ps1:1-541`                                                      |
-| **Confidence**      | 0.70                                                                                   |
 | **KPIs**            | Batch Results Metrics — generated order count validation — see §2.11                   |
 
 ### 5.3 Value Streams Specifications
