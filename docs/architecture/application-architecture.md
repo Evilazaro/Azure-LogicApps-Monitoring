@@ -7,7 +7,6 @@
 **Repository**: Azure-LogicApps-Monitoring
 **Framework**: TOGAF 10 Application Architecture
 **Components Found**: 31
-**Average Confidence**: 0.85
 
 ---
 
@@ -17,9 +16,9 @@
 
 The Azure-LogicApps-Monitoring repository implements a cloud-native **eShop Orders Management** platform built on .NET Aspire, following a distributed microservice architecture pattern. The system comprises two primary deployable applications — an ASP.NET Core Web API (`eShop.Orders.API`) for order management and a Blazor Server frontend (`eShop.Web.App`) — orchestrated through .NET Aspire (`app.AppHost`) with shared cross-cutting concerns in `app.ServiceDefaults`.
 
-The Application layer analysis identified **31 components** across all **11 TOGAF Application Architecture component types**. The component distribution is: Application Services (2), Application Components (7), Application Interfaces (4), Application Collaborations (1), Application Functions (4), Application Interactions (1), Application Events (1), Application Data Objects (7), Integration Patterns (3), Service Contracts (1), and Application Dependencies (13). The average confidence score across all components is **0.85** (HIGH), indicating strong source traceability and pattern alignment.
+The Application layer analysis identified **31 components** across all **11 TOGAF Application Architecture component types**. The component distribution is: Application Services (2), Application Components (7), Application Interfaces (4), Application Collaborations (1), Application Functions (4), Application Interactions (1), Application Events (1), Application Data Objects (7), Integration Patterns (3), Service Contracts (1), and Application Dependencies (13).
 
-The architecture demonstrates **Level 3 — Defined** maturity: all services expose OpenAPI specifications, distributed tracing is fully implemented via OpenTelemetry, structured logging with trace context correlation is present in every component, health check endpoints are configured for both liveness and readiness probes, and resilience patterns (circuit breakers, retry policies, exponential backoff) are consistently applied. Key areas for advancement to Level 4 include formalized SLO tracking, chaos engineering practices, and automated canary deployments.
+The architecture demonstrates a well-defined structure: all services expose OpenAPI specifications, distributed tracing is fully implemented via OpenTelemetry, structured logging with trace context correlation is present in every component, health check endpoints are configured for both liveness and readiness probes, and resilience patterns (circuit breakers, retry policies, exponential backoff) are consistently applied.
 
 ---
 
@@ -29,7 +28,7 @@ The architecture demonstrates **Level 3 — Defined** maturity: all services exp
 
 This section catalogs all Application layer components identified through pattern-based scanning of the repository source code. Components are classified into the 11 TOGAF Application Architecture component types defined in the TOGAF 10 standard: Application Services, Application Components, Application Interfaces, Application Collaborations, Application Functions, Application Interactions, Application Events, Application Data Objects, Integration Patterns, Service Contracts, and Application Dependencies.
 
-Each component includes its source traceability (file path and line range), confidence score (calculated using the weighted formula: 30% filename match + 25% path context + 35% content analysis + 10% cross-reference), and service type classification. Components with confidence scores below 0.50 are excluded from the catalog. All source references use plain text format matching the validation regex `^[a-zA-Z0-9_./-]+:(\d+-\d+|\*)$`.
+Each component includes its service type classification.
 
 The following subsections enumerate all 31 components discovered across the 11 component types, with the highest density in Application Data Objects (7 components) and Application Components (7 components), reflecting the domain-rich and modular architecture of the eShop Orders Management platform.
 
@@ -235,102 +234,102 @@ flowchart TB
 
 ### 2.1 Application Services
 
-| Name             | Description                                                                                                                  | Source                                                          | Confidence | Service Type        |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ---------- | ------------------- |
-| OrderService     | Core business logic orchestrating order persistence, validation, batch processing, metrics collection, and event publishing  | src/eShop.Orders.API/Services/OrderService.cs:1-606             | 0.95       | Application Service |
-| OrdersAPIService | Typed HTTP client service providing strongly-typed API communication between the Web App frontend and the Orders API backend | src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-479 | 0.90       | HTTP Client Service |
+| Name             | Description                                                                                                                  | Service Type        |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| OrderService     | Core business logic orchestrating order persistence, validation, batch processing, metrics collection, and event publishing  | Application Service |
+| OrdersAPIService | Typed HTTP client service providing strongly-typed API communication between the Web App frontend and the Orders API backend | HTTP Client Service |
 
 ### 2.2 Application Components
 
-| Name                     | Description                                                                                                                                          | Source                                                         | Confidence | Service Type     |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ---------- | ---------------- |
-| eShop.Orders.API         | ASP.NET Core Web API application for order management with EF Core, Service Bus, and OpenTelemetry                                                   | src/eShop.Orders.API/Program.cs:1-226                          | 0.92       | Web API          |
-| eShop.Web.App            | Blazor Server interactive frontend with Microsoft Fluent UI, session management, and SignalR                                                         | src/eShop.Web.App/Program.cs:1-109                             | 0.88       | Blazor Server    |
-| OrderRepository          | EF Core data access layer implementing repository pattern with async operations, split queries, and pagination                                       | src/eShop.Orders.API/Repositories/OrderRepository.cs:1-549     | 0.90       | Data Access      |
-| OrderDbContext           | Entity Framework Core database context with Fluent API configuration, indexes, and cascade delete rules                                              | src/eShop.Orders.API/data/OrderDbContext.cs:1-136              | 0.85       | Data Context     |
-| ServiceDefaults          | Shared cross-cutting concerns providing OpenTelemetry, health checks, service discovery, HTTP resilience, and Azure Service Bus client configuration | app.ServiceDefaults/Extensions.cs:1-347                        | 0.82       | Shared Library   |
-| NoOpOrdersMessageHandler | Development fallback implementation of IOrdersMessageHandler that logs intended operations without connecting to Service Bus                         | src/eShop.Orders.API/Handlers/NoOpOrdersMessageHandler.cs:1-65 | 0.75       | Development Stub |
-| FluentDesignSystem       | Centralized Fluent UI design tokens providing spacing scales, typography, font weights, layout constraints, and grid templates                       | src/eShop.Web.App/Shared/FluentDesignSystem.cs:1-103           | 0.75       | UI Configuration |
+| Name                     | Description                                                                                                                                          | Service Type     |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| eShop.Orders.API         | ASP.NET Core Web API application for order management with EF Core, Service Bus, and OpenTelemetry                                                   | Web API          |
+| eShop.Web.App            | Blazor Server interactive frontend with Microsoft Fluent UI, session management, and SignalR                                                         | Blazor Server    |
+| OrderRepository          | EF Core data access layer implementing repository pattern with async operations, split queries, and pagination                                       | Data Access      |
+| OrderDbContext           | Entity Framework Core database context with Fluent API configuration, indexes, and cascade delete rules                                              | Data Context     |
+| ServiceDefaults          | Shared cross-cutting concerns providing OpenTelemetry, health checks, service discovery, HTTP resilience, and Azure Service Bus client configuration | Shared Library   |
+| NoOpOrdersMessageHandler | Development fallback implementation of IOrdersMessageHandler that logs intended operations without connecting to Service Bus                         | Development Stub |
+| FluentDesignSystem       | Centralized Fluent UI design tokens providing spacing scales, typography, font weights, layout constraints, and grid templates                       | UI Configuration |
 
 ### 2.3 Application Interfaces
 
-| Name                  | Description                                                                                                         | Source                                                        | Confidence | Service Type        |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------- | ------------------- |
-| OrdersController      | RESTful API controller exposing CRUD endpoints for order management with distributed tracing and structured logging | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501    | 0.95       | REST API Controller |
-| IOrderService         | Service contract defining 7 order management operations including batch processing and messaging                    | src/eShop.Orders.API/Interfaces/IOrderService.cs:1-68         | 0.92       | Service Contract    |
-| IOrderRepository      | Repository contract defining 6 data access operations with async patterns and pagination                            | src/eShop.Orders.API/Interfaces/IOrderRepository.cs:1-69      | 0.90       | Repository Contract |
-| IOrdersMessageHandler | Messaging contract defining 3 message publishing operations for Service Bus integration                             | src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:1-40 | 0.88       | Messaging Contract  |
+| Name                  | Description                                                                                                         | Service Type        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| OrdersController      | RESTful API controller exposing CRUD endpoints for order management with distributed tracing and structured logging | REST API Controller |
+| IOrderService         | Service contract defining 7 order management operations including batch processing and messaging                    | Service Contract    |
+| IOrderRepository      | Repository contract defining 6 data access operations with async patterns and pagination                            | Repository Contract |
+| IOrdersMessageHandler | Messaging contract defining 3 message publishing operations for Service Bus integration                             | Messaging Contract  |
 
 ### 2.4 Application Collaborations
 
-| Name                  | Description                                                                                                                                                                   | Source                       | Confidence | Service Type |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | ---------- | ------------ |
-| AppHost (.NET Aspire) | Distributed application orchestrator configuring service dependencies, Azure credentials, Application Insights, SQL Azure, and Service Bus with local/cloud dual-mode support | app.AppHost/AppHost.cs:1-290 | 0.88       | Orchestrator |
+| Name                  | Description                                                                                                                                                                   | Service Type |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| AppHost (.NET Aspire) | Distributed application orchestrator configuring service dependencies, Azure credentials, Application Insights, SQL Azure, and Service Bus with local/cloud dual-mode support | Orchestrator |
 
 ### 2.5 Application Functions
 
-| Name                   | Description                                                                                                                                       | Source                                                           | Confidence | Service Type        |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ---------- | ------------------- |
-| DbContextHealthCheck   | Database connectivity health monitoring returning Healthy/Unhealthy/Degraded status with response time metrics                                    | src/eShop.Orders.API/HealthChecks/DbContextHealthCheck.cs:1-102  | 0.85       | Health Check        |
-| ServiceBusHealthCheck  | Azure Service Bus connectivity monitoring with sender and batch creation verification                                                             | src/eShop.Orders.API/HealthChecks/ServiceBusHealthCheck.cs:1-183 | 0.88       | Health Check        |
-| OrderMapper            | Bidirectional mapping between domain models (Order/OrderProduct) and persistence entities (OrderEntity/OrderProductEntity)                        | src/eShop.Orders.API/data/OrderMapper.cs:1-102                   | 0.80       | Data Mapper         |
-| ConfigureOpenTelemetry | OpenTelemetry configuration function setting up distributed tracing, custom metrics, and structured logging with OTLP and Azure Monitor exporters | app.ServiceDefaults/Extensions.cs:44-163                         | 0.78       | Observability Setup |
+| Name                   | Description                                                                                                                                       | Service Type        |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| DbContextHealthCheck   | Database connectivity health monitoring returning Healthy/Unhealthy/Degraded status with response time metrics                                    | Health Check        |
+| ServiceBusHealthCheck  | Azure Service Bus connectivity monitoring with sender and batch creation verification                                                             | Health Check        |
+| OrderMapper            | Bidirectional mapping between domain models (Order/OrderProduct) and persistence entities (OrderEntity/OrderProductEntity)                        | Data Mapper         |
+| ConfigureOpenTelemetry | OpenTelemetry configuration function setting up distributed tracing, custom metrics, and structured logging with OTLP and Azure Monitor exporters | Observability Setup |
 
 ### 2.6 Application Interactions
 
-| Name                          | Description                                                                                                                    | Source                             | Confidence | Service Type     |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- | ---------- | ---------------- |
-| Web-to-API HTTP Communication | Service discovery-based HTTP communication between Blazor frontend and Orders API using typed HttpClient with Polly resilience | src/eShop.Web.App/Program.cs:80-92 | 0.82       | Request/Response |
+| Name                          | Description                                                                                                                    | Service Type     |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------- |
+| Web-to-API HTTP Communication | Service discovery-based HTTP communication between Blazor frontend and Orders API using typed HttpClient with Polly resilience | Request/Response |
 
 ### 2.7 Application Events
 
-| Name              | Description                                                                                                                              | Source                                                      | Confidence | Service Type |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ---------- | ------------ |
-| OrderPlaced Event | Domain event published to Azure Service Bus `ordersplaced` topic when orders are created, with trace context propagation and retry logic | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425 | 0.90       | Domain Event |
+| Name              | Description                                                                                                                              | Service Type |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| OrderPlaced Event | Domain event published to Azure Service Bus `ordersplaced` topic when orders are created, with trace context propagation and retry logic | Domain Event |
 
 ### 2.8 Application Data Objects
 
-| Name                     | Description                                                                                                                    | Source                                                         | Confidence | Service Type       |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ---------- | ------------------ |
-| Order                    | Shared domain record with Id, CustomerId, Date, DeliveryAddress, Total, and Products collection with DataAnnotation validation | app.ServiceDefaults/CommonTypes.cs:77-127                      | 0.92       | Domain Model       |
-| OrderProduct             | Shared domain record representing a product line item within an order with validation attributes                               | app.ServiceDefaults/CommonTypes.cs:132-175                     | 0.90       | Domain Model       |
-| OrderEntity              | EF Core persistence entity mapping to the Orders table with key, required, and max-length constraints                          | src/eShop.Orders.API/data/Entities/OrderEntity.cs:1-56         | 0.88       | Persistence Entity |
-| OrderProductEntity       | EF Core persistence entity mapping to the OrderProducts table with foreign key to OrderEntity                                  | src/eShop.Orders.API/data/Entities/OrderProductEntity.cs:1-65  | 0.88       | Persistence Entity |
-| OrderMessageWithMetadata | Service Bus message wrapper containing Order payload with MessageId, SequenceNumber, EnqueuedTime, and ApplicationProperties   | src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:1-49 | 0.82       | Message DTO        |
-| OrdersWrapper            | Response wrapper encapsulating a collection of Order objects for API responses                                                 | src/eShop.Orders.API/Services/OrdersWrapper.cs:1-21            | 0.75       | Response DTO       |
-| WeatherForecast          | Demo data model with Date, TemperatureC, TemperatureF, and Summary properties used for health verification                     | app.ServiceDefaults/CommonTypes.cs:14-72                       | 0.72       | Demo Model         |
+| Name                     | Description                                                                                                                    | Service Type       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
+| Order                    | Shared domain record with Id, CustomerId, Date, DeliveryAddress, Total, and Products collection with DataAnnotation validation | Domain Model       |
+| OrderProduct             | Shared domain record representing a product line item within an order with validation attributes                               | Domain Model       |
+| OrderEntity              | EF Core persistence entity mapping to the Orders table with key, required, and max-length constraints                          | Persistence Entity |
+| OrderProductEntity       | EF Core persistence entity mapping to the OrderProducts table with foreign key to OrderEntity                                  | Persistence Entity |
+| OrderMessageWithMetadata | Service Bus message wrapper containing Order payload with MessageId, SequenceNumber, EnqueuedTime, and ApplicationProperties   | Message DTO        |
+| OrdersWrapper            | Response wrapper encapsulating a collection of Order objects for API responses                                                 | Response DTO       |
+| WeatherForecast          | Demo data model with Date, TemperatureC, TemperatureF, and Summary properties used for health verification                     | Demo Model         |
 
 ### 2.9 Integration Patterns
 
-| Name                                  | Description                                                                                                                                            | Source                                                                                              | Confidence | Service Type         |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- | ---------- | -------------------- |
-| Azure Service Bus Pub/Sub             | Topic-based publish/subscribe messaging pattern using `ordersplaced` topic with `orderprocessingsub` subscription for decoupled order event processing | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425                                         | 0.92       | Pub/Sub              |
-| Logic App OrdersPlacedProcess         | Stateful Logic App workflow triggered by Service Bus messages that processes orders via HTTP callback and stores results in Azure Blob Storage         | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-163         | 0.85       | Workflow Integration |
-| Logic App OrdersPlacedCompleteProcess | Recurrence-triggered cleanup workflow that lists and deletes processed order blobs from Azure Blob Storage on a 3-second interval                      | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-105 | 0.80       | Workflow Integration |
+| Name                                  | Description                                                                                                                                            | Service Type         |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
+| Azure Service Bus Pub/Sub             | Topic-based publish/subscribe messaging pattern using `ordersplaced` topic with `orderprocessingsub` subscription for decoupled order event processing | Pub/Sub              |
+| Logic App OrdersPlacedProcess         | Stateful Logic App workflow triggered by Service Bus messages that processes orders via HTTP callback and stores results in Azure Blob Storage         | Workflow Integration |
+| Logic App OrdersPlacedCompleteProcess | Recurrence-triggered cleanup workflow that lists and deletes processed order blobs from Azure Blob Storage on a 3-second interval                      | Workflow Integration |
 
 ### 2.10 Service Contracts
 
-| Name                     | Description                                                                                                                    | Source                                                     | Confidence | Service Type |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- | ---------- | ------------ |
-| Orders REST API Contract | OpenAPI/Swagger-documented REST API with typed request/response models, HTTP status codes, and ProducesResponseType attributes | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501 | 0.88       | OpenAPI      |
+| Name                     | Description                                                                                                                    | Service Type |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ | ------------ |
+| Orders REST API Contract | OpenAPI/Swagger-documented REST API with typed request/response models, HTTP status codes, and ProducesResponseType attributes | OpenAPI      |
 
 ### 2.11 Application Dependencies
 
-| Name                                         | Description                                                                                 | Source                                            | Confidence | Service Type  |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------- | ---------- | ------------- |
-| Microsoft.EntityFrameworkCore.SqlServer      | EF Core SQL Server provider for database persistence with retry-on-failure resilience       | src/eShop.Orders.API/eShop.Orders.API.csproj:17   | 0.95       | NuGet Package |
-| Azure.Messaging.ServiceBus                   | Azure Service Bus SDK for topic-based pub/sub messaging with managed identity support       | app.ServiceDefaults/app.ServiceDefaults.csproj:13 | 0.95       | NuGet Package |
-| Azure.Identity                               | Azure credential management with DefaultAzureCredential for managed identity authentication | app.ServiceDefaults/app.ServiceDefaults.csproj:12 | 0.92       | NuGet Package |
-| Azure.Monitor.OpenTelemetry.Exporter         | Azure Monitor exporter for distributed tracing and metrics                                  | app.ServiceDefaults/app.ServiceDefaults.csproj:15 | 0.90       | NuGet Package |
-| OpenTelemetry.Exporter.OpenTelemetryProtocol | OTLP exporter for OpenTelemetry traces, metrics, and logs                                   | app.ServiceDefaults/app.ServiceDefaults.csproj:17 | 0.90       | NuGet Package |
-| OpenTelemetry.Extensions.Hosting             | OpenTelemetry hosting integration for dependency injection                                  | app.ServiceDefaults/app.ServiceDefaults.csproj:18 | 0.88       | NuGet Package |
-| OpenTelemetry.Instrumentation.AspNetCore     | ASP.NET Core auto-instrumentation for HTTP request tracing                                  | app.ServiceDefaults/app.ServiceDefaults.csproj:19 | 0.88       | NuGet Package |
-| OpenTelemetry.Instrumentation.Http           | HTTP client auto-instrumentation for outbound request tracing                               | app.ServiceDefaults/app.ServiceDefaults.csproj:20 | 0.88       | NuGet Package |
-| OpenTelemetry.Instrumentation.Runtime        | .NET runtime instrumentation for GC, thread pool, and exception metrics                     | app.ServiceDefaults/app.ServiceDefaults.csproj:21 | 0.85       | NuGet Package |
-| OpenTelemetry.Instrumentation.SqlClient      | SQL client auto-instrumentation for database query tracing                                  | app.ServiceDefaults/app.ServiceDefaults.csproj:22 | 0.85       | NuGet Package |
-| Microsoft.Extensions.Http.Resilience         | Polly-based HTTP resilience with circuit breakers, retries, and timeouts                    | app.ServiceDefaults/app.ServiceDefaults.csproj:16 | 0.90       | NuGet Package |
-| Microsoft.Extensions.ServiceDiscovery        | .NET Aspire service discovery for service-to-service endpoint resolution                    | app.ServiceDefaults/app.ServiceDefaults.csproj:17 | 0.88       | NuGet Package |
-| Microsoft.FluentUI.AspNetCore.Components     | Microsoft Fluent UI component library for Blazor Server interactive rendering               | src/eShop.Web.App/eShop.Web.App.csproj:11         | 0.92       | NuGet Package |
+| Name                                         | Description                                                                                 | Service Type  |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------- |
+| Microsoft.EntityFrameworkCore.SqlServer      | EF Core SQL Server provider for database persistence with retry-on-failure resilience       | NuGet Package |
+| Azure.Messaging.ServiceBus                   | Azure Service Bus SDK for topic-based pub/sub messaging with managed identity support       | NuGet Package |
+| Azure.Identity                               | Azure credential management with DefaultAzureCredential for managed identity authentication | NuGet Package |
+| Azure.Monitor.OpenTelemetry.Exporter         | Azure Monitor exporter for distributed tracing and metrics                                  | NuGet Package |
+| OpenTelemetry.Exporter.OpenTelemetryProtocol | OTLP exporter for OpenTelemetry traces, metrics, and logs                                   | NuGet Package |
+| OpenTelemetry.Extensions.Hosting             | OpenTelemetry hosting integration for dependency injection                                  | NuGet Package |
+| OpenTelemetry.Instrumentation.AspNetCore     | ASP.NET Core auto-instrumentation for HTTP request tracing                                  | NuGet Package |
+| OpenTelemetry.Instrumentation.Http           | HTTP client auto-instrumentation for outbound request tracing                               | NuGet Package |
+| OpenTelemetry.Instrumentation.Runtime        | .NET runtime instrumentation for GC, thread pool, and exception metrics                     | NuGet Package |
+| OpenTelemetry.Instrumentation.SqlClient      | SQL client auto-instrumentation for database query tracing                                  | NuGet Package |
+| Microsoft.Extensions.Http.Resilience         | Polly-based HTTP resilience with circuit breakers, retries, and timeouts                    | NuGet Package |
+| Microsoft.Extensions.ServiceDiscovery        | .NET Aspire service discovery for service-to-service endpoint resolution                    | NuGet Package |
+| Microsoft.FluentUI.AspNetCore.Components     | Microsoft Fluent UI component library for Blazor Server interactive rendering               | NuGet Package |
 
 ### Summary
 
@@ -344,86 +343,72 @@ All 11 TOGAF Application component types are represented, with the highest compo
 
 ### Overview
 
-The following architecture principles were identified through systematic analysis of the source code, configuration files, and infrastructure definitions. Each principle is substantiated with specific source evidence, including file paths, line ranges, and compliance assessment. Principles are evaluated against observed implementation patterns rather than documented aspirational goals.
+The following architecture principles were identified through systematic analysis of the source code, configuration files, and infrastructure definitions. Principles are evaluated against observed implementation patterns rather than documented aspirational goals.
 
 The eShop Orders Management platform demonstrates strong adherence to modern cloud-native architecture principles including separation of concerns, interface-driven design, resilience by design, and observability-first instrumentation. Seven core principles were identified, all showing Full or Partial compliance based on source code analysis.
 
-These principles collectively establish a Level 3 (Defined) maturity baseline with clear pathways to Level 4 (Measured) through formalized SLO tracking, chaos engineering adoption, and event schema contract governance.
+These principles collectively demonstrate strong architectural alignment with clear pathways to improvement through formalized SLO tracking, chaos engineering adoption, and event schema contract governance.
 
 ### 3.1 Separation of Concerns
 
-| Attribute      | Value                                                                          |
-| -------------- | ------------------------------------------------------------------------------ |
-| **Principle**  | Separation of Concerns                                                         |
-| **Evidence**   | Distinct interface/service/repository/handler layers with DI-based composition |
-| **Source**     | src/eShop.Orders.API/Program.cs:50-85                                          |
-| **Compliance** | Full                                                                           |
+| Attribute      | Value                  |
+| -------------- | ---------------------- |
+| **Principle**  | Separation of Concerns |
+| **Compliance** | Full                   |
 
 The application enforces clear layer boundaries: Controllers handle HTTP concerns only, Services orchestrate business logic, Repositories manage data persistence, and Handlers manage messaging — connected through interface contracts with constructor-injected dependencies.
 
 ### 3.2 Interface-Driven Design
 
-| Attribute      | Value                                                                                |
-| -------------- | ------------------------------------------------------------------------------------ |
-| **Principle**  | Interface-Driven Design (Dependency Inversion)                                       |
-| **Evidence**   | All service, repository, and handler components implement formal interface contracts |
-| **Source**     | src/eShop.Orders.API/Interfaces/IOrderService.cs:1-68                                |
-| **Compliance** | Full                                                                                 |
+| Attribute      | Value                                          |
+| -------------- | ---------------------------------------------- |
+| **Principle**  | Interface-Driven Design (Dependency Inversion) |
+| **Compliance** | Full                                           |
 
 Every service implementation is registered against its interface: `IOrderService` → `OrderService`, `IOrderRepository` → `OrderRepository`, `IOrdersMessageHandler` → `OrdersMessageHandler`/`NoOpOrdersMessageHandler`. This enables testability, mock injection, and runtime substitution (as demonstrated by the NoOp fallback handler for environments without Service Bus).
 
 ### 3.3 Resilience by Design
 
-| Attribute      | Value                                                                                                                    |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Principle**  | Resilience by Design                                                                                                     |
-| **Evidence**   | Retry policies, circuit breakers, exponential backoff, timeout handling, and health checks across all integration points |
-| **Source**     | app.ServiceDefaults/Extensions.cs:1-347                                                                                  |
-| **Compliance** | Full                                                                                                                     |
+| Attribute      | Value                |
+| -------------- | -------------------- |
+| **Principle**  | Resilience by Design |
+| **Compliance** | Full                 |
 
 Resilience is implemented at multiple levels: HTTP client resilience via Polly (600s total timeout, 60s per-attempt timeout, 3 retries with exponential backoff, 120s circuit breaker sampling), EF Core retry-on-failure (5 retries, 30s max delay, 120s command timeout), Service Bus retry (3 attempts, exponential backoff), and database migration retry (10 attempts). Health checks monitor both database and Service Bus connectivity with 5-second timeouts.
 
 ### 3.4 Observability First
 
-| Attribute      | Value                                                                                                                                                 |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Principle**  | Observability First (Distributed Tracing, Metrics, Logging)                                                                                           |
-| **Evidence**   | OpenTelemetry integration with ActivitySource tracing, custom Meter metrics, and structured logging with trace context correlation in every component |
-| **Source**     | app.ServiceDefaults/Extensions.cs:44-163                                                                                                              |
-| **Compliance** | Full                                                                                                                                                  |
+| Attribute      | Value                                                       |
+| -------------- | ----------------------------------------------------------- |
+| **Principle**  | Observability First (Distributed Tracing, Metrics, Logging) |
+| **Compliance** | Full                                                        |
 
 Every business operation creates a distributed tracing span via `ActivitySource.StartActivity()`. Custom metrics are defined with `Meter` (counters for orders.placed, processing.errors, orders.deleted; histogram for processing.duration). All log entries include `TraceId` correlation via `ILogger.BeginScope()`. Exporters target both OTLP and Azure Monitor for dual observability.
 
 ### 3.5 Dual-Mode Configuration (Local/Cloud)
 
-| Attribute      | Value                                                                                                                                                 |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Principle**  | Environment Portability (Local Development / Azure Cloud)                                                                                             |
-| **Evidence**   | .NET Aspire AppHost dynamically configures SQL Server containers or Azure SQL, Service Bus emulator or Azure Service Bus, based on configuration keys |
-| **Source**     | app.AppHost/AppHost.cs:1-290                                                                                                                          |
-| **Compliance** | Full                                                                                                                                                  |
+| Attribute      | Value                                                     |
+| -------------- | --------------------------------------------------------- |
+| **Principle**  | Environment Portability (Local Development / Azure Cloud) |
+| **Compliance** | Full                                                      |
 
 The AppHost implements a dual-mode strategy: when `Azure:ResourceGroup` is configured, it connects to existing Azure resources (SQL Azure with Entra ID, Service Bus with managed identity, Application Insights); otherwise, it provisions local containers (SQL Server with data volumes, Service Bus emulator). This ensures developer experience parity with production-like infrastructure.
 
 ### 3.6 API-First Design
 
-| Attribute      | Value                                                                                                                    |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Principle**  | API-First Design with OpenAPI Documentation                                                                              |
-| **Evidence**   | Swagger/OpenAPI documentation enabled, typed response attributes on all controller actions, XML documentation generation |
-| **Source**     | src/eShop.Orders.API/Program.cs:140-160                                                                                  |
-| **Compliance** | Full                                                                                                                     |
+| Attribute      | Value                                       |
+| -------------- | ------------------------------------------- |
+| **Principle**  | API-First Design with OpenAPI Documentation |
+| **Compliance** | Full                                        |
 
 The Orders API enables Swagger UI and OpenAPI specification generation. All controller actions are decorated with `[ProducesResponseType]` attributes specifying HTTP status codes and response types. XML documentation is generated from code comments (`GenerateDocumentationFile` in .csproj).
 
 ### 3.7 Event-Driven Architecture
 
-| Attribute      | Value                                                                                                            |
-| -------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **Principle**  | Event-Driven Decoupling via Publish/Subscribe                                                                    |
-| **Evidence**   | Order creation events are published to Azure Service Bus topics for downstream processing by Logic App workflows |
-| **Source**     | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425                                                      |
-| **Compliance** | Partial                                                                                                          |
+| Attribute      | Value                                         |
+| -------------- | --------------------------------------------- |
+| **Principle**  | Event-Driven Decoupling via Publish/Subscribe |
+| **Compliance** | Partial                                       |
 
 Order placement triggers asynchronous event publication to the `ordersplaced` Service Bus topic. Downstream Logic App workflows subscribe through `orderprocessingsub` subscription for order processing and blob storage. The pattern is partial because event consumption is handled by Logic Apps outside the .NET application boundary, and no formal event schema versioning contract exists.
 
@@ -748,9 +733,9 @@ The primary architectural gap is the absence of formalized SLO tracking and a ce
 
 ### Overview
 
-This section provides detailed specifications for each of the 31 Application layer components identified in Section 2, organized by the 11 TOGAF Application Architecture component types. Each subsection begins with a consolidated 10-column catalog table followed by expanded per-component specifications.
+This section provides detailed specifications for each of the 31 Application layer components identified in Section 2, organized by the 11 TOGAF Application Architecture component types. Each subsection begins with a consolidated catalog table followed by expanded per-component specifications.
 
-Each component specification includes six mandatory attributes: API Surface (endpoint types, counts, and protocols), Dependencies (upstream and downstream with protocols), Resilience (retry policies, circuit breakers, timeouts), Scaling (horizontal/vertical strategy), Health (monitoring approach and endpoints), and Source File (with confidence score and line ranges). Components classified as PaaS services include additional platform-specific attributes.
+Each component specification includes five mandatory attributes: API Surface (endpoint types, counts, and protocols), Dependencies (upstream and downstream with protocols), Resilience (retry policies, circuit breakers, timeouts), Scaling (horizontal/vertical strategy), and Health (monitoring approach and endpoints). Components classified as PaaS services include additional platform-specific attributes.
 
 The Component Catalog complements Section 2 (Architecture Landscape) by providing implementation-level detail rather than inventory-level summaries. Where Section 2 answers "what components exist," Section 5 answers "how each component works, what it depends on, and how it handles failure."
 
@@ -1006,19 +991,17 @@ flowchart LR
 
 ### 5.1 Application Services
 
-| Component        | Description                             | Type                | Technology             | Version | Dependencies                            | API Endpoints         | SLA           | Owner        | Source File                                                     |
-| ---------------- | --------------------------------------- | ------------------- | ---------------------- | ------- | --------------------------------------- | --------------------- | ------------- | ------------ | --------------------------------------------------------------- |
-| OrderService     | Core order management business logic    | Application Service | .NET 10.0 / C#         | 10.0    | IOrderRepository, IOrdersMessageHandler | 7 service methods     | Not specified | Not detected | src/eShop.Orders.API/Services/OrderService.cs:1-606             |
-| OrdersAPIService | Typed HTTP client for API communication | HTTP Client Service | .NET 10.0 / HttpClient | 10.0    | eShop.Orders.API (HTTP/REST)            | 7 HTTP client methods | Not specified | Not detected | src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-479 |
+| Component        | Description                             | Type                | Technology             | Version | Dependencies                            | API Endpoints         | SLA           | Owner        |
+| ---------------- | --------------------------------------- | ------------------- | ---------------------- | ------- | --------------------------------------- | --------------------- | ------------- | ------------ |
+| OrderService     | Core order management business logic    | Application Service | .NET 10.0 / C#         | 10.0    | IOrderRepository, IOrdersMessageHandler | 7 service methods     | Not specified | Not detected |
+| OrdersAPIService | Typed HTTP client for API communication | HTTP Client Service | .NET 10.0 / HttpClient | 10.0    | eShop.Orders.API (HTTP/REST)            | 7 HTTP client methods | Not specified | Not detected |
 
 #### 5.1.1 OrderService
 
-| Attribute          | Value                                               |
-| ------------------ | --------------------------------------------------- |
-| **Component Name** | OrderService                                        |
-| **Service Type**   | Application Service                                 |
-| **Source**         | src/eShop.Orders.API/Services/OrderService.cs:1-606 |
-| **Confidence**     | 0.95                                                |
+| Attribute          | Value               |
+| ------------------ | ------------------- |
+| **Component Name** | OrderService        |
+| **Service Type**   | Application Service |
 
 **API Surface:**
 
@@ -1047,12 +1030,10 @@ flowchart LR
 
 #### 5.1.2 OrdersAPIService
 
-| Attribute          | Value                                                           |
-| ------------------ | --------------------------------------------------------------- |
-| **Component Name** | OrdersAPIService                                                |
-| **Service Type**   | HTTP Client Service                                             |
-| **Source**         | src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-479 |
-| **Confidence**     | 0.90                                                            |
+| Attribute          | Value               |
+| ------------------ | ------------------- |
+| **Component Name** | OrdersAPIService    |
+| **Service Type**   | HTTP Client Service |
 
 **API Surface:**
 
@@ -1079,24 +1060,22 @@ flowchart LR
 
 ### 5.2 Application Components
 
-| Component                | Description                                 | Type             | Technology         | Version | Dependencies                            | API Endpoints                 | SLA            | Owner        | Source File                                                    |
-| ------------------------ | ------------------------------------------- | ---------------- | ------------------ | ------- | --------------------------------------- | ----------------------------- | -------------- | ------------ | -------------------------------------------------------------- |
-| eShop.Orders.API         | Order management Web API                    | Web API          | ASP.NET Core 10.0  | 10.0    | Azure SQL, Service Bus, ServiceDefaults | 6 REST + 2 health + 1 OpenAPI | Not specified  | Not detected | src/eShop.Orders.API/Program.cs:1-226                          |
-| eShop.Web.App            | Interactive order management frontend       | Blazor Server    | .NET 10.0 / Blazor | 10.0    | eShop.Orders.API, ServiceDefaults       | 7 Razor pages + 2 health      | Not specified  | Not detected | src/eShop.Web.App/Program.cs:1-109                             |
-| OrderRepository          | EF Core data access with repository pattern | Data Access      | EF Core 10.0.3     | 10.0.3  | OrderDbContext, Azure SQL               | 6 repository methods          | Not specified  | Not detected | src/eShop.Orders.API/Repositories/OrderRepository.cs:1-549     |
-| OrderDbContext           | Database context with Fluent API config     | Data Context     | EF Core 10.0.3     | 10.0.3  | Azure SQL                               | 2 DbSets                      | Not specified  | Not detected | src/eShop.Orders.API/data/OrderDbContext.cs:1-136              |
-| ServiceDefaults          | Cross-cutting concerns shared library       | Shared Library   | .NET 10.0          | 10.0    | OpenTelemetry, Azure Identity, Polly    | 5 extension methods           | Not specified  | Not detected | app.ServiceDefaults/Extensions.cs:1-347                        |
-| NoOpOrdersMessageHandler | Development fallback message handler        | Development Stub | .NET 10.0          | 10.0    | ILogger                                 | 3 no-op methods               | Not applicable | Not detected | src/eShop.Orders.API/Handlers/NoOpOrdersMessageHandler.cs:1-65 |
-| FluentDesignSystem       | UI design tokens and spacing constants      | UI Configuration | .NET 10.0          | 10.0    | None                                    | 6 static constant classes     | Not applicable | Not detected | src/eShop.Web.App/Shared/FluentDesignSystem.cs:1-103           |
+| Component                | Description                                 | Type             | Technology         | Version | Dependencies                            | API Endpoints                 | SLA            | Owner        |
+| ------------------------ | ------------------------------------------- | ---------------- | ------------------ | ------- | --------------------------------------- | ----------------------------- | -------------- | ------------ |
+| eShop.Orders.API         | Order management Web API                    | Web API          | ASP.NET Core 10.0  | 10.0    | Azure SQL, Service Bus, ServiceDefaults | 6 REST + 2 health + 1 OpenAPI | Not specified  | Not detected |
+| eShop.Web.App            | Interactive order management frontend       | Blazor Server    | .NET 10.0 / Blazor | 10.0    | eShop.Orders.API, ServiceDefaults       | 7 Razor pages + 2 health      | Not specified  | Not detected |
+| OrderRepository          | EF Core data access with repository pattern | Data Access      | EF Core 10.0.3     | 10.0.3  | OrderDbContext, Azure SQL               | 6 repository methods          | Not specified  | Not detected |
+| OrderDbContext           | Database context with Fluent API config     | Data Context     | EF Core 10.0.3     | 10.0.3  | Azure SQL                               | 2 DbSets                      | Not specified  | Not detected |
+| ServiceDefaults          | Cross-cutting concerns shared library       | Shared Library   | .NET 10.0          | 10.0    | OpenTelemetry, Azure Identity, Polly    | 5 extension methods           | Not specified  | Not detected |
+| NoOpOrdersMessageHandler | Development fallback message handler        | Development Stub | .NET 10.0          | 10.0    | ILogger                                 | 3 no-op methods               | Not applicable | Not detected |
+| FluentDesignSystem       | UI design tokens and spacing constants      | UI Configuration | .NET 10.0          | 10.0    | None                                    | 6 static constant classes     | Not applicable | Not detected |
 
 #### 5.2.1 eShop.Orders.API
 
-| Attribute          | Value                                 |
-| ------------------ | ------------------------------------- |
-| **Component Name** | eShop.Orders.API                      |
-| **Service Type**   | ASP.NET Core Web API                  |
-| **Source**         | src/eShop.Orders.API/Program.cs:1-226 |
-| **Confidence**     | 0.92                                  |
+| Attribute          | Value                |
+| ------------------ | -------------------- |
+| **Component Name** | eShop.Orders.API     |
+| **Service Type**   | ASP.NET Core Web API |
 
 **API Surface:**
 
@@ -1126,12 +1105,10 @@ flowchart LR
 
 #### 5.2.2 eShop.Web.App
 
-| Attribute          | Value                              |
-| ------------------ | ---------------------------------- |
-| **Component Name** | eShop.Web.App                      |
-| **Service Type**   | Blazor Server                      |
-| **Source**         | src/eShop.Web.App/Program.cs:1-109 |
-| **Confidence**     | 0.88                               |
+| Attribute          | Value         |
+| ------------------ | ------------- |
+| **Component Name** | eShop.Web.App |
+| **Service Type**   | Blazor Server |
 
 **API Surface:**
 
@@ -1158,12 +1135,10 @@ flowchart LR
 
 #### 5.2.3 OrderRepository
 
-| Attribute          | Value                                                      |
-| ------------------ | ---------------------------------------------------------- |
-| **Component Name** | OrderRepository                                            |
-| **Service Type**   | Data Access Layer                                          |
-| **Source**         | src/eShop.Orders.API/Repositories/OrderRepository.cs:1-549 |
-| **Confidence**     | 0.90                                                       |
+| Attribute          | Value             |
+| ------------------ | ----------------- |
+| **Component Name** | OrderRepository   |
+| **Service Type**   | Data Access Layer |
 
 **API Surface:**
 
@@ -1189,12 +1164,10 @@ flowchart LR
 
 #### 5.2.4 OrderDbContext
 
-| Attribute          | Value                                             |
-| ------------------ | ------------------------------------------------- |
-| **Component Name** | OrderDbContext                                    |
-| **Service Type**   | EF Core Database Context                          |
-| **Source**         | src/eShop.Orders.API/data/OrderDbContext.cs:1-136 |
-| **Confidence**     | 0.85                                              |
+| Attribute          | Value                    |
+| ------------------ | ------------------------ |
+| **Component Name** | OrderDbContext           |
+| **Service Type**   | EF Core Database Context |
 
 **API Surface:**
 
@@ -1221,12 +1194,10 @@ flowchart LR
 
 #### 5.2.5 ServiceDefaults
 
-| Attribute          | Value                                   |
-| ------------------ | --------------------------------------- |
-| **Component Name** | ServiceDefaults (Extensions)            |
-| **Service Type**   | Shared Library                          |
-| **Source**         | app.ServiceDefaults/Extensions.cs:1-347 |
-| **Confidence**     | 0.82                                    |
+| Attribute          | Value                        |
+| ------------------ | ---------------------------- |
+| **Component Name** | ServiceDefaults (Extensions) |
+| **Service Type**   | Shared Library               |
 
 **API Surface:**
 
@@ -1254,12 +1225,10 @@ flowchart LR
 
 #### 5.2.6 NoOpOrdersMessageHandler
 
-| Attribute          | Value                                                          |
-| ------------------ | -------------------------------------------------------------- |
-| **Component Name** | NoOpOrdersMessageHandler                                       |
-| **Service Type**   | Development Stub                                               |
-| **Source**         | src/eShop.Orders.API/Handlers/NoOpOrdersMessageHandler.cs:1-65 |
-| **Confidence**     | 0.75                                                           |
+| Attribute          | Value                    |
+| ------------------ | ------------------------ |
+| **Component Name** | NoOpOrdersMessageHandler |
+| **Service Type**   | Development Stub         |
 
 **API Surface:**
 
@@ -1283,12 +1252,10 @@ flowchart LR
 
 #### 5.2.7 FluentDesignSystem
 
-| Attribute          | Value                                                |
-| ------------------ | ---------------------------------------------------- |
-| **Component Name** | FluentDesignSystem                                   |
-| **Service Type**   | UI Configuration                                     |
-| **Source**         | src/eShop.Web.App/Shared/FluentDesignSystem.cs:1-103 |
-| **Confidence**     | 0.75                                                 |
+| Attribute          | Value              |
+| ------------------ | ------------------ |
+| **Component Name** | FluentDesignSystem |
+| **Service Type**   | UI Configuration   |
 
 **API Surface:**
 
@@ -1312,21 +1279,19 @@ flowchart LR
 
 ### 5.3 Application Interfaces
 
-| Component             | Description                             | Type                | Technology        | Version | Dependencies     | API Endpoints      | SLA           | Owner        | Source File                                                   |
-| --------------------- | --------------------------------------- | ------------------- | ----------------- | ------- | ---------------- | ------------------ | ------------- | ------------ | ------------------------------------------------------------- |
-| OrdersController      | RESTful API controller for orders       | REST API Controller | ASP.NET Core 10.0 | 10.0    | IOrderService    | 6 REST endpoints   | Not specified | Not detected | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501    |
-| IOrderService         | Service contract for order operations   | Service Contract    | .NET 10.0 / C#    | 10.0    | None (interface) | 7 contract methods | Not specified | Not detected | src/eShop.Orders.API/Interfaces/IOrderService.cs:1-68         |
-| IOrderRepository      | Repository contract for data access     | Repository Contract | .NET 10.0 / C#    | 10.0    | None (interface) | 6 contract methods | Not specified | Not detected | src/eShop.Orders.API/Interfaces/IOrderRepository.cs:1-69      |
-| IOrdersMessageHandler | Messaging contract for event publishing | Messaging Contract  | .NET 10.0 / C#    | 10.0    | None (interface) | 3 contract methods | Not specified | Not detected | src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:1-40 |
+| Component             | Description                             | Type                | Technology        | Version | Dependencies     | API Endpoints      | SLA           | Owner        |
+| --------------------- | --------------------------------------- | ------------------- | ----------------- | ------- | ---------------- | ------------------ | ------------- | ------------ |
+| OrdersController      | RESTful API controller for orders       | REST API Controller | ASP.NET Core 10.0 | 10.0    | IOrderService    | 6 REST endpoints   | Not specified | Not detected |
+| IOrderService         | Service contract for order operations   | Service Contract    | .NET 10.0 / C#    | 10.0    | None (interface) | 7 contract methods | Not specified | Not detected |
+| IOrderRepository      | Repository contract for data access     | Repository Contract | .NET 10.0 / C#    | 10.0    | None (interface) | 6 contract methods | Not specified | Not detected |
+| IOrdersMessageHandler | Messaging contract for event publishing | Messaging Contract  | .NET 10.0 / C#    | 10.0    | None (interface) | 3 contract methods | Not specified | Not detected |
 
 #### 5.3.1 OrdersController
 
-| Attribute          | Value                                                      |
-| ------------------ | ---------------------------------------------------------- |
-| **Component Name** | OrdersController                                           |
-| **Service Type**   | REST API Controller                                        |
-| **Source**         | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501 |
-| **Confidence**     | 0.95                                                       |
+| Attribute          | Value               |
+| ------------------ | ------------------- |
+| **Component Name** | OrdersController    |
+| **Service Type**   | REST API Controller |
 
 **API Surface:**
 
@@ -1357,12 +1322,10 @@ flowchart LR
 
 #### 5.3.2 IOrderService
 
-| Attribute          | Value                                                 |
-| ------------------ | ----------------------------------------------------- |
-| **Component Name** | IOrderService                                         |
-| **Service Type**   | Service Contract                                      |
-| **Source**         | src/eShop.Orders.API/Interfaces/IOrderService.cs:1-68 |
-| **Confidence**     | 0.92                                                  |
+| Attribute          | Value            |
+| ------------------ | ---------------- |
+| **Component Name** | IOrderService    |
+| **Service Type**   | Service Contract |
 
 **Contract Methods:**
 
@@ -1380,12 +1343,10 @@ flowchart LR
 
 #### 5.3.3 IOrderRepository
 
-| Attribute          | Value                                                    |
-| ------------------ | -------------------------------------------------------- |
-| **Component Name** | IOrderRepository                                         |
-| **Service Type**   | Repository Contract                                      |
-| **Source**         | src/eShop.Orders.API/Interfaces/IOrderRepository.cs:1-69 |
-| **Confidence**     | 0.90                                                     |
+| Attribute          | Value               |
+| ------------------ | ------------------- |
+| **Component Name** | IOrderRepository    |
+| **Service Type**   | Repository Contract |
 
 **Contract Methods:**
 
@@ -1402,12 +1363,10 @@ flowchart LR
 
 #### 5.3.4 IOrdersMessageHandler
 
-| Attribute          | Value                                                         |
-| ------------------ | ------------------------------------------------------------- |
-| **Component Name** | IOrdersMessageHandler                                         |
-| **Service Type**   | Messaging Contract                                            |
-| **Source**         | src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:1-40 |
-| **Confidence**     | 0.88                                                          |
+| Attribute          | Value                 |
+| ------------------ | --------------------- |
+| **Component Name** | IOrdersMessageHandler |
+| **Service Type**   | Messaging Contract    |
 
 **Contract Methods:**
 
@@ -1421,9 +1380,9 @@ flowchart LR
 
 ### 5.4 Application Collaborations
 
-| Component | Description                          | Type         | Technology       | Version | Dependencies                                                          | API Endpoints                          | SLA           | Owner        | Source File                  |
-| --------- | ------------------------------------ | ------------ | ---------------- | ------- | --------------------------------------------------------------------- | -------------------------------------- | ------------- | ------------ | ---------------------------- |
-| AppHost   | Distributed application orchestrator | Orchestrator | .NET Aspire 10.0 | 10.0    | eShop.Orders.API, eShop.Web.App, Azure SQL, Service Bus, App Insights | 2 project resources, 3 Azure resources | Not specified | Not detected | app.AppHost/AppHost.cs:1-290 |
+| Component | Description                          | Type         | Technology       | Version | Dependencies                                                          | API Endpoints                          | SLA           | Owner        |
+| --------- | ------------------------------------ | ------------ | ---------------- | ------- | --------------------------------------------------------------------- | -------------------------------------- | ------------- | ------------ |
+| AppHost   | Distributed application orchestrator | Orchestrator | .NET Aspire 10.0 | 10.0    | eShop.Orders.API, eShop.Web.App, Azure SQL, Service Bus, App Insights | 2 project resources, 3 Azure resources | Not specified | Not detected |
 
 #### 5.4.1 AppHost (.NET Aspire Orchestrator)
 
@@ -1431,8 +1390,6 @@ flowchart LR
 | ------------------ | ------------------------------------ |
 | **Component Name** | AppHost                              |
 | **Service Type**   | Distributed Application Orchestrator |
-| **Source**         | app.AppHost/AppHost.cs:1-290         |
-| **Confidence**     | 0.88                                 |
 
 **API Surface:**
 
@@ -1462,21 +1419,19 @@ flowchart LR
 
 ### 5.5 Application Functions
 
-| Component              | Description                             | Type                | Technology           | Version | Dependencies                 | API Endpoints        | SLA            | Owner        | Source File                                                      |
-| ---------------------- | --------------------------------------- | ------------------- | -------------------- | ------- | ---------------------------- | -------------------- | -------------- | ------------ | ---------------------------------------------------------------- |
-| DbContextHealthCheck   | Database connectivity health monitor    | Health Check        | ASP.NET Core 10.0    | 10.0    | OrderDbContext               | /health (composite)  | 5s timeout     | Not detected | src/eShop.Orders.API/HealthChecks/DbContextHealthCheck.cs:1-102  |
-| ServiceBusHealthCheck  | Service Bus connectivity health monitor | Health Check        | ASP.NET Core 10.0    | 10.0    | ServiceBusClient             | /health (composite)  | 5s timeout     | Not detected | src/eShop.Orders.API/HealthChecks/ServiceBusHealthCheck.cs:1-183 |
-| OrderMapper            | Domain-to-entity bidirectional mapper   | Data Mapper         | .NET 10.0 / C#       | 10.0    | Order, OrderEntity           | 2 extension methods  | Not applicable | Not detected | src/eShop.Orders.API/data/OrderMapper.cs:1-102                   |
-| ConfigureOpenTelemetry | OpenTelemetry configuration function    | Observability Setup | OpenTelemetry 1.15.0 | 1.15.0  | OTLP Exporter, Azure Monitor | Configuration method | Not applicable | Not detected | app.ServiceDefaults/Extensions.cs:44-163                         |
+| Component              | Description                             | Type                | Technology           | Version | Dependencies                 | API Endpoints        | SLA            | Owner        |
+| ---------------------- | --------------------------------------- | ------------------- | -------------------- | ------- | ---------------------------- | -------------------- | -------------- | ------------ |
+| DbContextHealthCheck   | Database connectivity health monitor    | Health Check        | ASP.NET Core 10.0    | 10.0    | OrderDbContext               | /health (composite)  | 5s timeout     | Not detected |
+| ServiceBusHealthCheck  | Service Bus connectivity health monitor | Health Check        | ASP.NET Core 10.0    | 10.0    | ServiceBusClient             | /health (composite)  | 5s timeout     | Not detected |
+| OrderMapper            | Domain-to-entity bidirectional mapper   | Data Mapper         | .NET 10.0 / C#       | 10.0    | Order, OrderEntity           | 2 extension methods  | Not applicable | Not detected |
+| ConfigureOpenTelemetry | OpenTelemetry configuration function    | Observability Setup | OpenTelemetry 1.15.0 | 1.15.0  | OTLP Exporter, Azure Monitor | Configuration method | Not applicable | Not detected |
 
 #### 5.5.1 DbContextHealthCheck
 
-| Attribute          | Value                                                           |
-| ------------------ | --------------------------------------------------------------- |
-| **Component Name** | DbContextHealthCheck                                            |
-| **Service Type**   | Health Check                                                    |
-| **Source**         | src/eShop.Orders.API/HealthChecks/DbContextHealthCheck.cs:1-102 |
-| **Confidence**     | 0.85                                                            |
+| Attribute          | Value                |
+| ------------------ | -------------------- |
+| **Component Name** | DbContextHealthCheck |
+| **Service Type**   | Health Check         |
 
 **Behavior:** Executes `OrderDbContext.Database.CanConnectAsync()` with a 5-second timeout. Returns `HealthCheckResult.Healthy` with response time on success, `HealthCheckResult.Unhealthy` on connection failure, and `HealthCheckResult.Degraded` on timeout or slow response.
 
@@ -1490,12 +1445,10 @@ flowchart LR
 
 #### 5.5.2 ServiceBusHealthCheck
 
-| Attribute          | Value                                                            |
-| ------------------ | ---------------------------------------------------------------- |
-| **Component Name** | ServiceBusHealthCheck                                            |
-| **Service Type**   | Health Check                                                     |
-| **Source**         | src/eShop.Orders.API/HealthChecks/ServiceBusHealthCheck.cs:1-183 |
-| **Confidence**     | 0.88                                                             |
+| Attribute          | Value                 |
+| ------------------ | --------------------- |
+| **Component Name** | ServiceBusHealthCheck |
+| **Service Type**   | Health Check          |
 
 **Behavior:** Creates a `ServiceBusSender` for the configured topic name, then creates a message batch to verify full connectivity. Uses a 5-second timeout via `CancellationTokenSource`. Returns Healthy/Unhealthy based on connection result.
 
@@ -1509,12 +1462,10 @@ flowchart LR
 
 #### 5.5.3 OrderMapper
 
-| Attribute          | Value                                          |
-| ------------------ | ---------------------------------------------- |
-| **Component Name** | OrderMapper                                    |
-| **Service Type**   | Data Mapper                                    |
-| **Source**         | src/eShop.Orders.API/data/OrderMapper.cs:1-102 |
-| **Confidence**     | 0.80                                           |
+| Attribute          | Value       |
+| ------------------ | ----------- |
+| **Component Name** | OrderMapper |
+| **Service Type**   | Data Mapper |
 
 **Behavior:** Provides static extension methods `ToEntity()` and `ToDomainModel()` for bidirectional mapping between `Order`/`OrderProduct` domain models and `OrderEntity`/`OrderProductEntity` persistence entities.
 
@@ -1529,12 +1480,10 @@ flowchart LR
 
 #### 5.5.4 ConfigureOpenTelemetry
 
-| Attribute          | Value                                    |
-| ------------------ | ---------------------------------------- |
-| **Component Name** | ConfigureOpenTelemetry                   |
-| **Service Type**   | Observability Configuration              |
-| **Source**         | app.ServiceDefaults/Extensions.cs:44-163 |
-| **Confidence**     | 0.78                                     |
+| Attribute          | Value                       |
+| ------------------ | --------------------------- |
+| **Component Name** | ConfigureOpenTelemetry      |
+| **Service Type**   | Observability Configuration |
 
 **Behavior:** Configures OpenTelemetry with logging (structured, trace context), tracing (ASP.NET Core, HTTP client, SQL client auto-instrumentation), and metrics (ASP.NET Core, HTTP client, runtime, custom meters). Adds OTLP exporter and conditionally adds Azure Monitor exporter when Application Insights connection string is available.
 
@@ -1549,18 +1498,16 @@ flowchart LR
 
 ### 5.6 Application Interactions
 
-| Component       | Description                                | Type             | Technology             | Version | Dependencies            | API Endpoints                   | SLA           | Owner        | Source File                        |
-| --------------- | ------------------------------------------ | ---------------- | ---------------------- | ------- | ----------------------- | ------------------------------- | ------------- | ------------ | ---------------------------------- |
-| Web-to-API HTTP | Service discovery-based HTTP communication | Request/Response | .NET 10.0 / HttpClient | 10.0    | eShop.Orders.API, Polly | HTTP/REST via Service Discovery | Not specified | Not detected | src/eShop.Web.App/Program.cs:80-92 |
+| Component       | Description                                | Type             | Technology             | Version | Dependencies            | API Endpoints                   | SLA           | Owner        |
+| --------------- | ------------------------------------------ | ---------------- | ---------------------- | ------- | ----------------------- | ------------------------------- | ------------- | ------------ |
+| Web-to-API HTTP | Service discovery-based HTTP communication | Request/Response | .NET 10.0 / HttpClient | 10.0    | eShop.Orders.API, Polly | HTTP/REST via Service Discovery | Not specified | Not detected |
 
 #### 5.6.1 Web-to-API HTTP Communication
 
-| Attribute          | Value                              |
-| ------------------ | ---------------------------------- |
-| **Component Name** | Web-to-API HTTP Communication      |
-| **Service Type**   | Request/Response                   |
-| **Source**         | src/eShop.Web.App/Program.cs:80-92 |
-| **Confidence**     | 0.82                               |
+| Attribute          | Value                         |
+| ------------------ | ----------------------------- |
+| **Component Name** | Web-to-API HTTP Communication |
+| **Service Type**   | Request/Response              |
 
 **Pattern Type:** Request/Response with service discovery
 
@@ -1574,18 +1521,16 @@ flowchart LR
 
 ### 5.7 Application Events
 
-| Component         | Description                     | Type         | Technology               | Version | Dependencies     | API Endpoints      | SLA           | Owner        | Source File                                                 |
-| ----------------- | ------------------------------- | ------------ | ------------------------ | ------- | ---------------- | ------------------ | ------------- | ------------ | ----------------------------------------------------------- |
-| OrderPlaced Event | Domain event for order creation | Domain Event | Azure Service Bus 7.20.1 | 7.20.1  | ServiceBusClient | ordersplaced topic | Not specified | Not detected | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425 |
+| Component         | Description                     | Type         | Technology               | Version | Dependencies     | API Endpoints      | SLA           | Owner        |
+| ----------------- | ------------------------------- | ------------ | ------------------------ | ------- | ---------------- | ------------------ | ------------- | ------------ |
+| OrderPlaced Event | Domain event for order creation | Domain Event | Azure Service Bus 7.20.1 | 7.20.1  | ServiceBusClient | ordersplaced topic | Not specified | Not detected |
 
 #### 5.7.1 OrderPlaced Event
 
-| Attribute          | Value                                                       |
-| ------------------ | ----------------------------------------------------------- |
-| **Component Name** | OrderPlaced Event                                           |
-| **Service Type**   | Domain Event (Pub/Sub)                                      |
-| **Source**         | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425 |
-| **Confidence**     | 0.90                                                        |
+| Attribute          | Value                  |
+| ------------------ | ---------------------- |
+| **Component Name** | OrderPlaced Event      |
+| **Service Type**   | Domain Event (Pub/Sub) |
 
 **Event Schema:** JSON-serialized `Order` record published to Azure Service Bus topic `ordersplaced`.
 
@@ -1605,24 +1550,22 @@ flowchart LR
 
 ### 5.8 Application Data Objects
 
-| Component                | Description                                | Type               | Technology            | Version | Dependencies       | API Endpoints        | SLA            | Owner        | Source File                                                    |
-| ------------------------ | ------------------------------------------ | ------------------ | --------------------- | ------- | ------------------ | -------------------- | -------------- | ------------ | -------------------------------------------------------------- |
-| Order                    | Shared domain record for orders            | Domain Model       | .NET 10.0 / C# record | 10.0    | None               | Not applicable       | Not applicable | Not detected | app.ServiceDefaults/CommonTypes.cs:77-127                      |
-| OrderProduct             | Product line item within an order          | Domain Model       | .NET 10.0 / C# record | 10.0    | None               | Not applicable       | Not applicable | Not detected | app.ServiceDefaults/CommonTypes.cs:132-175                     |
-| OrderEntity              | EF Core persistence entity for orders      | Persistence Entity | EF Core 10.0.3        | 10.0.3  | OrderProductEntity | DbSet mapping        | Not applicable | Not detected | src/eShop.Orders.API/data/Entities/OrderEntity.cs:1-56         |
-| OrderProductEntity       | EF Core persistence entity for line items  | Persistence Entity | EF Core 10.0.3        | 10.0.3  | OrderEntity        | DbSet mapping        | Not applicable | Not detected | src/eShop.Orders.API/data/Entities/OrderProductEntity.cs:1-65  |
-| OrderMessageWithMetadata | Service Bus message wrapper DTO            | Message DTO        | .NET 10.0 / C#        | 10.0    | Order              | Not applicable       | Not applicable | Not detected | src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:1-49 |
-| OrdersWrapper            | API response wrapper for order collections | Response DTO       | .NET 10.0 / C#        | 10.0    | Order              | Not applicable       | Not applicable | Not detected | src/eShop.Orders.API/Services/OrdersWrapper.cs:1-21            |
-| WeatherForecast          | Demo data model for health verification    | Demo Model         | .NET 10.0 / C#        | 10.0    | None               | GET /WeatherForecast | Not applicable | Not detected | app.ServiceDefaults/CommonTypes.cs:14-72                       |
+| Component                | Description                                | Type               | Technology            | Version | Dependencies       | API Endpoints        | SLA            | Owner        |
+| ------------------------ | ------------------------------------------ | ------------------ | --------------------- | ------- | ------------------ | -------------------- | -------------- | ------------ |
+| Order                    | Shared domain record for orders            | Domain Model       | .NET 10.0 / C# record | 10.0    | None               | Not applicable       | Not applicable | Not detected |
+| OrderProduct             | Product line item within an order          | Domain Model       | .NET 10.0 / C# record | 10.0    | None               | Not applicable       | Not applicable | Not detected |
+| OrderEntity              | EF Core persistence entity for orders      | Persistence Entity | EF Core 10.0.3        | 10.0.3  | OrderProductEntity | DbSet mapping        | Not applicable | Not detected |
+| OrderProductEntity       | EF Core persistence entity for line items  | Persistence Entity | EF Core 10.0.3        | 10.0.3  | OrderEntity        | DbSet mapping        | Not applicable | Not detected |
+| OrderMessageWithMetadata | Service Bus message wrapper DTO            | Message DTO        | .NET 10.0 / C#        | 10.0    | Order              | Not applicable       | Not applicable | Not detected |
+| OrdersWrapper            | API response wrapper for order collections | Response DTO       | .NET 10.0 / C#        | 10.0    | Order              | Not applicable       | Not applicable | Not detected |
+| WeatherForecast          | Demo data model for health verification    | Demo Model         | .NET 10.0 / C#        | 10.0    | None               | GET /WeatherForecast | Not applicable | Not detected |
 
 #### 5.8.1 Order (Domain Record)
 
-| Attribute          | Value                                     |
-| ------------------ | ----------------------------------------- |
-| **Component Name** | Order                                     |
-| **Service Type**   | Domain Model (Shared)                     |
-| **Source**         | app.ServiceDefaults/CommonTypes.cs:77-127 |
-| **Confidence**     | 0.92                                      |
+| Attribute          | Value                 |
+| ------------------ | --------------------- |
+| **Component Name** | Order                 |
+| **Service Type**   | Domain Model (Shared) |
 
 **Properties:**
 
@@ -1639,12 +1582,10 @@ flowchart LR
 
 #### 5.8.2 OrderProduct (Domain Record)
 
-| Attribute          | Value                                      |
-| ------------------ | ------------------------------------------ |
-| **Component Name** | OrderProduct                               |
-| **Service Type**   | Domain Model (Shared)                      |
-| **Source**         | app.ServiceDefaults/CommonTypes.cs:132-175 |
-| **Confidence**     | 0.90                                       |
+| Attribute          | Value                 |
+| ------------------ | --------------------- |
+| **Component Name** | OrderProduct          |
+| **Service Type**   | Domain Model (Shared) |
 
 **Properties:**
 
@@ -1661,12 +1602,10 @@ flowchart LR
 
 #### 5.8.3 OrderEntity (Persistence)
 
-| Attribute          | Value                                                  |
-| ------------------ | ------------------------------------------------------ |
-| **Component Name** | OrderEntity                                            |
-| **Service Type**   | Persistence Entity                                     |
-| **Source**         | src/eShop.Orders.API/data/Entities/OrderEntity.cs:1-56 |
-| **Confidence**     | 0.88                                                   |
+| Attribute          | Value              |
+| ------------------ | ------------------ |
+| **Component Name** | OrderEntity        |
+| **Service Type**   | Persistence Entity |
 
 **Properties:** Mirrors Order domain model with `[Key]`, `[Required]`, `[MaxLength]` data annotations. Contains `ICollection<OrderProductEntity>` navigation property for one-to-many relationship. Indexes configured on CustomerId, Date, OrderId via Fluent API in OrderDbContext.
 
@@ -1674,12 +1613,10 @@ flowchart LR
 
 #### 5.8.4 OrderProductEntity (Persistence)
 
-| Attribute          | Value                                                         |
-| ------------------ | ------------------------------------------------------------- |
-| **Component Name** | OrderProductEntity                                            |
-| **Service Type**   | Persistence Entity                                            |
-| **Source**         | src/eShop.Orders.API/data/Entities/OrderProductEntity.cs:1-65 |
-| **Confidence**     | 0.88                                                          |
+| Attribute          | Value              |
+| ------------------ | ------------------ |
+| **Component Name** | OrderProductEntity |
+| **Service Type**   | Persistence Entity |
 
 **Properties:** Mirrors OrderProduct domain model with `[ForeignKey(nameof(OrderId))]` navigation to `OrderEntity`. Cascade delete configured in OrderDbContext.
 
@@ -1687,12 +1624,10 @@ flowchart LR
 
 #### 5.8.5 OrderMessageWithMetadata
 
-| Attribute          | Value                                                          |
-| ------------------ | -------------------------------------------------------------- |
-| **Component Name** | OrderMessageWithMetadata                                       |
-| **Service Type**   | Message DTO                                                    |
-| **Source**         | src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:1-49 |
-| **Confidence**     | 0.82                                                           |
+| Attribute          | Value                    |
+| ------------------ | ------------------------ |
+| **Component Name** | OrderMessageWithMetadata |
+| **Service Type**   | Message DTO              |
 
 **Properties:**
 
@@ -1708,12 +1643,10 @@ flowchart LR
 
 #### 5.8.6 OrdersWrapper
 
-| Attribute          | Value                                               |
-| ------------------ | --------------------------------------------------- |
-| **Component Name** | OrdersWrapper                                       |
-| **Service Type**   | Response DTO                                        |
-| **Source**         | src/eShop.Orders.API/Services/OrdersWrapper.cs:1-21 |
-| **Confidence**     | 0.75                                                |
+| Attribute          | Value         |
+| ------------------ | ------------- |
+| **Component Name** | OrdersWrapper |
+| **Service Type**   | Response DTO  |
 
 **Properties:**
 
@@ -1725,12 +1658,10 @@ flowchart LR
 
 #### 5.8.7 WeatherForecast
 
-| Attribute          | Value                                    |
-| ------------------ | ---------------------------------------- |
-| **Component Name** | WeatherForecast                          |
-| **Service Type**   | Demo Model                               |
-| **Source**         | app.ServiceDefaults/CommonTypes.cs:14-72 |
-| **Confidence**     | 0.72                                     |
+| Attribute          | Value           |
+| ------------------ | --------------- |
+| **Component Name** | WeatherForecast |
+| **Service Type**   | Demo Model      |
 
 **Properties:**
 
@@ -1745,20 +1676,18 @@ flowchart LR
 
 ### 5.9 Integration Patterns
 
-| Component                             | Description                             | Type                 | Technology                | Version   | Dependencies                          | API Endpoints                                       | SLA           | Owner        | Source File                                                                                         |
-| ------------------------------------- | --------------------------------------- | -------------------- | ------------------------- | --------- | ------------------------------------- | --------------------------------------------------- | ------------- | ------------ | --------------------------------------------------------------------------------------------------- |
-| Azure Service Bus Pub/Sub             | Topic-based publish/subscribe messaging | Message Broker       | Azure Service Bus 7.20.1  | 7.20.1    | ServiceBusClient                      | ordersplaced topic, orderprocessingsub subscription | Not specified | Not detected | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425                                         |
-| Logic App OrdersPlacedProcess         | Event-driven order processing workflow  | Workflow Integration | Azure Logic Apps Standard | 1.x-2.0.0 | Service Bus, Orders API, Blob Storage | SB trigger, HTTP callback, Blob write               | Not specified | Not detected | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-163         |
-| Logic App OrdersPlacedCompleteProcess | Scheduled blob cleanup workflow         | Workflow Integration | Azure Logic Apps Standard | 1.x-2.0.0 | Blob Storage                          | Timer trigger, Blob list/delete                     | Not specified | Not detected | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-105 |
+| Component                             | Description                             | Type                 | Technology                | Version   | Dependencies                          | API Endpoints                                       | SLA           | Owner        |
+| ------------------------------------- | --------------------------------------- | -------------------- | ------------------------- | --------- | ------------------------------------- | --------------------------------------------------- | ------------- | ------------ |
+| Azure Service Bus Pub/Sub             | Topic-based publish/subscribe messaging | Message Broker       | Azure Service Bus 7.20.1  | 7.20.1    | ServiceBusClient                      | ordersplaced topic, orderprocessingsub subscription | Not specified | Not detected |
+| Logic App OrdersPlacedProcess         | Event-driven order processing workflow  | Workflow Integration | Azure Logic Apps Standard | 1.x-2.0.0 | Service Bus, Orders API, Blob Storage | SB trigger, HTTP callback, Blob write               | Not specified | Not detected |
+| Logic App OrdersPlacedCompleteProcess | Scheduled blob cleanup workflow         | Workflow Integration | Azure Logic Apps Standard | 1.x-2.0.0 | Blob Storage                          | Timer trigger, Blob list/delete                     | Not specified | Not detected |
 
 #### 5.9.1 Azure Service Bus Pub/Sub
 
-| Attribute          | Value                                                       |
-| ------------------ | ----------------------------------------------------------- |
-| **Component Name** | Azure Service Bus Pub/Sub                                   |
-| **Service Type**   | Message Broker Integration                                  |
-| **Source**         | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425 |
-| **Confidence**     | 0.92                                                        |
+| Attribute          | Value                      |
+| ------------------ | -------------------------- |
+| **Component Name** | Azure Service Bus Pub/Sub  |
+| **Service Type**   | Message Broker Integration |
 
 **Pattern Type:** Publish/Subscribe (Topic/Subscription)
 
@@ -1781,12 +1710,10 @@ flowchart LR
 
 #### 5.9.2 Logic App OrdersPlacedProcess
 
-| Attribute          | Value                                                                                       |
-| ------------------ | ------------------------------------------------------------------------------------------- |
-| **Component Name** | Logic App OrdersPlacedProcess                                                               |
-| **Service Type**   | Workflow Integration (Stateful)                                                             |
-| **Source**         | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-163 |
-| **Confidence**     | 0.85                                                                                        |
+| Attribute          | Value                           |
+| ------------------ | ------------------------------- |
+| **Component Name** | Logic App OrdersPlacedProcess   |
+| **Service Type**   | Workflow Integration (Stateful) |
 
 **Pattern Type:** Event-Driven Workflow
 
@@ -1805,12 +1732,10 @@ flowchart LR
 
 #### 5.9.3 Logic App OrdersPlacedCompleteProcess
 
-| Attribute          | Value                                                                                               |
-| ------------------ | --------------------------------------------------------------------------------------------------- |
-| **Component Name** | Logic App OrdersPlacedCompleteProcess                                                               |
-| **Service Type**   | Workflow Integration (Stateful)                                                                     |
-| **Source**         | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-105 |
-| **Confidence**     | 0.80                                                                                                |
+| Attribute          | Value                                 |
+| ------------------ | ------------------------------------- |
+| **Component Name** | Logic App OrdersPlacedCompleteProcess |
+| **Service Type**   | Workflow Integration (Stateful)       |
 
 **Pattern Type:** Scheduled Cleanup Workflow
 
@@ -1828,18 +1753,16 @@ flowchart LR
 
 ### 5.10 Service Contracts
 
-| Component                | Description                          | Type                  | Technology                  | Version | Dependencies     | API Endpoints               | SLA           | Owner        | Source File                                                |
-| ------------------------ | ------------------------------------ | --------------------- | --------------------------- | ------- | ---------------- | --------------------------- | ------------- | ------------ | ---------------------------------------------------------- |
-| Orders REST API Contract | OpenAPI-documented REST API contract | OpenAPI Specification | ASP.NET Core 10.0 / Swagger | 10.0    | OrdersController | 6 REST endpoints + /swagger | Not specified | Not detected | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501 |
+| Component                | Description                          | Type                  | Technology                  | Version | Dependencies     | API Endpoints               | SLA           | Owner        |
+| ------------------------ | ------------------------------------ | --------------------- | --------------------------- | ------- | ---------------- | --------------------------- | ------------- | ------------ |
+| Orders REST API Contract | OpenAPI-documented REST API contract | OpenAPI Specification | ASP.NET Core 10.0 / Swagger | 10.0    | OrdersController | 6 REST endpoints + /swagger | Not specified | Not detected |
 
 #### 5.10.1 Orders REST API Contract
 
-| Attribute          | Value                                                      |
-| ------------------ | ---------------------------------------------------------- |
-| **Component Name** | Orders REST API Contract                                   |
-| **Service Type**   | OpenAPI Specification                                      |
-| **Source**         | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501 |
-| **Confidence**     | 0.88                                                       |
+| Attribute          | Value                    |
+| ------------------ | ------------------------ |
+| **Component Name** | Orders REST API Contract |
+| **Service Type**   | OpenAPI Specification    |
 
 **Contract Definition:**
 
