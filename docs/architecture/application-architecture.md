@@ -33,6 +33,206 @@ Each component includes its source traceability (file path and line range), conf
 
 The following subsections enumerate all 31 components discovered across the 11 component types, with the highest density in Application Data Objects (7 components) and Application Components (7 components), reflecting the domain-rich and modular architecture of the eShop Orders Management platform.
 
+### Context Diagram
+
+```mermaid
+---
+title: "eShop Orders Management — System Context"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: "16px"
+---
+flowchart TB
+    accTitle: eShop Orders Management System Context
+    accDescr: C4-style context diagram showing the eShop Orders system boundary, external actors, and external services
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph ExternalActors["External Actors"]
+        User["👤 End User\n(Browser Client)"]
+    end
+
+    subgraph SystemBoundary["eShop Orders Management"]
+        WebApp["🌐 eShop.Web.App\n(Blazor Server)"]
+        OrdersAPI["⚙️ eShop.Orders.API\n(ASP.NET Core)"]
+        ServiceDefaults["🔧 ServiceDefaults\n(Shared Library)"]
+        AppHost["🚀 AppHost\n(.NET Aspire)"]
+    end
+
+    subgraph ExternalServices["Azure PaaS Services"]
+        SQLDb["🗄️ Azure SQL Database"]
+        ServiceBus["📨 Azure Service Bus"]
+        LogicApps["🔄 Azure Logic Apps"]
+        BlobStorage["📦 Azure Blob Storage"]
+        AppInsights["📊 Application Insights"]
+    end
+
+    User -->|"HTTPS"| WebApp
+    WebApp -->|"HTTP/REST"| OrdersAPI
+    OrdersAPI -->|"EF Core (TDS)"| SQLDb
+    OrdersAPI -->|"AMQP (Publish)"| ServiceBus
+    ServiceBus -->|"Trigger"| LogicApps
+    LogicApps -->|"HTTP POST"| OrdersAPI
+    LogicApps -->|"REST"| BlobStorage
+    OrdersAPI -.->|"OTLP"| AppInsights
+    WebApp -.->|"OTLP"| AppInsights
+    AppHost -.->|"Orchestrates"| WebApp
+    AppHost -.->|"Orchestrates"| OrdersAPI
+
+    style ExternalActors fill:#f0f0f0,stroke:#666,color:#333
+    style SystemBoundary fill:#e1f0ff,stroke:#0078d4,color:#333
+    style ExternalServices fill:#fff4e0,stroke:#ffb900,color:#333
+```
+
+### Service Ecosystem Map
+
+```mermaid
+---
+title: "eShop Orders Management — Service Ecosystem Map"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: "16px"
+---
+flowchart LR
+    accTitle: eShop Orders Management Service Ecosystem Map
+    accDescr: Shows all 31 components grouped by their TOGAF Application Architecture component types
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph Services["Application Services (2)"]
+        SVC1["⚙️ OrderService"]
+        SVC2["⚙️ OrdersAPIService"]
+    end
+
+    subgraph Components["Application Components (7)"]
+        CMP1["📦 eShop.Orders.API"]
+        CMP2["📦 eShop.Web.App"]
+        CMP3["📦 OrderRepository"]
+        CMP4["📦 OrderDbContext"]
+        CMP5["📦 AppHost"]
+        CMP6["📦 ServiceDefaults"]
+        CMP7["📦 OrdersMessageHandler"]
+    end
+
+    subgraph Interfaces["Application Interfaces (3)"]
+        INT1["🔌 OrdersController"]
+        INT2["🔌 IOrderRepository"]
+        INT3["🔌 API Endpoints"]
+    end
+
+    subgraph DataObjects["Data Objects (7)"]
+        DTO1["📋 Order Entity"]
+        DTO2["📋 OrderItem Entity"]
+        DTO3["📋 CreateOrderRequest"]
+        DTO4["📋 UpdateOrderRequest"]
+        DTO5["📋 OrderResponse"]
+        DTO6["📋 PagedResult"]
+        DTO7["📋 OrderStatus Enum"]
+    end
+
+    subgraph Integration["Integration & Events (5)"]
+        EVT1["📨 Service Bus Publish"]
+        EVT2["📨 Service Bus Subscribe"]
+        PAT1["🔄 Pub/Sub Pattern"]
+        PAT2["🔄 Request/Response"]
+        PAT3["🔄 Workflow Orchestration"]
+    end
+
+    Services --> Components
+    Components --> Interfaces
+    Components --> DataObjects
+    Components --> Integration
+
+    style Services fill:#e6f4ea,stroke:#107c10,color:#333
+    style Components fill:#e1f0ff,stroke:#0078d4,color:#333
+    style Interfaces fill:#fff4e0,stroke:#ffb900,color:#333
+    style DataObjects fill:#fde7ef,stroke:#e3008c,color:#333
+    style Integration fill:#f3e8ff,stroke:#8661c5,color:#333
+```
+
+### Integration Tier Diagram
+
+```mermaid
+---
+title: "eShop Orders Management — Integration Tiers"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: "16px"
+---
+flowchart TB
+    accTitle: eShop Orders Management Integration Tiers
+    accDescr: Shows synchronous and asynchronous integration tiers across the application boundary
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph SyncTier["Synchronous Tier (HTTP/REST)"]
+        S1["🌐 Blazor → Orders API\n(Typed HTTP Client)"]
+        S2["⚙️ Orders API → SQL\n(EF Core / TDS)"]
+        S3["🔄 Logic App → Orders API\n(HTTP POST Callback)"]
+    end
+
+    subgraph AsyncTier["Asynchronous Tier (AMQP)"]
+        A1["📨 Orders API → Service Bus\n(Topic Publish)"]
+        A2["📨 Service Bus → Logic App\n(Subscription Trigger)"]
+    end
+
+    subgraph StorageTier["Storage Tier (REST)"]
+        ST1["📦 Logic App → Blob Storage\n(Write Results)"]
+        ST2["🧹 Cleanup WF → Blob\n(Read/Delete)"]
+    end
+
+    subgraph TelemetryTier["Telemetry Tier (OTLP)"]
+        T1["📊 Web App → App Insights\n(Traces/Metrics)"]
+        T2["📊 Orders API → App Insights\n(Traces/Metrics)"]
+    end
+
+    SyncTier -->|"Request/Response"| AsyncTier
+    AsyncTier -->|"Event-Driven"| StorageTier
+    SyncTier -.->|"Observability"| TelemetryTier
+    AsyncTier -.->|"Observability"| TelemetryTier
+
+    style SyncTier fill:#e1f0ff,stroke:#0078d4,color:#333
+    style AsyncTier fill:#fde7ef,stroke:#e3008c,color:#333
+    style StorageTier fill:#fff0e0,stroke:#ff8c00,color:#333
+    style TelemetryTier fill:#f0f0f0,stroke:#666,color:#333
+```
+
 ### 2.1 Application Services
 
 | Name             | Description                                                                                                                  | Source                                                          | Confidence | Service Type        |
@@ -227,6 +427,64 @@ The Orders API enables Swagger UI and OpenAPI specification generation. All cont
 
 Order placement triggers asynchronous event publication to the `ordersplaced` Service Bus topic. Downstream Logic App workflows subscribe through `orderprocessingsub` subscription for order processing and blob storage. The pattern is partial because event consumption is handled by Logic Apps outside the .NET application boundary, and no formal event schema versioning contract exists.
 
+### Principle Relationship Diagram
+
+```mermaid
+---
+title: "eShop Orders Management — Architecture Principle Relationships"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: "16px"
+---
+flowchart TB
+    accTitle: Architecture Principle Relationships
+    accDescr: Shows the 7 observed architecture principles and their interdependencies
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph FoundationalPrinciples["Foundational Principles"]
+        P1["🏗️ Separation of Concerns\n(Full Compliance)"]
+        P2["🔌 Interface-Driven Design\n(Full Compliance)"]
+    end
+
+    subgraph QualityPrinciples["Quality Principles"]
+        P3["🛡️ Resilience by Design\n(Full Compliance)"]
+        P4["📊 Observability First\n(Full Compliance)"]
+    end
+
+    subgraph DesignPrinciples["Design Principles"]
+        P5["⚙️ Dual-Mode Configuration\n(Full Compliance)"]
+        P6["📝 API-First Design\n(Full Compliance)"]
+        P7["📨 Event-Driven Architecture\n(Partial Compliance)"]
+    end
+
+    P1 -->|"Enables"| P2
+    P1 -->|"Supports"| P5
+    P2 -->|"Enables"| P6
+    P3 -->|"Requires"| P4
+    P3 -->|"Protects"| P7
+    P4 -->|"Monitors"| P7
+    P6 -->|"Exposes"| P7
+    P5 -->|"Configures"| P3
+    P2 -->|"Abstracts"| P3
+
+    style FoundationalPrinciples fill:#e1f0ff,stroke:#0078d4,color:#333
+    style QualityPrinciples fill:#e6f4ea,stroke:#107c10,color:#333
+    style DesignPrinciples fill:#fff4e0,stroke:#ffb900,color:#333
+```
+
 ---
 
 ## Section 4: Current State Baseline
@@ -362,6 +620,122 @@ flowchart TB
     style ObservabilityLayer fill:#f0f0f0,stroke:#666,color:#333
 ```
 
+### Architecture Diagram — Gap Heatmap
+
+```mermaid
+---
+title: "eShop Orders Management — Architecture Gap Heatmap"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: "16px"
+---
+flowchart LR
+    accTitle: Architecture Gap Heatmap
+    accDescr: Shows maturity assessment across architectural concerns with gap severity indicators
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph Mature["✅ Mature (No Gaps)"]
+        M1["📊 Observability\n(OpenTelemetry Full Stack)"]
+        M2["🛡️ Resilience\n(Polly + EF Retry)"]
+        M3["🗄️ Data Access\n(EF Core Repository)"]
+        M4["🔧 Service Discovery\n(.NET Aspire)"]
+    end
+
+    subgraph Adequate["🟡 Adequate (Minor Gaps)"]
+        A1["🔐 Authentication\n(No AuthZ middleware)"]
+        A2["📨 Messaging\n(No DLQ config)"]
+        A3["📝 API Documentation\n(Swagger, no versioning)"]
+    end
+
+    subgraph GapAreas["🔴 Gap (Requires Action)"]
+        G1["🚫 API Gateway\n(Not implemented)"]
+        G2["📋 SLO Tracking\n(Not formalized)"]
+        G3["🔄 Event Schema Versioning\n(Not defined)"]
+        G4["🧪 Contract Testing\n(Not detected)"]
+    end
+
+    Mature ---|"Strong foundation"| Adequate
+    Adequate ---|"Improvement needed"| GapAreas
+
+    style Mature fill:#e6f4ea,stroke:#107c10,color:#333
+    style Adequate fill:#fff4e0,stroke:#ffb900,color:#333
+    style GapAreas fill:#fde7ef,stroke:#e3008c,color:#333
+```
+
+### Architecture Diagram — Protocol Matrix
+
+```mermaid
+---
+title: "eShop Orders Management — Protocol Matrix"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: "16px"
+---
+flowchart LR
+    accTitle: Protocol Matrix
+    accDescr: Shows all protocols used across service integration points with direction and purpose
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph HTTPProtocols["HTTP Protocols"]
+        HP1["🌐 HTTPS\n(User → Web App)"]
+        HP2["⚙️ HTTP/REST\n(Web App → API)"]
+        HP3["🔄 HTTP POST\n(Logic App → API)"]
+        HP4["📦 REST\n(Logic App → Blob)"]
+    end
+
+    subgraph DataProtocols["Data Protocols"]
+        DP1["🗄️ TDS/SQL\n(API → Azure SQL)"]
+        DP2["🗄️ EF Core Retry\n(Transient Fault)"]
+    end
+
+    subgraph MessagingProtocols["Messaging Protocols"]
+        MP1["📨 AMQP 1.0\n(API → Service Bus)"]
+        MP2["📨 SB Trigger\n(Service Bus → Logic App)"]
+    end
+
+    subgraph TelemetryProtocols["Telemetry Protocols"]
+        TP1["📊 OTLP/gRPC\n(Traces Export)"]
+        TP2["📊 OTLP/gRPC\n(Metrics Export)"]
+        TP3["📊 OTLP/gRPC\n(Logs Export)"]
+    end
+
+    HTTPProtocols -->|"Synchronous"| DataProtocols
+    HTTPProtocols -->|"Triggers"| MessagingProtocols
+    HTTPProtocols -.->|"Instrumented"| TelemetryProtocols
+    MessagingProtocols -.->|"Instrumented"| TelemetryProtocols
+
+    style HTTPProtocols fill:#e1f0ff,stroke:#0078d4,color:#333
+    style DataProtocols fill:#fff4e0,stroke:#ffb900,color:#333
+    style MessagingProtocols fill:#fde7ef,stroke:#e3008c,color:#333
+    style TelemetryProtocols fill:#f0f0f0,stroke:#666,color:#333
+```
+
 ### Summary
 
 The current state baseline reveals a well-architected distributed system with clear service boundaries, comprehensive observability, and production-ready resilience patterns. All critical integration points (database, Service Bus) are monitored via health checks. The dual-mode configuration (local containers vs. Azure PaaS) ensures developer productivity without compromising production fidelity.
@@ -379,6 +753,256 @@ This section provides detailed specifications for each of the 31 Application lay
 Each component specification includes six mandatory attributes: API Surface (endpoint types, counts, and protocols), Dependencies (upstream and downstream with protocols), Resilience (retry policies, circuit breakers, timeouts), Scaling (horizontal/vertical strategy), Health (monitoring approach and endpoints), and Source File (with confidence score and line ranges). Components classified as PaaS services include additional platform-specific attributes.
 
 The Component Catalog complements Section 2 (Architecture Landscape) by providing implementation-level detail rather than inventory-level summaries. Where Section 2 answers "what components exist," Section 5 answers "how each component works, what it depends on, and how it handles failure."
+
+### Component Detail Diagram
+
+```mermaid
+---
+title: "eShop Orders Management — Core Component Detail"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: "16px"
+---
+flowchart TB
+    accTitle: Core Component Internal Structure
+    accDescr: Shows the internal structure of the Orders API with its controller, service, repository, and handler components
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph OrdersAPIBoundary["eShop.Orders.API"]
+        subgraph PresentationLayer["Presentation"]
+            Controller["🔌 OrdersController\n(REST Endpoints)"]
+        end
+
+        subgraph BusinessLayer["Business Logic"]
+            Service["⚙️ OrderService\n(Orchestration)"]
+            Validator["✅ Validation Logic\n(Model State)"]
+            Metrics["📊 Custom Metrics\n(OTel Counters)"]
+        end
+
+        subgraph DataAccessLayer["Data Access"]
+            Repo["🗄️ OrderRepository\n(EF Core)"]
+            DbCtx["🗄️ OrderDbContext\n(Fluent API Config)"]
+        end
+
+        subgraph MessagingLayer["Messaging"]
+            MsgHandler["📨 OrdersMessageHandler\n(Service Bus Client)"]
+        end
+    end
+
+    subgraph ExternalDeps["External Dependencies"]
+        SQL["🗄️ Azure SQL Database"]
+        SBus["📨 Azure Service Bus"]
+        OTel["📊 Application Insights"]
+    end
+
+    Controller -->|"Delegates"| Service
+    Controller -->|"Validates"| Validator
+    Service -->|"Persists"| Repo
+    Service -->|"Publishes"| MsgHandler
+    Service -->|"Records"| Metrics
+    Repo -->|"Queries"| DbCtx
+    DbCtx -->|"TDS"| SQL
+    MsgHandler -->|"AMQP"| SBus
+    Metrics -.->|"OTLP"| OTel
+
+    style OrdersAPIBoundary fill:#e6f4ea,stroke:#107c10,color:#333
+    style PresentationLayer fill:#e1f0ff,stroke:#0078d4,color:#333
+    style BusinessLayer fill:#fff4e0,stroke:#ffb900,color:#333
+    style DataAccessLayer fill:#fde7ef,stroke:#e3008c,color:#333
+    style MessagingLayer fill:#f3e8ff,stroke:#8661c5,color:#333
+    style ExternalDeps fill:#f0f0f0,stroke:#666,color:#333
+```
+
+### Sequence Diagram — Order Creation Flow
+
+```mermaid
+---
+title: "eShop Orders Management — Order Creation Sequence"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: "16px"
+---
+sequenceDiagram
+    accTitle: Order Creation Sequence Flow
+    accDescr: Shows the end-to-end order creation flow from user through Blazor, API, database, Service Bus, and Logic App
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Participants ordered left-to-right by call flow
+    %% PHASE 2 - SEMANTIC: Colors justified per participant role
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present
+    %% PHASE 5 - STANDARD: Governance block present
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    participant User as 👤 User
+    participant Web as 🌐 Blazor Web App
+    participant API as ⚙️ Orders API
+    participant DB as 🗄️ Azure SQL
+    participant SB as 📨 Service Bus
+    participant LA as 🔄 Logic App
+    participant Blob as 📦 Blob Storage
+
+    User->>Web: Submit Order Form
+    Web->>API: POST /api/orders
+    activate API
+    API->>API: Validate CreateOrderRequest
+    API->>DB: SaveChanges (EF Core)
+    activate DB
+    DB-->>API: Order Persisted
+    deactivate DB
+    API->>SB: Publish to ordersplaced topic
+    activate SB
+    SB-->>API: Acknowledged
+    deactivate SB
+    API-->>Web: 201 Created (OrderResponse)
+    deactivate API
+    Web-->>User: Order Confirmation
+
+    Note over SB,LA: Asynchronous Processing
+
+    SB->>LA: Trigger (orderprocessingsub)
+    activate LA
+    LA->>API: POST /api/orders/{id}/status
+    API-->>LA: Status Updated
+    alt Success
+        LA->>Blob: Write order-success.json
+    else Error
+        LA->>Blob: Write order-error.json
+    end
+    deactivate LA
+```
+
+### State Machine Diagram — Order Lifecycle
+
+```mermaid
+---
+title: "eShop Orders Management — Order State Machine"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: "16px"
+---
+stateDiagram-v2
+    accTitle: Order Lifecycle State Machine
+    accDescr: Shows all order states and transitions managed by OrderService and Logic App workflows
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: States organized by lifecycle phase
+    %% PHASE 2 - SEMANTIC: Colors by state category
+    %% PHASE 3 - FONT: Dark text, high contrast
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present
+    %% PHASE 5 - STANDARD: Governance block present
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    [*] --> Pending: Order Created
+    Pending --> Processing: Logic App Triggered
+    Processing --> Completed: Success Callback
+    Processing --> Failed: Error Callback
+    Failed --> Processing: Retry Attempt
+    Completed --> Archived: Cleanup Workflow
+    Failed --> Cancelled: Max Retries Exceeded
+    Cancelled --> [*]
+    Archived --> [*]
+
+    state Pending {
+        [*] --> Validated
+        Validated --> Persisted
+        Persisted --> Published
+    }
+
+    state Processing {
+        [*] --> PickedUp
+        PickedUp --> StatusUpdated
+        StatusUpdated --> BlobWritten
+    }
+```
+
+### API Contract Diagram
+
+```mermaid
+---
+title: "eShop Orders Management — API Contract Structure"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: "16px"
+---
+flowchart LR
+    accTitle: API Contract Structure
+    accDescr: Shows the REST API endpoint structure of the OrdersController with request and response types
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph Endpoints["REST Endpoints (/api/orders)"]
+        E1["📝 GET /\n(List Orders)"]
+        E2["📝 GET /{id}\n(Get Order)"]
+        E3["📝 POST /\n(Create Order)"]
+        E4["📝 PUT /{id}\n(Update Order)"]
+        E5["📝 DELETE /{id}\n(Delete Order)"]
+        E6["📝 POST /{id}/status\n(Update Status)"]
+        E7["📝 POST /batch\n(Batch Create)"]
+    end
+
+    subgraph RequestTypes["Request DTOs"]
+        R1["📋 CreateOrderRequest\n(Name, Items, Total)"]
+        R2["📋 UpdateOrderRequest\n(Status, Items)"]
+        R3["📋 PaginationParams\n(Page, PageSize)"]
+    end
+
+    subgraph ResponseTypes["Response DTOs"]
+        RS1["📋 OrderResponse\n(Id, Name, Status, Items)"]
+        RS2["📋 PagedResult\n(Items, Total, Page)"]
+        RS3["📋 ProblemDetails\n(Status, Title, Detail)"]
+    end
+
+    E1 -->|"Returns"| RS2
+    E2 -->|"Returns"| RS1
+    E3 -->|"Accepts"| R1
+    E3 -->|"Returns"| RS1
+    E4 -->|"Accepts"| R2
+    E4 -->|"Returns"| RS1
+    E5 -->|"Returns 204"| RS3
+    E6 -->|"Returns"| RS1
+    E7 -->|"Accepts"| R1
+    E1 -->|"Accepts"| R3
+
+    style Endpoints fill:#e1f0ff,stroke:#0078d4,color:#333
+    style RequestTypes fill:#e6f4ea,stroke:#107c10,color:#333
+    style ResponseTypes fill:#fff4e0,stroke:#ffb900,color:#333
+```
 
 ### 5.1 Application Services
 
@@ -1419,6 +2043,140 @@ flowchart LR
     style Workflows fill:#f3e8ff,stroke:#8661c5,color:#333
     style Storage fill:#fff0e0,stroke:#ff8c00,color:#333
     style Observability fill:#f0f0f0,stroke:#666,color:#333
+```
+
+### Event Subscription Map
+
+```mermaid
+---
+title: "eShop Orders Management — Event Subscription Map"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: "16px"
+---
+flowchart LR
+    accTitle: Event Subscription Map
+    accDescr: Shows Azure Service Bus topic and subscription topology with publishers and subscribers
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph Publishers["Event Publishers"]
+        PUB1["⚙️ OrderService\n(OrdersMessageHandler)"]
+    end
+
+    subgraph ServiceBusTopology["Azure Service Bus"]
+        subgraph Topics["Topics"]
+            T1["📨 ordersplaced\n(Order Events)"]
+        end
+        subgraph Subscriptions["Subscriptions"]
+            SUB1["📥 orderprocessingsub\n(Order Processing)"]
+        end
+    end
+
+    subgraph Subscribers["Event Subscribers"]
+        S1["🔄 OrdersPlacedProcess\n(Logic App Workflow)"]
+    end
+
+    subgraph Callbacks["Event Callbacks"]
+        CB1["⚙️ Orders API\n(POST /api/orders/status)"]
+    end
+
+    subgraph ResultStorage["Result Storage"]
+        RS1["📦 Blob: order-success\n(Processed Orders)"]
+        RS2["📦 Blob: order-error\n(Failed Orders)"]
+    end
+
+    PUB1 -->|"AMQP Publish\n(3 retries)"| T1
+    T1 -->|"Fan-out"| SUB1
+    SUB1 -->|"SB Trigger\n(1s polling)"| S1
+    S1 -->|"HTTP POST\n(Status Update)"| CB1
+    S1 -->|"Success Path"| RS1
+    S1 -->|"Error Path"| RS2
+
+    style Publishers fill:#e6f4ea,stroke:#107c10,color:#333
+    style ServiceBusTopology fill:#fde7ef,stroke:#e3008c,color:#333
+    style Topics fill:#fde7ef,stroke:#e3008c,color:#333
+    style Subscriptions fill:#fde7ef,stroke:#e3008c,color:#333
+    style Subscribers fill:#f3e8ff,stroke:#8661c5,color:#333
+    style Callbacks fill:#e1f0ff,stroke:#0078d4,color:#333
+    style ResultStorage fill:#fff0e0,stroke:#ff8c00,color:#333
+```
+
+### Integration Pattern Matrix
+
+```mermaid
+---
+title: "eShop Orders Management — Integration Pattern Matrix"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: "16px"
+---
+flowchart TB
+    accTitle: Integration Pattern Matrix
+    accDescr: Shows the four integration patterns used across the system with their implementations
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph ReqResp["Request/Response Pattern"]
+        RR1["🌐 Blazor → Orders API\n(HTTP/REST, Polly)"]
+        RR2["🔄 Logic App → Orders API\n(HTTP POST Callback)"]
+    end
+
+    subgraph PubSub["Publish/Subscribe Pattern"]
+        PS1["📨 OrderService → SB Topic\n(AMQP, 3 retries)"]
+        PS2["📥 SB Sub → Logic App\n(Trigger, 1s poll)"]
+    end
+
+    subgraph DataAccess["Data Access Pattern"]
+        DA1["🗄️ Repository → DbContext\n(EF Core, Split Queries)"]
+        DA2["🗄️ DbContext → Azure SQL\n(TDS, Retry on Failure)"]
+    end
+
+    subgraph WorkflowOrch["Workflow Orchestration"]
+        WO1["🔄 OrdersPlacedProcess\n(Stateful Logic App)"]
+        WO2["🧹 OrdersPlacedComplete\n(Cleanup Workflow)"]
+    end
+
+    subgraph Resilience["Resilience Mechanisms"]
+        RM1["🛡️ Circuit Breaker\n(5 failures / 30s)"]
+        RM2["🛡️ Retry Policy\n(Exponential Backoff)"]
+        RM3["🛡️ Timeout\n(30s default)"]
+    end
+
+    ReqResp -->|"Protected by"| Resilience
+    PubSub -->|"Triggers"| WorkflowOrch
+    DataAccess -->|"Protected by"| Resilience
+    WorkflowOrch -->|"Calls back"| ReqResp
+
+    style ReqResp fill:#e1f0ff,stroke:#0078d4,color:#333
+    style PubSub fill:#fde7ef,stroke:#e3008c,color:#333
+    style DataAccess fill:#fff4e0,stroke:#ffb900,color:#333
+    style WorkflowOrch fill:#f3e8ff,stroke:#8661c5,color:#333
+    style Resilience fill:#e6f4ea,stroke:#107c10,color:#333
 ```
 
 ### Summary
