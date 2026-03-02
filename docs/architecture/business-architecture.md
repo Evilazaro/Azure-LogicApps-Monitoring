@@ -359,30 +359,30 @@ The maturity assessment below uses the standard 1-5 scale (Initial → Optimized
 
 ### Capability Maturity Assessment
 
-| Capability Area           | Current Maturity | Target Maturity | Gap                           | Evidence                                                                                              |
-| ------------------------- | ---------------- | --------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Order Placement           | 4 - Measured     | 5 - Optimized   | Needs automated load testing  | `src/eShop.Orders.API/Services/OrderService.cs:87-145`                                                |
-| Batch Processing          | 4 - Measured     | 5 - Optimized   | Needs adaptive concurrency    | `src/eShop.Orders.API/Services/OrderService.cs:160-260`                                               |
-| Event-Driven Processing   | 4 - Measured     | 5 - Optimized   | Needs dead-letter handling    | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-175`         |
-| Order Inquiry             | 3 - Defined      | 4 - Measured    | Needs pagination metrics      | `src/eShop.Web.App/Components/Pages/ListAllOrders.razor:1-423`                                        |
-| Audit Trail               | 3 - Defined      | 4 - Measured    | Needs retention policy        | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-100` |
-| Health Monitoring         | 3 - Defined      | 4 - Measured    | Needs SLA alerting            | `src/eShop.Orders.API/HealthChecks/DbContextHealthCheck.cs:1-102`                                     |
-| Business Metrics          | 4 - Measured     | 5 - Optimized   | Needs dashboard visualization | `src/eShop.Orders.API/Services/OrderService.cs:66-80`                                                 |
-| Data Validation           | 4 - Measured     | 4 - Measured    | At target                     | `app.ServiceDefaults/CommonTypes.cs:77-155`                                                           |
-| Security (Zero-Secret)    | 4 - Measured     | 4 - Measured    | At target                     | `workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:16-23`                          |
-| Infrastructure Automation | 3 - Defined      | 4 - Measured    | Needs automated testing       | `hooks/preprovision.ps1:1-100`                                                                        |
+| Capability Area           | Current Maturity | Target Maturity | Gap                           |
+| ------------------------- | ---------------- | --------------- | ----------------------------- |
+| Order Placement           | 4 - Measured     | 5 - Optimized   | Needs automated load testing  |
+| Batch Processing          | 4 - Measured     | 5 - Optimized   | Needs adaptive concurrency    |
+| Event-Driven Processing   | 4 - Measured     | 5 - Optimized   | Needs dead-letter handling    |
+| Order Inquiry             | 3 - Defined      | 4 - Measured    | Needs pagination metrics      |
+| Audit Trail               | 3 - Defined      | 4 - Measured    | Needs retention policy        |
+| Health Monitoring         | 3 - Defined      | 4 - Measured    | Needs SLA alerting            |
+| Business Metrics          | 4 - Measured     | 5 - Optimized   | Needs dashboard visualization |
+| Data Validation           | 4 - Measured     | 4 - Measured    | At target                     |
+| Security (Zero-Secret)    | 4 - Measured     | 4 - Measured    | At target                     |
+| Infrastructure Automation | 3 - Defined      | 4 - Measured    | Needs automated testing       |
 
 ### Architecture Patterns in Use
 
-| Pattern                   | Implementation                                              | Maturity     | Evidence                                                                                     |
-| ------------------------- | ----------------------------------------------------------- | ------------ | -------------------------------------------------------------------------------------------- |
-| Event-Driven Architecture | Service Bus topics + Logic App subscriptions                | 4 - Measured | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:5-30` |
-| CQRS-Lite                 | Separate read (GetOrders) and write (PlaceOrder) paths      | 3 - Defined  | `src/eShop.Orders.API/Services/OrderService.cs:1-606`                                        |
-| Repository Pattern        | IOrderRepository abstraction over EF Core                   | 4 - Measured | `src/eShop.Orders.API/Interfaces/IOrderRepository.cs:1-67`                                   |
-| Service Layer Pattern     | IOrderService → OrderService with DI                        | 4 - Measured | `src/eShop.Orders.API/Interfaces/IOrderService.cs:1-68`                                      |
-| Health Check Pattern      | Custom health checks for SQL and Service Bus                | 3 - Defined  | `src/eShop.Orders.API/HealthChecks/DbContextHealthCheck.cs:1-102`                            |
-| Retry + Circuit Breaker   | Polly-based HTTP resilience, EF Core retry, messaging retry | 4 - Measured | `app.ServiceDefaults/Extensions.cs:200-280`                                                  |
-| Managed Identity          | User-assigned MSI for Service Bus and Blob Storage          | 4 - Measured | `workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:16-23`                 |
+| Pattern                   | Implementation                                              |
+| ------------------------- | ----------------------------------------------------------- |
+| Event-Driven Architecture | Service Bus topics + Logic App subscriptions                |
+| CQRS-Lite                 | Separate read (GetOrders) and write (PlaceOrder) paths      |
+| Repository Pattern        | IOrderRepository abstraction over EF Core                   |
+| Service Layer Pattern     | IOrderService → OrderService with DI                        |
+| Health Check Pattern      | Custom health checks for SQL and Service Bus                |
+| Retry + Circuit Breaker   | Polly-based HTTP resilience, EF Core retry, messaging retry |
+| Managed Identity          | User-assigned MSI for Service Bus and Blob Storage          |
 
 ```mermaid
 ---
