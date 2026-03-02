@@ -514,12 +514,12 @@ This subsection documents the 10 business capabilities providing the functional 
 
 **L2/L3 Capability Decomposition:**
 
-| Level | Capability Name     | Description                                                                 | Source                                                          | Confidence | Maturity     |
-| ----- | ------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------- | ---------- | ------------ |
-| L2    | Order Validation    | Declarative + imperative validation of required fields, total, and products | `src/eShop.Orders.API/Services/OrderService.cs:540-570`         | 0.90       | 4 - Measured |
-| L2    | Order Persistence   | Saves validated orders to SQL via OrderRepository with EF Core              | `src/eShop.Orders.API/Repositories/OrderRepository.cs:50-120`   | 0.90       | 4 - Measured |
-| L3    | Duplicate Detection | Idempotency check before save — skips if order ID already exists            | `src/eShop.Orders.API/Services/OrderService.cs:270-320`         | 0.85       | 4 - Measured |
-| L2    | Event Publishing    | Publishes OrderPlaced event to Service Bus topic after successful save      | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:100-150` | 0.90       | 4 - Measured |
+| Level | Capability Name     | Description                                                                 |
+| ----- | ------------------- | --------------------------------------------------------------------------- |
+| L2    | Order Validation    | Declarative + imperative validation of required fields, total, and products |
+| L2    | Order Persistence   | Saves validated orders to SQL via OrderRepository with EF Core              |
+| L3    | Duplicate Detection | Idempotency check before save — skips if order ID already exists            |
+| L2    | Event Publishing    | Publishes OrderPlaced event to Service Bus topic after successful save      |
 
 #### 5.2.2 Automated Order Processing Capability
 
@@ -534,11 +534,11 @@ This subsection documents the 10 business capabilities providing the functional 
 
 **L2/L3 Capability Decomposition:**
 
-| Level | Capability Name       | Description                                                                    | Source                                                                                          | Confidence | Maturity     |
-| ----- | --------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ---------- | ------------ |
-| L2    | Event-Driven Trigger  | Service Bus subscription poll (1s interval) initiating workflow execution      | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:5-30`    | 0.90       | 4 - Measured |
-| L2    | Process Orchestration | HTTP POST to Orders API with response branching (success/error paths)          | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:40-100`  | 0.90       | 4 - Measured |
-| L3    | Audit Trail Creation  | Creates audit blobs in Azure Blob Storage on success or error processing paths | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:100-175` | 0.85       | 3 - Defined  |
+| Level | Capability Name       | Description                                                                    |
+| ----- | --------------------- | ------------------------------------------------------------------------------ |
+| L2    | Event-Driven Trigger  | Service Bus subscription poll (1s interval) initiating workflow execution      |
+| L2    | Process Orchestration | HTTP POST to Orders API with response branching (success/error paths)          |
+| L3    | Audit Trail Creation  | Creates audit blobs in Azure Blob Storage on success or error processing paths |
 
 #### 5.2.3 Batch Order Processing Capability
 
@@ -553,10 +553,10 @@ This subsection documents the 10 business capabilities providing the functional 
 
 **L2/L3 Capability Decomposition:**
 
-| Level | Capability Name        | Description                                                                 | Source                                                  | Confidence | Maturity     |
-| ----- | ---------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------- | ---------- | ------------ |
-| L2    | Concurrency Management | SemaphoreSlim(10) controlling parallel processing with resource throttling  | `src/eShop.Orders.API/Services/OrderService.cs:160-200` | 0.85       | 4 - Measured |
-| L2    | Batch Result Tracking  | ConcurrentBag-based result aggregation with Success/Failed/Skipped outcomes | `src/eShop.Orders.API/Services/OrderService.cs:250-260` | 0.80       | 3 - Defined  |
+| Level | Capability Name        | Description                                                                 |
+| ----- | ---------------------- | --------------------------------------------------------------------------- |
+| L2    | Concurrency Management | SemaphoreSlim(10) controlling parallel processing with resource throttling  |
+| L2    | Batch Result Tracking  | ConcurrentBag-based result aggregation with Success/Failed/Skipped outcomes |
 
 #### 5.2.4 Order Lifecycle Management Capability
 
@@ -571,10 +571,10 @@ This subsection documents the 10 business capabilities providing the functional 
 
 **L2/L3 Capability Decomposition:**
 
-| Level | Capability Name       | Description                                                       | Source                                                         | Confidence | Maturity     |
-| ----- | --------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------- | ---------- | ------------ |
-| L2    | Order CRUD Operations | Place, get, delete single and batch orders via REST API interface | `src/eShop.Orders.API/Interfaces/IOrderService.cs:1-68`        | 0.90       | 4 - Measured |
-| L2    | Order Query & Browse  | Listing, expand/collapse detail, search by ID, and pagination     | `src/eShop.Web.App/Components/Pages/ListAllOrders.razor:1-423` | 0.85       | 3 - Defined  |
+| Level | Capability Name       | Description                                                       |
+| ----- | --------------------- | ----------------------------------------------------------------- |
+| L2    | Order CRUD Operations | Place, get, delete single and batch orders via REST API interface |
+| L2    | Order Query & Browse  | Listing, expand/collapse detail, search by ID, and pagination     |
 
 #### 5.2.5 Health Monitoring Capability
 
@@ -588,10 +588,10 @@ This subsection documents the 10 business capabilities providing the functional 
 
 **L2/L3 Capability Decomposition:**
 
-| Level | Capability Name        | Description                                                                | Source                                                              | Confidence | Maturity    |
-| ----- | ---------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------- | ----------- |
-| L2    | Database Health Check  | SQL canConnect with 5s timeout returning Healthy/Degraded/Unhealthy states | `src/eShop.Orders.API/HealthChecks/DbContextHealthCheck.cs:50-90`   | 0.80       | 3 - Defined |
-| L2    | Messaging Health Check | Service Bus CreateSender and CreateMessageBatchAsync within 5s timeout     | `src/eShop.Orders.API/HealthChecks/ServiceBusHealthCheck.cs:50-120` | 0.80       | 3 - Defined |
+| Level | Capability Name        | Description                                                                |
+| ----- | ---------------------- | -------------------------------------------------------------------------- |
+| L2    | Database Health Check  | SQL canConnect with 5s timeout returning Healthy/Degraded/Unhealthy states |
+| L2    | Messaging Health Check | Service Bus CreateSender and CreateMessageBatchAsync within 5s timeout     |
 
 #### 5.2.6 Audit Trail Management Capability
 
@@ -641,14 +641,14 @@ This subsection documents the 6 value streams that deliver end-to-end business v
 
 **Stage Mapping:**
 
-| Stage      | Component                                                                     | Source                                                                                                |
-| ---------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 1. Place   | OrdersAPIService → OrdersController → OrderService.PlaceOrderAsync            | `src/eShop.Orders.API/Services/OrderService.cs:87-145`                                                |
-| 2. Publish | OrdersMessageHandler.SendOrderMessageAsync → Service Bus topic "ordersplaced" | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:100-150`                                       |
-| 3. Trigger | Logic App OrdersPlacedProcess → Service Bus subscription poll (1s)            | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:5-30`          |
-| 4. Process | Logic App → HTTP POST /api/Orders/process → OrderService.ProcessOrderAsync    | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:40-100`        |
-| 5. Audit   | Logic App → Create Blob (success or error path)                               | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:100-175`       |
-| 6. Cleanup | Logic App OrdersPlacedCompleteProcess → List → Delete blobs                   | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-100` |
+| Stage      | Component                                                                     |
+| ---------- | ----------------------------------------------------------------------------- |
+| 1. Place   | OrdersAPIService → OrdersController → OrderService.PlaceOrderAsync            |
+| 2. Publish | OrdersMessageHandler.SendOrderMessageAsync → Service Bus topic "ordersplaced" |
+| 3. Trigger | Logic App OrdersPlacedProcess → Service Bus subscription poll (1s)            |
+| 4. Process | Logic App → HTTP POST /api/Orders/process → OrderService.ProcessOrderAsync    |
+| 5. Audit   | Logic App → Create Blob (success or error path)                               |
+| 6. Cleanup | Logic App OrdersPlacedCompleteProcess → List → Delete blobs                   |
 
 #### 5.3.2 Order Placement & Publishing Value Stream
 
@@ -898,17 +898,17 @@ See Section 2.6 for the complete inventory. Key specifications:
 
 This subsection documents the 9 business roles and actors identified in the system. Average confidence is 0.82, spanning human personas, domain entity actors, and system actors.
 
-| Role/Actor                     | Type          | Responsibilities                                                               | Source                                                                                       | Confidence |
-| ------------------------------ | ------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ---------- |
-| Platform Engineer              | Human Persona | Provisions infrastructure, deploys workflows, manages environment              | `README.md:1-20`                                                                             | 0.90       |
-| Customer / Order Creator       | Human Persona | Places orders, provides delivery details, selects products                     | `src/eShop.Web.App/Components/Pages/PlaceOrder.razor:1-269`                                  | 0.85       |
-| Order Manager / Administrator  | Human Persona | Views all orders, performs batch deletions, manages order lifecycle            | `src/eShop.Web.App/Components/Pages/ListAllOrders.razor:1-423`                               | 0.80       |
-| Customer Domain Entity         | Domain Actor  | Business entity identified by CustomerId (1-100 chars) who originates orders   | `app.ServiceDefaults/CommonTypes.cs:77-112`                                                  | 0.85       |
-| Infrastructure Deployer        | System Actor  | User (interactive) or ServicePrincipal (CI/CD) executing ARM/Bicep deployments | `infra/main.bicep:72-78`                                                                     | 0.80       |
-| Managed Identity               | System Actor  | User-assigned MSI authenticating to Service Bus and Blob Storage               | `workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:16-23`                 | 0.85       |
-| Logic App Workflow             | System Actor  | Autonomous agent polling Service Bus, processing orders, writing audit blobs   | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-10` | 0.85       |
-| DevOps Engineer (Provisioning) | Human Persona | Validates prerequisites, installs tools, configures secrets                    | `hooks/preprovision.ps1:1-100`                                                               | 0.75       |
-| End User                       | Human Persona | Accesses dashboard, explores features and system health metrics                | `src/eShop.Web.App/Components/Pages/Home.razor:1-301`                                        | 0.80       |
+| Role/Actor                     | Type          | Responsibilities                                                               |
+| ------------------------------ | ------------- | ------------------------------------------------------------------------------ |
+| Platform Engineer              | Human Persona | Provisions infrastructure, deploys workflows, manages environment              |
+| Customer / Order Creator       | Human Persona | Places orders, provides delivery details, selects products                     |
+| Order Manager / Administrator  | Human Persona | Views all orders, performs batch deletions, manages order lifecycle            |
+| Customer Domain Entity         | Domain Actor  | Business entity identified by CustomerId (1-100 chars) who originates orders   |
+| Infrastructure Deployer        | System Actor  | User (interactive) or ServicePrincipal (CI/CD) executing ARM/Bicep deployments |
+| Managed Identity               | System Actor  | User-assigned MSI authenticating to Service Bus and Blob Storage               |
+| Logic App Workflow             | System Actor  | Autonomous agent polling Service Bus, processing orders, writing audit blobs   |
+| DevOps Engineer (Provisioning) | Human Persona | Validates prerequisites, installs tools, configures secrets                    |
+| End User                       | Human Persona | Accesses dashboard, explores features and system health metrics                |
 
 ### 5.8 Business Rules Specifications
 
@@ -1126,18 +1126,18 @@ The dependency analysis reveals three integration tiers: (1) Synchronous REST (W
 
 ### Dependency Matrix
 
-| Source Component                        | Target Component               | Protocol     | Pattern           | Data Format                | Source                                                                                                |
-| --------------------------------------- | ------------------------------ | ------------ | ----------------- | -------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Web App (OrdersAPIService)              | Orders API (Controller)        | HTTPS        | Request-Response  | JSON                       | `src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-479`                                     |
-| Orders API (OrderService)               | SQL Database (OrderRepository) | TCP/TDS      | Request-Response  | Entity Framework           | `src/eShop.Orders.API/Repositories/OrderRepository.cs:1-549`                                          |
-| Orders API (OrdersMessageHandler)       | Azure Service Bus              | AMQP         | Publish-Subscribe | JSON (Service Bus Message) | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:100-150`                                       |
-| Logic App (OrdersPlacedProcess)         | Azure Service Bus              | AMQP         | Subscribe-Poll    | JSON (Service Bus Message) | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:5-30`          |
-| Logic App (OrdersPlacedProcess)         | Orders API                     | HTTPS        | Request-Response  | JSON                       | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:40-100`        |
-| Logic App (OrdersPlacedProcess)         | Azure Blob Storage             | HTTPS/REST   | Write             | JSON (audit blob)          | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:100-175`       |
-| Logic App (OrdersPlacedCompleteProcess) | Azure Blob Storage             | HTTPS/REST   | Read-Delete       | Metadata + Delete          | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-100` |
-| AppHost (Aspire)                        | All Services                   | .NET Aspire  | Orchestration     | DI Registration            | `app.AppHost/AppHost.cs:1-290`                                                                        |
-| ServiceDefaults                         | All Services                   | .NET Library | Cross-Cutting     | OpenTelemetry              | `app.ServiceDefaults/Extensions.cs:1-347`                                                             |
-| All Services                            | Application Insights           | HTTPS        | Telemetry Export  | OTLP/Azure Monitor         | `app.ServiceDefaults/Extensions.cs:100-180`                                                           |
+| Source Component                        | Target Component               | Protocol     | Pattern           | Data Format                |
+| --------------------------------------- | ------------------------------ | ------------ | ----------------- | -------------------------- |
+| Web App (OrdersAPIService)              | Orders API (Controller)        | HTTPS        | Request-Response  | JSON                       |
+| Orders API (OrderService)               | SQL Database (OrderRepository) | TCP/TDS      | Request-Response  | Entity Framework           |
+| Orders API (OrdersMessageHandler)       | Azure Service Bus              | AMQP         | Publish-Subscribe | JSON (Service Bus Message) |
+| Logic App (OrdersPlacedProcess)         | Azure Service Bus              | AMQP         | Subscribe-Poll    | JSON (Service Bus Message) |
+| Logic App (OrdersPlacedProcess)         | Orders API                     | HTTPS        | Request-Response  | JSON                       |
+| Logic App (OrdersPlacedProcess)         | Azure Blob Storage             | HTTPS/REST   | Write             | JSON (audit blob)          |
+| Logic App (OrdersPlacedCompleteProcess) | Azure Blob Storage             | HTTPS/REST   | Read-Delete       | Metadata + Delete          |
+| AppHost (Aspire)                        | All Services                   | .NET Aspire  | Orchestration     | DI Registration            |
+| ServiceDefaults                         | All Services                   | .NET Library | Cross-Cutting     | OpenTelemetry              |
+| All Services                            | Application Insights           | HTTPS        | Telemetry Export  | OTLP/Azure Monitor         |
 
 ```mermaid
 ---
@@ -1209,13 +1209,13 @@ flowchart LR
 
 ### Integration Patterns Summary
 
-| Pattern                   | Usage                          | Components                                | Maturity     |
-| ------------------------- | ------------------------------ | ----------------------------------------- | ------------ |
-| Request-Response (Sync)   | Web App → API, Logic App → API | OrdersAPIService, OrdersController        | 4 - Measured |
-| Publish-Subscribe (Async) | API → Service Bus → Logic App  | OrdersMessageHandler, OrdersPlacedProcess | 4 - Measured |
-| Polling (Scheduled)       | Timer → Blob cleanup           | OrdersPlacedCompleteProcess (3s interval) | 3 - Defined  |
-| Orchestration             | .NET Aspire dependency graph   | AppHost                                   | 3 - Defined  |
-| Cross-Cutting             | Shared telemetry + resilience  | ServiceDefaults                           | 4 - Measured |
+| Pattern                   | Usage                          | Components                                |
+| ------------------------- | ------------------------------ | ----------------------------------------- |
+| Request-Response (Sync)   | Web App → API, Logic App → API | OrdersAPIService, OrdersController        |
+| Publish-Subscribe (Async) | API → Service Bus → Logic App  | OrdersMessageHandler, OrdersPlacedProcess |
+| Polling (Scheduled)       | Timer → Blob cleanup           | OrdersPlacedCompleteProcess (3s interval) |
+| Orchestration             | .NET Aspire dependency graph   | AppHost                                   |
+| Cross-Cutting             | Shared telemetry + resilience  | ServiceDefaults                           |
 
 ### Summary
 
