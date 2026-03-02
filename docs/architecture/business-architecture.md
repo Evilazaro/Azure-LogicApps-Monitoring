@@ -587,8 +587,10 @@ This subsection documents the 6 value streams that deliver end-to-end business v
 | **Exit Point**        | Audit blob created and eventually cleaned up                                           |
 | **Stage Owners**      | Web App (Place), API (Publish), Logic App (Trigger/Process/Audit), Logic App (Cleanup) |
 | **Maturity**          | 4 - Measured                                                                           |
-| **Source**            | `README.md:415-420`                                                                    |
-| **Confidence**        | 0.95                                                                                   |
+| **Source**              | `README.md:415-420`                                                                    |
+| **Confidence**          | 0.95                                                                                   |
+| **Processes Referenced**| Order Placement (§5.4.1), Logic App Order Processing (§5.4.2)                          |
+| **Measurable Outcome**  | Order persisted in SQL, OrderPlaced event published to Service Bus, audit blob created in Blob Storage, and blob cleaned up — validated by `eShop.orders.placed` counter increment and `eShop.orders.processing.duration` histogram |
 
 **Stage Mapping:**
 
@@ -600,6 +602,137 @@ This subsection documents the 6 value streams that deliver end-to-end business v
 | 4. Process | Logic App → HTTP POST /api/Orders/process → OrderService.ProcessOrderAsync    | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:40-100`        |
 | 5. Audit   | Logic App → Create Blob (success or error path)                               | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:100-175`       |
 | 6. Cleanup | Logic App OrdersPlacedCompleteProcess → List → Delete blobs                   | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-100` |
+
+#### 5.3.2 Order Placement & Publishing Value Stream
+
+| Attribute                | Value                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value Stream Name**    | Order Placement & Publishing                                                                                                                 |
+| **Stages**               | Validate → Check Existence → Save to SQL → Publish to Service Bus → Record Metrics                                                           |
+| **Entry Point**          | HTTP POST /api/Orders received by OrdersController                                                                                           |
+| **Exit Point**           | OrderPlaced event published to Service Bus topic and metrics recorded                                                                        |
+| **Maturity**             | 4 - Measured                                                                                                                                 |
+| **Source**               | `src/eShop.Orders.API/Services/OrderService.cs:87-145`                                                                                       |
+| **Confidence**           | 0.95                                                                                                                                         |
+| **Processes Referenced** | Order Placement Process (§5.4.1)                                                                                                             |
+| **Measurable Outcome**   | Order persisted to SQL (verified by GetOrderByIdAsync) and `eShop.orders.placed` counter incremented by 1                                    |
+
+#### 5.3.3 Trigger-Process-Audit Value Stream
+
+| Attribute                | Value                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value Stream Name**    | Trigger-Process-Audit Flow                                                                                                                   |
+| **Stages**               | Service Bus Poll (1s) → Validate JSON → POST /api/Orders/process → Branch: Success Blob or Error Blob                                        |
+| **Entry Point**          | Service Bus message received on subscription "orderprocessingsub"                                                                            |
+| **Exit Point**           | Audit blob created in Azure Blob Storage (success or error path)                                                                             |
+| **Maturity**             | 4 - Measured                                                                                                                                 |
+| **Source**               | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-175`                                                 |
+| **Confidence**           | 0.95                                                                                                                                         |
+| **Processes Referenced** | Logic App: Order Processing Workflow (§5.4.2)                                                                                                |
+| **Measurable Outcome**   | Audit blob created in Blob Storage with processing result, duration recorded via `eShop.orders.processing.duration`                           |
+
+#### 5.3.4 Audit Cleanup Value Stream
+
+| Attribute                | Value                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value Stream Name**    | Audit Cleanup Flow                                                                                                                           |
+| **Stages**               | Recurrence (3s) → List Blobs → ForEach (20 concurrent) → Get Metadata → Delete Blob                                                          |
+| **Entry Point**          | Recurrence timer trigger (3-second interval)                                                                                                  |
+| **Exit Point**           | All processed audit blobs deleted from Azure Blob Storage                                                                                     |
+| **Maturity**             | 3 - Defined                                                                                                                                  |
+| **Source**               | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-100`                                         |
+| **Confidence**           | 0.85                                                                                                                                         |
+| **Processes Referenced** | Logic App: Audit Cleanup (§2.4)                                                                                                              |
+| **Measurable Outcome**   | All audit blobs deleted from storage container, blob count returns to zero after cleanup cycle                                                 |
+
+#### 5.3.5 UI-to-API Value Entry Stream
+
+| Attribute                | Value                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value Stream Name**    | UI-to-API Value Entry                                                                                                                        |
+| **Stages**               | User Input → Form Validation → PlaceOrderAsync → API Response → UI Feedback                                                                  |
+| **Entry Point**          | Customer submits order form in Web App                                                                                                        |
+| **Exit Point**           | Order confirmation displayed to user with success/error status                                                                                |
+| **Maturity**             | 3 - Defined                                                                                                                                  |
+| **Source**               | `src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-479`                                                                             |
+| **Confidence**           | 0.80                                                                                                                                         |
+| **Processes Referenced** | Order Placement Process (§5.4.1)                                                                                                             |
+| **Measurable Outcome**   | HTTP 200 response returned to Web App with order confirmation, distributed trace created via OpenTelemetry                                     |
+
+#### 5.3.6 Message Publishing Pipeline Stream
+
+| Attribute                | Value                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value Stream Name**    | Message Publishing Pipeline                                                                                                                  |
+| **Stages**               | Serialize → Set Properties → Propagate Trace Context → Send (3-attempt retry, exponential backoff)                                            |
+| **Entry Point**          | OrderService calls SendOrderMessageAsync after successful order persistence                                                                   |
+| **Exit Point**           | ServiceBusMessage delivered to topic "ordersplaced" with W3C trace context                                                                   |
+| **Maturity**             | 4 - Measured                                                                                                                                 |
+| **Source**               | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425`                                                                                 |
+| **Confidence**           | 0.90                                                                                                                                         |
+| **Processes Referenced** | Order Placement Process (§5.4.1)                                                                                                             |
+| **Measurable Outcome**   | ServiceBusMessage published to topic with Subject="OrderPlaced", W3C TraceParent propagated for distributed tracing                          |
+
+```mermaid
+---
+title: Value Stream Map — End-to-End Order Processing
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart LR
+    accTitle: End-to-End Order Processing Value Stream Map
+    accDescr: Shows the 6-stage value delivery pipeline from order placement through audit cleanup with measurable outcomes at each stage
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph Stage1["📥 1. Place"]
+        S1["🛒 Customer submits order<br/>via Web App or API"]
+    end
+
+    subgraph Stage2["📨 2. Publish"]
+        S2["📬 OrderPlaced event<br/>→ Service Bus topic"]
+    end
+
+    subgraph Stage3["⚡ 3. Trigger"]
+        S3["🔔 Logic App polls<br/>subscription (1s)"]
+    end
+
+    subgraph Stage4["⚙️ 4. Process"]
+        S4["🔧 HTTP POST to API<br/>Process order"]
+    end
+
+    subgraph Stage5["📝 5. Audit"]
+        S5["📦 Create audit blob<br/>(success/error)"]
+    end
+
+    subgraph Stage6["🧹 6. Cleanup"]
+        S6["🗑️ Delete processed<br/>audit blobs"]
+    end
+
+    Stage1 -->|"Order JSON"| Stage2
+    Stage2 -->|"AMQP"| Stage3
+    Stage3 -->|"Trigger"| Stage4
+    Stage4 -->|"Result"| Stage5
+    Stage5 -->|"Timer 3s"| Stage6
+
+    style Stage1 fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style Stage2 fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style Stage3 fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    style Stage4 fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style Stage5 fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style Stage6 fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+```
 
 ### 5.4 Business Processes Specifications
 
