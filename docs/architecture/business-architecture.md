@@ -499,9 +499,6 @@ This subsection documents the strategic components driving the eShop order manag
 | **Strategy Type** | Product Roadmap                                                                                                                                                                                     |
 | **Objective**     | Achieve and maintain "✅ Stable" status across all 10 platform features                                                                                                                             |
 | **Key Features**  | Event-driven processing, distributed tracing, zero-secret security, one-command deployment, real-time monitoring, batch processing, order lifecycle management, audit trail, IaC, health monitoring |
-| **Maturity**      | 4 - Measured                                                                                                                                                                                        |
-| **Source**        | `README.md:171-185`                                                                                                                                                                                 |
-| **Confidence**    | 0.90                                                                                                                                                                                                |
 
 ### 5.2 Business Capabilities Specifications
 
@@ -516,9 +513,6 @@ This subsection documents the 10 business capabilities providing the functional 
 | **Description**     | Creates single orders with full validation, SQL persistence, and Service Bus event publishing |
 | **Key Operations**  | PlaceOrder, ValidateOrder, SaveOrderAsync, SendOrderMessageAsync                              |
 | **Dependencies**    | Order Repository Service, Order Messaging Service                                             |
-| **Maturity**        | 4 - Measured                                                                                  |
-| **Source**          | `src/eShop.Orders.API/Controllers/OrdersController.cs:55-130`                                 |
-| **Confidence**      | 0.95                                                                                          |
 | **KPIs**            | `eShop.orders.placed` (Counter), `eShop.orders.processing.duration` (Histogram) — see §2.11   |
 
 **L2/L3 Capability Decomposition:**
@@ -539,9 +533,6 @@ This subsection documents the 10 business capabilities providing the functional 
 | **Description**     | Stateful Logic App workflow that polls Service Bus, invokes the Orders API, and creates audit blobs (success/error paths) |
 | **Trigger**         | Service Bus topic "ordersplaced", subscription "orderprocessingsub", 1s poll                                              |
 | **Dependencies**    | Order Management Service (HTTP), Azure Blob Storage (audit)                                                               |
-| **Maturity**        | 4 - Measured                                                                                                              |
-| **Source**          | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-175`                             |
-| **Confidence**      | 0.95                                                                                                                      |
 | **KPIs**            | `eShop.orders.processing.duration` (Histogram), `eShop.orders.processing.errors` (Counter) — see §2.11                    |
 
 **L2/L3 Capability Decomposition:**
