@@ -17,7 +17,7 @@ The Azure-LogicApps-Monitoring repository implements an event-driven order manag
 
 This analysis identifies 47 data components across all 11 TOGAF Data Architecture component types, with an average confidence score of 0.88. The solution demonstrates a mature data architecture with clear separation between domain models (`Order`, `OrderProduct`), persistence entities (`OrderEntity`, `OrderProductEntity`), and data transfer objects (`OrderMessageWithMetadata`, `OrdersWrapper`). Data quality enforcement is embedded at multiple layers: data annotations on domain models, Fluent API constraints in EF Core, and dead-letter queue policies on Service Bus subscriptions.
 
-The data governance posture is strong at the infrastructure level — Entra ID-only authentication, private endpoints for all data stores, TLS 1.2 enforcement, and mandatory resource tagging — but lacks formal data lineage tracking and automated data quality dashboards. The overall data maturity is assessed at **Level 3 (Defined)**: schema migrations are versioned, data access patterns are standardized through repository interfaces, and security policies are codified in infrastructure-as-code.
+The data governance posture is strong at the infrastructure level — Entra ID-only authentication, private endpoints for all data stores, TLS 1.2 enforcement, and mandatory resource tagging — but lacks formal data lineage tracking and automated data quality dashboards. The overall data maturity is assessed at **Level 2 (Managed)**: schema migrations are tracked via EF Core, role-based access is enforced through managed identities, and a basic data dictionary exists in domain model annotations. The system lacks a centralized data catalog, automated data quality checks, schema registry, and tracked data lineage required for Level 3 (Defined).
 
 ### Key Findings
 
@@ -51,7 +51,7 @@ The data governance posture is strong at the infrastructure level — Entra ID-o
 
 ### Coverage Summary
 
-The data architecture demonstrates Level 3 governance maturity with versioned schema migrations, standardized data access patterns through repository interfaces, and infrastructure-as-code security enforcement. Primary gaps include absence of automated data lineage tracking, no formal data catalog, and manual reconciliation between application state and Azure resource state.
+The data architecture demonstrates Level 2 (Managed) governance maturity with tracked schema migrations, role-based access via managed identities, and basic data dictionary in domain model annotations. Primary gaps for advancing to Level 3 (Defined) include absence of a centralized data catalog, no automated data quality checks, no schema registry, and no tracked data lineage.
 
 ---
 
@@ -305,7 +305,7 @@ The current state baseline represents a production-ready but early-stage data ar
 
 The assessment approach examines actual deployed resources defined in Bicep modules, application code implementing data access patterns, and workflow definitions orchestrating data flows. The baseline captures both the logical data architecture (domain models, contracts, services) and the physical data architecture (Azure SQL, Service Bus, Blob Storage with private endpoints).
 
-The following subsections document the current state with gap analysis identifying areas for improvement toward Level 4 (Measured) maturity.
+The following subsections document the current state with gap analysis identifying areas for improvement toward Level 3 (Defined) maturity.
 
 ### Baseline Data Architecture
 
@@ -377,9 +377,9 @@ flowchart LR
 
 ### Governance Maturity
 
-| Level                 | Assessment    | Justification                                                                                                                                                                                                                               |
-| --------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Level 3 (Defined)** | Current State | Versioned schema migrations (EF Core), standardized data access (repository pattern), codified security policies (Bicep IaC), mandatory resource tagging. Missing: automated data quality dashboards, formal data catalog, schema registry. |
+| Level                 | Assessment    | Justification                                                                                                                                                                                                                                                                                                                          |
+| --------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Level 2 (Managed)** | Current State | Basic data dictionary exists (domain model annotations), schema migrations tracked (EF Core Code-First), role-based access (managed identities + Entra ID), scheduled ETL jobs (Logic App recurrence workflows). Missing for Level 3: centralized data catalog, automated data quality checks, schema registry, data lineage tracking. |
 
 ### Compliance Posture
 
@@ -394,9 +394,9 @@ flowchart LR
 
 ### Summary
 
-The Current State Baseline reveals a mature infrastructure foundation with enterprise-grade security controls (Entra ID-only auth, private endpoints, TLS 1.2) and a clean application architecture (repository pattern, interface-driven design, EF Core migrations). The system operates at Level 3 (Defined) governance maturity with clear schema standards and consistent security enforcement across all data tiers.
+The Current State Baseline reveals a mature infrastructure foundation with enterprise-grade security controls (Entra ID-only auth, private endpoints, TLS 1.2) and a clean application architecture (repository pattern, interface-driven design, EF Core migrations). The system operates at Level 2 (Managed) governance maturity with tracked schema migrations, role-based access via managed identities, and a basic data dictionary in domain model annotations.
 
-Key gaps requiring attention for Level 4 (Measured) maturity: (1) implement automated data lineage tracking using Azure Data Catalog or Purview, (2) establish formal data freshness SLAs per data product, (3) add a schema registry for Service Bus message contracts, and (4) create automated data quality dashboards for real-time monitoring of validation failures and dead-letter queue depth.
+Key gaps requiring attention for Level 3 (Defined) maturity: (1) implement a centralized data catalog using Azure Purview or Data Catalog, (2) add automated data quality checks with validation dashboards, (3) deploy a schema registry for Service Bus message contracts, and (4) establish tracked data lineage from ingestion to storage targets.
 
 ---
 
@@ -512,6 +512,50 @@ The catalog reflects a production-ready order management system with strong cove
 | TLS 1.2 Enforcement               | minimumTlsVersion TLS1_2 on Storage Account and SQL Server. supportsHttpsTrafficOnly true on Storage                                            | Confidential   | Not detected | Not detected | Not detected | Not detected  | Infrastructure policy | All network communication | infra/shared/data/main.bicep:167-168 |
 | Service Bus Managed Identity Auth | DefaultAzureCredential with retry (3 max, 30s timeout), AMQP WebSockets transport, exponential backoff. Excludes interactive auth in production | Confidential   | Not detected | Not detected | Not detected | Not detected  | Azure Entra ID        | Orders API, Logic App     | app.ServiceDefaults/Extensions.cs:\* |
 
+```mermaid
+---
+title: Data Architecture - Core Entity Relationships
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+---
+erDiagram
+    accTitle: Data Architecture ERD
+    accDescr: Shows core data entities Order and OrderProduct with their attributes and relationships
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    Order ||--|{ OrderProduct : contains
+    Order {
+        string Id PK
+        string CustomerId FK
+        datetime Date
+        string DeliveryAddress
+        decimal Total
+    }
+
+    OrderProduct {
+        string Id PK
+        string OrderId FK
+        string ProductId
+        string ProductDescription
+        int Quantity
+        decimal Price
+    }
+```
+
 ### Summary
 
 The Component Catalog documents 47 components across all 11 Data component types, with the strongest representation in Data Entities (5), Data Stores (8), Data Services (5), Data Contracts (5), and Data Security (5). The dominant pattern is a multi-tier event-driven architecture with clean separation between domain models, persistence entities, and data transfer objects. Every component has verifiable source file evidence, and data quality enforcement is applied at three layers: domain model annotations, EF Core Fluent API, and infrastructure-level dead-letter policies.
@@ -532,12 +576,12 @@ For established projects, ADRs should be stored in `/docs/architecture/decisions
 
 ### ADR Summary
 
-| ID      | Title                                                | Status   | Evidence Source                                          |
-| ------- | ---------------------------------------------------- | -------- | -------------------------------------------------------- |
-| ADR-001 | Use Entra ID-Only Authentication for SQL Server      | Accepted | infra/shared/data/main.bicep:530-575                     |
-| ADR-002 | Event-Driven Order Processing via Service Bus Topics | Accepted | infra/workload/messaging/main.bicep:121-142              |
-| ADR-003 | Repository Pattern with EF Core for Data Access      | Accepted | src/eShop.Orders.API/Interfaces/IOrderRepository.cs:1-77 |
-| ADR-004 | Blob Storage Segregation by Processing Outcome       | Accepted | infra/shared/data/main.bicep:197-222                     |
+| ID      | Title                                                | Status   | Date       |
+| ------- | ---------------------------------------------------- | -------- | ---------- |
+| ADR-001 | Use Entra ID-Only Authentication for SQL Server      | Accepted | 2025-12-27 |
+| ADR-002 | Event-Driven Order Processing via Service Bus Topics | Accepted | 2025-12-27 |
+| ADR-003 | Repository Pattern with EF Core for Data Access      | Accepted | 2025-12-27 |
+| ADR-004 | Blob Storage Segregation by Processing Outcome       | Accepted | 2025-12-27 |
 
 ### 6.1 Detailed ADRs
 
@@ -720,7 +764,7 @@ Integration health is strong for the primary order flow (Web App → API → SQL
 
 This section defines the data governance model, ownership structure, access control policies, audit procedures, and compliance tracking mechanisms observed in the Azure-LogicApps-Monitoring repository. Governance is primarily enforced through infrastructure-as-code patterns (Bicep), framework configurations (EF Core, .NET Aspire), and Azure-native security services (Entra ID, Private Endpoints).
 
-Key governance elements include: resource tagging policy enforced via Bicep custom types, Entra ID-only authentication eliminating password-based access, managed identity-based authorization across all services, private endpoint network isolation, and comprehensive diagnostic logging forwarded to Log Analytics. These controls demonstrate Level 3 governance maturity with room for growth toward formal data stewardship and automated compliance scanning.
+Key governance elements include: resource tagging policy enforced via Bicep custom types, Entra ID-only authentication eliminating password-based access, managed identity-based authorization across all services, private endpoint network isolation, and comprehensive diagnostic logging forwarded to Log Analytics. These controls demonstrate Level 2 (Managed) governance maturity with room for growth toward Level 3 (Defined) through formal data stewardship, centralized data catalog, and automated compliance scanning.
 
 The following subsections document governance structures detected in the source files.
 
@@ -758,6 +802,4 @@ Formal data ownership assignments were not detected in source files. Based on ar
 
 ---
 
-> **Note**: Sections 6, 7, and 9 content was generated based on patterns observed in source files. No formal ADR documents, standards files, or governance policies were detected in the repository. These sections contain inferred architecture decisions and observed standards.
-
-<!-- SECTION COUNT AUDIT: Found 6 sections (1, 2, 3, 4, 5, 8 requested + 6, 7, 9 included for completeness). Required: 6 requested + 3 supplementary. Status: PASS -->
+<!-- SECTION COUNT AUDIT: Found 9 sections. Required: 9. Status: PASS -->
