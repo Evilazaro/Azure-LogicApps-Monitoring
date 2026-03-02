@@ -352,41 +352,41 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 ## Project Structure
 
 ```text
-Azure-LogicApps-Monitoring/
-├── app.AppHost/                    # .NET Aspire orchestrator
-│   ├── AppHost.cs                  # Service registration & resource wiring
-│   ├── infra/                      # Container Apps deployment templates
-│   └── Properties/                 # Launch profiles
-├── app.ServiceDefaults/            # Shared cross-cutting concerns
-│   ├── Extensions.cs               # OpenTelemetry, health checks, resilience
-│   └── CommonTypes.cs              # Shared domain models (Order, OrderProduct)
-├── src/
-│   ├── eShop.Orders.API/           # ASP.NET Core REST API
-│   │   ├── Controllers/            # Order CRUD & batch endpoints
-│   │   ├── Data/                   # EF Core DbContext & migrations
-│   │   ├── Handlers/               # Service Bus message publishing
-│   │   ├── HealthChecks/           # Database & Service Bus health probes
-│   │   ├── Repositories/           # Data access layer
-│   │   └── Services/               # Business logic & custom metrics
-│   ├── eShop.Web.App/              # Blazor Server frontend
-│   │   ├── Components/Pages/       # Razor pages (Home, PlaceOrder, ListOrders)
-│   │   ├── Components/Services/    # Typed HTTP client for Orders API
-│   │   └── wwwroot/                # Static assets
-│   └── tests/                      # Unit & integration test projects
-│       ├── app.AppHost.Tests/
-│       ├── app.ServiceDefaults.Tests/
-│       ├── eShop.Orders.API.Tests/
-│       └── eShop.Web.App.Tests/
-├── workflows/OrdersManagement/     # Logic Apps Standard workflows
-│   └── OrdersManagementLogicApp/
-│       ├── OrdersPlacedProcess/    # Service Bus trigger → process order → blob audit
-│       └── OrdersPlacedCompleteProcess/ # Recurring cleanup of processed blobs
-├── infra/                          # Bicep infrastructure-as-code
-│   ├── main.bicep                  # Subscription-level entry point
-│   ├── shared/                     # Network, Identity, Monitoring, Data modules
-│   └── workload/                   # Container Apps, Service Bus, Logic Apps
-├── hooks/                          # Cross-platform deployment scripts (PS1 + SH)
-└── .github/workflows/              # CI/CD pipelines
+📦 Azure-LogicApps-Monitoring/
+├── 🚀 app.AppHost/                    # .NET Aspire orchestrator
+│   ├── ⚙️ AppHost.cs                  # Service registration & resource wiring
+│   ├── 📂 infra/                      # Container Apps deployment templates
+│   └── 📂 Properties/                 # Launch profiles
+├── 📚 app.ServiceDefaults/            # Shared cross-cutting concerns
+│   ├── ⚙️ Extensions.cs               # OpenTelemetry, health checks, resilience
+│   └── ⚙️ CommonTypes.cs              # Shared domain models (Order, OrderProduct)
+├── 📂 src/
+│   ├── 🌐 eShop.Orders.API/           # ASP.NET Core REST API
+│   │   ├── 📂 Controllers/            # Order CRUD & batch endpoints
+│   │   ├── 📂 Data/                   # EF Core DbContext & migrations
+│   │   ├── 📂 Handlers/               # Service Bus message publishing
+│   │   ├── 📂 HealthChecks/           # Database & Service Bus health probes
+│   │   ├── 📂 Repositories/           # Data access layer
+│   │   └── 📂 Services/               # Business logic & custom metrics
+│   ├── 🖥️ eShop.Web.App/              # Blazor Server frontend
+│   │   ├── 📂 Components/Pages/       # Razor pages (Home, PlaceOrder, ListOrders)
+│   │   ├── 📂 Components/Services/    # Typed HTTP client for Orders API
+│   │   └── 📂 wwwroot/                # Static assets
+│   └── 🧪 tests/                      # Unit & integration test projects
+│       ├── 🧪 app.AppHost.Tests/
+│       ├── 🧪 app.ServiceDefaults.Tests/
+│       ├── 🧪 eShop.Orders.API.Tests/
+│       └── 🧪 eShop.Web.App.Tests/
+├── ⚡ workflows/OrdersManagement/     # Logic Apps Standard workflows
+│   └── 📂 OrdersManagementLogicApp/
+│       ├── 📂 OrdersPlacedProcess/    # Service Bus trigger → process order → blob audit
+│       └── 📂 OrdersPlacedCompleteProcess/ # Recurring cleanup of processed blobs
+├── 🏗️ infra/                          # Bicep infrastructure-as-code
+│   ├── 📄 main.bicep                  # Subscription-level entry point
+│   ├── 📂 shared/                     # Network, Identity, Monitoring, Data modules
+│   └── 📂 workload/                   # Container Apps, Service Bus, Logic Apps
+├── 🔧 hooks/                          # Cross-platform deployment scripts (PS1 + SH)
+└── 🔄 .github/workflows/              # CI/CD pipelines
 ```
 
 ## Deployment
