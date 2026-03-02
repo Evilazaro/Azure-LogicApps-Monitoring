@@ -1,51 +1,14 @@
 # Business Architecture - Azure-LogicApps-Monitoring
 
-**Generated**: 2026-03-02T10:50:00Z  
-**Quality Level**: comprehensive  
-**Components Found**: 88  
-**Framework**: TOGAF 10 Business Architecture  
-**Repository**: Azure-LogicApps-Monitoring (eShop Order Management & Monitoring)
-
----
-
 ## 1. Executive Summary
 
 ### Overview
 
-The Azure-LogicApps-Monitoring repository implements an enterprise-grade, event-driven order management and monitoring reference architecture built on Azure Logic Apps, Azure Service Bus, Azure SQL, and .NET Aspire. This Business Architecture analysis identifies **88 components** across all **11 TOGAF Business Architecture component types**, demonstrating a mature, well-structured business domain centered on e-commerce order lifecycle management with comprehensive observability.
+The Azure-LogicApps-Monitoring repository implements an enterprise-grade, event-driven order management and monitoring reference architecture built on Azure Logic Apps, Azure Service Bus, Azure SQL, and .NET Aspire. This Business Architecture analysis identifies **88 components** across all ** Business Architecture component types**, demonstrating a mature, well-structured business domain centered on e-commerce order lifecycle management with comprehensive observability.
 
 The analysis reveals strong coverage in Business Rules (10 components, avg. confidence 0.89), Business Capabilities (10 components, avg. confidence 0.88), Business Processes (9 components, avg. confidence 0.88), and KPIs & Metrics (10 components, avg. confidence 0.85). The system implements a six-stage value stream — **Place → Publish → Trigger → Process → Audit → Cleanup** — supported by stateful Logic App workflows, typed HTTP clients, and distributed tracing via OpenTelemetry and Azure Application Insights.
 
 Strategic alignment demonstrates **Level 3–4 governance maturity** with tag-based compliance (`CostCenter`, `Owner`, `BusinessUnit`), managed identity security (zero-secret), environment-tiered deployment (`dev`, `test`, `staging`, `prod`), and automated infrastructure-as-code via Bicep. The primary maturity gap is the absence of formal L2/L3 capability decomposition documentation and explicit business KPI dashboards beyond health checks and counters.
-
-### Key Findings
-
-| Metric                      | Value                                             |
-| --------------------------- | ------------------------------------------------- |
-| Total Components            | 88                                                |
-| Component Types Covered     | 11 / 11                                           |
-| Diagrams Generated          | 6                                                 |
-| Business Domains Identified | Order Management, Monitoring, Platform Operations |
-
-### Component Distribution
-
-| #   | Component Type            | Count |
-| --- | ------------------------- | ----- |
-| 1   | Business Strategy         | 7     |
-| 2   | Business Capabilities     | 10    |
-| 3   | Value Streams             | 6     |
-| 4   | Business Processes        | 9     |
-| 5   | Business Services         | 7     |
-| 6   | Business Functions        | 8     |
-| 7   | Business Roles & Actors   | 9     |
-| 8   | Business Rules            | 10    |
-| 9   | Business Events           | 7     |
-| 10  | Business Objects/Entities | 8     |
-| 11  | KPIs & Metrics            | 7     |
-
-### Summary
-
-The eShop Order Management platform exhibits **Level 3–4 maturity** across 88 components spanning all 11 TOGAF Business Architecture types. The primary strengths lie in event-driven processing, typed domain models, and comprehensive observability. Key gaps include formal L2/L3 capability documentation and explicit business KPI dashboards.
 
 ---
 
@@ -57,7 +20,7 @@ The Architecture Landscape organizes business components into three primary doma
 
 Each domain maintains clear separation of concerns: Order Management is handled through a layered service architecture (Web App → Orders API → SQL Database) with event-driven processing via Azure Service Bus and Logic Apps. Monitoring leverages OpenTelemetry, Application Insights, and custom metrics counters. Platform Operations provides automated deployment through Azure Developer CLI (azd) hooks, Bicep templates, and .NET Aspire orchestration.
 
-The following 11 subsections catalog all TOGAF Business Architecture component types discovered through source file analysis, with confidence scores, maturity assessments, and source traceability for each component.
+The following 11 subsections catalog all Business Architecture component types discovered through source file analysis, with confidence scores, maturity assessments, and source traceability for each component.
 
 ### 2.1 Business Strategy (7)
 
@@ -273,7 +236,7 @@ flowchart TB
 
 ### Summary
 
-The Architecture Landscape reveals a well-structured business domain with **88 components across all 11 TOGAF Business Architecture types**. The Order Management domain is the strongest, with measured maturity (Level 4) in core capabilities like Order Placement, Automated Processing, and Lifecycle Management. Business Rules demonstrate the highest density (10 components) with comprehensive validation at declarative, imperative, and infrastructure levels.
+The Architecture Landscape reveals a well-structured business domain with **88 components across all Business Architecture types**. The Order Management domain is the strongest, with measured maturity (Level 4) in core capabilities like Order Placement, Automated Processing, and Lifecycle Management. Business Rules demonstrate the highest density (10 components) with comprehensive validation at declarative, imperative, and infrastructure levels.
 
 Key strengths include event-driven architecture via Service Bus, stateful Logic App workflows for automated processing, zero-secret managed identity security, and comprehensive OpenTelemetry instrumentation. The primary gaps are: (1) no formal L2/L3 capability decomposition documentation, (2) no explicit business KPI dashboards (metrics are emitted but not visualized at the business layer), and (3) test data generation capability is at Level 2 maturity.
 
@@ -483,7 +446,7 @@ Primary gaps identified: (1) no formal dead-letter queue handling in Logic App w
 
 ### Overview
 
-This section provides detailed component specifications for all 88 business components identified across the 11 TOGAF Business Architecture types. Each subsection expands on the inventory tables in Section 2 with additional attributes including inter-component relationships, operational details, and maturity justifications.
+This section provides detailed component specifications for all 88 business components identified across the Business Architecture types. Each subsection expands on the inventory tables in Section 2 with additional attributes including inter-component relationships, operational details, and maturity justifications.
 
 The catalog is organized using the same 11-subsection structure (5.1–5.11) as Section 2, with each component receiving expanded specification documentation including triggers, dependencies, owners, and cross-references. Components are sourced exclusively from the analyzed `folder_paths` with file:line evidence for every entry.
 
