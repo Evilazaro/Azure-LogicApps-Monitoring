@@ -15,43 +15,9 @@
 
 The Azure-LogicApps-Monitoring repository implements an event-driven order management system built on .NET Aspire with Azure-native data services. The data architecture spans three tiers: a relational persistence layer (Azure SQL Database with EF Core), an asynchronous messaging layer (Azure Service Bus topics/subscriptions), and a blob-based audit layer (Azure Storage containers for order processing outcomes). All infrastructure is defined as code using Bicep, with comprehensive tagging, diagnostics, and private networking enforced uniformly.
 
-This analysis identifies 47 data components across all 11 TOGAF Data Architecture component types, with an average confidence score of 0.88. The solution demonstrates a mature data architecture with clear separation between domain models (`Order`, `OrderProduct`), persistence entities (`OrderEntity`, `OrderProductEntity`), and data transfer objects (`OrderMessageWithMetadata`, `OrdersWrapper`). Data quality enforcement is embedded at multiple layers: data annotations on domain models, Fluent API constraints in EF Core, and dead-letter queue policies on Service Bus subscriptions.
+This analysis identifies 47 data components across all Data Architecture component types, with an average confidence score of 0.88. The solution demonstrates a mature data architecture with clear separation between domain models (`Order`, `OrderProduct`), persistence entities (`OrderEntity`, `OrderProductEntity`), and data transfer objects (`OrderMessageWithMetadata`, `OrdersWrapper`). Data quality enforcement is embedded at multiple layers: data annotations on domain models, Fluent API constraints in EF Core, and dead-letter queue policies on Service Bus subscriptions.
 
 The data governance posture is strong at the infrastructure level — Entra ID-only authentication, private endpoints for all data stores, TLS 1.2 enforcement, and mandatory resource tagging — but lacks formal data lineage tracking and automated data quality dashboards. The overall data maturity is assessed at **Level 2 (Managed)**: schema migrations are tracked via EF Core, role-based access is enforced through managed identities, and a basic data dictionary exists in domain model annotations. The system lacks a centralized data catalog, automated data quality checks, schema registry, and tracked data lineage required for Level 3 (Defined).
-
-### Key Findings
-
-| Metric                   | Value    | Assessment                          |
-| ------------------------ | -------- | ----------------------------------- |
-| Total Data Components    | 47       | Comprehensive coverage              |
-| Component Types Detected | 11 of 11 | Full TOGAF coverage                 |
-| Average Confidence Score | 0.88     | High confidence                     |
-| Data Entities            | 5        | Well-defined domain model           |
-| Data Stores              | 8        | Multi-tier storage architecture     |
-| Data Flows               | 5        | Event-driven patterns               |
-| Data Services            | 5        | Clean service abstractions          |
-| Data Contracts           | 5        | Interface-driven design             |
-| Data Security Controls   | 5        | Enterprise-grade protection         |
-| Data Quality Rules       | 4        | Multi-layer validation              |
-| Data Transformations     | 3        | Domain-entity mapping               |
-| Data Models              | 3        | EF Core + Bicep type system         |
-| Data Governance          | 2        | Infrastructure-level governance     |
-| Master Data              | 2        | Configuration-driven reference data |
-
-### Data Quality Scorecard
-
-| Dimension           | Score | Assessment                                                  |
-| ------------------- | ----- | ----------------------------------------------------------- |
-| Schema Validation   | 9/10  | Data annotations + Fluent API + Bicep type constraints      |
-| Data Classification | 7/10  | PII/Financial identified; no formal classification taxonomy |
-| Access Control      | 9/10  | Entra ID-only, managed identities, private endpoints        |
-| Data Lineage        | 4/10  | Implicit in code; no automated lineage tracking             |
-| Error Handling      | 8/10  | Dead-letter queues, idempotency checks, retry policies      |
-| Schema Evolution    | 7/10  | EF Core migrations versioned; no schema registry            |
-
-### Coverage Summary
-
-The data architecture demonstrates Level 2 (Managed) governance maturity with tracked schema migrations, role-based access via managed identities, and basic data dictionary in domain model annotations. Primary gaps for advancing to Level 3 (Defined) include absence of a centralized data catalog, no automated data quality checks, no schema registry, and no tracked data lineage.
 
 ---
 
@@ -368,7 +334,7 @@ flowchart TB
 
 ### Summary
 
-The Architecture Landscape reveals a well-structured, event-driven data architecture with 47 components spanning all 11 TOGAF Data component types. The dominant pattern is a three-tier storage architecture: Azure SQL Database for relational persistence, Azure Service Bus for asynchronous event distribution, and Azure Blob Storage for audit trails. All tiers are secured with managed identity authentication and private endpoints.
+The Architecture Landscape reveals a well-structured, event-driven data architecture with 47 components spanning all Data component types. The dominant pattern is a three-tier storage architecture: Azure SQL Database for relational persistence, Azure Service Bus for asynchronous event distribution, and Azure Blob Storage for audit trails. All tiers are secured with managed identity authentication and private endpoints.
 
 The strongest coverage is in Data Entities (5), Data Stores (8), Data Services (5), and Data Contracts (5), reflecting a mature domain model with clean service abstractions. The weakest areas are Data Governance (2) and Master Data (2), which are configuration-driven rather than formally cataloged. Recommended enhancements include implementing a formal data catalog and automated data lineage tracking.
 
@@ -378,7 +344,7 @@ The strongest coverage is in Data Entities (5), Data Stores (8), Data Services (
 
 ### Overview
 
-The data architecture principles observed in the Azure-LogicApps-Monitoring repository are grounded in Azure Well-Architected Framework best practices and TOGAF 10 Data Architecture standards. These principles are not explicitly documented in a governance file but are consistently enforced through infrastructure-as-code patterns, code conventions, and framework configurations.
+The data architecture principles observed in the Azure-LogicApps-Monitoring repository are grounded in Azure Well-Architected Framework best practices and 10 Data Architecture standards. These principles are not explicitly documented in a governance file but are consistently enforced through infrastructure-as-code patterns, code conventions, and framework configurations.
 
 The core data principles center on three pillars: Security First (Entra ID-only authentication, private endpoints, TLS 1.2), Data Quality at Source (validation annotations, Fluent API constraints, dead-letter queues), and Event-Driven Decoupling (Service Bus topics for asynchronous processing, Logic App workflows for orchestration). These principles are enforced through code rather than policy documents, reflecting a DevOps-oriented governance model.
 
@@ -658,9 +624,9 @@ Key gaps requiring attention for Level 3 (Defined) maturity: (1) implement a cen
 
 ### Overview
 
-The Component Catalog provides detailed specifications for each of the 47 data components identified across all 11 TOGAF Data Architecture component types. Each component is documented with its data classification, storage type, ownership, retention policy, freshness SLA, source systems, downstream consumers, and exact source file reference.
+The Component Catalog provides detailed specifications for each of the 47 data components identified across all Data Architecture component types. Each component is documented with its data classification, storage type, ownership, retention policy, freshness SLA, source systems, downstream consumers, and exact source file reference.
 
-Components are organized into 11 subsections (5.1–5.11) following the canonical TOGAF Data Architecture component type taxonomy. Each subsection uses the mandatory 10-column table schema. Where specific attributes cannot be determined from source code analysis, cells are marked "Not detected" rather than left blank.
+Components are organized into 11 subsections (5.1–5.11) following the canonical Data Architecture component type taxonomy. Each subsection uses the mandatory 10-column table schema. Where specific attributes cannot be determined from source code analysis, cells are marked "Not detected" rather than left blank.
 
 The catalog reflects a production-ready order management system with strong coverage in transactional entities, data services, and security controls, with lighter coverage in governance policies and master data management.
 
