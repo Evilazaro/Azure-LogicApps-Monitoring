@@ -1,6 +1,7 @@
 # Application Architecture - Azure-LogicApps-Monitoring (eShop Orders Management)
 
 **Generated**: 2025-07-22T00:00:00Z
+**Session ID**: a1b2c3d4-e5f6-7890-abcd-ef1234567890
 **Target Layer**: Application
 **Quality Level**: Comprehensive
 **Repository**: Azure-LogicApps-Monitoring
@@ -26,7 +27,11 @@ The architecture demonstrates **Level 3 — Defined** maturity: all services exp
 
 ### Overview
 
-This section catalogs all Application layer components identified through pattern-based scanning of the repository source code. Components are classified into the 11 TOGAF Application Architecture component types. Each component includes its source traceability, confidence score, and service type classification.
+This section catalogs all Application layer components identified through pattern-based scanning of the repository source code. Components are classified into the 11 TOGAF Application Architecture component types defined in the TOGAF 10 standard: Application Services, Application Components, Application Interfaces, Application Collaborations, Application Functions, Application Interactions, Application Events, Application Data Objects, Integration Patterns, Service Contracts, and Application Dependencies.
+
+Each component includes its source traceability (file path and line range), confidence score (calculated using the weighted formula: 30% filename match + 25% path context + 35% content analysis + 10% cross-reference), and service type classification. Components with confidence scores below 0.50 are excluded from the catalog. All source references use plain text format matching the validation regex `^[a-zA-Z0-9_./-]+:(\d+-\d+|\*)$`.
+
+The following subsections enumerate all 31 components discovered across the 11 component types, with the highest density in Application Data Objects (7 components) and Application Components (7 components), reflecting the domain-rich and modular architecture of the eShop Orders Management platform.
 
 ### 2.1 Application Services
 
@@ -139,7 +144,11 @@ All 11 TOGAF Application component types are represented, with the highest compo
 
 ### Overview
 
-The following design principles were identified through analysis of the source code. Each principle is substantiated with specific source evidence.
+The following architecture principles were identified through systematic analysis of the source code, configuration files, and infrastructure definitions. Each principle is substantiated with specific source evidence, including file paths, line ranges, and compliance assessment. Principles are evaluated against observed implementation patterns rather than documented aspirational goals.
+
+The eShop Orders Management platform demonstrates strong adherence to modern cloud-native architecture principles including separation of concerns, interface-driven design, resilience by design, and observability-first instrumentation. Seven core principles were identified, all showing Full or Partial compliance based on source code analysis.
+
+These principles collectively establish a Level 3 (Defined) maturity baseline with clear pathways to Level 4 (Measured) through formalized SLO tracking, chaos engineering adoption, and event schema contract governance.
 
 ### 3.1 Separation of Concerns
 
@@ -224,7 +233,11 @@ Order placement triggers asynchronous event publication to the `ordersplaced` Se
 
 ### Overview
 
-The current deployment architecture is a .NET Aspire-orchestrated distributed application targeting .NET 10.0 with Azure PaaS services. The system supports dual-mode operation: local development with containerized services and Azure cloud deployment with managed services.
+The current deployment architecture is a .NET Aspire-orchestrated distributed application targeting .NET 10.0 with Azure PaaS services. The system supports dual-mode operation: local development with containerized services (SQL Server container, Service Bus emulator) and Azure cloud deployment with managed services (Azure SQL, Azure Service Bus, Application Insights).
+
+The production topology comprises six primary service endpoints: two .NET applications (Orders API, Web App), one Azure Logic App Standard instance with two stateful workflows, and three Azure PaaS backing services (Azure SQL, Azure Service Bus, Azure Blob Storage). All services are instrumented with OpenTelemetry for distributed tracing and metrics export to Application Insights.
+
+Health monitoring is implemented at the application level with liveness (/alive) and readiness (/health) probes, aggregating database and Service Bus connectivity checks with 5-second timeouts. The following tables detail the service topology, protocol inventory, versioning status, and health posture of the current state baseline.
 
 ### Service Topology
 
@@ -283,6 +296,17 @@ config:
 flowchart TB
     accTitle: eShop Orders Management Current State Architecture
     accDescr: Shows the current deployment topology with Web App, Orders API, Azure SQL, Service Bus, Logic Apps, and Blob Storage
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph UserLayer["User Layer"]
         User["👤 User"]
@@ -350,7 +374,11 @@ The primary architectural gap is the absence of formalized SLO tracking and a ce
 
 ### Overview
 
-This section provides detailed specifications for each Application layer component, organized by TOGAF component type. Each component includes its API surface, dependencies, resilience configuration, scaling strategy, and health monitoring.
+This section provides detailed specifications for each of the 31 Application layer components identified in Section 2, organized by the 11 TOGAF Application Architecture component types. Each subsection begins with a consolidated 10-column catalog table followed by expanded per-component specifications.
+
+Each component specification includes six mandatory attributes: API Surface (endpoint types, counts, and protocols), Dependencies (upstream and downstream with protocols), Resilience (retry policies, circuit breakers, timeouts), Scaling (horizontal/vertical strategy), Health (monitoring approach and endpoints), and Source File (with confidence score and line ranges). Components classified as PaaS services include additional platform-specific attributes.
+
+The Component Catalog complements Section 2 (Architecture Landscape) by providing implementation-level detail rather than inventory-level summaries. Where Section 2 answers "what components exist," Section 5 answers "how each component works, what it depends on, and how it handles failure."
 
 ### 5.1 Application Services
 
@@ -1191,7 +1219,11 @@ Out of scope for this analysis.
 
 ### Overview
 
-This section maps all service-to-service dependencies, data flows, external integrations, and event subscriptions identified across the Application layer. Every dependency referenced in Section 5 component specifications is consolidated here for cross-cutting visibility.
+This section maps all service-to-service dependencies, data flows, external integrations, and event subscriptions identified across the Application layer. Every dependency referenced in Section 5 component specifications is consolidated here for cross-cutting visibility into the integration architecture.
+
+The eShop Orders Management platform uses four primary integration patterns: synchronous request/response (HTTP/REST for API communication), asynchronous publish/subscribe (Azure Service Bus for event distribution), event-driven workflow orchestration (Azure Logic Apps for order processing), and platform-managed telemetry export (OTLP and Azure Monitor for observability). Each pattern is documented with its protocol, authentication method, resilience configuration, and error handling strategy.
+
+The integration dependency graph reveals a layered flow: User → Blazor Frontend → Orders API → Database/Service Bus, with asynchronous branching via Logic App workflows that re-enter the API layer through HTTP callbacks. All synchronous integration points are protected by resilience policies (Polly retries, circuit breakers, EF Core retry strategies), while asynchronous paths rely on Service Bus platform guarantees and Logic App stateful workflow durability.
 
 ### Service-to-Service Call Graph
 
@@ -1250,6 +1282,17 @@ config:
 flowchart LR
     accTitle: eShop Orders Management Integration and Data Flow Diagram
     accDescr: Shows service-to-service dependencies, data flows, and event subscriptions across the eShop Orders Management platform
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Frontend["Frontend (Blazor Server)"]
         WebApp["🌐 eShop.Web.App"]
