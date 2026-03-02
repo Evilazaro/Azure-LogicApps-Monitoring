@@ -27,7 +27,7 @@ Strategic alignment demonstrates **Level 3–4 governance maturity** with tag-ba
 | Component Types Covered     | 11 / 11                                           |
 | Average Confidence          | 0.87                                              |
 | Overall Maturity            | 3 - Defined                                       |
-| Diagrams Generated          | 3                                                 |
+| Diagrams Generated          | 6                                                 |
 | Business Domains Identified | Order Management, Monitoring, Platform Operations |
 
 ### Component Distribution
@@ -1046,6 +1046,70 @@ This subsection documents the 7 business events that trigger process execution a
 | **Maturity**      | 4 - Measured                                                                                 |
 | **Source**        | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:5-30` |
 | **Confidence**    | 0.95                                                                                         |
+
+```mermaid
+---
+title: Event-Response Chain — Order Processing
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart LR
+    accTitle: Event-Response Chain for Order Processing
+    accDescr: Shows the complete event chain from order placement through Service Bus messaging, Logic App orchestration, audit creation, and blob cleanup
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph Trigger["🎯 Event Trigger"]
+        E1["📤 OrderPlaced<br/>Domain Event"]:::core
+    end
+
+    subgraph Transport["📡 Message Transport"]
+        SB["📨 Service Bus<br/>Topic: ordersplaced"]:::data
+        SUB["📥 Subscription<br/>orderprocessingsub"]:::data
+    end
+
+    subgraph Processing["⚙️ Logic App Orchestration"]
+        LA["🔄 OrdersPlacedProcess<br/>Workflow Trigger"]:::core
+        PARSE["📋 Parse Order<br/>JSON Payload"]:::neutral
+        PERSIST["💾 Save to SQL<br/>OrderEntity"]:::neutral
+        AUDIT["📝 Create Audit Blob<br/>Blob Storage"]:::neutral
+    end
+
+    subgraph Completion["✅ Event Outcomes"]
+        CLEAN["🧹 Cleanup Blob<br/>After Processing"]:::success
+        METRIC["📊 Emit Metrics<br/>orders.placed counter"]:::success
+        DONE["✅ Order Processed<br/>Complete"]:::success
+    end
+
+    E1 -->|"Publish"| SB
+    SB -->|"Route"| SUB
+    SUB -->|"1s poll"| LA
+    LA -->|"Step 1"| PARSE
+    PARSE -->|"Step 2"| PERSIST
+    PERSIST -->|"Step 3"| AUDIT
+    AUDIT -->|"Step 4"| CLEAN
+    CLEAN -->|"Emit"| METRIC
+    METRIC --> DONE
+
+    style Trigger fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style Transport fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style Processing fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    style Completion fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef data fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    classDef neutral fill:#FAF9F8,stroke:#8A8886,stroke-width:1px,color:#323130
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+```
 
 ### 5.10 Business Objects/Entities Specifications
 
