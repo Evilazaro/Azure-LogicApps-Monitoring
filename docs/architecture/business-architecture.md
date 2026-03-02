@@ -106,6 +106,12 @@ flowchart TB
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
     %% (Semantic + Structural + Font + Accessibility Governance)
     %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph OrderDomain["📦 Order Management Domain"]
         cap1["📊 Order Placement<br/>Maturity: 4 - Measured"]
@@ -136,8 +142,8 @@ flowchart TB
     cap9 --> cap2
     cap10 --> cap1
 
-    style OrderDomain fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style MonitorDomain fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    style OrderDomain fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style MonitorDomain fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
     style PlatformDomain fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
@@ -215,7 +221,7 @@ flowchart TB
 
 ### 2.8 Business Rules (10)
 
-| Name                             | Description                                                                                                                                                                | 
+| Name                             | Description                                                                                                                                                                |
 | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Order Validation (Declarative)   | **Data annotations**: Id required 1-100 chars, CustomerId required 1-100 chars, DeliveryAddress required 5-500 chars, Total range 0.01-max, Products required MinLength(1) |
 | Product Validation (Declarative) | **Data annotations**: ProductDescription 1-500 chars, Quantity range 1-max, Price range 0.01-max                                                                           |
@@ -398,15 +404,21 @@ config:
 ---
 flowchart TB
     accTitle: Capability Maturity Heatmap
-    accDescr: Shows current maturity levels versus target maturity for 10 business capabilities using color-coded indicators from Level 2 (red) through Level 4 (green)
+    accDescr: Shows current maturity levels versus target maturity for 10 business capabilities using color-coded indicators from Level 2 through Level 5
 
     %% ═══════════════════════════════════════════════════════════════════════════
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
     %% (Semantic + Structural + Font + Accessibility Governance)
     %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Legend["📊 Maturity Legend"]
-        L5["⭐ 5 - Optimized"]:::optimized
+        L5["⭐ 5 - Optimized"]:::core
         L4["✅ 4 - Measured"]:::success
         L3["⚠️ 3 - Defined"]:::warning
         L2["🔴 2 - Repeatable"]:::danger
@@ -426,11 +438,11 @@ flowchart TB
     end
 
     subgraph TargetState["🎯 Target Maturity"]
-        T1["⭐ Order Placement<br/>Target: 5"]:::optimized
-        T2["⭐ Batch Processing<br/>Target: 5"]:::optimized
+        T1["⭐ Order Placement<br/>Target: 5"]:::core
+        T2["⭐ Batch Processing<br/>Target: 5"]:::core
         T3["✅ Order Inquiry<br/>Target: 4"]:::success
-        T4["⭐ Lifecycle Mgmt<br/>Target: 5"]:::optimized
-        T5["⭐ Automated Processing<br/>Target: 5"]:::optimized
+        T4["⭐ Lifecycle Mgmt<br/>Target: 5"]:::core
+        T5["⭐ Automated Processing<br/>Target: 5"]:::core
         T6["✅ Audit Trail<br/>Target: 4"]:::success
         T7["✅ Health — DB<br/>Target: 4"]:::success
         T8["✅ Health — Msg<br/>Target: 4"]:::success
@@ -450,10 +462,10 @@ flowchart TB
     C10 -->|"Gap: +2"| T10
 
     style Legend fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
-    style CurrentState fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    style TargetState fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    style CurrentState fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
+    style TargetState fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 
-    classDef optimized fill:#C8E6C9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
     classDef danger fill:#FDE7E9,stroke:#E81123,stroke-width:2px,color:#A4262C
@@ -595,13 +607,13 @@ This subsection documents the 10 business capabilities providing the functional 
 
 #### 5.2.6 Audit Trail Management Capability
 
-| Attribute           | Value                                                                                                 |
-| ------------------- | ----------------------------------------------------------------------------------------------------- |
-| **Capability Name** | Audit Trail Management                                                                                |
-| **Level**           | L1                                                                                                    |
-| **Description**     | Recurrence-triggered blob cleanup with concurrent metadata retrieval and deletion (concurrency: 20)   |
-| **Dependencies**    | Azure Blob Storage, Automated Order Processing                                                        |
-| **KPIs**            | Audit blob operation count (inferred from blob list/delete cycle) — see §2.11 Infrastructure Metrics  |
+| Attribute           | Value                                                                                                |
+| ------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Capability Name** | Audit Trail Management                                                                               |
+| **Level**           | L1                                                                                                   |
+| **Description**     | Recurrence-triggered blob cleanup with concurrent metadata retrieval and deletion (concurrency: 20)  |
+| **Dependencies**    | Azure Blob Storage, Automated Order Processing                                                       |
+| **KPIs**            | Audit blob operation count (inferred from blob list/delete cycle) — see §2.11 Infrastructure Metrics |
 
 #### 5.2.7 Self-Service Order Entry Capability
 
@@ -674,14 +686,14 @@ This subsection documents the 6 value streams that deliver end-to-end business v
 
 #### 5.3.4 Audit Cleanup Value Stream
 
-| Attribute                | Value                                                                                                 |
-| ------------------------ | ----------------------------------------------------------------------------------------------------- |
-| **Value Stream Name**    | Audit Cleanup Flow                                                                                    |
-| **Stages**               | Recurrence (3s) → List Blobs → ForEach (20 concurrent) → Get Metadata → Delete Blob                   |
-| **Entry Point**          | Recurrence timer trigger (3-second interval)                                                          |
-| **Exit Point**           | All processed audit blobs deleted from Azure Blob Storage                                             |
-| **Processes Referenced** | Logic App: Audit Cleanup (§2.4)                                                                       |
-| **Measurable Outcome**   | All audit blobs deleted from storage container, blob count returns to zero after cleanup cycle        |
+| Attribute                | Value                                                                                          |
+| ------------------------ | ---------------------------------------------------------------------------------------------- |
+| **Value Stream Name**    | Audit Cleanup Flow                                                                             |
+| **Stages**               | Recurrence (3s) → List Blobs → ForEach (20 concurrent) → Get Metadata → Delete Blob            |
+| **Entry Point**          | Recurrence timer trigger (3-second interval)                                                   |
+| **Exit Point**           | All processed audit blobs deleted from Azure Blob Storage                                      |
+| **Processes Referenced** | Logic App: Audit Cleanup (§2.4)                                                                |
+| **Measurable Outcome**   | All audit blobs deleted from storage container, blob count returns to zero after cleanup cycle |
 
 #### 5.3.5 UI-to-API Value Entry Stream
 
@@ -772,12 +784,12 @@ This subsection documents the 9 business processes governing order lifecycle ope
 
 #### 5.4.1 Order Placement Process
 
-| Attribute        | Value                                                  |
-| ---------------- | ------------------------------------------------------ |
-| **Process Name** | Order Placement                                        |
-| **Process Type** | Core Business Process                                  |
-| **Trigger**      | HTTP POST /api/Orders                                  |
-| **Owner**        | Orders API Service                                     |
+| Attribute        | Value                 |
+| ---------------- | --------------------- |
+| **Process Name** | Order Placement       |
+| **Process Type** | Core Business Process |
+| **Trigger**      | HTTP POST /api/Orders |
+| **Owner**        | Orders API Service    |
 
 **Process Steps:**
 
@@ -847,12 +859,12 @@ flowchart TB
 
 #### 5.4.2 Logic App: Order Processing Workflow
 
-| Attribute        | Value                                                                                         |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| **Process Name** | Logic App: Order Processing                                                                   |
-| **Process Type** | Automated Stateful Workflow                                                                   |
-| **Trigger**      | Service Bus topic "ordersplaced", subscription "orderprocessingsub"                           |
-| **Owner**        | Azure Logic App (OrdersManagementLogicApp)                                                    |
+| Attribute        | Value                                                               |
+| ---------------- | ------------------------------------------------------------------- |
+| **Process Name** | Logic App: Order Processing                                         |
+| **Process Type** | Automated Stateful Workflow                                         |
+| **Trigger**      | Service Bus topic "ordersplaced", subscription "orderprocessingsub" |
+| **Owner**        | Azure Logic App (OrdersManagementLogicApp)                          |
 
 **Process Steps:**
 
@@ -916,11 +928,11 @@ This subsection documents the 10 business rules governing data integrity, operat
 
 #### 5.8.1 Order Validation Rules (Declarative)
 
-| Attribute      | Value                                           |
-| -------------- | ----------------------------------------------- |
-| **Rule Name**  | Order Validation (Declarative)                  |
-| **Rule Type**  | Data Annotations / Validation Attributes        |
-| **Scope**      | Order domain model (shared across all services) |
+| Attribute     | Value                                           |
+| ------------- | ----------------------------------------------- |
+| **Rule Name** | Order Validation (Declarative)                  |
+| **Rule Type** | Data Annotations / Validation Attributes        |
+| **Scope**     | Order domain model (shared across all services) |
 
 **Validation Constraints:**
 
@@ -934,22 +946,22 @@ This subsection documents the 10 business rules governing data integrity, operat
 
 #### 5.8.2 Idempotency Rule
 
-| Attribute      | Value                                                                                                                                     |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **Rule Name**  | Idempotency Rule                                                                                                                          |
-| **Rule Type**  | Imperative / Runtime Check                                                                                                                |
-| **Scope**      | Order placement operation                                                                                                                 |
-| **Logic**      | Check if order ID exists before saving → skip with AlreadyExists result if duplicate; repository backup via duplicate key exception catch |
+| Attribute     | Value                                                                                                                                     |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rule Name** | Idempotency Rule                                                                                                                          |
+| **Rule Type** | Imperative / Runtime Check                                                                                                                |
+| **Scope**     | Order placement operation                                                                                                                 |
+| **Logic**     | Check if order ID exists before saving → skip with AlreadyExists result if duplicate; repository backup via duplicate key exception catch |
 
 #### 5.8.3 Batch Concurrency Rules
 
-| Attribute           | Value                                                   |
-| ------------------- | ------------------------------------------------------- |
-| **Rule Name**       | Batch Concurrency Rules                                 |
-| **Rule Type**       | Resource Management Policy                              |
-| **Max Concurrency** | SemaphoreSlim(10) — 10 parallel operations              |
-| **Batch Size**      | 50 items per processing batch                           |
-| **Timeout**         | 5 minutes per batch execution                           |
+| Attribute           | Value                                      |
+| ------------------- | ------------------------------------------ |
+| **Rule Name**       | Batch Concurrency Rules                    |
+| **Rule Type**       | Resource Management Policy                 |
+| **Max Concurrency** | SemaphoreSlim(10) — 10 parallel operations |
+| **Batch Size**      | 50 items per processing batch              |
+| **Timeout**         | 5 minutes per batch execution              |
 
 ### 5.9 Business Events Specifications
 
@@ -969,13 +981,13 @@ This subsection documents the 7 business events that trigger process execution a
 
 #### 5.9.2 Service Bus Message Received
 
-| Attribute         | Value                                                                                        |
-| ----------------- | -------------------------------------------------------------------------------------------- |
-| **Event Name**    | Service Bus Message Received                                                                 |
-| **Event Type**    | Infrastructure Trigger                                                                       |
-| **Channel**       | Service Bus subscription "orderprocessingsub" on topic "ordersplaced"                        |
-| **Poll Interval** | 1 second                                                                                     |
-| **Consumer**      | Logic App OrdersPlacedProcess workflow                                                       |
+| Attribute         | Value                                                                 |
+| ----------------- | --------------------------------------------------------------------- |
+| **Event Name**    | Service Bus Message Received                                          |
+| **Event Type**    | Infrastructure Trigger                                                |
+| **Channel**       | Service Bus subscription "orderprocessingsub" on topic "ordersplaced" |
+| **Poll Interval** | 1 second                                                              |
+| **Consumer**      | Logic App OrdersPlacedProcess workflow                                |
 
 ```mermaid
 ---
@@ -1068,14 +1080,14 @@ This subsection documents the 8 business objects forming the domain model of the
 
 #### 5.10.3 OrderDb Database Schema
 
-| Attribute         | Value                                               |
-| ----------------- | --------------------------------------------------- |
-| **Entity Name**   | OrderDb Database Schema                             |
-| **Entity Type**   | Physical Data Model                                 |
-| **Tables**        | Orders, OrderProducts                               |
-| **Relationships** | Orders 1:N OrderProducts (cascade delete)           |
-| **Indexes**       | CustomerId, Date                                    |
-| **Constraints**   | Total decimal(18,2), PK max length 100 chars        |
+| Attribute         | Value                                        |
+| ----------------- | -------------------------------------------- |
+| **Entity Name**   | OrderDb Database Schema                      |
+| **Entity Type**   | Physical Data Model                          |
+| **Tables**        | Orders, OrderProducts                        |
+| **Relationships** | Orders 1:N OrderProducts (cascade delete)    |
+| **Indexes**       | CustomerId, Date                             |
+| **Constraints**   | Total decimal(18,2), PK max length 100 chars |
 
 ### 5.11 KPIs & Metrics Specifications
 
@@ -1083,10 +1095,10 @@ This subsection documents the 7 KPI and metric components providing business obs
 
 #### 5.11.1 Custom Business Metrics Suite
 
-| Attribute        | Value                                                 |
-| ---------------- | ----------------------------------------------------- |
-| **Metric Group** | eShop.Orders.API Custom Metrics                       |
-| **Meter Name**   | eShop.Orders.API                                      |
+| Attribute        | Value                           |
+| ---------------- | ------------------------------- |
+| **Metric Group** | eShop.Orders.API Custom Metrics |
+| **Meter Name**   | eShop.Orders.API                |
 
 **Metrics Defined:**
 
