@@ -12,9 +12,9 @@ tags: [ef-core, migration, sql-azure, database]
 ![SQL Azure](https://img.shields.io/badge/SQL-Azure-0078D4?logo=microsoftazure)
 ![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)
 
-> ℹ️ **Note**: This guide documents the migration from file-based storage to Entity Framework Core.
+> 📌 **Note**: This guide documents the migration from file-based storage to Entity Framework Core.
 >
-> ⏱️ **Estimated time**: 15-30 minutes for new setup
+> 💡 **Estimated time**: 15-30 minutes for new setup
 
 ---
 
@@ -56,7 +56,7 @@ The eShop.Orders.API project has been refactored to use **Entity Framework Core*
 
 ### 1. 📦 NuGet Packages Added
 
-> ℹ️ **Note**: These packages provide EF Core functionality and design-time tooling for SQL Server.
+> 📌 **Note**: These packages provide EF Core functionality and design-time tooling for SQL Server.
 
 | Package                                   | Version | Purpose                       |
 | :---------------------------------------- | :-----: | :---------------------------- |
@@ -107,7 +107,7 @@ The eShop.Orders.API project has been refactored to use **Entity Framework Core*
 
 ## 🗄️ Database Configuration
 
-> 🔒 **Security**: This configuration uses Azure AD authentication for passwordless, secure database access.
+> ⚠️ **Security**: This configuration uses Azure AD authentication for passwordless, secure database access.
 
 ### 🔗 Connection String Format
 
@@ -119,7 +119,7 @@ Server=tcp:{SQL_SERVER_FQDN},1433;Initial Catalog={DATABASE_NAME};Encrypt=True;T
 
 ### 📋 Configuration Placeholders
 
-> ℹ️ **Note**: Replace these placeholders in `appsettings.json` and `appsettings.Development.json`:
+> 📌 **Note**: Replace these placeholders in `appsettings.json` and `appsettings.Development.json`:
 
 | Placeholder         | Description                            | Example                                |
 | :------------------ | :------------------------------------- | :------------------------------------- |
@@ -130,7 +130,7 @@ Server=tcp:{SQL_SERVER_FQDN},1433;Initial Catalog={DATABASE_NAME};Encrypt=True;T
 
 ### 💡 Example Configuration
 
-> ℹ️ **Note**: Replace the placeholder values with your actual Azure SQL Server details.
+> 📌 **Note**: Replace the placeholder values with your actual Azure SQL Server details.
 
 ```json
 {
@@ -146,17 +146,17 @@ Server=tcp:{SQL_SERVER_FQDN},1433;Initial Catalog={DATABASE_NAME};Encrypt=True;T
 
 ## 🔄 Database Migration
 
-> 📋 **Prerequisites**: Ensure the connection string is properly configured in `appsettings.json` before running migrations.
+> ⚠️ **Prerequisites**: Ensure the connection string is properly configured in `appsettings.json` before running migrations.
 
 ### 1. 🛠️ Install EF Core Tools
 
-> 📋 **Prerequisites**: Install the EF Core CLI tools if not already available.
+> ⚠️ **Prerequisites**: Install the EF Core CLI tools if not already available.
 
 ```powershell
 dotnet tool install --global dotnet-ef
 ```
 
-> ✅ **Success**: Expected output: "Tool 'dotnet-ef' was successfully installed."
+> 💡 **Success**: Expected output: "Tool 'dotnet-ef' was successfully installed."
 
 ### 2. 📝 Create Initial Migration
 
@@ -172,7 +172,7 @@ Create the initial migration:
 dotnet ef migrations add InitialCreate
 ```
 
-> ✅ **Success**: This creates a `Migrations` folder with the migration files.
+> 💡 **Success**: This creates a `Migrations` folder with the migration files.
 
 ### 3. 🚀 Update Database Schema
 
@@ -182,7 +182,7 @@ Apply the migration to create the database tables:
 dotnet ef database update
 ```
 
-> ✅ **Success**: Expected output: "Done. Applying migration 'InitialCreate'."
+> 💡 **Success**: Expected output: "Done. Applying migration 'InitialCreate'."
 
 ### 📄 Alternative: Create Migration Script
 
@@ -227,7 +227,7 @@ This creates a `migration.sql` file that can be reviewed and executed by a DBA.
 
 ### 🔗 Relationships
 
-> ℹ️ **Note**: The database uses a one-to-many relationship pattern with cascade delete enabled.
+> 📌 **Note**: The database uses a one-to-many relationship pattern with cascade delete enabled.
 
 - **One-to-many** relationship between Orders and OrderProducts
 - **Cascade delete** enabled — Deleting an order automatically deletes its associated products
@@ -238,7 +238,7 @@ This creates a `migration.sql` file that can be reviewed and executed by a DBA.
 
 ## 🔐 Authentication Requirements
 
-> 🔒 **Security**: The application uses passwordless authentication via Azure Active Directory for enhanced security and compliance.
+> ⚠️ **Security**: The application uses passwordless authentication via Azure Active Directory for enhanced security and compliance.
 
 The application uses **Azure AD authentication** to connect to SQL Azure Database. Ensure:
 
@@ -251,7 +251,7 @@ The application uses **Azure AD authentication** to connect to SQL Azure Databas
 | **Azure AD Authentication** | Enabled on SQL Server (`azureADOnlyAuthentication: true`) |
 | **Entra Admin**             | Managed Identity set as SQL Server admin                  |
 
-> ℹ️ **Note**: The Bicep deployment automatically configures all required authentication settings.
+> 📌 **Note**: The Bicep deployment automatically configures all required authentication settings.
 
 [↑ Back to Top](#entity-framework-core-migration-guide)
 
@@ -297,7 +297,7 @@ Update [appsettings.Development.json](./appsettings.Development.json) to use SQL
 dotnet build
 ```
 
-> ✅ **Success**: Expected output: "Build succeeded. 0 Warning(s) 0 Error(s)".
+> 💡 **Success**: Expected output: "Build succeeded. 0 Warning(s) 0 Error(s)".
 
 ### 2. ▶️ Run the Application
 
@@ -305,7 +305,7 @@ dotnet build
 dotnet run
 ```
 
-> ✅ **Success**: The application should start and display: "Now listening on: http://localhost:5000".
+> 💡 **Success**: The application should start and display: "Now listening on: http://localhost:5000".
 
 ### 3. 🌐 Test Endpoints
 
@@ -318,7 +318,7 @@ The API endpoints remain unchanged:
 | **GET**    | `/api/orders/{id}` | Get a specific order | HTTP 200 OK         |
 | **DELETE** | `/api/orders/{id}` | Delete an order      | HTTP 204 No Content |
 
-> ✅ **Success**: If the application responds to API requests successfully, the migration is complete.
+> 💡 **Success**: If the application responds to API requests successfully, the migration is complete.
 
 [↑ Back to Top](#entity-framework-core-migration-guide)
 
@@ -328,7 +328,7 @@ The API endpoints remain unchanged:
 
 > ⚠️ **Warning**: Only use rollback if absolutely necessary. This reverts to the less scalable file-based storage and should be considered a temporary measure.
 
-> 🔧 **Troubleshooting**: Follow these steps in the exact order shown to safely revert to the previous storage implementation.
+> ⚠️ **Troubleshooting**: Follow these steps in the exact order shown to safely revert to the previous storage implementation.
 
 ### Rollback Steps
 
@@ -358,7 +358,7 @@ The API endpoints remain unchanged:
    Remove-Item -Recurse -Force Data
    ```
 
-> ℹ️ **Note**: After rollback, rebuild the project with `dotnet build` and verify all endpoints work correctly.
+> 📌 **Note**: After rollback, rebuild the project with `dotnet build` and verify all endpoints work correctly.
 
 [↑ Back to Top](#entity-framework-core-migration-guide)
 
