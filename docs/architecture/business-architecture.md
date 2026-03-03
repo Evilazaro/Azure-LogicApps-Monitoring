@@ -2,7 +2,7 @@
 
 ---
 
-## 1. Executive Summary
+## 📋 1. Executive Summary
 
 ### Overview
 
@@ -14,7 +14,7 @@ A total of **50 Business layer components** were identified across **10 of 11** 
 
 ---
 
-## 2. Architecture Landscape
+## 🏗️ 2. Architecture Landscape
 
 ### Overview
 
@@ -22,7 +22,7 @@ This section provides a structured inventory of all Business layer components de
 
 The inventory covers the full eShop order management domain, spanning strategic objectives through operational metrics. Components were classified using the **Layer Classification Decision Tree** to ensure only business-intent artifacts are included, with the documented focus on business semantics rather than implementation details.
 
-### 2.1 Business Strategy (5)
+### 🎯 2.1 Business Strategy (5)
 
 | Name                              | Description                                                                                                                                                        |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -32,7 +32,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 | Cloud-Native Scalability          | **Strategic goal** for elastic auto-scaling with serverless workload profiles and up to 20 workers for Logic App processing                                        |
 | Zero Trust Security               | **Strategic goal** for Managed Identity authentication, TLS 1.2+ enforcement, and elimination of stored secrets                                                    |
 
-### 2.2 Business Capabilities (7)
+### 💡 2.2 Business Capabilities (7)
 
 | Name                          | Description                                                                                                                                                        |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -44,14 +44,14 @@ The inventory covers the full eShop order management domain, spanning strategic 
 | Order Completion Cleanup      | **Core capability** for periodic sweeping and deletion of successfully processed order blobs with concurrency control (20 parallel)                                |
 | Self-Service Order Management | **Core capability** for interactive order placement, search, viewing, listing, and deletion via Blazor web frontend                                                |
 
-### 2.3 Value Streams (2)
+### 🔗 2.3 Value Streams (2)
 
 | Name                    | Description                                                                                                                                                                                                                          |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Order Lifecycle         | **End-to-end value stream** from customer order placement through API validation, persistence, event publishing, workflow-based processing, outcome routing, and cleanup — with metrics tracked throughout                           |
 | Infrastructure Delivery | **End-to-end value stream** spanning the CI/CD lifecycle from code commit through build/test validation, Bicep infrastructure provisioning, secret configuration, sample data seeding, workflow deployment, and container publishing |
 
-### 2.4 Business Processes (6)
+### 🔄 2.4 Business Processes (6)
 
 | Name                                 | Description                                                                                                                                                                                                           |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -62,7 +62,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 | Order Deletion Flow                  | **Order removal process** that verifies existence, performs cascade deletion of order and associated products, and records deletion metrics                                                                           |
 | Batch Deletion Flow                  | **Parallel deletion process** that deletes multiple orders concurrently using scoped database contexts per item with continuation on individual errors                                                                |
 
-### 2.5 Business Services (5)
+### ⚙️ 2.5 Business Services (5)
 
 | Name                             | Description                                                                                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -72,7 +72,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 | Order Processing Workflow Engine | **Logic App Standard stateful workflow** transforming Service Bus events into API calls and routing processing outcomes to blob storage                                                    |
 | Order Data Repository            | **Data access service** providing order persistence with EF Core including save, paginated retrieval, existence checking, deletion, and internal timeout enforcement (30s write, 15s read) |
 
-### 2.6 Business Functions (0)
+### 🏢 2.6 Business Functions (0)
 
 | Name         | Description                                                                                                 |
 | ------------ | ----------------------------------------------------------------------------------------------------------- |
@@ -80,7 +80,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 **Recommend** establishing functional ownership mapping for order management, fulfillment, and customer operations.
 
-### 2.7 Business Roles & Actors (4)
+### 👤 2.7 Business Roles & Actors (4)
 
 | Name                    | Description                                                                                                                                                     |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -89,7 +89,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 | Operations Team         | **Human actor** who monitors platform health via Application Insights dashboards, lists all orders, and performs batch deletion operations from the admin UI    |
 | Platform Infrastructure | **System actor** — .NET Aspire orchestrator and Azure Developer CLI that manages service composition, deployment lifecycle, secret management, and auto-scaling |
 
-### 2.8 Business Rules (7)
+### 📋 2.8 Business Rules (7)
 
 | Name                       | Description                                                                                                 |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -101,7 +101,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 | Duplicate Order Prevention | **Idempotency rule** returning 409 Conflict when an order with the same ID already exists in the database   |
 | Delivery Address Required  | **Mandatory field rule** requiring a delivery address of 5-500 characters on every order                    |
 
-### 2.9 Business Events (5)
+### ⚡ 2.9 Business Events (5)
 
 | Name                      | Description                                                                                                                                                                             |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -111,7 +111,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 | Order Processing Callback | **Integration event** — workflow POSTs decoded order payload to the Processing API endpoint; HTTP 201 indicates success, other status codes route to error handling                     |
 | Recurrence Trigger        | **Timer trigger** — cleanup workflow fires every 3 seconds (CST timezone) to sweep successfully processed order blobs                                                                   |
 
-### 2.10 Business Objects/Entities (5)
+### 📦 2.10 Business Objects/Entities (5)
 
 | Name                     | Description                                                                                                                                                                             |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -121,7 +121,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 | OrderProductEntity       | **Persistence entity** mapping OrderProduct to the "OrderProducts" table with foreign key to OrderEntity and cascade delete behavior                                                    |
 | OrderMessageWithMetadata | **Message envelope object** wrapping an Order with messaging metadata including MessageId, SequenceNumber, EnqueuedTime, ContentType, Subject, CorrelationId, and ApplicationProperties |
 
-### 2.11 KPIs & Metrics (4)
+### 📈 2.11 KPIs & Metrics (4)
 
 | Name                             | Description                                                                                                               |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -130,7 +130,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 | eShop.orders.processing.errors   | **Counter metric** tracking the total number of order processing errors — measures failure rate and reliability           |
 | eShop.orders.deleted             | **Counter metric** tracking the total number of orders successfully deleted — measures data lifecycle management activity |
 
-### Business Capability Map
+### 🗺️ Business Capability Map
 
 ```mermaid
 ---
@@ -182,7 +182,7 @@ flowchart TB
     classDef external fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
-### Value Stream Canvas
+### 🎨 Value Stream Canvas
 
 ```mermaid
 ---
@@ -242,7 +242,7 @@ The primary gap is the absence of formally defined **Business Functions** (organ
 
 ---
 
-## 3. Architecture Principles
+## ⚖️ 3. Architecture Principles
 
 ### Overview
 
@@ -250,7 +250,7 @@ This section documents the business architecture principles observed in the sour
 
 The principles reflect a **cloud-native, event-driven design philosophy** with strong emphasis on operational resilience, scalability, and observability. These principles guide how business capabilities are implemented, how processes interact, and how the platform maintains reliability under load.
 
-### 3.1 Event-Driven Decoupling
+### 🛡️ 3.1 Event-Driven Decoupling
 
 | Attribute               | Value                                                                                                                                                                                                            |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -258,7 +258,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 | **Rationale**           | Decoupling the order placement process from downstream processing enables independent scaling, fault isolation, and operational resilience — the API remains available even when workflow processors are offline |
 | **Implications**        | Introduces eventual consistency between order placement and processing; requires dead-letter queue monitoring and message retry policies                                                                         |
 
-### 3.2 Idempotent Operations
+### 🔁 3.2 Idempotent Operations
 
 | Attribute               | Value                                                                                                                                                                                      |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -266,7 +266,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 | **Rationale**           | In an event-driven architecture with at-least-once delivery, duplicate messages are inevitable — idempotency ensures that reprocessing the same order does not create data inconsistencies |
 | **Implications**        | Requires existence checks before persistence; batch operations silently skip already-existing orders rather than failing the entire batch                                                  |
 
-### 3.3 Observability by Default
+### 🔭 3.3 Observability by Default
 
 | Attribute               | Value                                                                                                                                                                                        |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -274,7 +274,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 | **Rationale**           | Enterprise-grade order management requires real-time visibility into throughput, latency, and error rates to meet SLA commitments and enable proactive issue detection                       |
 | **Implications**        | All services must integrate OpenTelemetry instrumentation; counter and histogram metrics are defined at the service layer; distributed trace context is propagated across message boundaries |
 
-### 3.4 Fail-Safe with Graceful Degradation
+### 🛡️ 3.4 Fail-Safe with Graceful Degradation
 
 | Attribute               | Value                                                                                                                                                                           |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -282,7 +282,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 | **Rationale**           | Customer-facing order placement must never fail due to messaging infrastructure issues; the order is the source of truth, and event publishing is a fire-and-forget side effect |
 | **Implications**        | Event publishing failures are logged but do not roll back the order save; requires compensating mechanisms to detect and replay missed events                                   |
 
-### 3.5 Domain Validation at the Boundary
+### ✅ 3.5 Domain Validation at the Boundary
 
 | Attribute               | Value                                                                                                                                                                                                        |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -290,7 +290,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 | **Rationale**           | Enforcing business rules (positive totals, mandatory fields, minimum product counts) at the service boundary prevents invalid data from entering the system and reduces downstream error handling complexity |
 | **Implications**        | Shared common types define validation constraints (data annotations) that are enforced across all services; validation errors return structured error responses before any database interaction              |
 
-### 3.6 Automated Process Orchestration
+### 🤖 3.6 Automated Process Orchestration
 
 | Attribute               | Value                                                                                                                                                                               |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -300,7 +300,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 
 ---
 
-## 4. Current State Baseline
+## 📊 4. Current State Baseline
 
 ### Overview
 
@@ -310,7 +310,7 @@ The platform demonstrates a **well-structured event-driven architecture** with w
 
 The current state reflects an architecture that has evolved beyond initial implementation into a **standardized system with quantitative management capabilities** across most capability areas.
 
-### Capability Assessment
+### 📊 Capability Assessment
 
 | Component Type            | Components | Coverage |
 | ------------------------- | ---------- | -------- |
@@ -326,7 +326,7 @@ The current state reflects an architecture that has evolved beyond initial imple
 | Business Objects/Entities | 5          | High     |
 | KPIs & Metrics            | 4          | High     |
 
-### Component Type Overview
+### 📊 Component Type Overview
 
 ```mermaid
 ---
@@ -374,7 +374,7 @@ flowchart TB
     classDef external fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
-### Order Architecture Topology
+### 🏛️ Order Architecture Topology
 
 ```mermaid
 ---
@@ -443,7 +443,7 @@ The primary gaps are the absence of formally defined Business Functions (organiz
 
 ---
 
-## 5. Component Catalog
+## 📦 5. Component Catalog
 
 ### Overview
 
@@ -451,7 +451,7 @@ This section provides detailed specifications for each Business layer component 
 
 The Component Catalog documents **50 components** across **10 of 11** Business Architecture component types. Each component specification includes relationship mappings to other components within the Business layer.
 
-### 5.1 Business Strategy Specifications
+### 🎯 5.1 Business Strategy Specifications
 
 This subsection documents the strategic goals and objectives that drive the eShop Order Management platform. Five strategic goals were identified from README documentation, infrastructure configuration, and web application feature descriptions.
 
@@ -505,7 +505,7 @@ This subsection documents the strategic goals and objectives that drive the eSho
 | **Supported Capabilities** | All capabilities — cross-cutting security concern                                                            |
 | **Measurable Outcome**     | Zero stored credentials in application configuration                                                         |
 
-### 5.2 Business Capabilities Specifications
+### 💡 5.2 Business Capabilities Specifications
 
 This subsection documents the 7 core business capabilities identified in the eShop Order Management platform. Capabilities span the full order lifecycle from placement through automated processing and cleanup.
 
@@ -579,7 +579,7 @@ This subsection documents the 7 core business capabilities identified in the eSh
 | **Dependencies** | Order Management API, Customer / End User, Operations Team                                                  |
 | **KPIs**         | Not detected                                                                                                |
 
-### 5.3 Value Streams Specifications
+### 🔗 5.3 Value Streams Specifications
 
 This subsection documents the 2 end-to-end value streams identified in the eShop Order Management platform. Both value streams span multiple capabilities and processes, demonstrating the flow from customer trigger to value delivery.
 
@@ -605,7 +605,7 @@ This subsection documents the 2 end-to-end value streams identified in the eShop
 | **Processes**          | Preprovision, Provision, Postprovision, Predeploy, Deploy (defined declaratively in azure.yaml)                                                                                             |
 | **Measurable Outcome** | Application deployed to Azure with all infrastructure, secrets, and workflows configured                                                                                                    |
 
-### 5.4 Business Processes Specifications
+### 🔄 5.4 Business Processes Specifications
 
 This subsection documents the 6 operational business processes identified in the eShop Order Management platform. Processes range from synchronous API operations to asynchronous Logic App workflows.
 
@@ -726,7 +726,7 @@ This subsection documents the 6 operational business processes identified in the
 4. Continue on individual errors
 5. Return deletion count
 
-### Order Placement Process Flow
+### 🔄 Order Placement Process Flow
 
 ```mermaid
 ---
@@ -786,7 +786,7 @@ flowchart TB
     classDef external fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
-### Event-Driven Processing Flow
+### ⚡ Event-Driven Processing Flow
 
 ```mermaid
 ---
@@ -843,7 +843,7 @@ flowchart TB
     classDef external fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
-### 5.5 Business Services Specifications
+### ⚙️ 5.5 Business Services Specifications
 
 This subsection documents the 5 business services identified in the eShop Order Management platform. Services span from RESTful API endpoints through business logic orchestration to event messaging and workflow engines.
 
@@ -897,13 +897,13 @@ This subsection documents the 5 business services identified in the eShop Order 
 | **Consumers**    | Order Business Logic Service                                                                                                                                                                 |
 | **Dependencies** | SQL Database (Orders + OrderProducts tables)                                                                                                                                                 |
 
-### 5.6 Business Functions Specifications
+### 🏢 5.6 Business Functions Specifications
 
 This subsection documents organizational functions responsible for Business layer operations. 0 business functions were detected in the analyzed source files; no explicit organizational boundaries or functional ownership structures are defined in the codebase.
 
 See Section 2.6 for summary. No additional specifications detected in source files. **Recommend** establishing functional ownership for: Order Management Operations, Platform Engineering, Customer Experience.
 
-### 5.7 Business Roles & Actors Specifications
+### 👤 5.7 Business Roles & Actors Specifications
 
 This subsection documents the 4 business roles and actors identified through UI interaction patterns, automated workflows, and orchestration configuration.
 
@@ -947,7 +947,7 @@ This subsection documents the 4 business roles and actors identified through UI 
 | **Responsibilities**  | Service orchestration, deployment automation, infrastructure provisioning                                                                |
 | **Capabilities Used** | Infrastructure Delivery value stream                                                                                                     |
 
-### 5.8 Business Rules Specifications
+### 📋 5.8 Business Rules Specifications
 
 This subsection documents the 7 business rules governing order validation and processing in the eShop Order Management platform. All rules are declaratively enforced through data annotations and explicit validation logic.
 
@@ -1021,7 +1021,7 @@ This subsection documents the 7 business rules governing order validation and pr
 | **Enforcement**        | Required attribute + StringLength(5, 500) data annotation       |
 | **Processes Affected** | Place Order Flow, Batch Order Processing                        |
 
-### 5.9 Business Events Specifications
+### ⚡ 5.9 Business Events Specifications
 
 This subsection documents the 5 business events and triggers that drive process execution within the eShop Order Management platform. Events span domain events published to Service Bus, workflow triggers, and integration callbacks.
 
@@ -1077,7 +1077,7 @@ This subsection documents the 5 business events and triggers that drive process 
 | **Triggered Process** | OrdersPlacedCompleteProcess Workflow                                                                           |
 | **Frequency**         | Every 3 seconds                                                                                                |
 
-### 5.10 Business Objects/Entities Specifications
+### 📦 5.10 Business Objects/Entities Specifications
 
 This subsection documents the 5 business domain objects and entities identified in the eShop Order Management platform. Objects span shared domain types, persistence entities, and message envelope objects.
 
@@ -1131,7 +1131,7 @@ This subsection documents the 5 business domain objects and entities identified 
 | **Attributes**    | Order (Order), MessageId (string), SequenceNumber (long), EnqueuedTime (DateTimeOffset), ContentType (string), Subject (string), CorrelationId (string), MessageSize (long), ApplicationProperties (dictionary) |
 | **Relationships** | Wraps Order, Used by Event Messaging Service for message listing                                                                                                                                                |
 
-### 5.11 KPIs & Metrics Specifications
+### 📈 5.11 KPIs & Metrics Specifications
 
 This subsection documents the 4 KPIs and operational metrics identified in the eShop Order Management platform. All metrics are implemented as OpenTelemetry instruments (counters and histograms) with structured tags for dimensional analysis.
 
@@ -1187,7 +1187,7 @@ Key gaps include the absence of formally defined Business Functions (organizatio
 
 ---
 
-## 8. Dependencies & Integration
+## 🔗 8. Dependencies & Integration
 
 ### Overview
 
@@ -1197,7 +1197,7 @@ The platform follows an event-driven microservices pattern with clear separation
 
 Integration patterns leverage Azure-native services (Service Bus for messaging, Blob Storage for outcome persistence, SQL Database for order state) with resilience built in through retry policies, circuit breakers, and fire-and-forget semantics for non-critical operations.
 
-### Capability-to-Process Mappings
+### 📞 Capability-to-Process Mappings
 
 | Capability                    | Primary Process                       | Integration Pattern                                         |
 | ----------------------------- | ------------------------------------- | ----------------------------------------------------------- |
@@ -1209,7 +1209,7 @@ Integration patterns leverage Azure-native services (Service Bus for messaging, 
 | Order Completion Cleanup      | OrdersPlacedCompleteProcess Workflow  | Asynchronous (Timer-triggered Logic App)                    |
 | Self-Service Order Management | Place Order Flow, Order Deletion Flow | Synchronous (Blazor UI to API via HTTP client)              |
 
-### Service-to-Service Integration
+### 🔌 Service-to-Service Integration
 
 | Source             | Target                  | Protocol      | Pattern                     | Data Format             |
 | ------------------ | ----------------------- | ------------- | --------------------------- | ----------------------- |
@@ -1221,7 +1221,7 @@ Integration patterns leverage Azure-native services (Service Bus for messaging, 
 | Cleanup Workflow   | Azure Blob Storage      | HTTP/REST     | Request-Response            | Metadata                |
 | All Services       | OpenTelemetry Collector | OTLP          | Push                        | Traces, Metrics, Logs   |
 
-### Cross-Component Dependency Graph
+### 🗓️ Cross-Component Dependency Graph
 
 ```mermaid
 ---
@@ -1286,7 +1286,7 @@ flowchart TB
     classDef external fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
-### Event Flow Dependencies
+### ⚡ Event Flow Dependencies
 
 | Event               | Producer                     | Consumer                             | Channel                                | Delivery Guarantee                                   |
 | ------------------- | ---------------------------- | ------------------------------------ | -------------------------------------- | ---------------------------------------------------- |
