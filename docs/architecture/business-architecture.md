@@ -4,7 +4,7 @@
 
 ## 📋 1. Executive Summary
 
-### Overview
+### 📖 Overview
 
 This Business Architecture analysis covers the **Azure-LogicApps-Monitoring** repository — an enterprise-grade eShop order management platform that demonstrates cloud-native patterns for monitoring and managing business-critical order workflows with built-in observability. The analysis uses Business Architecture classification to identify and classify all detected components.
 
@@ -16,7 +16,7 @@ A total of **50 Business layer components** were identified across **10 of 11** 
 
 ## 🏗️ 2. Architecture Landscape
 
-### Overview
+### 📖 Overview
 
 This section provides a structured inventory of all Business layer components detected in the Azure-LogicApps-Monitoring repository, organized by the 11 canonical Business Architecture component types.
 
@@ -24,7 +24,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 ### 🎯 2.1 Business Strategy (5)
 
-| Name                              | Description                                                                                                                                                        |
+| 🏷️ Name                              | 📝 Description                                                                                                                                                        |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Enterprise-Grade Order Management | **Strategic objective** to deliver an enterprise-grade order management platform with built-in observability and cloud-native architecture                         |
 | Full Observability                | **Strategic goal** for end-to-end distributed tracing, metrics, and health monitoring across all services using OpenTelemetry                                      |
@@ -34,7 +34,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 ### 💡 2.2 Business Capabilities (7)
 
-| Name                          | Description                                                                                                                                                        |
+| 🏷️ Name                          | 📝 Description                                                                                                                                                        |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Automated Order Processing    | **Core capability** for consuming Service Bus events and orchestrating order processing via Logic App workflows with outcome routing to success/error blob storage |
 | Order Placement               | **Core capability** for accepting, validating, and persisting customer orders with event publishing for downstream processing                                      |
@@ -46,14 +46,14 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 ### 🔗 2.3 Value Streams (2)
 
-| Name                    | Description                                                                                                                                                                                                                          |
+| 🏷️ Name                    | 📝 Description                                                                                                                                                                                                                          |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Order Lifecycle         | **End-to-end value stream** from customer order placement through API validation, persistence, event publishing, workflow-based processing, outcome routing, and cleanup — with metrics tracked throughout                           |
 | Infrastructure Delivery | **End-to-end value stream** spanning the CI/CD lifecycle from code commit through build/test validation, Bicep infrastructure provisioning, secret configuration, sample data seeding, workflow deployment, and container publishing |
 
 ### 🔄 2.4 Business Processes (6)
 
-| Name                                 | Description                                                                                                                                                                                                           |
+| 🏷️ Name                                 | 📝 Description                                                                                                                                                                                                           |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | OrdersPlacedProcess Workflow         | **Stateful Logic App workflow** triggered by Service Bus topic messages that validates content type, calls the Processing API, and routes outcomes to success or error blob containers                                |
 | Place Order Flow                     | **Core order placement process** that validates input, checks for duplicates, saves to database, publishes OrderPlaced event to Service Bus, and records metrics                                                      |
@@ -64,7 +64,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 ### ⚙️ 2.5 Business Services (5)
 
-| Name                             | Description                                                                                                                                                                                |
+| 🏷️ Name                             | 📝 Description                                                                                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Order Management API             | **RESTful HTTP service** exposing order placement, batch placement, processing, retrieval, deletion, and batch deletion endpoints                                                          |
 | Order Business Logic Service     | **Core orchestration service** managing validation, persistence, event publishing, metrics recording, and batch concurrency control for all order operations                               |
@@ -74,7 +74,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 ### 🏢 2.6 Business Functions (0)
 
-| Name         | Description                                                                                                 |
+| 🏷️ Name         | 📝 Description                                                                                                 |
 | ------------ | ----------------------------------------------------------------------------------------------------------- |
 | Not detected | No explicit organizational business function boundaries were identified in the source code or documentation |
 
@@ -82,7 +82,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 ### 👤 2.7 Business Roles & Actors (4)
 
-| Name                    | Description                                                                                                                                                     |
+| 🏷️ Name                    | 📝 Description                                                                                                                                                     |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Order Processing System | **Automated actor** — Logic App workflow that autonomously consumes events, calls the Processing API, and routes outcomes without human intervention            |
 | Customer / End User     | **Human actor** who interacts via the Blazor web UI to place orders (single and batch), search orders by ID, and view order details and products                |
@@ -91,7 +91,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 ### 📋 2.8 Business Rules (7)
 
-| Name                       | Description                                                                                                 |
+| 🏷️ Name                       | 📝 Description                                                                                                 |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Order ID Validation        | **Mandatory field rule** requiring non-empty, non-whitespace Order ID on every order                        |
 | Customer ID Required       | **Mandatory field rule** requiring a Customer ID of 1-100 characters on every order                         |
@@ -103,7 +103,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 ### ⚡ 2.9 Business Events (5)
 
-| Name                      | Description                                                                                                                                                                             |
+| 🏷️ Name                      | 📝 Description                                                                                                                                                                             |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | OrderPlaced Event         | **Domain event** published to Service Bus topic with Subject="OrderPlaced", JSON payload, and distributed trace context (TraceId, SpanId, TraceParent) with 3-retry exponential backoff |
 | Service Bus Topic Trigger | **Workflow trigger** — Logic App polls Service Bus topic subscription every 1 second for new order messages to process                                                                  |
@@ -113,7 +113,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 ### 📦 2.10 Business Objects/Entities (5)
 
-| Name                     | Description                                                                                                                                                                             |
+| 🏷️ Name                     | 📝 Description                                                                                                                                                                             |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Order                    | **Core domain object** representing a customer order with Id, CustomerId, Date, DeliveryAddress, Total, and Products collection — shared across all services                            |
 | OrderProduct             | **Domain value object** representing a line item within an order with Id, OrderId, ProductId, ProductDescription, Quantity, and Price                                                   |
@@ -123,7 +123,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 ### 📈 2.11 KPIs & Metrics (4)
 
-| Name                             | Description                                                                                                               |
+| 🏷️ Name                             | 📝 Description                                                                                                               |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | eShop.orders.placed              | **Counter metric** tracking the total number of orders successfully placed — measures business throughput                 |
 | eShop.orders.processing.duration | **Histogram metric** tracking time taken to process order operations in milliseconds — measures processing efficiency     |
@@ -234,7 +234,7 @@ flowchart LR
     classDef external fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
-### Summary
+### 📝 Summary
 
 The Architecture Landscape documents **50 components** across **10 of 11** Business Architecture component types. The dominant patterns are **event-driven order processing**, **comprehensive business rule enforcement**, and fully instrumented counter/histogram metrics.
 
@@ -244,7 +244,7 @@ The primary gap is the absence of formally defined **Business Functions** (organ
 
 ## ⚖️ 3. Architecture Principles
 
-### Overview
+### 📖 Overview
 
 This section documents the business architecture principles observed in the source code, infrastructure configuration, and deployment lifecycle of the eShop Order Management platform. Each principle is derived from **concrete implementation evidence** rather than assumed or inferred without source backing.
 
@@ -252,7 +252,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 
 ### 🛡️ 3.1 Event-Driven Decoupling
 
-| Attribute               | Value                                                                                                                                                                                                            |
+| 📋 Attribute               | 📌 Value                                                                                                                                                                                                            |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Principle Statement** | Business processes must be decoupled through asynchronous event-driven messaging rather than synchronous point-to-point integration                                                                              |
 | **Rationale**           | Decoupling the order placement process from downstream processing enables independent scaling, fault isolation, and operational resilience — the API remains available even when workflow processors are offline |
@@ -260,7 +260,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 
 ### 🔁 3.2 Idempotent Operations
 
-| Attribute               | Value                                                                                                                                                                                      |
+| 📋 Attribute               | 📌 Value                                                                                                                                                                                      |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Principle Statement** | All order processing operations must be idempotent to support safe retries and duplicate message handling                                                                                  |
 | **Rationale**           | In an event-driven architecture with at-least-once delivery, duplicate messages are inevitable — idempotency ensures that reprocessing the same order does not create data inconsistencies |
@@ -268,7 +268,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 
 ### 🔭 3.3 Observability by Default
 
-| Attribute               | Value                                                                                                                                                                                        |
+| 📋 Attribute               | 📌 Value                                                                                                                                                                                        |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Principle Statement** | Every business operation must emit structured telemetry (metrics, traces, logs) as a first-class architectural concern, not an afterthought                                                  |
 | **Rationale**           | Enterprise-grade order management requires real-time visibility into throughput, latency, and error rates to meet SLA commitments and enable proactive issue detection                       |
@@ -276,7 +276,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 
 ### 🛡️ 3.4 Fail-Safe with Graceful Degradation
 
-| Attribute               | Value                                                                                                                                                                           |
+| 📋 Attribute               | 📌 Value                                                                                                                                                                           |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Principle Statement** | Business operations must complete their primary objective even when secondary integrations fail — order persistence takes precedence over event publishing                      |
 | **Rationale**           | Customer-facing order placement must never fail due to messaging infrastructure issues; the order is the source of truth, and event publishing is a fire-and-forget side effect |
@@ -284,7 +284,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 
 ### ✅ 3.5 Domain Validation at the Boundary
 
-| Attribute               | Value                                                                                                                                                                                                        |
+| 📋 Attribute               | 📌 Value                                                                                                                                                                                                        |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Principle Statement** | All business rules must be validated at the domain boundary before persistence, using declarative constraints and explicit validation logic                                                                  |
 | **Rationale**           | Enforcing business rules (positive totals, mandatory fields, minimum product counts) at the service boundary prevents invalid data from entering the system and reduces downstream error handling complexity |
@@ -292,7 +292,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 
 ### 🤖 3.6 Automated Process Orchestration
 
-| Attribute               | Value                                                                                                                                                                               |
+| 📋 Attribute               | 📌 Value                                                                                                                                                                               |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Principle Statement** | Repeatable business processes must be automated through declarative workflow definitions rather than imperative code, enabling visual process monitoring and management             |
 | **Rationale**           | Logic App Standard workflows provide stateful execution with built-in retry policies, outcome routing, and operational dashboards — reducing the need for custom orchestration code |
@@ -302,7 +302,7 @@ The principles reflect a **cloud-native, event-driven design philosophy** with s
 
 ## 📊 4. Current State Baseline
 
-### Overview
+### 📖 Overview
 
 This section captures the current performance characteristics of the eShop Order Management Business Architecture. The analysis evaluates capability coverage, process efficiency, organizational readiness, and operational health.
 
@@ -312,7 +312,7 @@ The current state reflects an architecture that has evolved beyond initial imple
 
 ### 📊 Capability Assessment
 
-| Component Type            | Components | Coverage |
+| 🧩 Component Type            | 🔢 Components | 📊 Coverage |
 | ------------------------- | ---------- | -------- |
 | Business Strategy         | 5          | High     |
 | Business Capabilities     | 7          | High     |
@@ -435,7 +435,7 @@ flowchart TB
     classDef external fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
-### Summary
+### 📝 Summary
 
 The current state baseline reveals a well-instrumented, event-driven order management platform. The strongest areas are KPIs & Metrics (fully optimized with dedicated OpenTelemetry counters and histograms) and Business Rules (comprehensive declarative validation with data annotation constraints). Business Services and Business Objects also demonstrate strong standardization through well-defined interfaces and shared domain types.
 
@@ -445,7 +445,7 @@ The primary gaps are the absence of formally defined Business Functions (organiz
 
 ## 📦 5. Component Catalog
 
-### Overview
+### 📖 Overview
 
 This section provides detailed specifications for each Business layer component type identified in the eShop Order Management platform. Components are documented with expanded attributes, relationships, embedded process flow diagrams, and cross-references to the Architecture Landscape inventory in Section 2.
 
@@ -457,7 +457,7 @@ This subsection documents the strategic goals and objectives that drive the eSho
 
 #### 5.1.1 Enterprise-Grade Order Management
 
-| Attribute                  | Value                                                                                                                                   |
+| 📋 Attribute                  | 📌 Value                                                                                                                                   |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**                   | Enterprise-Grade Order Management                                                                                                       |
 | **Type**                   | Strategic Objective                                                                                                                     |
@@ -467,7 +467,7 @@ This subsection documents the strategic goals and objectives that drive the eSho
 
 #### 5.1.2 Full Observability
 
-| Attribute                  | Value                                                                                                                           |
+| 📋 Attribute                  | 📌 Value                                                                                                                           |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**                   | Full Observability                                                                                                              |
 | **Type**                   | Strategic Goal                                                                                                                  |
@@ -477,7 +477,7 @@ This subsection documents the strategic goals and objectives that drive the eSho
 
 #### 5.1.3 Operational Resilience
 
-| Attribute                  | Value                                                                                                                                                            |
+| 📋 Attribute                  | 📌 Value                                                                                                                                                            |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**                   | Operational Resilience                                                                                                                                           |
 | **Type**                   | Strategic Goal                                                                                                                                                   |
@@ -487,7 +487,7 @@ This subsection documents the strategic goals and objectives that drive the eSho
 
 #### 5.1.4 Cloud-Native Scalability
 
-| Attribute                  | Value                                                                                                         |
+| 📋 Attribute                  | 📌 Value                                                                                                         |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | **Name**                   | Cloud-Native Scalability                                                                                      |
 | **Type**                   | Strategic Goal                                                                                                |
@@ -497,7 +497,7 @@ This subsection documents the strategic goals and objectives that drive the eSho
 
 #### 5.1.5 Zero Trust Security
 
-| Attribute                  | Value                                                                                                        |
+| 📋 Attribute                  | 📌 Value                                                                                                        |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | **Name**                   | Zero Trust Security                                                                                          |
 | **Type**                   | Strategic Goal                                                                                               |
@@ -511,7 +511,7 @@ This subsection documents the 7 core business capabilities identified in the eSh
 
 #### 5.2.1 Automated Order Processing
 
-| Attribute        | Value                                                                                                                                        |
+| 📋 Attribute        | 📌 Value                                                                                                                                        |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**         | Automated Order Processing                                                                                                                   |
 | **Type**         | Core Business Capability                                                                                                                     |
@@ -521,7 +521,7 @@ This subsection documents the 7 core business capabilities identified in the eSh
 
 #### 5.2.2 Order Placement
 
-| Attribute        | Value                                                                                                      |
+| 📋 Attribute        | 📌 Value                                                                                                      |
 | ---------------- | ---------------------------------------------------------------------------------------------------------- |
 | **Name**         | Order Placement                                                                                            |
 | **Type**         | Core Business Capability                                                                                   |
@@ -531,7 +531,7 @@ This subsection documents the 7 core business capabilities identified in the eSh
 
 #### 5.2.3 Batch Order Placement
 
-| Attribute        | Value                                                                                                                                       |
+| 📋 Attribute        | 📌 Value                                                                                                                                       |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**         | Batch Order Placement                                                                                                                       |
 | **Type**         | Core Business Capability                                                                                                                    |
@@ -541,7 +541,7 @@ This subsection documents the 7 core business capabilities identified in the eSh
 
 #### 5.2.4 Order Retrieval
 
-| Attribute        | Value                                                                                                         |
+| 📋 Attribute        | 📌 Value                                                                                                         |
 | ---------------- | ------------------------------------------------------------------------------------------------------------- |
 | **Name**         | Order Retrieval                                                                                               |
 | **Type**         | Core Business Capability                                                                                      |
@@ -551,7 +551,7 @@ This subsection documents the 7 core business capabilities identified in the eSh
 
 #### 5.2.5 Order Deletion
 
-| Attribute        | Value                                                                                                        |
+| 📋 Attribute        | 📌 Value                                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------------ |
 | **Name**         | Order Deletion                                                                                               |
 | **Type**         | Core Business Capability                                                                                     |
@@ -561,7 +561,7 @@ This subsection documents the 7 core business capabilities identified in the eSh
 
 #### 5.2.6 Order Completion Cleanup
 
-| Attribute        | Value                                                                                                         |
+| 📋 Attribute        | 📌 Value                                                                                                         |
 | ---------------- | ------------------------------------------------------------------------------------------------------------- |
 | **Name**         | Order Completion Cleanup                                                                                      |
 | **Type**         | Core Business Capability                                                                                      |
@@ -571,7 +571,7 @@ This subsection documents the 7 core business capabilities identified in the eSh
 
 #### 5.2.7 Self-Service Order Management
 
-| Attribute        | Value                                                                                                       |
+| 📋 Attribute        | 📌 Value                                                                                                       |
 | ---------------- | ----------------------------------------------------------------------------------------------------------- |
 | **Name**         | Self-Service Order Management                                                                               |
 | **Type**         | Core Business Capability                                                                                    |
@@ -585,7 +585,7 @@ This subsection documents the 2 end-to-end value streams identified in the eShop
 
 #### 5.3.1 Order Lifecycle Value Stream
 
-| Attribute              | Value                                                                                                                                                                          |
+| 📋 Attribute              | 📌 Value                                                                                                                                                                          |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Name**               | Order Lifecycle                                                                                                                                                                |
 | **Type**               | Primary Value Stream                                                                                                                                                           |
@@ -596,7 +596,7 @@ This subsection documents the 2 end-to-end value streams identified in the eShop
 
 #### 5.3.2 Infrastructure Delivery Value Stream
 
-| Attribute              | Value                                                                                                                                                                                       |
+| 📋 Attribute              | 📌 Value                                                                                                                                                                                       |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**               | Infrastructure Delivery                                                                                                                                                                     |
 | **Type**               | Supporting Value Stream                                                                                                                                                                     |
@@ -611,7 +611,7 @@ This subsection documents the 6 operational business processes identified in the
 
 #### 5.4.1 OrdersPlacedProcess Workflow
 
-| Attribute        | Value                                                                     |
+| 📋 Attribute        | 📌 Value                                                                     |
 | ---------------- | ------------------------------------------------------------------------- |
 | **Name**         | OrdersPlacedProcess Workflow                                              |
 | **Process Type** | Stateful Logic App Workflow                                               |
@@ -635,7 +635,7 @@ This subsection documents the 6 operational business processes identified in the
 
 #### 5.4.2 Place Order Flow
 
-| Attribute        | Value                        |
+| 📋 Attribute        | 📌 Value                        |
 | ---------------- | ---------------------------- |
 | **Name**         | Place Order Flow             |
 | **Process Type** | Synchronous API Operation    |
@@ -662,7 +662,7 @@ This subsection documents the 6 operational business processes identified in the
 
 #### 5.4.3 OrdersPlacedCompleteProcess Workflow
 
-| Attribute        | Value                                     |
+| 📋 Attribute        | 📌 Value                                     |
 | ---------------- | ----------------------------------------- |
 | **Name**         | OrdersPlacedCompleteProcess Workflow      |
 | **Process Type** | Stateful Logic App Workflow               |
@@ -677,7 +677,7 @@ This subsection documents the 6 operational business processes identified in the
 
 #### 5.4.4 Batch Order Processing
 
-| Attribute        | Value                          |
+| 📋 Attribute        | 📌 Value                          |
 | ---------------- | ------------------------------ |
 | **Name**         | Batch Order Processing         |
 | **Process Type** | Asynchronous Batch Operation   |
@@ -696,7 +696,7 @@ This subsection documents the 6 operational business processes identified in the
 
 #### 5.4.5 Order Deletion Flow
 
-| Attribute        | Value                           |
+| 📋 Attribute        | 📌 Value                           |
 | ---------------- | ------------------------------- |
 | **Name**         | Order Deletion Flow             |
 | **Process Type** | Synchronous API Operation       |
@@ -711,7 +711,7 @@ This subsection documents the 6 operational business processes identified in the
 
 #### 5.4.6 Batch Deletion Flow
 
-| Attribute        | Value                                 |
+| 📋 Attribute        | 📌 Value                                 |
 | ---------------- | ------------------------------------- |
 | **Name**         | Batch Deletion Flow                   |
 | **Process Type** | Asynchronous Batch Operation          |
@@ -849,7 +849,7 @@ This subsection documents the 5 business services identified in the eShop Order 
 
 #### 5.5.1 Order Management API
 
-| Attribute        | Value                                                                                                                                          |
+| 📋 Attribute        | 📌 Value                                                                                                                                          |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**         | Order Management API                                                                                                                           |
 | **Service Type** | RESTful HTTP Service                                                                                                                           |
@@ -859,7 +859,7 @@ This subsection documents the 5 business services identified in the eShop Order 
 
 #### 5.5.2 Order Business Logic Service
 
-| Attribute        | Value                                                                                                                             |
+| 📋 Attribute        | 📌 Value                                                                                                                             |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**         | Order Business Logic Service                                                                                                      |
 | **Service Type** | Domain Service                                                                                                                    |
@@ -869,7 +869,7 @@ This subsection documents the 5 business services identified in the eShop Order 
 
 #### 5.5.3 Event Messaging Service
 
-| Attribute        | Value                                                                                                                                                                |
+| 📋 Attribute        | 📌 Value                                                                                                                                                                |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**         | Event Messaging Service                                                                                                                                              |
 | **Service Type** | Messaging Publisher                                                                                                                                                  |
@@ -879,7 +879,7 @@ This subsection documents the 5 business services identified in the eShop Order 
 
 #### 5.5.4 Order Processing Workflow Engine
 
-| Attribute        | Value                                                                                                                  |
+| 📋 Attribute        | 📌 Value                                                                                                                  |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | **Name**         | Order Processing Workflow Engine                                                                                       |
 | **Service Type** | Logic App Standard Stateful Workflow                                                                                   |
@@ -889,7 +889,7 @@ This subsection documents the 5 business services identified in the eShop Order 
 
 #### 5.5.5 Order Data Repository
 
-| Attribute        | Value                                                                                                                                                                                        |
+| 📋 Attribute        | 📌 Value                                                                                                                                                                                        |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**         | Order Data Repository                                                                                                                                                                        |
 | **Service Type** | Data Access Service                                                                                                                                                                          |
@@ -909,7 +909,7 @@ This subsection documents the 4 business roles and actors identified through UI 
 
 #### 5.7.1 Order Processing System
 
-| Attribute              | Value                                                                                                                                                      |
+| 📋 Attribute              | 📌 Value                                                                                                                                                      |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**               | Order Processing System                                                                                                                                    |
 | **Role Type**          | Automated Actor                                                                                                                                            |
@@ -919,7 +919,7 @@ This subsection documents the 4 business roles and actors identified through UI 
 
 #### 5.7.2 Customer / End User
 
-| Attribute             | Value                                                                                                                          |
+| 📋 Attribute             | 📌 Value                                                                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | **Name**              | Customer / End User                                                                                                            |
 | **Role Type**         | Human Actor                                                                                                                    |
@@ -929,7 +929,7 @@ This subsection documents the 4 business roles and actors identified through UI 
 
 #### 5.7.3 Operations Team
 
-| Attribute             | Value                                                                                                                                     |
+| 📋 Attribute             | 📌 Value                                                                                                                                     |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**              | Operations Team                                                                                                                           |
 | **Role Type**         | Human Actor                                                                                                                               |
@@ -939,7 +939,7 @@ This subsection documents the 4 business roles and actors identified through UI 
 
 #### 5.7.4 Platform Infrastructure
 
-| Attribute             | Value                                                                                                                                    |
+| 📋 Attribute             | 📌 Value                                                                                                                                    |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**              | Platform Infrastructure                                                                                                                  |
 | **Role Type**         | System Actor                                                                                                                             |
@@ -953,7 +953,7 @@ This subsection documents the 7 business rules governing order validation and pr
 
 #### 5.8.1 Order ID Validation
 
-| Attribute              | Value                                                                |
+| 📋 Attribute              | 📌 Value                                                                |
 | ---------------------- | -------------------------------------------------------------------- |
 | **Name**               | Order ID Validation                                                  |
 | **Rule Type**          | Mandatory Field Validation                                           |
@@ -963,7 +963,7 @@ This subsection documents the 7 business rules governing order validation and pr
 
 #### 5.8.2 Customer ID Required
 
-| Attribute              | Value                                                                 |
+| 📋 Attribute              | 📌 Value                                                                 |
 | ---------------------- | --------------------------------------------------------------------- |
 | **Name**               | Customer ID Required                                                  |
 | **Rule Type**          | Mandatory Field Validation                                            |
@@ -973,7 +973,7 @@ This subsection documents the 7 business rules governing order validation and pr
 
 #### 5.8.3 Positive Order Total
 
-| Attribute              | Value                                                                                  |
+| 📋 Attribute              | 📌 Value                                                                                  |
 | ---------------------- | -------------------------------------------------------------------------------------- |
 | **Name**               | Positive Order Total                                                                   |
 | **Rule Type**          | Monetary Validation                                                                    |
@@ -983,7 +983,7 @@ This subsection documents the 7 business rules governing order validation and pr
 
 #### 5.8.4 Minimum Product Count
 
-| Attribute              | Value                                                                     |
+| 📋 Attribute              | 📌 Value                                                                     |
 | ---------------------- | ------------------------------------------------------------------------- |
 | **Name**               | Minimum Product Count                                                     |
 | **Rule Type**          | Order Completeness Validation                                             |
@@ -993,7 +993,7 @@ This subsection documents the 7 business rules governing order validation and pr
 
 #### 5.8.5 Positive Product Price
 
-| Attribute              | Value                                                                                           |
+| 📋 Attribute              | 📌 Value                                                                                           |
 | ---------------------- | ----------------------------------------------------------------------------------------------- |
 | **Name**               | Positive Product Price                                                                          |
 | **Rule Type**          | Line-Item Pricing Validation                                                                    |
@@ -1003,7 +1003,7 @@ This subsection documents the 7 business rules governing order validation and pr
 
 #### 5.8.6 Duplicate Order Prevention
 
-| Attribute              | Value                                                                                                |
+| 📋 Attribute              | 📌 Value                                                                                                |
 | ---------------------- | ---------------------------------------------------------------------------------------------------- |
 | **Name**               | Duplicate Order Prevention                                                                           |
 | **Rule Type**          | Idempotency Rule                                                                                     |
@@ -1013,7 +1013,7 @@ This subsection documents the 7 business rules governing order validation and pr
 
 #### 5.8.7 Delivery Address Required
 
-| Attribute              | Value                                                           |
+| 📋 Attribute              | 📌 Value                                                           |
 | ---------------------- | --------------------------------------------------------------- |
 | **Name**               | Delivery Address Required                                       |
 | **Rule Type**          | Mandatory Field Validation                                      |
@@ -1027,7 +1027,7 @@ This subsection documents the 5 business events and triggers that drive process 
 
 #### 5.9.1 OrderPlaced Event
 
-| Attribute        | Value                                                                                                                                                                                        |
+| 📋 Attribute        | 📌 Value                                                                                                                                                                                        |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**         | OrderPlaced Event                                                                                                                                                                            |
 | **Event Type**   | Domain Event                                                                                                                                                                                 |
@@ -1038,7 +1038,7 @@ This subsection documents the 5 business events and triggers that drive process 
 
 #### 5.9.2 Service Bus Topic Trigger
 
-| Attribute             | Value                                                                                                                    |
+| 📋 Attribute             | 📌 Value                                                                                                                    |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | **Name**              | Service Bus Topic Trigger                                                                                                |
 | **Event Type**        | Workflow Trigger                                                                                                         |
@@ -1048,7 +1048,7 @@ This subsection documents the 5 business events and triggers that drive process 
 
 #### 5.9.3 OrderPlaced Batch Event
 
-| Attribute       | Value                                                                                                                   |
+| 📋 Attribute       | 📌 Value                                                                                                                   |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | **Name**        | OrderPlaced Batch Event                                                                                                 |
 | **Event Type**  | Batch Domain Event                                                                                                      |
@@ -1058,7 +1058,7 @@ This subsection documents the 5 business events and triggers that drive process 
 
 #### 5.9.4 Order Processing Callback
 
-| Attribute             | Value                                                                                                                                                                    |
+| 📋 Attribute             | 📌 Value                                                                                                                                                                    |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Name**              | Order Processing Callback                                                                                                                                                |
 | **Event Type**        | Integration Event                                                                                                                                                        |
@@ -1069,7 +1069,7 @@ This subsection documents the 5 business events and triggers that drive process 
 
 #### 5.9.5 Recurrence Trigger
 
-| Attribute             | Value                                                                                                          |
+| 📋 Attribute             | 📌 Value                                                                                                          |
 | --------------------- | -------------------------------------------------------------------------------------------------------------- |
 | **Name**              | Recurrence Trigger                                                                                             |
 | **Event Type**        | Timer Trigger                                                                                                  |
@@ -1083,7 +1083,7 @@ This subsection documents the 5 business domain objects and entities identified 
 
 #### 5.10.1 Order
 
-| Attribute         | Value                                                                                                                                                                       |
+| 📋 Attribute         | 📌 Value                                                                                                                                                                       |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**          | Order                                                                                                                                                                       |
 | **Entity Type**   | Core Domain Object                                                                                                                                                          |
@@ -1093,7 +1093,7 @@ This subsection documents the 5 business domain objects and entities identified 
 
 #### 5.10.2 OrderProduct
 
-| Attribute         | Value                                                                                                                             |
+| 📋 Attribute         | 📌 Value                                                                                                                             |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**          | OrderProduct                                                                                                                      |
 | **Entity Type**   | Domain Value Object                                                                                                               |
@@ -1103,7 +1103,7 @@ This subsection documents the 5 business domain objects and entities identified 
 
 #### 5.10.3 OrderEntity
 
-| Attribute         | Value                                                                                                                                                   |
+| 📋 Attribute         | 📌 Value                                                                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**          | OrderEntity                                                                                                                                             |
 | **Entity Type**   | Persistence Entity                                                                                                                                      |
@@ -1113,7 +1113,7 @@ This subsection documents the 5 business domain objects and entities identified 
 
 #### 5.10.4 OrderProductEntity
 
-| Attribute         | Value                                                                                                                            |
+| 📋 Attribute         | 📌 Value                                                                                                                            |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**          | OrderProductEntity                                                                                                               |
 | **Entity Type**   | Persistence Entity                                                                                                               |
@@ -1123,7 +1123,7 @@ This subsection documents the 5 business domain objects and entities identified 
 
 #### 5.10.5 OrderMessageWithMetadata
 
-| Attribute         | Value                                                                                                                                                                                                           |
+| 📋 Attribute         | 📌 Value                                                                                                                                                                                                           |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Name**          | OrderMessageWithMetadata                                                                                                                                                                                        |
 | **Entity Type**   | Message Envelope Object                                                                                                                                                                                         |
@@ -1137,7 +1137,7 @@ This subsection documents the 4 KPIs and operational metrics identified in the e
 
 #### 5.11.1 eShop.orders.placed
 
-| Attribute       | Value                                                                                          |
+| 📋 Attribute       | 📌 Value                                                                                          |
 | --------------- | ---------------------------------------------------------------------------------------------- |
 | **Name**        | eShop.orders.placed                                                                            |
 | **Metric Type** | Counter                                                                                        |
@@ -1148,7 +1148,7 @@ This subsection documents the 4 KPIs and operational metrics identified in the e
 
 #### 5.11.2 eShop.orders.processing.duration
 
-| Attribute       | Value                                                                                                                   |
+| 📋 Attribute       | 📌 Value                                                                                                                   |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | **Name**        | eShop.orders.processing.duration                                                                                        |
 | **Metric Type** | Histogram                                                                                                               |
@@ -1159,7 +1159,7 @@ This subsection documents the 4 KPIs and operational metrics identified in the e
 
 #### 5.11.3 eShop.orders.processing.errors
 
-| Attribute       | Value                                                                                             |
+| 📋 Attribute       | 📌 Value                                                                                             |
 | --------------- | ------------------------------------------------------------------------------------------------- |
 | **Name**        | eShop.orders.processing.errors                                                                    |
 | **Metric Type** | Counter                                                                                           |
@@ -1170,7 +1170,7 @@ This subsection documents the 4 KPIs and operational metrics identified in the e
 
 #### 5.11.4 eShop.orders.deleted
 
-| Attribute       | Value                                                                                                |
+| 📋 Attribute       | 📌 Value                                                                                                |
 | --------------- | ---------------------------------------------------------------------------------------------------- |
 | **Name**        | eShop.orders.deleted                                                                                 |
 | **Metric Type** | Counter                                                                                              |
@@ -1179,7 +1179,7 @@ This subsection documents the 4 KPIs and operational metrics identified in the e
 | **Tags**        | order.id                                                                                             |
 | **Target**      | Not defined — informational metric for lifecycle tracking                                            |
 
-### Summary
+### 📝 Summary
 
 The Component Catalog documents **50 components** across all 11 Business component types, with **10 types populated** and **1 type (Business Functions) not detected**. The most comprehensive components are the KPIs & Metrics, which are fully instrumented with OpenTelemetry counters and histograms providing real-time visibility into order throughput, processing latency, error rates, and deletion activity. Business Rules also demonstrate strong coverage with comprehensive declarative validation enforced through data annotations and explicit validation logic.
 
@@ -1189,7 +1189,7 @@ Key gaps include the absence of formally defined Business Functions (organizatio
 
 ## 🔗 8. Dependencies & Integration
 
-### Overview
+### 📖 Overview
 
 This section documents the cross-component dependencies and integration patterns within the eShop Order Management platform. The analysis maps capability-to-process relationships, service-to-service communication protocols, and event-driven integration flows identified from source code and workflow definitions.
 
@@ -1199,7 +1199,7 @@ Integration patterns leverage Azure-native services (Service Bus for messaging, 
 
 ### 📞 Capability-to-Process Mappings
 
-| Capability                    | Primary Process                       | Integration Pattern                                         |
+| 💡 Capability                    | 🔄 Primary Process                       | 🔗 Integration Pattern                                         |
 | ----------------------------- | ------------------------------------- | ----------------------------------------------------------- |
 | Order Placement               | Place Order Flow                      | Synchronous (HTTP POST to API)                              |
 | Batch Order Placement         | Batch Order Processing                | Synchronous with internal parallelism (SemaphoreSlim)       |
@@ -1211,7 +1211,7 @@ Integration patterns leverage Azure-native services (Service Bus for messaging, 
 
 ### 🔌 Service-to-Service Integration
 
-| Source             | Target                  | Protocol      | Pattern                     | Data Format             |
+| 📤 Source             | 📥 Target                  | 🔌 Protocol      | 🔄 Pattern                     | 📦 Data Format             |
 | ------------------ | ----------------------- | ------------- | --------------------------- | ----------------------- |
 | eShop Web App      | Orders API              | HTTP/REST     | Request-Response            | JSON                    |
 | Orders API         | SQL Database            | TCP (EF Core) | Request-Response            | Entity Framework        |
@@ -1288,14 +1288,14 @@ flowchart TB
 
 ### ⚡ Event Flow Dependencies
 
-| Event               | Producer                     | Consumer                             | Channel                                | Delivery Guarantee                                   |
+| ⚡ Event               | 📤 Producer                     | 📥 Consumer                             | 📡 Channel                                | 🛡️ Delivery Guarantee                                   |
 | ------------------- | ---------------------------- | ------------------------------------ | -------------------------------------- | ---------------------------------------------------- |
 | OrderPlaced         | Order Business Logic Service | OrdersPlacedProcess Workflow         | Azure Service Bus (ordersplaced topic) | At-least-once (14-day TTL, 10 max delivery attempts) |
 | OrderPlaced Batch   | Order Business Logic Service | OrdersPlacedProcess Workflow         | Azure Service Bus (ordersplaced topic) | At-least-once (atomic batch send)                    |
 | Processing Callback | OrdersPlacedProcess Workflow | Orders API                           | HTTP POST (/api/Orders/process)        | Request-Response (synchronous)                       |
 | Recurrence Timer    | Azure Logic Apps runtime     | OrdersPlacedCompleteProcess Workflow | Internal timer (3s interval)           | Best-effort (recurrence-based)                       |
 
-### Summary
+### 📝 Summary
 
 The dependency analysis reveals a **well-structured event-driven architecture** with clear separation between synchronous API operations (HTTP/REST) and asynchronous workflow processing (AMQP/Service Bus). The platform uses **3 primary integration protocols**: HTTP/REST for synchronous communication, AMQP for publish-subscribe messaging, and OTLP for observability data export. All service-to-service communication includes **distributed tracing**, enabling end-to-end visibility across the order lifecycle value stream.
 
