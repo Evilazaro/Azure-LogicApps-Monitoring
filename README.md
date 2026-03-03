@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-blue)](global.json)
 [![Aspire 13.1](https://img.shields.io/badge/Aspire-13.1.0-purple)](app.AppHost/app.AppHost.csproj)
+[![Status: Production](https://img.shields.io/badge/Status-Production-brightgreen)]()
 
 An enterprise-grade monitoring solution for **Azure Logic Apps Standard** built with **.NET Aspire** orchestration. This solution implements an eShop microservices application with an Orders REST API, a Blazor Server frontend, and Logic Apps Standard workflows for automated order processing — all fully observable through **OpenTelemetry** and **Application Insights**.
 
@@ -26,6 +27,8 @@ The solution uses .NET Aspire as an orchestration layer to wire together an Orde
 - [Technology Stack](#technology-stack)
 - [Requirements](#requirements)
 - [Getting Started](#getting-started)
+- [Deployment](#deployment)
+- [Usage](#usage)
 - [Project Structure](#project-structure)
 - [Application Components](#application-components)
 - [Logic Apps Workflows](#logic-apps-workflows)
@@ -253,7 +256,92 @@ dotnet run --project app.AppHost
 
 The Aspire dashboard will be available at `https://localhost:17267` ([app.AppHost/Properties/launchSettings.json](app.AppHost/Properties/launchSettings.json)) providing real-time telemetry for all services.
 
-### Generate Sample Orders
+## Deployment
+
+The solution supports two deployment strategies: automated via `azd up` and CI/CD via GitHub Actions.
+
+### Azure Developer CLI
+
+The `azd up` command ([azure.yaml](azure.yaml)) executes the full deployment pipeline:
+
+```bash
+azd up
+```
+
+This single command runs 5 lifecycle hooks in sequence:
+
+| Phase             | Hook Script                                      | Action                                                          |
+| ----------------- | ------------------------------------------------ | --------------------------------------------------------------- |
+| 🔍 Pre-provision  | [preprovision.ps1](hooks/preprovision.ps1)       | Validate prerequisites, restore, build, test with code coverage |
+| 🏗️ Provision      | [main.bicep](infra/main.bicep)                   | Deploy all Azure infrastructure (17 Bicep modules)              |
+| ⚙️ Post-provision | [postprovision.ps1](hooks/postprovision.ps1)     | Configure SQL managed identity, set user secrets, seed data     |
+| 📦 Pre-deploy     | [deploy-workflow.ps1](hooks/deploy-workflow.ps1) | Deploy Logic Apps workflows with resolved connection parameters |
+| 🚀 Deploy         | [azure.yaml](azure.yaml)                         | Build container images, push to ACR, deploy to Container Apps   |
+
+### CI/CD Deployment
+
+The CD pipeline ([.github/workflows/azure-dev.yml](.github/workflows/azure-dev.yml)) automates deployment on push to `main` using OIDC/Federated Credentials:
+
+```bash
+# Required repository variables (no stored secrets)
+AZURE_CLIENT_ID
+AZURE_TENANT_ID
+AZURE_SUBSCRIPTION_ID
+```
+
+### Clean Up Resources
+
+Remove all deployed Azure resources:
+
+```bash
+azd down --purge --force
+```
+
+The `postinfradelete` hook ([hooks/postinfradelete.ps1](hooks/postinfradelete.ps1)) performs additional cleanup after resource deletion.
+
+## Usage
+
+### API Endpoints
+
+Access the Orders API through Aspire service discovery or directly at `https://localhost:7193` ([app.AppHost/Properties/launchSettings.json](app.AppHost/Properties/launchSettings.json)):
+
+```bash
+# Create a new order
+curl -X POST https://localhost:7193/api/orders \
+  -H "Content-Type: application/json" \
+  -d '{"customerId":"customer-001","deliveryAddress":"123 Main St","products":[{"productId":"prod-001","productDescription":"Wireless Mouse","quantity":2,"price":29.99}]}'
+```
+
+Expected response (HTTP 201):
+
+```json
+{
+  "id": 1,
+  "customerId": "customer-001",
+  "date": "2026-03-02T10:00:00Z",
+  "deliveryAddress": "123 Main St",
+  "total": 59.98,
+  "products": [
+    {
+      "productId": "prod-001",
+      "productDescription": "Wireless Mouse",
+      "quantity": 2,
+      "price": 29.99
+    }
+  ]
+}
+```
+
+### Web Application
+
+Access the Blazor Server frontend through the Aspire Dashboard at `https://localhost:17267`:
+
+- **Place Order** — Submit individual orders with product selection
+- **Place Orders Batch** — Submit multiple orders simultaneously
+- **List All Orders** — Browse all orders with pagination
+- **View Order** — Inspect order details by ID
+
+### Generate Sample Data
 
 Generate randomized sample order data (default: 2,000 orders) for testing:
 
@@ -261,7 +349,17 @@ Generate randomized sample order data (default: 2,000 orders) for testing:
 ./hooks/Generate-Orders.ps1 -OrderCount 100
 ```
 
-The script creates orders with 20 tech products in the catalog and 20 global delivery addresses, exported to `infra/data/ordersBatch.json` ([hooks/Generate-Orders.ps1](hooks/Generate-Orders.ps1)).
+The script creates orders with 20 tech products and 20 global delivery addresses, exported to `infra/data/ordersBatch.json` ([hooks/Generate-Orders.ps1](hooks/Generate-Orders.ps1)).
+
+### Monitoring
+
+The Aspire Dashboard provides real-time observability across all services:
+
+- **Traces** — Distributed tracing across API → Service Bus → Logic Apps
+- **Metrics** — `orders.placed`, `orders.deleted`, `orders.processing.duration` counters and histograms
+- **Logs** — Structured logging from all services with correlation IDs
+
+> 📌 **Note**: In Azure, Application Insights replaces the Aspire Dashboard. Query traces and metrics through the Azure Portal or Log Analytics with KQL.
 
 ## Project Structure
 
