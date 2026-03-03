@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-blue)](global.json)
 [![Aspire 13.1](https://img.shields.io/badge/Aspire-13.1.0-purple)](app.AppHost/app.AppHost.csproj)
-[![Status: Production](https://img.shields.io/badge/Status-Production-brightgreen)]()
+![Status: Production](https://img.shields.io/badge/Status-Production-brightgreen)
 
 An enterprise-grade monitoring solution for **Azure Logic Apps Standard** built with **.NET Aspire** orchestration. This solution implements an eShop microservices application with an Orders REST API, a Blazor Server frontend, and Logic Apps Standard workflows for automated order processing — all fully observable through **OpenTelemetry** and **Application Insights**.
 
