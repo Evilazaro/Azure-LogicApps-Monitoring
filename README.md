@@ -42,43 +42,68 @@ The solution uses .NET Aspire as an orchestration layer to wire together an Orde
 ## Architecture
 
 ```mermaid
-graph TB
-    subgraph UserInterface["User Interface"]
-        WebApp["eShop Web App<br/>(Blazor Server + Fluent UI)"]
+---
+title: Azure Logic Apps Monitoring Architecture
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart TB
+    accTitle: Azure Logic Apps Monitoring Architecture
+    accDescr: End-to-end architecture showing eShop web app, orders API, Service Bus messaging, Logic Apps workflows, data stores, observability, and hosting with data flow relationships
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - STRUCTURAL: Direction explicit, flat topology, nesting ≤ 3
+    %% PHASE 2 - SEMANTIC: Colors justified, max 5 semantic classes, neutral-first
+    %% PHASE 3 - FONT: Dark text on light backgrounds, contrast ≥ 4.5:1
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, icons on all nodes
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph UserInterface["🖥️ User Interface"]
+        WebApp["💻 eShop Web App<br/>(Blazor Server + Fluent UI)"]
     end
 
-    subgraph AspireHost["<b>.NET Aspire AppHost</b><br/>Orchestration & Service Discovery"]
+    subgraph AspireHost["🎯 .NET Aspire AppHost<br/>Orchestration & Service Discovery"]
         direction LR
-        OrdersAPI["eShop Orders API<br/>(ASP.NET Core Web API)"]
-        ServiceDefaults["Service Defaults<br/>(OpenTelemetry, Resilience)"]
+        OrdersAPI["🔌 eShop Orders API<br/>(ASP.NET Core Web API)"]
+        ServiceDefaults["⚙️ Service Defaults<br/>(OpenTelemetry, Resilience)"]
     end
 
-    subgraph Messaging["Messaging"]
-        ServiceBus["Azure Service Bus<br/>Topic: ordersplaced"]
-        Subscription["Subscription:<br/>orderprocessingsub"]
+    subgraph Messaging["📨 Messaging"]
+        ServiceBus["📨 Azure Service Bus<br/>Topic: ordersplaced"]
+        Subscription["📩 Subscription<br/>orderprocessingsub"]
     end
 
-    subgraph WorkflowEngine["Logic Apps Standard"]
-        ProcessWF["OrdersPlacedProcess<br/>(Trigger on message)"]
-        CleanupWF["OrdersPlacedCompleteProcess<br/>(Recurrence: 3s)"]
+    subgraph WorkflowEngine["🔄 Logic Apps Standard"]
+        ProcessWF["🔄 OrdersPlacedProcess<br/>(Trigger on message)"]
+        CleanupWF["🧹 OrdersPlacedCompleteProcess<br/>(Recurrence: 3s)"]
     end
 
-    subgraph DataStores["Data Stores"]
-        SQL["Azure SQL Database<br/>(EF Core + Managed Identity)"]
-        BlobSuccess["Blob Storage<br/>/ordersprocessedsuccessfully"]
-        BlobErrors["Blob Storage<br/>/ordersprocessedwitherrors"]
+    subgraph DataStores["🗄️ Data Stores"]
+        SQL["🗄️ Azure SQL Database<br/>(EF Core + Managed Identity)"]
+        BlobSuccess["✅ Blob Storage<br/>/ordersprocessedsuccessfully"]
+        BlobErrors["❌ Blob Storage<br/>/ordersprocessedwitherrors"]
     end
 
-    subgraph Observability["Observability"]
-        AppInsights["Application Insights"]
-        LogAnalytics["Log Analytics Workspace"]
-        OTel["OpenTelemetry<br/>(Traces, Metrics, Logs)"]
+    subgraph Observability["📊 Observability"]
+        AppInsights["📊 Application Insights"]
+        LogAnalytics["📋 Log Analytics Workspace"]
+        OTel["📡 OpenTelemetry<br/>(Traces, Metrics, Logs)"]
     end
 
-    subgraph Hosting["Hosting"]
-        ContainerApps["Azure Container Apps<br/>Environment"]
-        ACR["Azure Container Registry"]
-        ManagedID["User-Assigned<br/>Managed Identity"]
+    subgraph Hosting["☁️ Hosting"]
+        ContainerApps["☁️ Azure Container Apps<br/>Environment"]
+        ACR["📦 Azure Container Registry"]
+        ManagedID["🔐 User-Assigned<br/>Managed Identity"]
     end
 
     WebApp -->|"Service Discovery"| OrdersAPI
@@ -100,21 +125,27 @@ graph TB
     ManagedID -.->|"Auth"| SQL
     ManagedID -.->|"Auth"| ServiceBus
 
-    classDef ui fill:#4FC3F7,stroke:#0288D1,color:#000
-    classDef api fill:#81C784,stroke:#388E3C,color:#000
-    classDef messaging fill:#FFB74D,stroke:#F57C00,color:#000
-    classDef workflow fill:#CE93D8,stroke:#7B1FA2,color:#000
-    classDef data fill:#90CAF9,stroke:#1565C0,color:#000
-    classDef observability fill:#FFF176,stroke:#F9A825,color:#000
-    classDef hosting fill:#B0BEC5,stroke:#546E7A,color:#000
+    %% Centralized semantic classDefs (AZURE/FLUENT v1.1 approved palette)
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
 
-    class WebApp ui
-    class OrdersAPI,ServiceDefaults api
-    class ServiceBus,Subscription messaging
-    class ProcessWF,CleanupWF workflow
+    class WebApp,OrdersAPI,ServiceDefaults core
+    class ServiceBus,Subscription warning
+    class ProcessWF,CleanupWF success
     class SQL,BlobSuccess,BlobErrors data
-    class AppInsights,LogAnalytics,OTel observability
-    class ContainerApps,ACR,ManagedID hosting
+    class AppInsights,LogAnalytics,OTel,ContainerApps,ACR,ManagedID neutral
+
+    %% Subgraph styling — style directives (NOT class) per MRM-S001
+    style UserInterface fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style AspireHost fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style Messaging fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style WorkflowEngine fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style DataStores fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style Observability fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style Hosting fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
 ### Data Flow
