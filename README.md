@@ -13,7 +13,7 @@ An enterprise-grade order management platform built with **.NET Aspire**, **Azur
 
 **Overview**
 
-This project provides a production-ready reference architecture for building monitored, event-driven applications on Azure. It showcases how .NET Aspire orchestration, Azure Logic Apps Standard workflows, and Azure Container Apps work together to deliver a resilient, observable order management system.
+This project provides a **production-ready reference architecture** for building monitored, event-driven applications on Azure. It showcases how .NET Aspire orchestration, Azure Logic Apps Standard workflows, and Azure Container Apps work together to deliver a **resilient, observable order management system**.
 
 > 💡 **Why This Matters**: Organizations building cloud-native applications need proven patterns for combining microservices with workflow automation. This solution provides a battle-tested architecture that handles order lifecycle management with built-in observability, fault tolerance, and zero-downtime deployments.
 
@@ -37,7 +37,7 @@ This project provides a production-ready reference architecture for building mon
 
 **Overview**
 
-The solution follows a distributed microservices architecture orchestrated by .NET Aspire and deployed to Azure Container Apps, with Azure Logic Apps Standard handling automated workflow processing.
+The solution follows a **distributed microservices architecture** orchestrated by .NET Aspire and deployed to Azure Container Apps, with Azure Logic Apps Standard handling **automated workflow processing**.
 
 ```mermaid
 ---
