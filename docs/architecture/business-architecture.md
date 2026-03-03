@@ -6,11 +6,11 @@
 
 ### Overview
 
-This Business Architecture analysis covers the **Azure-LogicApps-Monitoring** repository — an enterprise-grade eShop order management platform that demonstrates cloud-native patterns for monitoring and managing business-critical order workflows with built-in observability. The analysis uses TOGAF 10 Business Architecture classification with weighted confidence scoring (30% filename + 25% path + 35% content + 10% cross-reference) to identify and validate all detected components.
+This Business Architecture analysis covers the **Azure-LogicApps-Monitoring** repository — an enterprise-grade eShop order management platform that demonstrates cloud-native patterns for monitoring and managing business-critical order workflows with built-in observability. The analysis uses TOGAF 10 Business Architecture classification to identify and classify all detected components.
 
 The platform implements a complete order lifecycle spanning placement, validation, event-driven processing, automated workflow orchestration, and operational monitoring. The architecture leverages Azure Logic Apps for stateful business process automation, Azure Service Bus for event-driven messaging, and .NET Aspire for service composition — all tied together with comprehensive OpenTelemetry-based observability.
 
-A total of **50 Business layer components** were identified across **10 of 11** TOGAF Business Architecture component types, with an **average confidence score of 0.96**. The analysis reveals a mature, well-instrumented order management domain with strong capabilities in automated processing, event-driven integration, and operational metrics tracking.
+A total of **50 Business layer components** were identified across **10 of 11** TOGAF Business Architecture component types. The analysis reveals a well-instrumented order management domain with strong capabilities in automated processing, event-driven integration, and operational metrics tracking.
 
 ---
 
@@ -18,117 +18,117 @@ A total of **50 Business layer components** were identified across **10 of 11** 
 
 ### Overview
 
-This section provides a structured inventory of all Business layer components detected in the Azure-LogicApps-Monitoring repository, organized by the 11 canonical TOGAF Business Architecture component types. Each component is listed with its source file, line range, confidence score, and maturity level as determined by weighted signal analysis.
+This section provides a structured inventory of all Business layer components detected in the Azure-LogicApps-Monitoring repository, organized by the 11 canonical TOGAF Business Architecture component types.
 
-The inventory covers the full eShop order management domain, spanning strategic objectives through operational metrics. Components were classified using the Layer Classification Decision Tree to ensure only business-intent artifacts are included — code files are cited as source evidence where they contain observable business rules, domain validation, or capability interfaces, but the documented focus is on business semantics rather than implementation details.
+The inventory covers the full eShop order management domain, spanning strategic objectives through operational metrics. Components were classified using the Layer Classification Decision Tree to ensure only business-intent artifacts are included, with the documented focus on business semantics rather than implementation details.
 
 ### 2.1 Business Strategy (5)
 
-| Name | Description |
-| --- | --- |
-| Enterprise-Grade Order Management | **Strategic objective** to deliver an enterprise-grade order management platform with built-in observability and cloud-native architecture |
-| Full Observability | **Strategic goal** for end-to-end distributed tracing, metrics, and health monitoring across all services using OpenTelemetry |
-| Operational Resilience | **Strategic goal** for fault tolerance via retry policies (3 attempts, exponential backoff), circuit breakers (120s sampling), and request timeouts (600s overall) |
-| Cloud-Native Scalability | **Strategic goal** for elastic auto-scaling with serverless workload profiles and up to 20 workers for Logic App processing |
-| Zero Trust Security | **Strategic goal** for Managed Identity authentication, TLS 1.2+ enforcement, and elimination of stored secrets |
+| Name                              | Description                                                                                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Enterprise-Grade Order Management | **Strategic objective** to deliver an enterprise-grade order management platform with built-in observability and cloud-native architecture                         |
+| Full Observability                | **Strategic goal** for end-to-end distributed tracing, metrics, and health monitoring across all services using OpenTelemetry                                      |
+| Operational Resilience            | **Strategic goal** for fault tolerance via retry policies (3 attempts, exponential backoff), circuit breakers (120s sampling), and request timeouts (600s overall) |
+| Cloud-Native Scalability          | **Strategic goal** for elastic auto-scaling with serverless workload profiles and up to 20 workers for Logic App processing                                        |
+| Zero Trust Security               | **Strategic goal** for Managed Identity authentication, TLS 1.2+ enforcement, and elimination of stored secrets                                                    |
 
 ### 2.2 Business Capabilities (7)
 
-| Name | Description |
-| --- | --- |
-| Automated Order Processing | **Core capability** for consuming Service Bus events and orchestrating order processing via Logic App workflows with outcome routing to success/error blob storage |
-| Order Placement | **Core capability** for accepting, validating, and persisting customer orders with event publishing for downstream processing |
-| Batch Order Placement | **Core capability** for processing up to 10,000 orders concurrently in batches of 50 with idempotent duplicate detection |
-| Order Retrieval | **Core capability** for looking up individual or paginated orders to satisfy customer and operational queries |
-| Order Deletion | **Core capability** for removing individual orders or bulk-deleting via parallel processing with per-order scope isolation |
-| Order Completion Cleanup | **Core capability** for periodic sweeping and deletion of successfully processed order blobs with concurrency control (20 parallel) |
-| Self-Service Order Management | **Core capability** for interactive order placement, search, viewing, listing, and deletion via Blazor web frontend |
+| Name                          | Description                                                                                                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Automated Order Processing    | **Core capability** for consuming Service Bus events and orchestrating order processing via Logic App workflows with outcome routing to success/error blob storage |
+| Order Placement               | **Core capability** for accepting, validating, and persisting customer orders with event publishing for downstream processing                                      |
+| Batch Order Placement         | **Core capability** for processing up to 10,000 orders concurrently in batches of 50 with idempotent duplicate detection                                           |
+| Order Retrieval               | **Core capability** for looking up individual or paginated orders to satisfy customer and operational queries                                                      |
+| Order Deletion                | **Core capability** for removing individual orders or bulk-deleting via parallel processing with per-order scope isolation                                         |
+| Order Completion Cleanup      | **Core capability** for periodic sweeping and deletion of successfully processed order blobs with concurrency control (20 parallel)                                |
+| Self-Service Order Management | **Core capability** for interactive order placement, search, viewing, listing, and deletion via Blazor web frontend                                                |
 
 ### 2.3 Value Streams (2)
 
-| Name | Description |
-| --- | --- |
-| Order Lifecycle | **End-to-end value stream** from customer order placement through API validation, persistence, event publishing, workflow-based processing, outcome routing, and cleanup — with metrics tracked throughout |
+| Name                    | Description                                                                                                                                                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Order Lifecycle         | **End-to-end value stream** from customer order placement through API validation, persistence, event publishing, workflow-based processing, outcome routing, and cleanup — with metrics tracked throughout                           |
 | Infrastructure Delivery | **End-to-end value stream** spanning the CI/CD lifecycle from code commit through build/test validation, Bicep infrastructure provisioning, secret configuration, sample data seeding, workflow deployment, and container publishing |
 
 ### 2.4 Business Processes (6)
 
-| Name | Description |
-| --- | --- |
-| OrdersPlacedProcess Workflow | **Stateful Logic App workflow** triggered by Service Bus topic messages that validates content type, calls the Processing API, and routes outcomes to success or error blob containers |
-| Place Order Flow | **Core order placement process** that validates input, checks for duplicates, saves to database, publishes OrderPlaced event to Service Bus, and records metrics |
-| OrdersPlacedCompleteProcess Workflow | **Recurring cleanup process** triggered every 3 seconds that lists blobs in the success container and deletes processed order artifacts with concurrency of 20 |
-| Batch Order Processing | **High-throughput batch process** that partitions orders into groups of 50, processes each via semaphore-controlled concurrency (max 10), skips existing orders idempotently, and enforces a 5-minute overall timeout |
-| Order Deletion Flow | **Order removal process** that verifies existence, performs cascade deletion of order and associated products, and records deletion metrics |
-| Batch Deletion Flow | **Parallel deletion process** that deletes multiple orders concurrently using scoped database contexts per item with continuation on individual errors |
+| Name                                 | Description                                                                                                                                                                                                           |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OrdersPlacedProcess Workflow         | **Stateful Logic App workflow** triggered by Service Bus topic messages that validates content type, calls the Processing API, and routes outcomes to success or error blob containers                                |
+| Place Order Flow                     | **Core order placement process** that validates input, checks for duplicates, saves to database, publishes OrderPlaced event to Service Bus, and records metrics                                                      |
+| OrdersPlacedCompleteProcess Workflow | **Recurring cleanup process** triggered every 3 seconds that lists blobs in the success container and deletes processed order artifacts with concurrency of 20                                                        |
+| Batch Order Processing               | **High-throughput batch process** that partitions orders into groups of 50, processes each via semaphore-controlled concurrency (max 10), skips existing orders idempotently, and enforces a 5-minute overall timeout |
+| Order Deletion Flow                  | **Order removal process** that verifies existence, performs cascade deletion of order and associated products, and records deletion metrics                                                                           |
+| Batch Deletion Flow                  | **Parallel deletion process** that deletes multiple orders concurrently using scoped database contexts per item with continuation on individual errors                                                                |
 
 ### 2.5 Business Services (5)
 
-| Name | Description |
-| --- | --- |
-| Order Management API | **RESTful HTTP service** exposing order placement, batch placement, processing, retrieval, deletion, and batch deletion endpoints |
-| Order Business Logic Service | **Core orchestration service** managing validation, persistence, event publishing, metrics recording, and batch concurrency control for all order operations |
-| Event Messaging Service | **Azure Service Bus publisher** providing single and batch message sending with retry policy (3 attempts, exponential backoff) and distributed trace context propagation |
-| Order Processing Workflow Engine | **Logic App Standard stateful workflow** transforming Service Bus events into API calls and routing processing outcomes to blob storage |
-| Order Data Repository | **Data access service** providing order persistence with EF Core including save, paginated retrieval, existence checking, deletion, and internal timeout enforcement (30s write, 15s read) |
+| Name                             | Description                                                                                                                                                                                |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Order Management API             | **RESTful HTTP service** exposing order placement, batch placement, processing, retrieval, deletion, and batch deletion endpoints                                                          |
+| Order Business Logic Service     | **Core orchestration service** managing validation, persistence, event publishing, metrics recording, and batch concurrency control for all order operations                               |
+| Event Messaging Service          | **Azure Service Bus publisher** providing single and batch message sending with retry policy (3 attempts, exponential backoff) and distributed trace context propagation                   |
+| Order Processing Workflow Engine | **Logic App Standard stateful workflow** transforming Service Bus events into API calls and routing processing outcomes to blob storage                                                    |
+| Order Data Repository            | **Data access service** providing order persistence with EF Core including save, paginated retrieval, existence checking, deletion, and internal timeout enforcement (30s write, 15s read) |
 
 ### 2.6 Business Functions (0)
 
-| Name | Description |
-| --- | --- |
+| Name         | Description                                                                                                 |
+| ------------ | ----------------------------------------------------------------------------------------------------------- |
 | Not detected | No explicit organizational business function boundaries were identified in the source code or documentation |
 
 Recommend establishing functional ownership mapping for order management, fulfillment, and customer operations.
 
 ### 2.7 Business Roles & Actors (4)
 
-| Name | Description |
-| --- | --- |
-| Order Processing System | **Automated actor** — Logic App workflow that autonomously consumes events, calls the Processing API, and routes outcomes without human intervention |
-| Customer / End User | **Human actor** who interacts via the Blazor web UI to place orders (single and batch), search orders by ID, and view order details and products |
-| Operations Team | **Human actor** who monitors platform health via Application Insights dashboards, lists all orders, and performs batch deletion operations from the admin UI |
+| Name                    | Description                                                                                                                                                     |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Order Processing System | **Automated actor** — Logic App workflow that autonomously consumes events, calls the Processing API, and routes outcomes without human intervention            |
+| Customer / End User     | **Human actor** who interacts via the Blazor web UI to place orders (single and batch), search orders by ID, and view order details and products                |
+| Operations Team         | **Human actor** who monitors platform health via Application Insights dashboards, lists all orders, and performs batch deletion operations from the admin UI    |
 | Platform Infrastructure | **System actor** — .NET Aspire orchestrator and Azure Developer CLI that manages service composition, deployment lifecycle, secret management, and auto-scaling |
 
 ### 2.8 Business Rules (7)
 
-| Name | Description |
-| --- | --- |
-| Order ID Validation | **Mandatory field rule** requiring non-empty, non-whitespace Order ID on every order |
-| Customer ID Required | **Mandatory field rule** requiring a Customer ID of 1-100 characters on every order |
-| Positive Order Total | **Monetary validation rule** rejecting zero or negative order totals |
-| Minimum Product Count | **Order completeness rule** requiring at least 1 product per order — empty orders are prohibited |
-| Positive Product Price | **Line-item pricing rule** enforcing a minimum price of $0.01 — no free or negative-priced products allowed |
-| Duplicate Order Prevention | **Idempotency rule** returning 409 Conflict when an order with the same ID already exists in the database |
-| Delivery Address Required | **Mandatory field rule** requiring a delivery address of 5-500 characters on every order |
+| Name                       | Description                                                                                                 |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Order ID Validation        | **Mandatory field rule** requiring non-empty, non-whitespace Order ID on every order                        |
+| Customer ID Required       | **Mandatory field rule** requiring a Customer ID of 1-100 characters on every order                         |
+| Positive Order Total       | **Monetary validation rule** rejecting zero or negative order totals                                        |
+| Minimum Product Count      | **Order completeness rule** requiring at least 1 product per order — empty orders are prohibited            |
+| Positive Product Price     | **Line-item pricing rule** enforcing a minimum price of $0.01 — no free or negative-priced products allowed |
+| Duplicate Order Prevention | **Idempotency rule** returning 409 Conflict when an order with the same ID already exists in the database   |
+| Delivery Address Required  | **Mandatory field rule** requiring a delivery address of 5-500 characters on every order                    |
 
 ### 2.9 Business Events (5)
 
-| Name | Description |
-| --- | --- |
-| OrderPlaced Event | **Domain event** published to Service Bus topic with Subject="OrderPlaced", JSON payload, and distributed trace context (TraceId, SpanId, TraceParent) with 3-retry exponential backoff |
-| Service Bus Topic Trigger | **Workflow trigger** — Logic App polls Service Bus topic subscription every 1 second for new order messages to process |
-| OrderPlaced Batch Event | **Batch domain event** publishing multiple OrderPlaced messages atomically via batch sender, each enriched with distributed trace context |
-| Order Processing Callback | **Integration event** — workflow POSTs decoded order payload to the Processing API endpoint; HTTP 201 indicates success, other status codes route to error handling |
-| Recurrence Trigger | **Timer trigger** — cleanup workflow fires every 3 seconds (CST timezone) to sweep successfully processed order blobs |
+| Name                      | Description                                                                                                                                                                             |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OrderPlaced Event         | **Domain event** published to Service Bus topic with Subject="OrderPlaced", JSON payload, and distributed trace context (TraceId, SpanId, TraceParent) with 3-retry exponential backoff |
+| Service Bus Topic Trigger | **Workflow trigger** — Logic App polls Service Bus topic subscription every 1 second for new order messages to process                                                                  |
+| OrderPlaced Batch Event   | **Batch domain event** publishing multiple OrderPlaced messages atomically via batch sender, each enriched with distributed trace context                                               |
+| Order Processing Callback | **Integration event** — workflow POSTs decoded order payload to the Processing API endpoint; HTTP 201 indicates success, other status codes route to error handling                     |
+| Recurrence Trigger        | **Timer trigger** — cleanup workflow fires every 3 seconds (CST timezone) to sweep successfully processed order blobs                                                                   |
 
 ### 2.10 Business Objects/Entities (5)
 
-| Name | Description |
-| --- | --- |
-| Order | **Core domain object** representing a customer order with Id, CustomerId, Date, DeliveryAddress, Total, and Products collection — shared across all services |
-| OrderProduct | **Domain value object** representing a line item within an order with Id, OrderId, ProductId, ProductDescription, Quantity, and Price |
-| OrderEntity | **Persistence entity** mapping the Order domain object to the "Orders" database table with field length constraints (Id: 100, CustomerId: 100, DeliveryAddress: 500) |
-| OrderProductEntity | **Persistence entity** mapping OrderProduct to the "OrderProducts" table with foreign key to OrderEntity and cascade delete behavior |
+| Name                     | Description                                                                                                                                                                             |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Order                    | **Core domain object** representing a customer order with Id, CustomerId, Date, DeliveryAddress, Total, and Products collection — shared across all services                            |
+| OrderProduct             | **Domain value object** representing a line item within an order with Id, OrderId, ProductId, ProductDescription, Quantity, and Price                                                   |
+| OrderEntity              | **Persistence entity** mapping the Order domain object to the "Orders" database table with field length constraints (Id: 100, CustomerId: 100, DeliveryAddress: 500)                    |
+| OrderProductEntity       | **Persistence entity** mapping OrderProduct to the "OrderProducts" table with foreign key to OrderEntity and cascade delete behavior                                                    |
 | OrderMessageWithMetadata | **Message envelope object** wrapping an Order with messaging metadata including MessageId, SequenceNumber, EnqueuedTime, ContentType, Subject, CorrelationId, and ApplicationProperties |
 
 ### 2.11 KPIs & Metrics (4)
 
-| Name | Description |
-| --- | --- |
-| eShop.orders.placed | **Counter metric** tracking the total number of orders successfully placed — measures business throughput |
-| eShop.orders.processing.duration | **Histogram metric** tracking time taken to process order operations in milliseconds — measures processing efficiency |
-| eShop.orders.processing.errors | **Counter metric** tracking the total number of order processing errors — measures failure rate and reliability |
-| eShop.orders.deleted | **Counter metric** tracking the total number of orders successfully deleted — measures data lifecycle management activity |
+| Name                             | Description                                                                                                               |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| eShop.orders.placed              | **Counter metric** tracking the total number of orders successfully placed — measures business throughput                 |
+| eShop.orders.processing.duration | **Histogram metric** tracking time taken to process order operations in milliseconds — measures processing efficiency     |
+| eShop.orders.processing.errors   | **Counter metric** tracking the total number of order processing errors — measures failure rate and reliability           |
+| eShop.orders.deleted             | **Counter metric** tracking the total number of orders successfully deleted — measures data lifecycle management activity |
 
 ### Business Capability Map
 
@@ -236,7 +236,7 @@ flowchart LR
 
 ### Summary
 
-The Architecture Landscape documents **50 components** across **10 of 11** TOGAF Business Architecture component types. The dominant patterns are event-driven order processing (Maturity 4), comprehensive business rule enforcement (Maturity 4), and fully instrumented counter/histogram metrics (Maturity 5). The average confidence score of **0.96** reflects strong source traceability, with all components verified through the Layer Classification Decision Tree.
+The Architecture Landscape documents **50 components** across **10 of 11** TOGAF Business Architecture component types. The dominant patterns are event-driven order processing, comprehensive business rule enforcement, and fully instrumented counter/histogram metrics.
 
 The primary gap is the absence of formally defined **Business Functions** (organizational unit boundaries), which are not explicitly modeled in the codebase. Additionally, Business Roles & Actors are identified primarily through UI interaction patterns and automated workflows rather than explicit RACI documentation. Recommended next steps include establishing organizational function boundaries, formalizing role-to-capability ownership mappings, and expanding KPI definitions to include SLO targets and threshold alerting.
 
@@ -304,27 +304,27 @@ The principles reflect a cloud-native, event-driven design philosophy with stron
 
 ### Overview
 
-This section captures the current maturity and performance characteristics of the eShop Order Management Business Architecture. The analysis evaluates capability coverage, process efficiency, organizational readiness, and operational health based on source code evidence.
+This section captures the current performance characteristics of the eShop Order Management Business Architecture. The analysis evaluates capability coverage, process efficiency, organizational readiness, and operational health.
 
-The platform demonstrates a mature event-driven architecture with well-defined business processes (Maturity 3-4), comprehensive validation rules (Maturity 4), and fully instrumented operational metrics (Maturity 5). The primary maturity gaps are in organizational governance (Business Functions: not detected) and formal role documentation (Business Roles: Maturity 2-4).
+The platform demonstrates a well-structured event-driven architecture with well-defined business processes, comprehensive validation rules, and fully instrumented operational metrics. The primary gaps are in organizational governance (Business Functions: not detected) and formal role documentation.
 
-The current state reflects an architecture that has evolved beyond initial implementation into a standardized, measured system with quantitative management capabilities across most capability areas.
+The current state reflects an architecture that has evolved beyond initial implementation into a standardized system with quantitative management capabilities across most capability areas.
 
-### Capability Maturity Assessment
+### Capability Assessment
 
-| Component Type | Components | Coverage |
-| --- | --- | --- |
-| Business Strategy | 5 | High |
-| Business Capabilities | 7 | High |
-| Value Streams | 2 | Medium |
-| Business Processes | 6 | High |
-| Business Services | 5 | High |
-| Business Functions | 0 | None |
-| Business Roles & Actors | 4 | Medium |
-| Business Rules | 7 | High |
-| Business Events | 5 | High |
-| Business Objects/Entities | 5 | High |
-| KPIs & Metrics | 4 | High |
+| Component Type            | Components | Coverage |
+| ------------------------- | ---------- | -------- |
+| Business Strategy         | 5          | High     |
+| Business Capabilities     | 7          | High     |
+| Value Streams             | 2          | Medium   |
+| Business Processes        | 6          | High     |
+| Business Services         | 5          | High     |
+| Business Functions        | 0          | None     |
+| Business Roles & Actors   | 4          | Medium   |
+| Business Rules            | 7          | High     |
+| Business Events           | 5          | High     |
+| Business Objects/Entities | 5          | High     |
+| KPIs & Metrics            | 4          | High     |
 
 ### Capability Maturity Heatmap
 
@@ -437,9 +437,9 @@ flowchart TB
 
 ### Summary
 
-The current state baseline reveals a well-instrumented, event-driven order management platform at **overall Maturity Level 3-4** (Defined to Measured). The highest maturity areas are KPIs & Metrics (Level 5 — fully optimized with dedicated OpenTelemetry counters and histograms) and Business Rules (Level 4 — comprehensive declarative validation with data annotation constraints). Business Services and Business Objects also demonstrate Level 4 maturity through standardized interfaces and shared domain types.
+The current state baseline reveals a well-instrumented, event-driven order management platform. The strongest areas are KPIs & Metrics (fully optimized with dedicated OpenTelemetry counters and histograms) and Business Rules (comprehensive declarative validation with data annotation constraints). Business Services and Business Objects also demonstrate strong standardization through well-defined interfaces and shared domain types.
 
-The primary gaps are the absence of formally defined Business Functions (organizational boundaries not modeled) and limited formalization of Business Roles & Actors (identified through UI patterns rather than explicit RACI documentation). The Operations Team role is at Maturity Level 2 (Repeatable), indicating an opportunity for improvement through formal runbook documentation and responsibility assignment. Value Streams are documented at Level 3-4 but would benefit from explicit SLO targets and measurable outcomes attached to each stage.
+The primary gaps are the absence of formally defined Business Functions (organizational boundaries not modeled) and limited formalization of Business Roles & Actors (identified through UI patterns rather than explicit RACI documentation). The Operations Team role would benefit from formal runbook documentation and responsibility assignment. Value Streams would benefit from explicit SLO targets and measurable outcomes attached to each stage.
 
 ---
 
@@ -611,12 +611,12 @@ This subsection documents the 6 operational business processes identified in the
 
 #### 5.4.1 OrdersPlacedProcess Workflow
 
-| Attribute        | Value                                                                                       |
-| ---------------- | ------------------------------------------------------------------------------------------- |
-| **Name**         | OrdersPlacedProcess Workflow                                                                |
-| **Process Type** | Stateful Logic App Workflow                                                                 |
-| **Trigger**      | Service Bus topic message (ordersplaced / orderprocessingsub, 1s polling)                   |
-| **Owner**        | Order Processing System (automated)                                                         |
+| Attribute        | Value                                                                     |
+| ---------------- | ------------------------------------------------------------------------- |
+| **Name**         | OrdersPlacedProcess Workflow                                              |
+| **Process Type** | Stateful Logic App Workflow                                               |
+| **Trigger**      | Service Bus topic message (ordersplaced / orderprocessingsub, 1s polling) |
+| **Owner**        | Order Processing System (automated)                                       |
 
 **Process Steps:**
 
@@ -635,12 +635,12 @@ This subsection documents the 6 operational business processes identified in the
 
 #### 5.4.2 Place Order Flow
 
-| Attribute        | Value                                                |
-| ---------------- | ---------------------------------------------------- |
-| **Name**         | Place Order Flow                                     |
-| **Process Type** | Synchronous API Operation                            |
-| **Trigger**      | HTTP POST to /api/orders                             |
-| **Owner**        | Order Business Logic Service                         |
+| Attribute        | Value                        |
+| ---------------- | ---------------------------- |
+| **Name**         | Place Order Flow             |
+| **Process Type** | Synchronous API Operation    |
+| **Trigger**      | HTTP POST to /api/orders     |
+| **Owner**        | Order Business Logic Service |
 
 **Process Steps:**
 
@@ -662,12 +662,12 @@ This subsection documents the 6 operational business processes identified in the
 
 #### 5.4.3 OrdersPlacedCompleteProcess Workflow
 
-| Attribute        | Value                                                                                              |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| **Name**         | OrdersPlacedCompleteProcess Workflow                                                               |
-| **Process Type** | Stateful Logic App Workflow                                                                        |
-| **Trigger**      | Recurrence every 3 seconds (CST timezone)                                                          |
-| **Owner**        | Order Processing System (automated)                                                                |
+| Attribute        | Value                                     |
+| ---------------- | ----------------------------------------- |
+| **Name**         | OrdersPlacedCompleteProcess Workflow      |
+| **Process Type** | Stateful Logic App Workflow               |
+| **Trigger**      | Recurrence every 3 seconds (CST timezone) |
+| **Owner**        | Order Processing System (automated)       |
 
 **Process Steps:**
 
@@ -677,12 +677,12 @@ This subsection documents the 6 operational business processes identified in the
 
 #### 5.4.4 Batch Order Processing
 
-| Attribute        | Value                                                 |
-| ---------------- | ----------------------------------------------------- |
-| **Name**         | Batch Order Processing                                |
-| **Process Type** | Asynchronous Batch Operation                          |
-| **Trigger**      | HTTP POST to /api/orders/batch                        |
-| **Owner**        | Order Business Logic Service                          |
+| Attribute        | Value                          |
+| ---------------- | ------------------------------ |
+| **Name**         | Batch Order Processing         |
+| **Process Type** | Asynchronous Batch Operation   |
+| **Trigger**      | HTTP POST to /api/orders/batch |
+| **Owner**        | Order Business Logic Service   |
 
 **Process Steps:**
 
@@ -696,12 +696,12 @@ This subsection documents the 6 operational business processes identified in the
 
 #### 5.4.5 Order Deletion Flow
 
-| Attribute        | Value                                                 |
-| ---------------- | ----------------------------------------------------- |
-| **Name**         | Order Deletion Flow                                   |
-| **Process Type** | Synchronous API Operation                             |
-| **Trigger**      | HTTP DELETE to /api/orders/{id}                       |
-| **Owner**        | Order Business Logic Service                          |
+| Attribute        | Value                           |
+| ---------------- | ------------------------------- |
+| **Name**         | Order Deletion Flow             |
+| **Process Type** | Synchronous API Operation       |
+| **Trigger**      | HTTP DELETE to /api/orders/{id} |
+| **Owner**        | Order Business Logic Service    |
 
 **Process Steps:**
 
@@ -711,12 +711,12 @@ This subsection documents the 6 operational business processes identified in the
 
 #### 5.4.6 Batch Deletion Flow
 
-| Attribute        | Value                                                 |
-| ---------------- | ----------------------------------------------------- |
-| **Name**         | Batch Deletion Flow                                   |
-| **Process Type** | Asynchronous Batch Operation                          |
-| **Trigger**      | HTTP POST to /api/orders/batch/delete                 |
-| **Owner**        | Order Business Logic Service                          |
+| Attribute        | Value                                 |
+| ---------------- | ------------------------------------- |
+| **Name**         | Batch Deletion Flow                   |
+| **Process Type** | Asynchronous Batch Operation          |
+| **Trigger**      | HTTP POST to /api/orders/batch/delete |
+| **Owner**        | Order Business Logic Service          |
 
 **Process Steps:**
 
