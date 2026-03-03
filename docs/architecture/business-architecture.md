@@ -402,16 +402,16 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     User["👤 Customer / End User"]:::external
-    WebApp["🌐 eShop Web App\n(Blazor UI)"]:::core
-    API["⚙️ Orders API\n(REST Service)"]:::core
-    Validation["📋 Domain Validation\n(Business Rules)"]:::warning
-    DB["📦 SQL Database\n(Orders + Products)"]:::data
-    SBus["📨 Azure Service Bus\n(ordersplaced topic)"]:::data
-    Workflow["🔄 Logic App Workflow\n(OrdersPlacedProcess)"]:::warning
+    WebApp["🌐 eShop Web App</br>(Blazor UI)"]:::core
+    API["⚙️ Orders API</br>(REST Service)"]:::core
+    Validation["📋 Domain Validation</br>(Business Rules)"]:::warning
+    DB["📦 SQL Database</br>(Orders + Products)"]:::data
+    SBus["📨 Azure Service Bus</br>(ordersplaced topic)"]:::data
+    Workflow["🔄 Logic App Workflow</br>(OrdersPlacedProcess)"]:::warning
     BlobSuccess["✅ Success Blob Storage"]:::success
     BlobError["❌ Error Blob Storage"]:::danger
-    Cleanup["🧹 Cleanup Workflow\n(OrdersPlacedCompleteProcess)"]:::neutral
-    Telemetry["📊 OpenTelemetry\n(Metrics + Traces)"]:::success
+    Cleanup["🧹 Cleanup Workflow</br>(OrdersPlacedCompleteProcess)"]:::neutral
+    Telemetry["📊 OpenTelemetry</br>(Metrics + Traces)"]:::success
 
     User -->|"places orders"| WebApp
     WebApp -->|"HTTP calls"| API
@@ -754,13 +754,13 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     Start(["🚀 Customer Submits Order"]):::success
-    ValidateInput{"⚡ Input Valid?\nDomain Rules"}:::warning
-    CheckDuplicate{"⚡ Order ID Exists?\nDuplicate Check"}:::warning
+    ValidateInput{"⚡ Input Valid?</br>Domain Rules"}:::warning
+    CheckDuplicate{"⚡ Order ID Exists?</br>Duplicate Check"}:::warning
     MapEntity["📋 Map to Persistence Entity"]:::core
     SaveDB["📦 Save to Database"]:::core
-    PublishEvent["📨 Publish OrderPlaced\nto Service Bus"]:::data
+    PublishEvent["📨 Publish OrderPlaced</br>to Service Bus"]:::data
     PubTimeout{"⚡ Publish Timeout?"}:::warning
-    RecordMetrics["📊 Record Metrics\n(placed counter + duration)"]:::success
+    RecordMetrics["📊 Record Metrics</br>(placed counter + duration)"]:::success
     ReturnSuccess(["✅ Return 201 Created"]):::success
     ReturnConflict(["⚠️ Return 409 Conflict"]):::danger
     ReturnBadRequest(["❌ Return 400 Bad Request"]):::danger
@@ -813,14 +813,14 @@ flowchart TB
     %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
     %% ═══════════════════════════════════════════════════════════════════════════
 
-    Trigger["📨 Service Bus Message Received\n(ordersplaced topic, 1s poll)"]:::data
-    CheckType{"⚡ ContentType =\napplication/json?"}:::warning
+    Trigger["📨 Service Bus Message Received</br>(ordersplaced topic, 1s poll)"]:::data
+    CheckType{"⚡ ContentType =</br>application/json?"}:::warning
     DecodePayload["📋 Decode Base64 Payload"]:::core
-    CallAPI["⚙️ POST to Orders API\n(/api/Orders/process)"]:::core
+    CallAPI["⚙️ POST to Orders API</br>(/api/Orders/process)"]:::core
     CheckResult{"⚡ HTTP 201?"}:::warning
-    StoreSuccess["✅ Store Blob\n(/ordersprocessedsuccessfully)"]:::success
-    StoreError["❌ Store Blob\n(/ordersprocessedwitherrors)"]:::danger
-    InvalidType["❌ Route to Error Blob\n(invalid content type)"]:::danger
+    StoreSuccess["✅ Store Blob</br>(/ordersprocessedsuccessfully)"]:::success
+    StoreError["❌ Store Blob</br>(/ordersprocessedwitherrors)"]:::danger
+    InvalidType["❌ Route to Error Blob</br>(invalid content type)"]:::danger
     End(["🏁 Workflow Complete"]):::neutral
 
     Trigger --> CheckType
