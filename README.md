@@ -8,12 +8,23 @@
 
 An enterprise-grade monitoring solution for **Azure Logic Apps Standard** built with **.NET Aspire** orchestration. This solution implements an eShop microservices application with an Orders REST API, a Blazor Server frontend, and Logic Apps Standard workflows for automated order processing — all fully observable through **OpenTelemetry** and **Application Insights**.
 
+## Overview
+
+**Overview**
+
+This project enables end-to-end monitoring and automated processing of Azure Logic Apps Standard workflows, designed for platform engineers and cloud architects who need production-grade observability across event-driven microservices. It bridges the gap between application services and workflow automation by providing a unified telemetry pipeline from order placement through Logic Apps processing.
+
+The solution uses .NET Aspire as an orchestration layer to wire together an Orders REST API, a Blazor Server frontend, and two Logic Apps Standard workflows — all connected through Azure Service Bus topics and fully instrumented with OpenTelemetry traces, custom metrics, and Application Insights. Local development is supported via Service Bus and SQL Server emulators, while Azure deployment uses Managed Identity and Bicep IaC for zero-secret infrastructure.
+
+> 💡 **Tip**: For the fastest path to a running deployment, skip to [Getting Started](#getting-started) and run `azd up` — the single command handles provisioning, configuration, and deployment.
+
 ## Table of Contents
 
+- [Overview](#overview)
 - [Architecture](#architecture)
 - [Features](#features)
 - [Technology Stack](#technology-stack)
-- [Prerequisites](#prerequisites)
+- [Requirements](#requirements)
 - [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
 - [Application Components](#application-components)
@@ -114,6 +125,12 @@ graph TB
 
 ## Features
 
+**Overview**
+
+The solution delivers five integrated capability areas — order management, a web frontend, event-driven workflow processing, full-stack observability, and enterprise resilience — that together form a production-ready monitoring reference architecture. Each capability is grounded in Azure-native services and instrumented for end-to-end traceability.
+
+These features work as a cohesive system: orders flow from the Blazor UI through the REST API into Azure Service Bus, get processed by Logic Apps workflows, and every step is captured by OpenTelemetry instrumentation feeding into Application Insights. This design demonstrates how to build observable, event-driven applications on Azure with zero stored secrets.
+
 ### Order Management
 
 - **REST API** with full CRUD operations: create, batch create, process, list, get by ID, and delete ([src/eShop.Orders.API/Controllers/OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs))
@@ -149,34 +166,38 @@ graph TB
 
 ## Technology Stack
 
-| Layer          | Technology                           | Version        | Source                                                                       |
-| -------------- | ------------------------------------ | -------------- | ---------------------------------------------------------------------------- |
-| Orchestration  | .NET Aspire                          | 13.1.0         | [app.AppHost.csproj](app.AppHost/app.AppHost.csproj)                         |
-| Runtime        | .NET                                 | 10.0           | [global.json](global.json)                                                   |
-| API Framework  | ASP.NET Core Web API                 | 10.0           | [eShop.Orders.API.csproj](src/eShop.Orders.API/eShop.Orders.API.csproj)      |
-| Frontend       | Blazor Server + Fluent UI            | 4.14.0         | [eShop.Web.App.csproj](src/eShop.Web.App/eShop.Web.App.csproj)               |
-| ORM            | Entity Framework Core (SQL Server)   | 10.0.3         | [eShop.Orders.API.csproj](src/eShop.Orders.API/eShop.Orders.API.csproj)      |
-| Messaging      | Azure Service Bus                    | 7.20.1         | [app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj) |
-| Workflows      | Azure Logic Apps Standard            | —              | [workflows/](workflows/OrdersManagement/)                                    |
-| Observability  | OpenTelemetry + Application Insights | 1.15.0 / 1.5.0 | [app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj) |
-| Authentication | Azure.Identity (Managed Identity)    | 1.18.0         | [app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj) |
-| Infrastructure | Bicep (IaC)                          | —              | [infra/](infra/)                                                             |
-| Deployment     | Azure Developer CLI (azd)            | ≥ 1.11.0       | [azure.yaml](azure.yaml)                                                     |
-| Hosting        | Azure Container Apps                 | —              | [infra/workload/services/main.bicep](infra/workload/services/main.bicep)     |
-| Testing        | MSTest + Microsoft.Testing.Platform  | —              | [global.json](global.json)                                                   |
+| Layer             | Technology                           | Version        | Source                                                                       |
+| ----------------- | ------------------------------------ | -------------- | ---------------------------------------------------------------------------- |
+| 🎯 Orchestration  | .NET Aspire                          | 13.1.0         | [app.AppHost.csproj](app.AppHost/app.AppHost.csproj)                         |
+| ⚙️ Runtime        | .NET                                 | 10.0           | [global.json](global.json)                                                   |
+| 🌐 API Framework  | ASP.NET Core Web API                 | 10.0           | [eShop.Orders.API.csproj](src/eShop.Orders.API/eShop.Orders.API.csproj)      |
+| 💻 Frontend       | Blazor Server + Fluent UI            | 4.14.0         | [eShop.Web.App.csproj](src/eShop.Web.App/eShop.Web.App.csproj)               |
+| 🗄️ ORM            | Entity Framework Core (SQL Server)   | 10.0.3         | [eShop.Orders.API.csproj](src/eShop.Orders.API/eShop.Orders.API.csproj)      |
+| 📨 Messaging      | Azure Service Bus                    | 7.20.1         | [app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj) |
+| 🔄 Workflows      | Azure Logic Apps Standard            | —              | [workflows/](workflows/OrdersManagement/)                                    |
+| 📊 Observability  | OpenTelemetry + Application Insights | 1.15.0 / 1.5.0 | [app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj) |
+| 🔐 Authentication | Azure.Identity (Managed Identity)    | 1.18.0         | [app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj) |
+| 🏗️ Infrastructure | Bicep (IaC)                          | —              | [infra/](infra/)                                                             |
+| 🚀 Deployment     | Azure Developer CLI (azd)            | ≥ 1.11.0       | [azure.yaml](azure.yaml)                                                     |
+| ☁️ Hosting        | Azure Container Apps                 | —              | [infra/workload/services/main.bicep](infra/workload/services/main.bicep)     |
+| 🧪 Testing        | MSTest + Microsoft.Testing.Platform  | —              | [global.json](global.json)                                                   |
 
-## Prerequisites
+## Requirements
 
-Before getting started, ensure your development workstation has the following tools installed. You can validate your environment by running `hooks/check-dev-workstation.ps1` ([hooks/check-dev-workstation.ps1](hooks/check-dev-workstation.ps1)):
+**Overview**
 
-| Tool                                                                                                     | Minimum Version | Purpose                                    |
-| -------------------------------------------------------------------------------------------------------- | --------------- | ------------------------------------------ |
-| [.NET SDK](https://dotnet.microsoft.com/download)                                                        | 10.0.100        | Build and run the application              |
-| [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)                                     | 2.60.0          | Azure resource management                  |
-| [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) | 1.11.0          | Infrastructure provisioning and deployment |
-| [Docker](https://www.docker.com/get-started)                                                             | Latest          | Local development (emulators, containers)  |
-| [PowerShell](https://learn.microsoft.com/powershell/scripting/install/installing-powershell)             | 7.0             | Hook scripts execution                     |
-| [Bicep CLI](https://learn.microsoft.com/azure/azure-resource-manager/bicep/install)                      | 0.30.0          | Infrastructure-as-Code compilation         |
+A complete development environment requires six tools that handle building, provisioning, containerization, scripting, and infrastructure compilation. The `preprovision` hook ([hooks/preprovision.ps1](hooks/preprovision.ps1)) validates all prerequisites automatically and can optionally auto-install missing tools via `winget`.
+
+The toolchain is split between build-time dependencies (.NET SDK, Docker) and deployment-time dependencies (Azure CLI, azd, Bicep). For local-only development without Azure deployment, only .NET SDK and Docker are required since the Aspire AppHost uses emulators for Service Bus and SQL Server.
+
+| Tool                                                                                                        | Minimum Version | Purpose                                    |
+| ----------------------------------------------------------------------------------------------------------- | --------------- | ------------------------------------------ |
+| 🛠️ [.NET SDK](https://dotnet.microsoft.com/download)                                                        | 10.0.100        | Build and run the application              |
+| ☁️ [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)                                     | 2.60.0          | Azure resource management                  |
+| 🚀 [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) | 1.11.0          | Infrastructure provisioning and deployment |
+| 🐳 [Docker](https://www.docker.com/get-started)                                                             | Latest          | Local development (emulators, containers)  |
+| ⚡ [PowerShell](https://learn.microsoft.com/powershell/scripting/install/installing-powershell)             | 7.0             | Hook scripts execution                     |
+| 📦 [Bicep CLI](https://learn.microsoft.com/azure/azure-resource-manager/bicep/install)                      | 0.30.0          | Infrastructure-as-Code compilation         |
 
 Validate your environment:
 
@@ -290,17 +311,17 @@ Azure-LogicApps-Monitoring/
 
 The Orders API is an ASP.NET Core Web API providing RESTful endpoints for order management ([src/eShop.Orders.API/](src/eShop.Orders.API/)).
 
-| Endpoint              | Method   | Description                                | Source                                                                      |
-| --------------------- | -------- | ------------------------------------------ | --------------------------------------------------------------------------- |
-| `/api/orders`         | `POST`   | Place a new order                          | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| `/api/orders/batch`   | `POST`   | Place multiple orders in batch             | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| `/api/orders/process` | `POST`   | Process an order (used by Logic Apps)      | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| `/api/orders`         | `GET`    | List all orders (paginated, split queries) | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| `/api/orders/{id}`    | `GET`    | Get order by ID                            | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| `/api/orders`         | `DELETE` | Delete all orders                          | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| `/api/orders/{id}`    | `DELETE` | Delete order by ID                         | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| `/health`             | `GET`    | Health check (DB + Service Bus)            | [Extensions.cs](app.ServiceDefaults/Extensions.cs)                          |
-| `/alive`              | `GET`    | Liveness probe                             | [Extensions.cs](app.ServiceDefaults/Extensions.cs)                          |
+| Endpoint                 | Method   | Description                                | Source                                                                      |
+| ------------------------ | -------- | ------------------------------------------ | --------------------------------------------------------------------------- |
+| 📋 `/api/orders`         | `POST`   | Place a new order                          | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
+| 📦 `/api/orders/batch`   | `POST`   | Place multiple orders in batch             | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
+| ⚙️ `/api/orders/process` | `POST`   | Process an order (used by Logic Apps)      | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
+| 📄 `/api/orders`         | `GET`    | List all orders (paginated, split queries) | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
+| 🔍 `/api/orders/{id}`    | `GET`    | Get order by ID                            | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
+| 🗑️ `/api/orders`         | `DELETE` | Delete all orders                          | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
+| ❌ `/api/orders/{id}`    | `DELETE` | Delete order by ID                         | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
+| 💚 `/health`             | `GET`    | Health check (DB + Service Bus)            | [Extensions.cs](app.ServiceDefaults/Extensions.cs)                          |
+| 💓 `/alive`              | `GET`    | Liveness probe                             | [Extensions.cs](app.ServiceDefaults/Extensions.cs)                          |
 
 **Key capabilities:**
 
@@ -390,14 +411,14 @@ All infrastructure is defined as **Bicep** modules deployed at subscription scop
 
 | Phase | Module                                                      | Resources                                                                                   |
 | ----- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| 1     | Resource Group                                              | `rg-{solution}-{env}-{location}`                                                            |
-| 2     | [Shared / Network](infra/shared/network/main.bicep)         | VNet with subnets (Container Apps, Logic Apps, data services)                               |
-| 3     | [Shared / Identity](infra/shared/identity/main.bicep)       | User-Assigned Managed Identity with role assignments                                        |
-| 4     | [Shared / Monitoring](infra/shared/monitoring/)             | Log Analytics Workspace + Application Insights                                              |
-| 5     | [Shared / Data](infra/shared/data/main.bicep)               | Storage accounts (logs + workflow), Azure SQL Server/Database, private endpoints            |
-| 6     | [Workload / Messaging](infra/workload/messaging/main.bicep) | Service Bus namespace, topic `ordersplaced`, subscription `orderprocessingsub`              |
-| 7     | [Workload / Services](infra/workload/services/main.bicep)   | Azure Container Registry, Container Apps Environment, Aspire Dashboard                      |
-| 8     | [Workload / Logic App](infra/workload/logic-app.bicep)      | Logic App Standard (WorkflowStandard tier), Service Bus + Blob API connections, diagnostics |
+| 🏗️ 1  | Resource Group                                              | `rg-{solution}-{env}-{location}`                                                            |
+| 🌐 2  | [Shared / Network](infra/shared/network/main.bicep)         | VNet with subnets (Container Apps, Logic Apps, data services)                               |
+| 🔐 3  | [Shared / Identity](infra/shared/identity/main.bicep)       | User-Assigned Managed Identity with role assignments                                        |
+| 📊 4  | [Shared / Monitoring](infra/shared/monitoring/)             | Log Analytics Workspace + Application Insights                                              |
+| 🗄️ 5  | [Shared / Data](infra/shared/data/main.bicep)               | Storage accounts (logs + workflow), Azure SQL Server/Database, private endpoints            |
+| 📨 6  | [Workload / Messaging](infra/workload/messaging/main.bicep) | Service Bus namespace, topic `ordersplaced`, subscription `orderprocessingsub`              |
+| ☁️ 7  | [Workload / Services](infra/workload/services/main.bicep)   | Azure Container Registry, Container Apps Environment, Aspire Dashboard                      |
+| 🔄 8  | [Workload / Logic App](infra/workload/logic-app.bicep)      | Logic App Standard (WorkflowStandard tier), Service Bus + Blob API connections, diagnostics |
 
 ### Security
 
@@ -414,13 +435,13 @@ Three GitHub Actions workflows provide continuous integration and delivery:
 
 **File:** [.github/workflows/ci-dotnet.yml](.github/workflows/ci-dotnet.yml) (calls [ci-dotnet-reusable.yml](.github/workflows/ci-dotnet-reusable.yml))
 
-| Job     | Description                                       | Platforms              |
-| ------- | ------------------------------------------------- | ---------------------- |
-| Build   | Compile the solution                              | Ubuntu, Windows, macOS |
-| Test    | Run tests with Cobertura code coverage            | Ubuntu, Windows, macOS |
-| Analyze | Verify code formatting (.editorconfig compliance) | Ubuntu                 |
-| CodeQL  | Security vulnerability scanning                   | Ubuntu                 |
-| Summary | Aggregate results from all jobs                   | Ubuntu                 |
+| Job        | Description                                       | Platforms              |
+| ---------- | ------------------------------------------------- | ---------------------- |
+| 🔨 Build   | Compile the solution                              | Ubuntu, Windows, macOS |
+| 🧪 Test    | Run tests with Cobertura code coverage            | Ubuntu, Windows, macOS |
+| 🔍 Analyze | Verify code formatting (.editorconfig compliance) | Ubuntu                 |
+| 🛡️ CodeQL  | Security vulnerability scanning                   | Ubuntu                 |
+| 📋 Summary | Aggregate results from all jobs                   | Ubuntu                 |
 
 **Triggers:** Push to `main`, `feature/*`, `bugfix/*`, `hotfix/*`, `release/*`, `chore/*`, `docs/*` branches; PRs targeting `main`; manual dispatch.
 
@@ -428,12 +449,12 @@ Three GitHub Actions workflows provide continuous integration and delivery:
 
 **File:** [.github/workflows/azure-dev.yml](.github/workflows/azure-dev.yml)
 
-| Phase      | Description                                                              |
-| ---------- | ------------------------------------------------------------------------ |
-| CI         | Runs the full CI pipeline                                                |
-| Deploy Dev | OIDC auth → `azd provision` → SQL managed identity config → `azd deploy` |
-| Summary    | Deployment report                                                        |
-| On Failure | Error reporting with rollback instructions                               |
+| Phase         | Description                                                              |
+| ------------- | ------------------------------------------------------------------------ |
+| 🧪 CI         | Runs the full CI pipeline                                                |
+| 🚀 Deploy Dev | OIDC auth → `azd provision` → SQL managed identity config → `azd deploy` |
+| 📋 Summary    | Deployment report                                                        |
+| ⚠️ On Failure | Error reporting with rollback instructions                               |
 
 **Authentication:** OIDC/Federated Credentials — no stored secrets. Requires `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` as repository variables.
 
@@ -441,12 +462,12 @@ Three GitHub Actions workflows provide continuous integration and delivery:
 
 The solution includes 4 test projects with 30+ test files using MSTest and `Microsoft.Testing.Platform` ([global.json](global.json)):
 
-| Project                     | Scope                                                                               | Source                                                                       |
-| --------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `app.AppHost.Tests`         | Aspire host integration, Azure credentials, resource naming, Service Bus/SQL config | [src/tests/app.AppHost.Tests/](src/tests/app.AppHost.Tests/)                 |
-| `app.ServiceDefaults.Tests` | Extensions, OpenTelemetry config, domain model validation                           | [src/tests/app.ServiceDefaults.Tests/](src/tests/app.ServiceDefaults.Tests/) |
-| `eShop.Orders.API.Tests`    | Controllers, services, repositories, message handlers, health checks                | [src/tests/eShop.Orders.API.Tests/](src/tests/eShop.Orders.API.Tests/)       |
-| `eShop.Web.App.Tests`       | Orders API service client, Fluent UI design system, model validation                | [src/tests/eShop.Web.App.Tests/](src/tests/eShop.Web.App.Tests/)             |
+| Project                        | Scope                                                                               | Source                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 🏗️ `app.AppHost.Tests`         | Aspire host integration, Azure credentials, resource naming, Service Bus/SQL config | [src/tests/app.AppHost.Tests/](src/tests/app.AppHost.Tests/)                 |
+| ⚙️ `app.ServiceDefaults.Tests` | Extensions, OpenTelemetry config, domain model validation                           | [src/tests/app.ServiceDefaults.Tests/](src/tests/app.ServiceDefaults.Tests/) |
+| 🌐 `eShop.Orders.API.Tests`    | Controllers, services, repositories, message handlers, health checks                | [src/tests/eShop.Orders.API.Tests/](src/tests/eShop.Orders.API.Tests/)       |
+| 💻 `eShop.Web.App.Tests`       | Orders API service client, Fluent UI design system, model validation                | [src/tests/eShop.Web.App.Tests/](src/tests/eShop.Web.App.Tests/)             |
 
 Run all tests locally:
 
@@ -462,28 +483,36 @@ dotnet test app.sln --collect:"XPlat Code Coverage" --results-directory ./TestRe
 
 ## Configuration
 
+**Overview**
+
+The application supports two operational modes — local development with emulators and Azure deployment with managed identity — controlled entirely through configuration. The Aspire AppHost detects the environment automatically and selects the appropriate service bindings, eliminating manual environment switching.
+
+Configuration flows through three layers: `appsettings.json` for base settings ([app.AppHost/appsettings.json](app.AppHost/appsettings.json)), .NET user secrets for Azure credentials (managed by the `postprovision` hook), and `azd` environment variables for deployment parameters. This layered approach keeps secrets out of source control while supporting both interactive development and CI/CD pipelines.
+
+> ⚠️ **Important**: Never commit Azure connection strings or credentials to source control. The `postprovision` hook ([hooks/postprovision.ps1](hooks/postprovision.ps1)) stores all sensitive values in .NET user secrets automatically. Run `./hooks/clean-secrets.ps1` to clear secrets when switching environments.
+
 ### Local Development
 
 The Aspire AppHost automatically configures local emulators when Azure resources are not configured ([app.AppHost/AppHost.cs](app.AppHost/AppHost.cs)):
 
-| Service              | Local Mode                              | Azure Mode                              |
-| -------------------- | --------------------------------------- | --------------------------------------- |
-| Service Bus          | Emulator via `RunAsEmulator()`          | Existing namespace via managed identity |
-| SQL Database         | SQL Server container with data volume   | Azure SQL via managed identity          |
-| Application Insights | Skipped (uses OTLP to Aspire Dashboard) | Existing resource via managed identity  |
+| Service                 | Local Mode                              | Azure Mode                              |
+| ----------------------- | --------------------------------------- | --------------------------------------- |
+| 📨 Service Bus          | Emulator via `RunAsEmulator()`          | Existing namespace via managed identity |
+| 🗄️ SQL Database         | SQL Server container with data volume   | Azure SQL via managed identity          |
+| 📊 Application Insights | Skipped (uses OTLP to Aspire Dashboard) | Existing resource via managed identity  |
 
 ### Environment Variables
 
 Key configuration values managed by `azd` and hook scripts:
 
-| Variable                             | Description                    | Set By               |
-| ------------------------------------ | ------------------------------ | -------------------- |
-| `AZURE_SUBSCRIPTION_ID`              | Target Azure subscription      | `azd env`            |
-| `AZURE_RESOURCE_GROUP`               | Resource group name            | `azd provision`      |
-| `AZURE_LOCATION`                     | Azure region                   | `azd env`            |
-| `Azure:ServiceBus:HostName`          | Service Bus namespace FQDN     | User secrets / `azd` |
-| `ConnectionStrings:OrderDb`          | SQL connection string          | User secrets / `azd` |
-| `Azure:AppInsights:ConnectionString` | App Insights connection string | User secrets / `azd` |
+| Variable                                | Description                    | Set By               |
+| --------------------------------------- | ------------------------------ | -------------------- |
+| ☁️ `AZURE_SUBSCRIPTION_ID`              | Target Azure subscription      | `azd env`            |
+| 🏗️ `AZURE_RESOURCE_GROUP`               | Resource group name            | `azd provision`      |
+| 🌍 `AZURE_LOCATION`                     | Azure region                   | `azd env`            |
+| 📨 `Azure:ServiceBus:HostName`          | Service Bus namespace FQDN     | User secrets / `azd` |
+| 🗄️ `ConnectionStrings:OrderDb`          | SQL connection string          | User secrets / `azd` |
+| 📊 `Azure:AppInsights:ConnectionString` | App Insights connection string | User secrets / `azd` |
 
 ### User Secrets
 
@@ -496,6 +525,12 @@ dotnet user-secrets set "ConnectionStrings:OrderDb" "<connection-string>" --proj
 ```
 
 ## Contributing
+
+**Overview**
+
+Contributions are welcome from developers interested in Azure Logic Apps monitoring, .NET Aspire orchestration, or event-driven architecture patterns. The project uses a standard fork-and-PR workflow with automated CI validation on every pull request, including cross-platform builds, test coverage, formatting checks, and CodeQL security scanning.
+
+All changes must pass the full CI pipeline before merge. The repository enforces `.editorconfig` formatting rules and requires tests for new functionality — see the existing test projects in `src/tests/` for patterns to follow.
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/your-feature`)
