@@ -48,10 +48,21 @@ config:
   layout: dagre
   flowchart:
     htmlLabels: true
+    curve: cardinal
+  themeVariables:
+    primaryColor: '#DEECF9'
+    primaryBorderColor: '#0078D4'
+    primaryTextColor: '#004578'
+    lineColor: '#0078D4'
 ---
 flowchart TB
     accTitle: Azure Logic Apps Monitoring Solution Architecture
     accDescr: Shows the distributed architecture with Aspire orchestrator, frontend, API, Azure services, and Logic Apps workflows
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph azure["☁️ Azure Cloud"]
         direction TB
@@ -62,7 +73,7 @@ flowchart TB
             ordersApi["⚙️ eShop.Orders.API\nASP.NET Core REST API"]:::core
         end
 
-        subgraph data["🗄️ Data & Messaging"]
+        subgraph dataLayer["🗄️ Data & Messaging"]
             direction LR
             sqlDb[("🗃️ Azure SQL Database\nOrder Persistence")]:::data
             serviceBus["📨 Azure Service Bus\nTopics & Subscriptions"]:::data
@@ -71,8 +82,8 @@ flowchart TB
 
         subgraph workflows["🔄 Logic Apps Standard"]
             direction LR
-            ordersPlaced["📋 OrdersPlacedProcess\nOrder Intake Workflow"]:::accent
-            ordersComplete["✅ OrdersPlacedCompleteProcess\nOrder Completion Workflow"]:::accent
+            ordersPlaced["📋 OrdersPlacedProcess\nOrder Intake Workflow"]:::warning
+            ordersComplete["✅ OrdersPlacedCompleteProcess\nOrder Completion Workflow"]:::warning
         end
 
         subgraph observability["📊 Observability"]
@@ -102,17 +113,19 @@ flowchart TB
     serviceBus -.->|"API Connection"| ordersPlaced
     storage -.->|"API Connection"| ordersPlaced
 
-    style azure fill:#F3F2F1,stroke:#605E5C,stroke-width:2px
-    style containerApps fill:#DEECF9,stroke:#0078D4,stroke-width:2px
-    style data fill:#F3F2F1,stroke:#8A8886,stroke-width:2px
-    style workflows fill:#FFF4CE,stroke:#FFB900,stroke-width:2px
-    style observability fill:#DFF6DD,stroke:#107C10,stroke-width:2px
-    style aspire fill:#DEECF9,stroke:#0078D4,stroke-width:2px
-
+    %% Centralized classDef palette (canonical AZURE/FLUENT v1.1)
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    classDef data fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
-    classDef accent fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
+
+    %% Subgraph styling (6 subgraphs = 6 style directives, all neutral surface)
+    style azure fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style containerApps fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style dataLayer fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style workflows fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style observability fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style aspire fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
 **Component Roles:**
