@@ -11,8 +11,6 @@ An enterprise-grade monitoring solution for **Azure Logic Apps Standard** built 
 
 ## Overview
 
-**Overview**
-
 This project enables end-to-end monitoring and automated processing of Azure Logic Apps Standard workflows, designed for platform engineers and cloud architects who need production-grade observability across event-driven microservices. It bridges the gap between application services and workflow automation by providing a unified telemetry pipeline from order placement through Logic Apps processing.
 
 The solution uses .NET Aspire as an orchestration layer to wire together an Orders REST API, a Blazor Server frontend, and two Logic Apps Standard workflows — all connected through Azure Service Bus topics and fully instrumented with OpenTelemetry traces, custom metrics, and Application Insights. Local development is supported via Service Bus and SQL Server emulators, while Azure deployment uses Managed Identity and Bicep IaC for zero-secret infrastructure.
@@ -159,8 +157,6 @@ flowchart TB
 
 ## Features
 
-**Overview**
-
 The solution delivers five integrated capability areas — order management, a web frontend, event-driven workflow processing, full-stack observability, and enterprise resilience — that together form a production-ready monitoring reference architecture. Each capability is grounded in Azure-native services and instrumented for end-to-end traceability.
 
 These features work as a cohesive system: orders flow from the Blazor UI through the REST API into Azure Service Bus, get processed by Logic Apps workflows, and every step is captured by OpenTelemetry instrumentation feeding into Application Insights. This design demonstrates how to build observable, event-driven applications on Azure with zero stored secrets.
@@ -192,8 +188,6 @@ These features work as a cohesive system: orders flow from the Blazor UI through
 | 🧪 Testing        | MSTest + Microsoft.Testing.Platform  | —              |
 
 ## Requirements
-
-**Overview**
 
 A complete development environment requires six tools that handle building, provisioning, containerization, scripting, and infrastructure compilation. The `preprovision` hook ([hooks/preprovision.ps1](hooks/preprovision.ps1)) validates all prerequisites automatically and can optionally auto-install missing tools via `winget`.
 
@@ -587,8 +581,6 @@ dotnet test app.sln --collect:"XPlat Code Coverage" --results-directory ./TestRe
 
 ## Configuration
 
-**Overview**
-
 The application supports two operational modes — local development with emulators and Azure deployment with managed identity — controlled entirely through configuration. The Aspire AppHost detects the environment automatically and selects the appropriate service bindings, eliminating manual environment switching.
 
 Configuration flows through three layers: `appsettings.json` for base settings ([app.AppHost/appsettings.json](app.AppHost/appsettings.json)), .NET user secrets for Azure credentials (managed by the `postprovision` hook), and `azd` environment variables for deployment parameters. This layered approach keeps secrets out of source control while supporting both interactive development and CI/CD pipelines.
@@ -629,8 +621,6 @@ dotnet user-secrets set "ConnectionStrings:OrderDb" "<connection-string>" --proj
 ```
 
 ## Contributing
-
-**Overview**
 
 Contributions are welcome from developers interested in Azure Logic Apps monitoring, .NET Aspire orchestration, or event-driven architecture patterns. The project uses a standard fork-and-PR workflow with automated CI validation on every pull request, including cross-platform builds, test coverage, formatting checks, and CodeQL security scanning.
 
