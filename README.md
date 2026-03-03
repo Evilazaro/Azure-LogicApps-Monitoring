@@ -21,7 +21,7 @@ This project provides a production-ready reference architecture for building mon
 
 ## 📑 Table of Contents
 
-- [🏗️ Architecture](#-architecture)
+- [🏗️ Architecture](#️-architecture)
 - [✨ Features](#-features)
 - [📋 Requirements](#-requirements)
 - [🚀 Quick Start](#-quick-start)
@@ -423,4 +423,4 @@ Contributions are welcome and encouraged. Whether you are fixing a bug, adding a
 
 This project is licensed under the [MIT License](LICENSE).
 
-Copyright &copy; 2025 Evilázaro Alves
+Copyright &copy; 2026 Evilázaro Alves
