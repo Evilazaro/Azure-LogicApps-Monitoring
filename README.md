@@ -134,13 +134,13 @@ The solution delivers five integrated capability areas — order management, a w
 
 These features work as a cohesive system: orders flow from the Blazor UI through the REST API into Azure Service Bus, get processed by Logic Apps workflows, and every step is captured by OpenTelemetry instrumentation feeding into Application Insights. This design demonstrates how to build observable, event-driven applications on Azure with zero stored secrets.
 
-| Feature | Description | Key Capabilities | Source |
-| ------- | ----------- | ---------------- | ------ |
-| 📋 Order Management | REST API with full CRUD operations and batch processing | Create, batch create, process, list, get by ID, delete orders; EF Core with retry-on-failure; OpenAPI/Swagger docs | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| 💻 Web Frontend | Blazor Server application with Microsoft Fluent UI design system | Interactive SSR pages for order listing, placement, batch submission, detail views; SignalR with sticky sessions | [eShop.Web.App](src/eShop.Web.App/) |
-| 🔄 Event-Driven Workflows | Azure Logic Apps Standard for automated order processing | Service Bus topic/subscription messaging; Managed Identity auth; blob storage for results | [workflows/](workflows/OrdersManagement/) |
-| 📊 Full-Stack Observability | OpenTelemetry instrumentation with Application Insights integration | ASP.NET Core, HTTP, SQL, Service Bus tracing; custom metrics (`orders.placed`, `orders.processing.duration`); `/health` and `/alive` endpoints | [Extensions.cs](app.ServiceDefaults/Extensions.cs) |
-| 🛡️ Enterprise Resilience | Multi-layer retry and circuit breaker patterns | HTTP: 600s timeout, 3 retries, circuit breaker; EF Core: 5 retries, 30s max delay; Service Bus: AMQP WebSockets, exponential retry | [Extensions.cs](app.ServiceDefaults/Extensions.cs) |
+| Feature                     | Description                                                         | Key Capabilities                                                                                                                               | Source                                                                      |
+| --------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| 📋 Order Management         | REST API with full CRUD operations and batch processing             | Create, batch create, process, list, get by ID, delete orders; EF Core with retry-on-failure; OpenAPI/Swagger docs                             | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
+| 💻 Web Frontend             | Blazor Server application with Microsoft Fluent UI design system    | Interactive SSR pages for order listing, placement, batch submission, detail views; SignalR with sticky sessions                               | [eShop.Web.App](src/eShop.Web.App/)                                         |
+| 🔄 Event-Driven Workflows   | Azure Logic Apps Standard for automated order processing            | Service Bus topic/subscription messaging; Managed Identity auth; blob storage for results                                                      | [workflows/](workflows/OrdersManagement/)                                   |
+| 📊 Full-Stack Observability | OpenTelemetry instrumentation with Application Insights integration | ASP.NET Core, HTTP, SQL, Service Bus tracing; custom metrics (`orders.placed`, `orders.processing.duration`); `/health` and `/alive` endpoints | [Extensions.cs](app.ServiceDefaults/Extensions.cs)                          |
+| 🛡️ Enterprise Resilience    | Multi-layer retry and circuit breaker patterns                      | HTTP: 600s timeout, 3 retries, circuit breaker; EF Core: 5 retries, 30s max delay; Service Bus: AMQP WebSockets, exponential retry             | [Extensions.cs](app.ServiceDefaults/Extensions.cs)                          |
 
 ## Technology Stack
 
