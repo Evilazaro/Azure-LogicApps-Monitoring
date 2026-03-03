@@ -20,7 +20,7 @@ A total of **50 Business layer components** were identified across **10 of 11** 
 
 This section provides a structured inventory of all Business layer components detected in the Azure-LogicApps-Monitoring repository, organized by the 11 canonical Business Architecture component types.
 
-The inventory covers the full eShop order management domain, spanning strategic objectives through operational metrics. Components were classified using the Layer Classification Decision Tree to ensure only business-intent artifacts are included, with the documented focus on business semantics rather than implementation details.
+The inventory covers the full eShop order management domain, spanning strategic objectives through operational metrics. Components were classified using the **Layer Classification Decision Tree** to ensure only business-intent artifacts are included, with the documented focus on business semantics rather than implementation details.
 
 ### 2.1 Business Strategy (5)
 
@@ -78,7 +78,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 | ------------ | ----------------------------------------------------------------------------------------------------------- |
 | Not detected | No explicit organizational business function boundaries were identified in the source code or documentation |
 
-Recommend establishing functional ownership mapping for order management, fulfillment, and customer operations.
+**Recommend** establishing functional ownership mapping for order management, fulfillment, and customer operations.
 
 ### 2.7 Business Roles & Actors (4)
 
@@ -236,9 +236,9 @@ flowchart LR
 
 ### Summary
 
-The Architecture Landscape documents **50 components** across **10 of 11** Business Architecture component types. The dominant patterns are event-driven order processing, comprehensive business rule enforcement, and fully instrumented counter/histogram metrics.
+The Architecture Landscape documents **50 components** across **10 of 11** Business Architecture component types. The dominant patterns are **event-driven order processing**, **comprehensive business rule enforcement**, and fully instrumented counter/histogram metrics.
 
-The primary gap is the absence of formally defined **Business Functions** (organizational unit boundaries), which are not explicitly modeled in the codebase. Additionally, Business Roles & Actors are identified primarily through UI interaction patterns and automated workflows rather than explicit RACI documentation. Recommended next steps include establishing organizational function boundaries, formalizing role-to-capability ownership mappings, and expanding KPI definitions to include SLO targets and threshold alerting.
+The primary gap is the absence of formally defined **Business Functions** (organizational unit boundaries), which are not explicitly modeled in the codebase. Additionally, Business Roles & Actors are identified primarily through UI interaction patterns and automated workflows rather than explicit RACI documentation. **Recommended next steps** include establishing organizational function boundaries, formalizing role-to-capability ownership mappings, and expanding KPI definitions to include **SLO targets and threshold alerting**.
 
 ---
 
@@ -246,9 +246,9 @@ The primary gap is the absence of formally defined **Business Functions** (organ
 
 ### Overview
 
-This section documents the business architecture principles observed in the source code, infrastructure configuration, and deployment lifecycle of the eShop Order Management platform. Each principle is derived from concrete implementation evidence rather than assumed or inferred without source backing.
+This section documents the business architecture principles observed in the source code, infrastructure configuration, and deployment lifecycle of the eShop Order Management platform. Each principle is derived from **concrete implementation evidence** rather than assumed or inferred without source backing.
 
-The principles reflect a cloud-native, event-driven design philosophy with strong emphasis on operational resilience, scalability, and observability. These principles guide how business capabilities are implemented, how processes interact, and how the platform maintains reliability under load.
+The principles reflect a **cloud-native, event-driven design philosophy** with strong emphasis on operational resilience, scalability, and observability. These principles guide how business capabilities are implemented, how processes interact, and how the platform maintains reliability under load.
 
 ### 3.1 Event-Driven Decoupling
 
@@ -306,9 +306,9 @@ The principles reflect a cloud-native, event-driven design philosophy with stron
 
 This section captures the current performance characteristics of the eShop Order Management Business Architecture. The analysis evaluates capability coverage, process efficiency, organizational readiness, and operational health.
 
-The platform demonstrates a well-structured event-driven architecture with well-defined business processes, comprehensive validation rules, and fully instrumented operational metrics. The primary gaps are in organizational governance (Business Functions: not detected) and formal role documentation.
+The platform demonstrates a **well-structured event-driven architecture** with well-defined business processes, comprehensive validation rules, and fully instrumented operational metrics. The primary gaps are in **organizational governance** (Business Functions: not detected) and formal role documentation.
 
-The current state reflects an architecture that has evolved beyond initial implementation into a standardized system with quantitative management capabilities across most capability areas.
+The current state reflects an architecture that has evolved beyond initial implementation into a **standardized system with quantitative management capabilities** across most capability areas.
 
 ### Capability Assessment
 
@@ -901,7 +901,7 @@ This subsection documents the 5 business services identified in the eShop Order 
 
 This subsection documents organizational functions responsible for Business layer operations. 0 business functions were detected in the analyzed source files; no explicit organizational boundaries or functional ownership structures are defined in the codebase.
 
-See Section 2.6 for summary. No additional specifications detected in source files. Recommend establishing functional ownership for: Order Management Operations, Platform Engineering, Customer Experience.
+See Section 2.6 for summary. No additional specifications detected in source files. **Recommend** establishing functional ownership for: Order Management Operations, Platform Engineering, Customer Experience.
 
 ### 5.7 Business Roles & Actors Specifications
 
@@ -1297,6 +1297,6 @@ flowchart TB
 
 ### Summary
 
-The dependency analysis reveals a well-structured event-driven architecture with clear separation between synchronous API operations (HTTP/REST) and asynchronous workflow processing (AMQP/Service Bus). The platform uses 3 primary integration protocols: HTTP/REST for synchronous communication, AMQP for publish-subscribe messaging, and OTLP for observability data export. All service-to-service communication includes distributed tracing, enabling end-to-end visibility across the order lifecycle value stream.
+The dependency analysis reveals a **well-structured event-driven architecture** with clear separation between synchronous API operations (HTTP/REST) and asynchronous workflow processing (AMQP/Service Bus). The platform uses **3 primary integration protocols**: HTTP/REST for synchronous communication, AMQP for publish-subscribe messaging, and OTLP for observability data export. All service-to-service communication includes **distributed tracing**, enabling end-to-end visibility across the order lifecycle value stream.
 
-The primary integration risk is the fire-and-forget pattern for event publishing — if Service Bus is unavailable during order placement, the order is persisted but the OrderPlaced event is lost, requiring compensating mechanisms for event replay. Additionally, the cleanup workflow (3-second recurrence) creates continuous polling load on Blob Storage. Recommended improvements include implementing a dead-letter queue monitoring dashboard, adding event replay capabilities for missed publications, and evaluating event-based (rather than timer-based) triggers for the cleanup workflow.
+The primary integration risk is the **fire-and-forget pattern** for event publishing — if Service Bus is unavailable during order placement, the order is persisted but **the OrderPlaced event is lost**, requiring compensating mechanisms for event replay. Additionally, the cleanup workflow (3-second recurrence) creates continuous polling load on Blob Storage. **Recommended improvements** include implementing a dead-letter queue monitoring dashboard, adding event replay capabilities for missed publications, and evaluating event-based (rather than timer-based) triggers for the cleanup workflow.
