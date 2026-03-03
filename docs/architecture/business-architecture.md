@@ -1,17 +1,5 @@
 # Business Architecture Analysis — comprehensive
 
-| Field                  | Value                      |
-| ---------------------- | -------------------------- |
-| **Layer**              | Business                   |
-| **Quality Level**      | comprehensive              |
-| **Framework**          | TOGAF 10 / BDAT            |
-| **Repository**         | Azure-LogicApps-Monitoring |
-| **Components Found**   | 50                         |
-| **Average Confidence** | 0.96                       |
-| **Diagrams Included**  | 7                          |
-| **Sections Generated** | 1, 2, 3, 4, 5, 8           |
-| **Generated**          | 2026-03-03T11:58:00Z       |
-
 ---
 
 ## 1. Executive Summary
@@ -23,20 +11,6 @@ This Business Architecture analysis covers the **Azure-LogicApps-Monitoring** re
 The platform implements a complete order lifecycle spanning placement, validation, event-driven processing, automated workflow orchestration, and operational monitoring. The architecture leverages Azure Logic Apps for stateful business process automation, Azure Service Bus for event-driven messaging, and .NET Aspire for service composition — all tied together with comprehensive OpenTelemetry-based observability.
 
 A total of **50 Business layer components** were identified across **10 of 11** TOGAF Business Architecture component types, with an **average confidence score of 0.96**. The analysis reveals a mature, well-instrumented order management domain with strong capabilities in automated processing, event-driven integration, and operational metrics tracking.
-
-**Component Distribution:**
-
-- **Business Strategy**: 5 strategic goals/objectives
-- **Business Capabilities**: 7 core business capabilities
-- **Value Streams**: 2 end-to-end value delivery flows
-- **Business Processes**: 6 operational workflows
-- **Business Services**: 5 service catalog entries
-- **Business Functions**: 0 (Not detected)
-- **Business Roles & Actors**: 4 role definitions
-- **Business Rules**: 7 validation and policy rules
-- **Business Events**: 5 event/trigger definitions
-- **Business Objects/Entities**: 5 domain model concepts
-- **KPIs & Metrics**: 4 performance measurements
 
 ---
 
@@ -65,7 +39,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 | Automated Order Processing    | **Core capability** for consuming Service Bus events and orchestrating order processing via Logic App workflows with outcome routing to success/error blob storage | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-131        | 0.99       | 4 - Measured |
 | Order Placement               | **Core capability** for accepting, validating, and persisting customer orders with event publishing for downstream processing                                      | src/eShop.Orders.API/Services/OrderService.cs:80-180                                               | 0.98       | 4 - Measured |
 | Batch Order Placement         | **Core capability** for processing up to 10,000 orders concurrently in batches of 50 with idempotent duplicate detection                                           | src/eShop.Orders.API/Services/OrderService.cs:180-330                                              | 0.97       | 4 - Measured |
-| Order Retrieval               | **Core capability** for looking up individual or paginated orders to satisfy customer and operational queries                                                      | src/eShop.Orders.API/Interfaces/IOrderService.cs:*                                                | 0.96       | 3 - Defined  |
+| Order Retrieval               | **Core capability** for looking up individual or paginated orders to satisfy customer and operational queries                                                      | src/eShop.Orders.API/Interfaces/IOrderService.cs:\*                                                | 0.96       | 3 - Defined  |
 | Order Deletion                | **Core capability** for removing individual orders or bulk-deleting via parallel processing with per-order scope isolation                                         | src/eShop.Orders.API/Services/OrderService.cs:440-530                                              | 0.95       | 3 - Defined  |
 | Order Completion Cleanup      | **Core capability** for periodic sweeping and deletion of successfully processed order blobs with concurrency control (20 parallel)                                | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-83 | 0.95       | 3 - Defined  |
 | Self-Service Order Management | **Core capability** for interactive order placement, search, viewing, listing, and deletion via Blazor web frontend                                                | src/eShop.Web.App/Components/Pages/Home.razor:1-200                                                | 0.94       | 3 - Defined  |
@@ -74,7 +48,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 | Name                    | Description                                                                                                                                                                                                                          | Source                                           | Confidence | Maturity     |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ | ---------- | ------------ |
-| Order Lifecycle         | **End-to-end value stream** from customer order placement through API validation, persistence, event publishing, workflow-based processing, outcome routing, and cleanup — with metrics tracked throughout                           | src/eShop.Orders.API/Services/OrderService.cs:* | 0.98       | 4 - Measured |
+| Order Lifecycle         | **End-to-end value stream** from customer order placement through API validation, persistence, event publishing, workflow-based processing, outcome routing, and cleanup — with metrics tracked throughout                           | src/eShop.Orders.API/Services/OrderService.cs:\* | 0.98       | 4 - Measured |
 | Infrastructure Delivery | **End-to-end value stream** spanning the CI/CD lifecycle from code commit through build/test validation, Bicep infrastructure provisioning, secret configuration, sample data seeding, workflow deployment, and container publishing | azure.yaml:1-313                                 | 0.90       | 3 - Defined  |
 
 ### 2.4 Business Processes (6)
@@ -95,7 +69,7 @@ The inventory covers the full eShop order management domain, spanning strategic 
 | Order Management API             | **RESTful HTTP service** exposing order placement, batch placement, processing, retrieval, deletion, and batch deletion endpoints                                                          | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501                               | 1.00       | 4 - Measured |
 | Order Business Logic Service     | **Core orchestration service** managing validation, persistence, event publishing, metrics recording, and batch concurrency control for all order operations                               | src/eShop.Orders.API/Services/OrderService.cs:1-606                                      | 0.99       | 4 - Measured |
 | Event Messaging Service          | **Azure Service Bus publisher** providing single and batch message sending with retry policy (3 attempts, exponential backoff) and distributed trace context propagation                   | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425                              | 0.98       | 4 - Measured |
-| Order Processing Workflow Engine | **Logic App Standard stateful workflow** transforming Service Bus events into API calls and routing processing outcomes to blob storage                                                    | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:* | 0.97       | 4 - Measured |
+| Order Processing Workflow Engine | **Logic App Standard stateful workflow** transforming Service Bus events into API calls and routing processing outcomes to blob storage                                                    | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:\* | 0.97       | 4 - Measured |
 | Order Data Repository            | **Data access service** providing order persistence with EF Core including save, paginated retrieval, existence checking, deletion, and internal timeout enforcement (30s write, 15s read) | src/eShop.Orders.API/Repositories/OrderRepository.cs:1-549                               | 0.97       | 3 - Defined  |
 
 ### 2.6 Business Functions (0)
@@ -110,10 +84,10 @@ Recommend establishing functional ownership mapping for order management, fulfil
 
 | Name                    | Description                                                                                                                                                     | Source                                                                                   | Confidence | Maturity       |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------- | -------------- |
-| Order Processing System | **Automated actor** — Logic App workflow that autonomously consumes events, calls the Processing API, and routes outcomes without human intervention            | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:* | 0.95       | 4 - Measured   |
-| Customer / End User     | **Human actor** who interacts via the Blazor web UI to place orders (single and batch), search orders by ID, and view order details and products                | src/eShop.Web.App/Components/Pages/PlaceOrder.razor:*                                   | 0.92       | 3 - Defined    |
+| Order Processing System | **Automated actor** — Logic App workflow that autonomously consumes events, calls the Processing API, and routes outcomes without human intervention            | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:\* | 0.95       | 4 - Measured   |
+| Customer / End User     | **Human actor** who interacts via the Blazor web UI to place orders (single and batch), search orders by ID, and view order details and products                | src/eShop.Web.App/Components/Pages/PlaceOrder.razor:\*                                   | 0.92       | 3 - Defined    |
 | Operations Team         | **Human actor** who monitors platform health via Application Insights dashboards, lists all orders, and performs batch deletion operations from the admin UI    | src/eShop.Web.App/Components/Pages/Home.razor:155-200                                    | 0.88       | 2 - Repeatable |
-| Platform Infrastructure | **System actor** — .NET Aspire orchestrator and Azure Developer CLI that manages service composition, deployment lifecycle, secret management, and auto-scaling | app.AppHost/AppHost.cs:*                                                                | 0.85       | 3 - Defined    |
+| Platform Infrastructure | **System actor** — .NET Aspire orchestrator and Azure Developer CLI that manages service composition, deployment lifecycle, secret management, and auto-scaling | app.AppHost/AppHost.cs:\*                                                                | 0.85       | 3 - Defined    |
 
 ### 2.8 Business Rules (7)
 
@@ -145,7 +119,7 @@ Recommend establishing functional ownership mapping for order management, fulfil
 | OrderProduct             | **Domain value object** representing a line item within an order with Id, OrderId, ProductId, ProductDescription, Quantity, and Price                                                   | app.ServiceDefaults/CommonTypes.cs:75-120                     | 1.00       | 4 - Measured |
 | OrderEntity              | **Persistence entity** mapping the Order domain object to the "Orders" database table with field length constraints (Id: 100, CustomerId: 100, DeliveryAddress: 500)                    | src/eShop.Orders.API/data/Entities/OrderEntity.cs:1-57        | 0.98       | 4 - Measured |
 | OrderProductEntity       | **Persistence entity** mapping OrderProduct to the "OrderProducts" table with foreign key to OrderEntity and cascade delete behavior                                                    | src/eShop.Orders.API/data/Entities/OrderProductEntity.cs:1-63 | 0.98       | 4 - Measured |
-| OrderMessageWithMetadata | **Message envelope object** wrapping an Order with messaging metadata including MessageId, SequenceNumber, EnqueuedTime, ContentType, Subject, CorrelationId, and ApplicationProperties | src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:*  | 0.88       | 3 - Defined  |
+| OrderMessageWithMetadata | **Message envelope object** wrapping an Order with messaging metadata including MessageId, SequenceNumber, EnqueuedTime, ContentType, Subject, CorrelationId, and ApplicationProperties | src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:\*  | 0.88       | 3 - Defined  |
 
 ### 2.11 KPIs & Metrics (4)
 
@@ -608,7 +582,7 @@ This subsection documents the 7 core business capabilities identified in the eSh
 | **Name**         | Order Retrieval                                                                                               |
 | **Type**         | Core Business Capability                                                                                      |
 | **Description**  | Look up individual orders by ID or retrieve paginated order lists to satisfy customer and operational queries |
-| **Source**       | src/eShop.Orders.API/Interfaces/IOrderService.cs:*                                                           |
+| **Source**       | src/eShop.Orders.API/Interfaces/IOrderService.cs:\*                                                           |
 | **Confidence**   | 0.96                                                                                                          |
 | **Maturity**     | 3 - Defined                                                                                                   |
 | **Dependencies** | Order Data Repository, Order, OrderProduct                                                                    |
@@ -664,7 +638,7 @@ This subsection documents the 2 end-to-end value streams identified in the eShop
 | **Name**               | Order Lifecycle                                                                                                                                                                |
 | **Type**               | Primary Value Stream                                                                                                                                                           |
 | **Description**        | End-to-end flow from customer order placement through API validation, persistence, event publishing, workflow-based processing, outcome routing, cleanup, and metrics tracking |
-| **Source**             | src/eShop.Orders.API/Services/OrderService.cs:*                                                                                                                               |
+| **Source**             | src/eShop.Orders.API/Services/OrderService.cs:\*                                                                                                                               |
 | **Confidence**         | 0.98                                                                                                                                                                           |
 | **Maturity**           | 4 - Measured                                                                                                                                                                   |
 | **Stages**             | Place Order, Validate, Persist, Publish Event, Process via Workflow, Route Outcome, Cleanup Artifacts, Track Metrics                                                           |
@@ -991,7 +965,7 @@ This subsection documents the 5 business services identified in the eShop Order 
 | **Name**         | Order Processing Workflow Engine                                                                                       |
 | **Service Type** | Logic App Standard Stateful Workflow                                                                                   |
 | **Description**  | Transforms Service Bus events into API calls and routes processing outcomes to blob storage containers (success/error) |
-| **Source**       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:*                               |
+| **Source**       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:\*                               |
 | **Confidence**   | 0.97                                                                                                                   |
 | **Maturity**     | 4 - Measured                                                                                                           |
 | **Consumers**    | Triggered by OrderPlaced events on Service Bus                                                                         |
@@ -1027,7 +1001,7 @@ This subsection documents the 4 business roles and actors identified through UI 
 | **Name**               | Order Processing System                                                                                                                                    |
 | **Role Type**          | Automated Actor                                                                                                                                            |
 | **Description**        | Logic App workflow that autonomously consumes Service Bus events, calls the Processing API, and routes outcomes to blob storage without human intervention |
-| **Source**             | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:*                                                                   |
+| **Source**             | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:\*                                                                   |
 | **Confidence**         | 0.95                                                                                                                                                       |
 | **Maturity**           | 4 - Measured                                                                                                                                               |
 | **Responsibilities**   | Event consumption, order processing orchestration, outcome routing, error handling                                                                         |
@@ -1040,7 +1014,7 @@ This subsection documents the 4 business roles and actors identified through UI 
 | **Name**              | Customer / End User                                                                                                            |
 | **Role Type**         | Human Actor                                                                                                                    |
 | **Description**       | Interacts via Blazor web UI to place orders (single and batch), search orders by ID, view order details and product line items |
-| **Source**            | src/eShop.Web.App/Components/Pages/PlaceOrder.razor:*                                                                         |
+| **Source**            | src/eShop.Web.App/Components/Pages/PlaceOrder.razor:\*                                                                         |
 | **Confidence**        | 0.92                                                                                                                           |
 | **Maturity**          | 3 - Defined                                                                                                                    |
 | **Responsibilities**  | Order placement, order lookup, order status viewing                                                                            |
@@ -1066,7 +1040,7 @@ This subsection documents the 4 business roles and actors identified through UI 
 | **Name**              | Platform Infrastructure                                                                                                                  |
 | **Role Type**         | System Actor                                                                                                                             |
 | **Description**       | .NET Aspire orchestrator and Azure Developer CLI managing service composition, deployment lifecycle, secret management, and auto-scaling |
-| **Source**            | app.AppHost/AppHost.cs:*                                                                                                                |
+| **Source**            | app.AppHost/AppHost.cs:\*                                                                                                                |
 | **Confidence**        | 0.85                                                                                                                                     |
 | **Maturity**          | 3 - Defined                                                                                                                              |
 | **Responsibilities**  | Service orchestration, deployment automation, infrastructure provisioning                                                                |
@@ -1301,7 +1275,7 @@ This subsection documents the 5 business domain objects and entities identified 
 | **Name**          | OrderMessageWithMetadata                                                                                                                                                                                        |
 | **Entity Type**   | Message Envelope Object                                                                                                                                                                                         |
 | **Description**   | Enriched message wrapper that pairs an Order with Service Bus messaging metadata for observability and correlation                                                                                              |
-| **Source**        | src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:*                                                                                                                                                    |
+| **Source**        | src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:\*                                                                                                                                                    |
 | **Confidence**    | 0.88                                                                                                                                                                                                            |
 | **Maturity**      | 3 - Defined                                                                                                                                                                                                     |
 | **Attributes**    | Order (Order), MessageId (string), SequenceNumber (long), EnqueuedTime (DateTimeOffset), ContentType (string), Subject (string), CorrelationId (string), MessageSize (long), ApplicationProperties (dictionary) |
