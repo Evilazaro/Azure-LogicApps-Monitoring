@@ -9,7 +9,7 @@
 
 An enterprise-grade order management platform built with **.NET Aspire**, **Azure Logic Apps Standard**, and **Azure Container Apps**. This solution demonstrates a cloud-native architecture that combines distributed microservices with serverless workflow automation for end-to-end order processing, observability, and monitoring.
 
-## Overview
+## 🔭 Overview
 
 **Overview**
 
@@ -19,21 +19,21 @@ This project provides a production-ready reference architecture for building mon
 
 > 📌 **How It Works**: The platform uses .NET Aspire as the orchestration layer to coordinate an ASP.NET Core REST API backend, a Blazor Server frontend, Azure Service Bus for async messaging, Azure SQL for persistence, and Azure Logic Apps Standard for automated workflow processing — all deployed to Azure Container Apps with full OpenTelemetry instrumentation.
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Architecture](#architecture)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Deployment](#deployment)
-- [Project Structure](#project-structure)
-- [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
+- [🏗️ Architecture](#-architecture)
+- [✨ Features](#-features)
+- [📋 Requirements](#-requirements)
+- [🚀 Quick Start](#-quick-start)
+- [⚙️ Configuration](#️-configuration)
+- [☁️ Deployment](#️-deployment)
+- [📁 Project Structure](#-project-structure)
+- [🧪 Testing](#-testing)
+- [🔧 Troubleshooting](#-troubleshooting)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
 
-## Architecture
+## 🏗️ Architecture
 
 **Overview**
 
@@ -119,7 +119,7 @@ flowchart TB
 | 📈 **Application Insights** | Distributed tracing and metrics           | OpenTelemetry + Azure Monitor      |
 | 🎯 **.NET Aspire AppHost**  | Service orchestration and discovery       | Aspire 13.1.0                      |
 
-## Features
+## ✨ Features
 
 **Overview**
 
@@ -144,7 +144,7 @@ The platform provides a comprehensive set of capabilities for building, deployin
 | 🚀 **CI/CD Pipelines**           | GitHub Actions with OIDC authentication, CodeQL scanning, cross-platform builds, and automated deployment | ✅ Stable |
 | 🐳 **Local Dev with Emulators**  | Service Bus emulator and SQL Server container for offline development without Azure dependencies          | ✅ Stable |
 
-## Requirements
+## 📋 Requirements
 
 **Overview**
 
@@ -162,7 +162,7 @@ Before getting started, ensure your development environment meets the following 
 
 > 💡 **Tip**: Run `./hooks/check-dev-workstation.ps1` (Windows) or `./hooks/check-dev-workstation.sh` (macOS/Linux) to validate your development environment has all required tools installed.
 
-## Quick Start
+## 🚀 Quick Start
 
 ### 1. Clone the Repository
 
@@ -202,7 +202,7 @@ After deployment, access the endpoints:
 - **Orders API**: The REST API URL with Swagger UI at `/swagger`
 - **Aspire Dashboard**: Available locally during development at `https://localhost:15888`
 
-## Configuration
+## ⚙️ Configuration
 
 **Overview**
 
@@ -248,7 +248,7 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 - **Service Bus**: Runs the Azure Service Bus emulator in Docker
 - **Telemetry**: Exports to the Aspire dashboard OTLP collector
 
-## Deployment
+## ☁️ Deployment
 
 ### Azure Developer CLI (Recommended)
 
@@ -302,47 +302,47 @@ The repository includes two GitHub Actions workflows:
 
 > 💡 **Tip**: Run `azd pipeline config --provider github` to configure OIDC federated credentials for passwordless CI/CD authentication.
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-Azure-LogicApps-Monitoring/
-├── app.AppHost/                    # .NET Aspire orchestrator
-│   ├── AppHost.cs                  # Service registration and configuration
-│   └── app.AppHost.csproj          # Aspire hosting dependencies
-├── app.ServiceDefaults/            # Shared cross-cutting concerns
-│   ├── Extensions.cs               # OpenTelemetry, health checks, resilience
-│   └── CommonTypes.cs              # Shared domain models (Order, OrderProduct)
-├── src/
-│   ├── eShop.Orders.API/           # REST API service
-│   │   ├── Controllers/            # API endpoints (OrdersController)
-│   │   ├── Services/               # Business logic (OrderService)
-│   │   ├── Repositories/           # Data access (OrderRepository)
-│   │   ├── Handlers/               # Service Bus message handlers
-│   │   ├── HealthChecks/           # Custom health checks (DB, Service Bus)
-│   │   ├── data/                   # EF Core context and entity models
-│   │   └── Migrations/             # Database schema migrations
-│   ├── eShop.Web.App/              # Blazor Server frontend
-│   │   ├── Components/Pages/       # Razor pages (Home, ListAllOrders, PlaceOrder)
-│   │   └── Shared/                 # Layout and shared components
-│   └── tests/                      # Unit and integration tests
-│       ├── eShop.Orders.API.Tests/ # API controller, service, handler tests
-│       ├── eShop.Web.App.Tests/    # Frontend model and service tests
-│       ├── app.AppHost.Tests/      # Integration and configuration tests
+📦 Azure-LogicApps-Monitoring/
+├── 🎯 app.AppHost/                    # .NET Aspire orchestrator
+│   ├── AppHost.cs                     # Service registration and configuration
+│   └── app.AppHost.csproj             # Aspire hosting dependencies
+├── 🔧 app.ServiceDefaults/            # Shared cross-cutting concerns
+│   ├── Extensions.cs                  # OpenTelemetry, health checks, resilience
+│   └── CommonTypes.cs                 # Shared domain models (Order, OrderProduct)
+├── 📂 src/
+│   ├── ⚙️ eShop.Orders.API/           # REST API service
+│   │   ├── 🎮 Controllers/            # API endpoints (OrdersController)
+│   │   ├── 💼 Services/               # Business logic (OrderService)
+│   │   ├── 🗄️ Repositories/           # Data access (OrderRepository)
+│   │   ├── 📨 Handlers/               # Service Bus message handlers
+│   │   ├── 💚 HealthChecks/           # Custom health checks (DB, Service Bus)
+│   │   ├── 🗃️ data/                   # EF Core context and entity models
+│   │   └── 🔄 Migrations/             # Database schema migrations
+│   ├── 🌐 eShop.Web.App/              # Blazor Server frontend
+│   │   ├── 📄 Components/Pages/       # Razor pages (Home, ListAllOrders, PlaceOrder)
+│   │   └── 🧩 Shared/                 # Layout and shared components
+│   └── 🧪 tests/                      # Unit and integration tests
+│       ├── eShop.Orders.API.Tests/    # API controller, service, handler tests
+│       ├── eShop.Web.App.Tests/       # Frontend model and service tests
+│       ├── app.AppHost.Tests/         # Integration and configuration tests
 │       └── app.ServiceDefaults.Tests/ # Shared library tests
-├── workflows/
-│   └── OrdersManagement/           # Azure Logic Apps workflow definitions
-│       ├── OrdersPlacedProcess/    # Order processing workflow
-│       └── OrdersPlacedCompleteProcess/ # Completion workflow
-├── infra/                          # Bicep infrastructure templates
-│   ├── main.bicep                  # Entry point orchestrator
-│   ├── shared/                     # Identity, monitoring, networking, data
-│   └── workload/                   # Container Apps, Logic Apps, messaging
-├── hooks/                          # azd lifecycle scripts (PS1 + SH)
-├── .github/workflows/              # CI/CD pipeline definitions
-└── azure.yaml                      # Azure Developer CLI configuration
+├── 🔄 workflows/
+│   └── OrdersManagement/             # Azure Logic Apps workflow definitions
+│       ├── 📋 OrdersPlacedProcess/    # Order processing workflow
+│       └── ✅ OrdersPlacedCompleteProcess/ # Completion workflow
+├── 🏗️ infra/                          # Bicep infrastructure templates
+│   ├── main.bicep                     # Entry point orchestrator
+│   ├── shared/                        # Identity, monitoring, networking, data
+│   └── workload/                      # Container Apps, Logic Apps, messaging
+├── 🪝 hooks/                          # azd lifecycle scripts (PS1 + SH)
+├── 🚀 .github/workflows/              # CI/CD pipeline definitions
+└── ☁️ azure.yaml                      # Azure Developer CLI configuration
 ```
 
-## Testing
+## 🧪 Testing
 
 The solution includes comprehensive test coverage across all layers.
 
@@ -367,7 +367,7 @@ dotnet test --configuration Debug --coverage --coverage-output-format cobertura 
 | 🧪 `app.AppHost.Tests`         | Integration    | Aspire host startup, Azure credentials, configuration validation, resource naming, Service Bus/SQL configuration |
 | 🧪 `app.ServiceDefaults.Tests` | Shared library | Common types validation, extension method behavior                                                               |
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 | Issue                                | Cause                          | Resolution                                                            |
 | ------------------------------------ | ------------------------------ | --------------------------------------------------------------------- |
@@ -381,7 +381,7 @@ dotnet test --configuration Debug --coverage --coverage-output-format cobertura 
 
 > 💡 **Tip**: Use the Aspire dashboard at `https://localhost:15888` during local development to inspect distributed traces, logs, and metrics across all services in real time.
 
-## Contributing
+## 🤝 Contributing
 
 **Overview**
 
@@ -408,7 +408,7 @@ Contributions are welcome and encouraged. Whether you are fixing a bug, adding a
 - Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
 - Ensure all CI checks pass before requesting review
 
-## License
+## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
 
