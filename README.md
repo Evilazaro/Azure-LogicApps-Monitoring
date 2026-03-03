@@ -134,31 +134,31 @@ The solution delivers five integrated capability areas — order management, a w
 
 These features work as a cohesive system: orders flow from the Blazor UI through the REST API into Azure Service Bus, get processed by Logic Apps workflows, and every step is captured by OpenTelemetry instrumentation feeding into Application Insights. This design demonstrates how to build observable, event-driven applications on Azure with zero stored secrets.
 
-| Feature                     | Description                                                         | Key Capabilities                                                                                                                               | Source                                                                      |
-| --------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| 📋 Order Management         | REST API with full CRUD operations and batch processing             | Create, batch create, process, list, get by ID, delete orders; EF Core with retry-on-failure; OpenAPI/Swagger docs                             | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| 💻 Web Frontend             | Blazor Server application with Microsoft Fluent UI design system    | Interactive SSR pages for order listing, placement, batch submission, detail views; SignalR with sticky sessions                               | [eShop.Web.App](src/eShop.Web.App/)                                         |
-| 🔄 Event-Driven Workflows   | Azure Logic Apps Standard for automated order processing            | Service Bus topic/subscription messaging; Managed Identity auth; blob storage for results                                                      | [workflows/](workflows/OrdersManagement/)                                   |
-| 📊 Full-Stack Observability | OpenTelemetry instrumentation with Application Insights integration | ASP.NET Core, HTTP, SQL, Service Bus tracing; custom metrics (`orders.placed`, `orders.processing.duration`); `/health` and `/alive` endpoints | [Extensions.cs](app.ServiceDefaults/Extensions.cs)                          |
-| 🛡️ Enterprise Resilience    | Multi-layer retry and circuit breaker patterns                      | HTTP: 600s timeout, 3 retries, circuit breaker; EF Core: 5 retries, 30s max delay; Service Bus: AMQP WebSockets, exponential retry             | [Extensions.cs](app.ServiceDefaults/Extensions.cs)                          |
+| Feature                     | Description                                                         | Key Capabilities                                                                                                                               |
+| --------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 📋 Order Management         | REST API with full CRUD operations and batch processing             | Create, batch create, process, list, get by ID, delete orders; EF Core with retry-on-failure; OpenAPI/Swagger docs                             |
+| 💻 Web Frontend             | Blazor Server application with Microsoft Fluent UI design system    | Interactive SSR pages for order listing, placement, batch submission, detail views; SignalR with sticky sessions                               |
+| 🔄 Event-Driven Workflows   | Azure Logic Apps Standard for automated order processing            | Service Bus topic/subscription messaging; Managed Identity auth; blob storage for results                                                      |
+| 📊 Full-Stack Observability | OpenTelemetry instrumentation with Application Insights integration | ASP.NET Core, HTTP, SQL, Service Bus tracing; custom metrics (`orders.placed`, `orders.processing.duration`); `/health` and `/alive` endpoints |
+| 🛡️ Enterprise Resilience    | Multi-layer retry and circuit breaker patterns                      | HTTP: 600s timeout, 3 retries, circuit breaker; EF Core: 5 retries, 30s max delay; Service Bus: AMQP WebSockets, exponential retry             |
 
 ## Technology Stack
 
-| Layer             | Technology                           | Version        | Source                                                                       |
-| ----------------- | ------------------------------------ | -------------- | ---------------------------------------------------------------------------- |
-| 🎯 Orchestration  | .NET Aspire                          | 13.1.0         | [app.AppHost.csproj](app.AppHost/app.AppHost.csproj)                         |
-| ⚙️ Runtime        | .NET                                 | 10.0           | [global.json](global.json)                                                   |
-| 🌐 API Framework  | ASP.NET Core Web API                 | 10.0           | [eShop.Orders.API.csproj](src/eShop.Orders.API/eShop.Orders.API.csproj)      |
-| 💻 Frontend       | Blazor Server + Fluent UI            | 4.14.0         | [eShop.Web.App.csproj](src/eShop.Web.App/eShop.Web.App.csproj)               |
-| 🗄️ ORM            | Entity Framework Core (SQL Server)   | 10.0.3         | [eShop.Orders.API.csproj](src/eShop.Orders.API/eShop.Orders.API.csproj)      |
-| 📨 Messaging      | Azure Service Bus                    | 7.20.1         | [app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj) |
-| 🔄 Workflows      | Azure Logic Apps Standard            | —              | [workflows/](workflows/OrdersManagement/)                                    |
-| 📊 Observability  | OpenTelemetry + Application Insights | 1.15.0 / 1.5.0 | [app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj) |
-| 🔐 Authentication | Azure.Identity (Managed Identity)    | 1.18.0         | [app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj) |
-| 🏗️ Infrastructure | Bicep (IaC)                          | —              | [infra/](infra/)                                                             |
-| 🚀 Deployment     | Azure Developer CLI (azd)            | ≥ 1.11.0       | [azure.yaml](azure.yaml)                                                     |
-| ☁️ Hosting        | Azure Container Apps                 | —              | [infra/workload/services/main.bicep](infra/workload/services/main.bicep)     |
-| 🧪 Testing        | MSTest + Microsoft.Testing.Platform  | —              | [global.json](global.json)                                                   |
+| Layer             | Technology                           | Version        |
+| ----------------- | ------------------------------------ | -------------- |
+| 🎯 Orchestration  | .NET Aspire                          | 13.1.0         |
+| ⚙️ Runtime        | .NET                                 | 10.0           |
+| 🌐 API Framework  | ASP.NET Core Web API                 | 10.0           |
+| 💻 Frontend       | Blazor Server + Fluent UI            | 4.14.0         |
+| 🗄️ ORM            | Entity Framework Core (SQL Server)   | 10.0.3         |
+| 📨 Messaging      | Azure Service Bus                    | 7.20.1         |
+| 🔄 Workflows      | Azure Logic Apps Standard            | —              |
+| 📊 Observability  | OpenTelemetry + Application Insights | 1.15.0 / 1.5.0 |
+| 🔐 Authentication | Azure.Identity (Managed Identity)    | 1.18.0         |
+| 🏗️ Infrastructure | Bicep (IaC)                          | —              |
+| 🚀 Deployment     | Azure Developer CLI (azd)            | ≥ 1.11.0       |
+| ☁️ Hosting        | Azure Container Apps                 | —              |
+| 🧪 Testing        | MSTest + Microsoft.Testing.Platform  | —              |
 
 ## Requirements
 
@@ -384,17 +384,17 @@ Azure-LogicApps-Monitoring/
 
 The Orders API is an ASP.NET Core Web API providing RESTful endpoints for order management ([src/eShop.Orders.API/](src/eShop.Orders.API/)).
 
-| Endpoint                 | Method   | Description                                | Source                                                                      |
-| ------------------------ | -------- | ------------------------------------------ | --------------------------------------------------------------------------- |
-| 📋 `/api/orders`         | `POST`   | Place a new order                          | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| 📦 `/api/orders/batch`   | `POST`   | Place multiple orders in batch             | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| ⚙️ `/api/orders/process` | `POST`   | Process an order (used by Logic Apps)      | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| 📄 `/api/orders`         | `GET`    | List all orders (paginated, split queries) | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| 🔍 `/api/orders/{id}`    | `GET`    | Get order by ID                            | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| 🗑️ `/api/orders`         | `DELETE` | Delete all orders                          | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| ❌ `/api/orders/{id}`    | `DELETE` | Delete order by ID                         | [OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| 💚 `/health`             | `GET`    | Health check (DB + Service Bus)            | [Extensions.cs](app.ServiceDefaults/Extensions.cs)                          |
-| 💓 `/alive`              | `GET`    | Liveness probe                             | [Extensions.cs](app.ServiceDefaults/Extensions.cs)                          |
+| Endpoint                 | Method   | Description                                |
+| ------------------------ | -------- | ------------------------------------------ |
+| 📋 `/api/orders`         | `POST`   | Place a new order                          |
+| 📦 `/api/orders/batch`   | `POST`   | Place multiple orders in batch             |
+| ⚙️ `/api/orders/process` | `POST`   | Process an order (used by Logic Apps)      |
+| 📄 `/api/orders`         | `GET`    | List all orders (paginated, split queries) |
+| 🔍 `/api/orders/{id}`    | `GET`    | Get order by ID                            |
+| 🗑️ `/api/orders`         | `DELETE` | Delete all orders                          |
+| ❌ `/api/orders/{id}`    | `DELETE` | Delete order by ID                         |
+| 💚 `/health`             | `GET`    | Health check (DB + Service Bus)            |
+| 💓 `/alive`              | `GET`    | Liveness probe                             |
 
 **Key capabilities:**
 
@@ -535,12 +535,12 @@ Three GitHub Actions workflows provide continuous integration and delivery:
 
 The solution includes 4 test projects with 30+ test files using MSTest and `Microsoft.Testing.Platform` ([global.json](global.json)):
 
-| Project                        | Scope                                                                               | Source                                                                       |
-| ------------------------------ | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| 🏗️ `app.AppHost.Tests`         | Aspire host integration, Azure credentials, resource naming, Service Bus/SQL config | [src/tests/app.AppHost.Tests/](src/tests/app.AppHost.Tests/)                 |
-| ⚙️ `app.ServiceDefaults.Tests` | Extensions, OpenTelemetry config, domain model validation                           | [src/tests/app.ServiceDefaults.Tests/](src/tests/app.ServiceDefaults.Tests/) |
-| 🌐 `eShop.Orders.API.Tests`    | Controllers, services, repositories, message handlers, health checks                | [src/tests/eShop.Orders.API.Tests/](src/tests/eShop.Orders.API.Tests/)       |
-| 💻 `eShop.Web.App.Tests`       | Orders API service client, Fluent UI design system, model validation                | [src/tests/eShop.Web.App.Tests/](src/tests/eShop.Web.App.Tests/)             |
+| Project                        | Scope                                                                               |
+| ------------------------------ | ----------------------------------------------------------------------------------- |
+| 🏗️ `app.AppHost.Tests`         | Aspire host integration, Azure credentials, resource naming, Service Bus/SQL config |
+| ⚙️ `app.ServiceDefaults.Tests` | Extensions, OpenTelemetry config, domain model validation                           |
+| 🌐 `eShop.Orders.API.Tests`    | Controllers, services, repositories, message handlers, health checks                |
+| 💻 `eShop.Web.App.Tests`       | Orders API service client, Fluent UI design system, model validation                |
 
 Run all tests locally:
 
