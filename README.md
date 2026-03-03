@@ -10,7 +10,7 @@ An enterprise-grade order management and monitoring solution built with .NET Asp
 
 > 💡 **Why This Project?** This solution showcases a production-ready reference architecture for building observable, scalable microservices on Azure using .NET Aspire orchestration with Logic Apps workflow automation.
 
-## Overview
+## 📖 Overview
 
 **Overview**
 
@@ -20,20 +20,20 @@ The solution uses .NET Aspire as the orchestration layer to manage service disco
 
 > 📌 **Key Differentiator**: Unlike standalone samples, this solution integrates the full Azure observability stack — Application Insights, OpenTelemetry, and distributed tracing — across both application code and Logic Apps workflows, providing end-to-end visibility into order processing.
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Architecture](#architecture)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Deployment](#deployment)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
+- [🏗️ Architecture](#-architecture)
+- [✨ Features](#-features)
+- [📋 Requirements](#-requirements)
+- [⚡ Quick Start](#-quick-start)
+- [⚙️ Configuration](#%EF%B8%8F-configuration)
+- [🚀 Deployment](#-deployment)
+- [💻 Usage](#-usage)
+- [📂 Project Structure](#-project-structure)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
 
-## Architecture
+## 🏗️ Architecture
 
 **Overview**
 
@@ -128,7 +128,7 @@ flowchart TB
 | 📋 **Logic Apps Workflows** | Automated order processing and completion business logic      | Logic Apps Standard           |
 | 📈 **Application Insights** | Distributed tracing, metrics, and diagnostics                 | OpenTelemetry + Azure Monitor |
 
-## Features
+## ✨ Features
 
 **Overview**
 
@@ -148,7 +148,7 @@ The solution delivers a comprehensive set of capabilities for building and opera
 | 🛡️ **Built-In Resilience**       | HTTP retry policies with exponential backoff, circuit breaker patterns, and configurable timeouts (600s total, 60s per attempt) | ✅ Stable |
 | 🏗️ **Infrastructure-as-Code**    | Complete Bicep templates with modular architecture covering networking, identity, monitoring, and workload resources            | ✅ Stable |
 
-## Requirements
+## 📋 Requirements
 
 **Overview**
 
@@ -165,7 +165,7 @@ Before getting started, ensure your development environment meets the following 
 | 🐳 **Docker**                    | Latest          | Local development containers and emulators        |
 | 🔑 **Azure Subscription**        | —               | Required for cloud deployment (not for local dev) |
 
-## Quick Start
+## ⚡ Quick Start
 
 **Overview**
 
@@ -223,7 +223,7 @@ Deploying services (azd deploy)
 SUCCESS: Your application was provisioned and deployed to Azure.
 ```
 
-## Configuration
+## ⚙️ Configuration
 
 **Overview**
 
@@ -278,7 +278,7 @@ The `ServiceDefaults` library configures HTTP resilience policies applied to all
 // Circuit breaker: 120-second sampling duration
 ```
 
-## Deployment
+## 🚀 Deployment
 
 **Overview**
 
@@ -343,7 +343,7 @@ The project uses GitHub Actions for automated deployments. Configure the pipelin
 azd pipeline config --provider github
 ```
 
-## Usage
+## 💻 Usage
 
 ### Orders API
 
@@ -423,47 +423,47 @@ curl https://<service-url>/health
 curl https://<service-url>/alive
 ```
 
-## Project Structure
+## 📂 Project Structure
 
 ```text
-Azure-LogicApps-Monitoring/
-├── app.AppHost/                    # .NET Aspire orchestrator
-│   ├── AppHost.cs                  # Service configuration and Azure resource wiring
-│   └── app.AppHost.csproj          # Aspire SDK and hosting packages
-├── app.ServiceDefaults/            # Shared cross-cutting concerns
-│   ├── Extensions.cs               # OpenTelemetry, resilience, health checks, Service Bus
-│   └── CommonTypes.cs              # Shared domain models (Order, OrderProduct)
-├── src/
-│   ├── eShop.Orders.API/           # REST API service
-│   │   ├── Controllers/            # OrdersController, WeatherForecastController
-│   │   ├── Services/               # OrderService business logic
-│   │   ├── Repositories/           # OrderRepository (EF Core)
-│   │   ├── Handlers/               # Service Bus message handlers
-│   │   ├── HealthChecks/           # Database and Service Bus health checks
-│   │   ├── data/                   # DbContext, entities, mappers
-│   │   └── Migrations/             # EF Core database migrations
-│   ├── eShop.Web.App/              # Blazor Server frontend
-│   │   ├── Components/Pages/       # Home, PlaceOrder, ListAllOrders, ViewOrder
-│   │   ├── Components/Layout/      # MainLayout, NavMenu (Fluent UI)
-│   │   └── Components/Services/    # OrdersAPIService (typed HTTP client)
-│   └── tests/                      # Test projects
-│       ├── app.AppHost.Tests/
-│       ├── app.ServiceDefaults.Tests/
-│       ├── eShop.Orders.API.Tests/
-│       └── eShop.Web.App.Tests/
-├── workflows/OrdersManagement/     # Logic Apps workflow definitions
-│   └── OrdersManagementLogicApp/
-│       ├── OrdersPlacedProcess/    # Order intake workflow
-│       └── OrdersPlacedCompleteProcess/  # Order completion workflow
-├── infra/                          # Bicep infrastructure-as-code
-│   ├── main.bicep                  # Deployment orchestrator
-│   ├── shared/                     # Identity, monitoring, networking, data
-│   └── workload/                   # Container Apps, Service Bus, Logic Apps
-├── hooks/                          # azd lifecycle scripts (PS1 + SH)
-└── azure.yaml                      # Azure Developer CLI configuration
+📦 Azure-LogicApps-Monitoring/
+├── 🎯 app.AppHost/                    # .NET Aspire orchestrator
+│   ├── 📄 AppHost.cs                  # Service configuration and Azure resource wiring
+│   └── 📄 app.AppHost.csproj          # Aspire SDK and hosting packages
+├── 🛡️ app.ServiceDefaults/            # Shared cross-cutting concerns
+│   ├── 📄 Extensions.cs               # OpenTelemetry, resilience, health checks, Service Bus
+│   └── 📄 CommonTypes.cs              # Shared domain models (Order, OrderProduct)
+├── 💻 src/
+│   ├── ⚙️ eShop.Orders.API/           # REST API service
+│   │   ├── 🎮 Controllers/            # OrdersController, WeatherForecastController
+│   │   ├── 🔧 Services/               # OrderService business logic
+│   │   ├── 🗃️ Repositories/           # OrderRepository (EF Core)
+│   │   ├── 📨 Handlers/               # Service Bus message handlers
+│   │   ├── 💚 HealthChecks/           # Database and Service Bus health checks
+│   │   ├── 🗄️ data/                   # DbContext, entities, mappers
+│   │   └── 🔄 Migrations/             # EF Core database migrations
+│   ├── 🌐 eShop.Web.App/              # Blazor Server frontend
+│   │   ├── 📄 Components/Pages/       # Home, PlaceOrder, ListAllOrders, ViewOrder
+│   │   ├── 🎨 Components/Layout/      # MainLayout, NavMenu (Fluent UI)
+│   │   └── 🔌 Components/Services/    # OrdersAPIService (typed HTTP client)
+│   └── 🧪 tests/                      # Test projects
+│       ├── 🧪 app.AppHost.Tests/
+│       ├── 🧪 app.ServiceDefaults.Tests/
+│       ├── 🧪 eShop.Orders.API.Tests/
+│       └── 🧪 eShop.Web.App.Tests/
+├── 🔄 workflows/OrdersManagement/     # Logic Apps workflow definitions
+│   └── 📋 OrdersManagementLogicApp/
+│       ├── 📋 OrdersPlacedProcess/    # Order intake workflow
+│       └── ✅ OrdersPlacedCompleteProcess/  # Order completion workflow
+├── 🏗️ infra/                          # Bicep infrastructure-as-code
+│   ├── 📄 main.bicep                  # Deployment orchestrator
+│   ├── 🔗 shared/                     # Identity, monitoring, networking, data
+│   └── 📦 workload/                   # Container Apps, Service Bus, Logic Apps
+├── 🪝 hooks/                          # azd lifecycle scripts (PS1 + SH)
+└── ☁️ azure.yaml                      # Azure Developer CLI configuration
 ```
 
-## Contributing
+## 🤝 Contributing
 
 **Overview**
 
@@ -501,7 +501,7 @@ Contributions are welcome and help improve this reference architecture for the c
 - Update documentation for any configuration or API changes
 - Ensure `dotnet build` completes without warnings
 
-## License
+## 📄 License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
