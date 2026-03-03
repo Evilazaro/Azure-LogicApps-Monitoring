@@ -110,12 +110,14 @@ flowchart TB
     style workflows fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     style observability fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
 
-    %% Centralized classDef declarations (5 semantic classes)
+    %% Centralized classDef declarations (5 semantic + 2 structural)
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
-    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#0B6A0B
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#986F0B
-    classDef neutral fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef danger fill:#FDE7E9,stroke:#E81123,stroke-width:2px,color:#A4262C
+    classDef data fill:#E1DFDD,stroke:#8378DE,stroke-width:2px,color:#5B5FC7
+    classDef external fill:#F3F2F1,stroke:#605E5C,stroke-width:2px,color:#323130
 ```
 
 **Component Roles:**
