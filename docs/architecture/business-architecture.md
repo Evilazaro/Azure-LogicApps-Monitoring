@@ -100,7 +100,11 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 ### 2.6 Business Functions (0)
 
-**Status**: Not detected in analyzed files. No explicit organizational business function boundaries were identified in the source code or documentation. Recommend establishing functional ownership mapping for order management, fulfillment, and customer operations.
+| Name         | Description                                                                                                 | Source       | Confidence   | Maturity     |
+| ------------ | ----------------------------------------------------------------------------------------------------------- | ------------ | ------------ | ------------ |
+| Not detected | No explicit organizational business function boundaries were identified in the source code or documentation | Not detected | Not detected | Not detected |
+
+Recommend establishing functional ownership mapping for order management, fulfillment, and customer operations.
 
 ### 2.7 Business Roles & Actors (4)
 
@@ -651,7 +655,7 @@ This subsection documents the 7 core business capabilities identified in the eSh
 
 ### 5.3 Value Streams Specifications
 
-This subsection documents the 2 end-to-end value streams identified in the eShop Order Management platform. Both value streams span multiple capabilities and processes, demonstrating the flow from customer trigger to value delivery.
+This subsection documents the 2 end-to-end value streams identified in the eShop Order Management platform. Both value streams span multiple capabilities and processes, demonstrating the flow from customer trigger to value delivery, with confidence scores ranging from 0.90 to 0.98.
 
 #### 5.3.1 Order Lifecycle Value Stream
 
