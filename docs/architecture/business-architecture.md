@@ -1,4 +1,4 @@
-# Business Architecture Analysis — comprehensive
+# Business Architecture
 
 ---
 
@@ -6,11 +6,11 @@
 
 ### Overview
 
-This Business Architecture analysis covers the **Azure-LogicApps-Monitoring** repository — an enterprise-grade eShop order management platform that demonstrates cloud-native patterns for monitoring and managing business-critical order workflows with built-in observability. The analysis uses TOGAF 10 Business Architecture classification to identify and classify all detected components.
+This Business Architecture analysis covers the **Azure-LogicApps-Monitoring** repository — an enterprise-grade eShop order management platform that demonstrates cloud-native patterns for monitoring and managing business-critical order workflows with built-in observability. The analysis uses Business Architecture classification to identify and classify all detected components.
 
 The platform implements a complete order lifecycle spanning placement, validation, event-driven processing, automated workflow orchestration, and operational monitoring. The architecture leverages Azure Logic Apps for stateful business process automation, Azure Service Bus for event-driven messaging, and .NET Aspire for service composition — all tied together with comprehensive OpenTelemetry-based observability.
 
-A total of **50 Business layer components** were identified across **10 of 11** TOGAF Business Architecture component types. The analysis reveals a well-instrumented order management domain with strong capabilities in automated processing, event-driven integration, and operational metrics tracking.
+A total of **50 Business layer components** were identified across **10 of 11** Business Architecture component types. The analysis reveals a well-instrumented order management domain with strong capabilities in automated processing, event-driven integration, and operational metrics tracking.
 
 ---
 
@@ -18,7 +18,7 @@ A total of **50 Business layer components** were identified across **10 of 11** 
 
 ### Overview
 
-This section provides a structured inventory of all Business layer components detected in the Azure-LogicApps-Monitoring repository, organized by the 11 canonical TOGAF Business Architecture component types.
+This section provides a structured inventory of all Business layer components detected in the Azure-LogicApps-Monitoring repository, organized by the 11 canonical Business Architecture component types.
 
 The inventory covers the full eShop order management domain, spanning strategic objectives through operational metrics. Components were classified using the Layer Classification Decision Tree to ensure only business-intent artifacts are included, with the documented focus on business semantics rather than implementation details.
 
@@ -144,7 +144,7 @@ config:
 ---
 flowchart TB
     accTitle: Business Capability Map
-    accDescr: Shows 7 core business capabilities with maturity levels and dependencies for the eShop Order Management platform
+    accDescr: Shows 7 core business capabilities and their dependencies for the eShop Order Management platform
 
     %% ═══════════════════════════════════════════════════════════════════════════
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
@@ -236,7 +236,7 @@ flowchart LR
 
 ### Summary
 
-The Architecture Landscape documents **50 components** across **10 of 11** TOGAF Business Architecture component types. The dominant patterns are event-driven order processing, comprehensive business rule enforcement, and fully instrumented counter/histogram metrics.
+The Architecture Landscape documents **50 components** across **10 of 11** Business Architecture component types. The dominant patterns are event-driven order processing, comprehensive business rule enforcement, and fully instrumented counter/histogram metrics.
 
 The primary gap is the absence of formally defined **Business Functions** (organizational unit boundaries), which are not explicitly modeled in the codebase. Additionally, Business Roles & Actors are identified primarily through UI interaction patterns and automated workflows rather than explicit RACI documentation. Recommended next steps include establishing organizational function boundaries, formalizing role-to-capability ownership mappings, and expanding KPI definitions to include SLO targets and threshold alerting.
 
@@ -326,11 +326,11 @@ The current state reflects an architecture that has evolved beyond initial imple
 | Business Objects/Entities | 5          | High     |
 | KPIs & Metrics            | 4          | High     |
 
-### Capability Maturity Heatmap
+### Component Type Overview
 
 ```mermaid
 ---
-title: Business Capability Maturity Heatmap
+title: Business Component Type Overview
 config:
   theme: base
   look: classic
@@ -339,8 +339,8 @@ config:
     fontSize: '16px'
 ---
 flowchart TB
-    accTitle: Business Capability Maturity Heatmap
-    accDescr: Visual heatmap showing maturity levels across all 11 business component types using color-coded indicators
+    accTitle: Business Component Type Overview
+    accDescr: Visual overview of all 11 business component types with coverage indicators
 
     %% ═══════════════════════════════════════════════════════════════════════════
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
@@ -449,11 +449,11 @@ The primary gaps are the absence of formally defined Business Functions (organiz
 
 This section provides detailed specifications for each Business layer component type identified in the eShop Order Management platform. Components are documented with expanded attributes, relationships, embedded process flow diagrams, and cross-references to the Architecture Landscape inventory in Section 2.
 
-The Component Catalog documents **50 components** across **10 of 11** TOGAF Business Architecture component types, with confidence scores ranging from 0.85 to 1.00. Each component specification includes source traceability, maturity assessment, and relationship mappings to other components within the Business layer.
+The Component Catalog documents **50 components** across **10 of 11** Business Architecture component types. Each component specification includes relationship mappings to other components within the Business layer.
 
 ### 5.1 Business Strategy Specifications
 
-This subsection documents the strategic goals and objectives that drive the eShop Order Management platform. Five strategic goals were identified from README documentation, infrastructure configuration, and web application feature descriptions, with confidence scores ranging from 0.90 to 0.97.
+This subsection documents the strategic goals and objectives that drive the eShop Order Management platform. Five strategic goals were identified from README documentation, infrastructure configuration, and web application feature descriptions.
 
 #### 5.1.1 Enterprise-Grade Order Management
 
@@ -507,7 +507,7 @@ This subsection documents the strategic goals and objectives that drive the eSho
 
 ### 5.2 Business Capabilities Specifications
 
-This subsection documents the 7 core business capabilities identified in the eShop Order Management platform. Capabilities span the full order lifecycle from placement through automated processing and cleanup, with confidence scores ranging from 0.94 to 0.99.
+This subsection documents the 7 core business capabilities identified in the eShop Order Management platform. Capabilities span the full order lifecycle from placement through automated processing and cleanup.
 
 #### 5.2.1 Automated Order Processing
 
@@ -581,7 +581,7 @@ This subsection documents the 7 core business capabilities identified in the eSh
 
 ### 5.3 Value Streams Specifications
 
-This subsection documents the 2 end-to-end value streams identified in the eShop Order Management platform. Both value streams span multiple capabilities and processes, demonstrating the flow from customer trigger to value delivery, with confidence scores ranging from 0.90 to 0.98.
+This subsection documents the 2 end-to-end value streams identified in the eShop Order Management platform. Both value streams span multiple capabilities and processes, demonstrating the flow from customer trigger to value delivery.
 
 #### 5.3.1 Order Lifecycle Value Stream
 
@@ -607,7 +607,7 @@ This subsection documents the 2 end-to-end value streams identified in the eShop
 
 ### 5.4 Business Processes Specifications
 
-This subsection documents the 6 operational business processes identified in the eShop Order Management platform. Processes range from synchronous API operations to asynchronous Logic App workflows, with confidence scores from 0.94 to 1.00.
+This subsection documents the 6 operational business processes identified in the eShop Order Management platform. Processes range from synchronous API operations to asynchronous Logic App workflows.
 
 #### 5.4.1 OrdersPlacedProcess Workflow
 
@@ -845,7 +845,7 @@ flowchart TB
 
 ### 5.5 Business Services Specifications
 
-This subsection documents the 5 business services identified in the eShop Order Management platform. Services span from RESTful API endpoints through business logic orchestration to event messaging and workflow engines, with confidence scores from 0.97 to 1.00.
+This subsection documents the 5 business services identified in the eShop Order Management platform. Services span from RESTful API endpoints through business logic orchestration to event messaging and workflow engines.
 
 #### 5.5.1 Order Management API
 
@@ -905,7 +905,7 @@ See Section 2.6 for summary. No additional specifications detected in source fil
 
 ### 5.7 Business Roles & Actors Specifications
 
-This subsection documents the 4 business roles and actors identified through UI interaction patterns, automated workflows, and orchestration configuration. Confidence scores range from 0.85 to 0.95.
+This subsection documents the 4 business roles and actors identified through UI interaction patterns, automated workflows, and orchestration configuration.
 
 #### 5.7.1 Order Processing System
 
@@ -949,7 +949,7 @@ This subsection documents the 4 business roles and actors identified through UI 
 
 ### 5.8 Business Rules Specifications
 
-This subsection documents the 7 business rules governing order validation and processing in the eShop Order Management platform. All rules are declaratively enforced through data annotations and explicit validation logic, with confidence scores from 0.97 to 0.99.
+This subsection documents the 7 business rules governing order validation and processing in the eShop Order Management platform. All rules are declaratively enforced through data annotations and explicit validation logic.
 
 #### 5.8.1 Order ID Validation
 
@@ -1023,7 +1023,7 @@ This subsection documents the 7 business rules governing order validation and pr
 
 ### 5.9 Business Events Specifications
 
-This subsection documents the 5 business events and triggers that drive process execution within the eShop Order Management platform. Events span domain events published to Service Bus, workflow triggers, and integration callbacks, with confidence scores from 0.95 to 1.00.
+This subsection documents the 5 business events and triggers that drive process execution within the eShop Order Management platform. Events span domain events published to Service Bus, workflow triggers, and integration callbacks.
 
 #### 5.9.1 OrderPlaced Event
 
@@ -1079,7 +1079,7 @@ This subsection documents the 5 business events and triggers that drive process 
 
 ### 5.10 Business Objects/Entities Specifications
 
-This subsection documents the 5 business domain objects and entities identified in the eShop Order Management platform. Objects span shared domain types, persistence entities, and message envelope objects, with confidence scores from 0.88 to 1.00.
+This subsection documents the 5 business domain objects and entities identified in the eShop Order Management platform. Objects span shared domain types, persistence entities, and message envelope objects.
 
 #### 5.10.1 Order
 
@@ -1133,7 +1133,7 @@ This subsection documents the 5 business domain objects and entities identified 
 
 ### 5.11 KPIs & Metrics Specifications
 
-This subsection documents the 4 KPIs and operational metrics identified in the eShop Order Management platform. All metrics are implemented as OpenTelemetry instruments (counters and histograms) with structured tags for dimensional analysis. Confidence scores are uniformly 1.00.
+This subsection documents the 4 KPIs and operational metrics identified in the eShop Order Management platform. All metrics are implemented as OpenTelemetry instruments (counters and histograms) with structured tags for dimensional analysis.
 
 #### 5.11.1 eShop.orders.placed
 
@@ -1181,9 +1181,9 @@ This subsection documents the 4 KPIs and operational metrics identified in the e
 
 ### Summary
 
-The Component Catalog documents **50 components** across all 11 Business component types, with **10 types populated** and **1 type (Business Functions) not detected**. The highest-maturity components are the KPIs & Metrics (Level 5 — Optimized), which are fully instrumented with OpenTelemetry counters and histograms providing real-time visibility into order throughput, processing latency, error rates, and deletion activity. Business Rules also demonstrate Level 4 maturity with comprehensive declarative validation enforced through data annotations and explicit validation logic.
+The Component Catalog documents **50 components** across all 11 Business component types, with **10 types populated** and **1 type (Business Functions) not detected**. The most comprehensive components are the KPIs & Metrics, which are fully instrumented with OpenTelemetry counters and histograms providing real-time visibility into order throughput, processing latency, error rates, and deletion activity. Business Rules also demonstrate strong coverage with comprehensive declarative validation enforced through data annotations and explicit validation logic.
 
-Key gaps include the absence of formally defined Business Functions (organizational boundaries), the lack of SLO targets for KPIs (metrics are tracked but no threshold-based alerting is defined), and limited RACI formalization for Business Roles & Actors. The Operations Team role (Maturity 2) represents the lowest-maturity human actor and would benefit from formal runbook documentation. Additionally, Value Streams would be strengthened by attaching explicit measurable outcomes and SLA commitments to each stage.
+Key gaps include the absence of formally defined Business Functions (organizational boundaries), the lack of SLO targets for KPIs (metrics are tracked but no threshold-based alerting is defined), and limited RACI formalization for Business Roles & Actors. The Operations Team role represents the least formalized human actor and would benefit from formal runbook documentation. Additionally, Value Streams would be strengthened by attaching explicit measurable outcomes and SLA commitments to each stage.
 
 ---
 
