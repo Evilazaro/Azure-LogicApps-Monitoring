@@ -682,7 +682,7 @@ This subsection documents the 2 end-to-end value streams identified in the eShop
 | **Confidence**         | 0.90                                                                                                                                                                                        |
 | **Maturity**           | 3 - Defined                                                                                                                                                                                 |
 | **Stages**             | Preprovision (Build + Test), Provision (Bicep IaC), Postprovision (Secrets + Data), Predeploy (Workflow), Deploy (Containers)                                                               |
-| **Processes**          | Deployment Lifecycle (P7)                                                                                                                                                                   |
+| **Processes**          | Preprovision, Provision, Postprovision, Predeploy, Deploy (defined declaratively in azure.yaml)                                                                                             |
 | **Measurable Outcome** | Application deployed to Azure with all infrastructure, secrets, and workflows configured                                                                                                    |
 
 ### 5.4 Business Processes Specifications
@@ -730,8 +730,8 @@ This subsection documents the 6 operational business processes identified in the
 
 **Process Steps:**
 
-1. Validate order input (BR1-BR5, BR7)
-2. Check for duplicate order ID (BR6)
+1. Validate order input against domain rules (Order ID, Customer ID, Order Total, Product Count, Delivery Address)
+2. Check for duplicate order ID
 3. Map to persistence entity and save to database
 4. Publish OrderPlaced event to Service Bus (fire-and-forget on timeout)
 5. Record eShop.orders.placed counter metric
@@ -739,12 +739,12 @@ This subsection documents the 6 operational business processes identified in the
 
 **Business Rules Applied:**
 
-- Order ID Validation (BR1)
-- Customer ID Required (BR2)
-- Positive Order Total (BR3)
-- Minimum Product Count (BR4)
-- Delivery Address Required (BR7)
-- Duplicate Order Prevention (BR6)
+- Order ID Validation
+- Customer ID Required
+- Positive Order Total
+- Minimum Product Count
+- Delivery Address Required
+- Duplicate Order Prevention
 
 #### 5.4.3 OrdersPlacedCompleteProcess Workflow
 
