@@ -24,111 +24,111 @@ The inventory covers the full eShop order management domain, spanning strategic 
 
 ### 2.1 Business Strategy (5)
 
-| Name                              | Description                                                                                                                                                        | Source                                                | Confidence | Maturity     |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- | ---------- | ------------ |
-| Enterprise-Grade Order Management | **Strategic objective** to deliver an enterprise-grade order management platform with built-in observability and cloud-native architecture                         | README.md:1-30                                        | 0.97       | 3 - Defined  |
-| Full Observability                | **Strategic goal** for end-to-end distributed tracing, metrics, and health monitoring across all services using OpenTelemetry                                      | app.ServiceDefaults/Extensions.cs:1-100               | 0.95       | 4 - Measured |
-| Operational Resilience            | **Strategic goal** for fault tolerance via retry policies (3 attempts, exponential backoff), circuit breakers (120s sampling), and request timeouts (600s overall) | app.ServiceDefaults/Extensions.cs:100-200             | 0.93       | 4 - Measured |
-| Cloud-Native Scalability          | **Strategic goal** for elastic auto-scaling with serverless workload profiles and up to 20 workers for Logic App processing                                        | infra/workload/logic-app.bicep:250-280                | 0.92       | 3 - Defined  |
-| Zero Trust Security               | **Strategic goal** for Managed Identity authentication, TLS 1.2+ enforcement, and elimination of stored secrets                                                    | src/eShop.Web.App/Components/Pages/Home.razor:175-200 | 0.90       | 3 - Defined  |
+| Name | Description |
+| --- | --- |
+| Enterprise-Grade Order Management | **Strategic objective** to deliver an enterprise-grade order management platform with built-in observability and cloud-native architecture |
+| Full Observability | **Strategic goal** for end-to-end distributed tracing, metrics, and health monitoring across all services using OpenTelemetry |
+| Operational Resilience | **Strategic goal** for fault tolerance via retry policies (3 attempts, exponential backoff), circuit breakers (120s sampling), and request timeouts (600s overall) |
+| Cloud-Native Scalability | **Strategic goal** for elastic auto-scaling with serverless workload profiles and up to 20 workers for Logic App processing |
+| Zero Trust Security | **Strategic goal** for Managed Identity authentication, TLS 1.2+ enforcement, and elimination of stored secrets |
 
 ### 2.2 Business Capabilities (7)
 
-| Name                          | Description                                                                                                                                                        | Source                                                                                             | Confidence | Maturity     |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | ---------- | ------------ |
-| Automated Order Processing    | **Core capability** for consuming Service Bus events and orchestrating order processing via Logic App workflows with outcome routing to success/error blob storage | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-131        | 0.99       | 4 - Measured |
-| Order Placement               | **Core capability** for accepting, validating, and persisting customer orders with event publishing for downstream processing                                      | src/eShop.Orders.API/Services/OrderService.cs:80-180                                               | 0.98       | 4 - Measured |
-| Batch Order Placement         | **Core capability** for processing up to 10,000 orders concurrently in batches of 50 with idempotent duplicate detection                                           | src/eShop.Orders.API/Services/OrderService.cs:180-330                                              | 0.97       | 4 - Measured |
-| Order Retrieval               | **Core capability** for looking up individual or paginated orders to satisfy customer and operational queries                                                      | src/eShop.Orders.API/Interfaces/IOrderService.cs:\*                                                | 0.96       | 3 - Defined  |
-| Order Deletion                | **Core capability** for removing individual orders or bulk-deleting via parallel processing with per-order scope isolation                                         | src/eShop.Orders.API/Services/OrderService.cs:440-530                                              | 0.95       | 3 - Defined  |
-| Order Completion Cleanup      | **Core capability** for periodic sweeping and deletion of successfully processed order blobs with concurrency control (20 parallel)                                | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-83 | 0.95       | 3 - Defined  |
-| Self-Service Order Management | **Core capability** for interactive order placement, search, viewing, listing, and deletion via Blazor web frontend                                                | src/eShop.Web.App/Components/Pages/Home.razor:1-200                                                | 0.94       | 3 - Defined  |
+| Name | Description |
+| --- | --- |
+| Automated Order Processing | **Core capability** for consuming Service Bus events and orchestrating order processing via Logic App workflows with outcome routing to success/error blob storage |
+| Order Placement | **Core capability** for accepting, validating, and persisting customer orders with event publishing for downstream processing |
+| Batch Order Placement | **Core capability** for processing up to 10,000 orders concurrently in batches of 50 with idempotent duplicate detection |
+| Order Retrieval | **Core capability** for looking up individual or paginated orders to satisfy customer and operational queries |
+| Order Deletion | **Core capability** for removing individual orders or bulk-deleting via parallel processing with per-order scope isolation |
+| Order Completion Cleanup | **Core capability** for periodic sweeping and deletion of successfully processed order blobs with concurrency control (20 parallel) |
+| Self-Service Order Management | **Core capability** for interactive order placement, search, viewing, listing, and deletion via Blazor web frontend |
 
 ### 2.3 Value Streams (2)
 
-| Name                    | Description                                                                                                                                                                                                                          | Source                                           | Confidence | Maturity     |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ | ---------- | ------------ |
-| Order Lifecycle         | **End-to-end value stream** from customer order placement through API validation, persistence, event publishing, workflow-based processing, outcome routing, and cleanup — with metrics tracked throughout                           | src/eShop.Orders.API/Services/OrderService.cs:\* | 0.98       | 4 - Measured |
-| Infrastructure Delivery | **End-to-end value stream** spanning the CI/CD lifecycle from code commit through build/test validation, Bicep infrastructure provisioning, secret configuration, sample data seeding, workflow deployment, and container publishing | azure.yaml:1-313                                 | 0.90       | 3 - Defined  |
+| Name | Description |
+| --- | --- |
+| Order Lifecycle | **End-to-end value stream** from customer order placement through API validation, persistence, event publishing, workflow-based processing, outcome routing, and cleanup — with metrics tracked throughout |
+| Infrastructure Delivery | **End-to-end value stream** spanning the CI/CD lifecycle from code commit through build/test validation, Bicep infrastructure provisioning, secret configuration, sample data seeding, workflow deployment, and container publishing |
 
 ### 2.4 Business Processes (6)
 
-| Name                                 | Description                                                                                                                                                                                                           | Source                                                                                             | Confidence | Maturity     |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------- | ------------ |
-| OrdersPlacedProcess Workflow         | **Stateful Logic App workflow** triggered by Service Bus topic messages that validates content type, calls the Processing API, and routes outcomes to success or error blob containers                                | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-131        | 1.00       | 4 - Measured |
-| Place Order Flow                     | **Core order placement process** that validates input, checks for duplicates, saves to database, publishes OrderPlaced event to Service Bus, and records metrics                                                      | src/eShop.Orders.API/Services/OrderService.cs:80-180                                               | 0.99       | 4 - Measured |
-| OrdersPlacedCompleteProcess Workflow | **Recurring cleanup process** triggered every 3 seconds that lists blobs in the success container and deletes processed order artifacts with concurrency of 20                                                        | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-83 | 0.98       | 3 - Defined  |
-| Batch Order Processing               | **High-throughput batch process** that partitions orders into groups of 50, processes each via semaphore-controlled concurrency (max 10), skips existing orders idempotently, and enforces a 5-minute overall timeout | src/eShop.Orders.API/Services/OrderService.cs:180-330                                              | 0.97       | 4 - Measured |
-| Order Deletion Flow                  | **Order removal process** that verifies existence, performs cascade deletion of order and associated products, and records deletion metrics                                                                           | src/eShop.Orders.API/Services/OrderService.cs:440-530                                              | 0.95       | 3 - Defined  |
-| Batch Deletion Flow                  | **Parallel deletion process** that deletes multiple orders concurrently using scoped database contexts per item with continuation on individual errors                                                                | src/eShop.Orders.API/Services/OrderService.cs:530-590                                              | 0.94       | 3 - Defined  |
+| Name | Description |
+| --- | --- |
+| OrdersPlacedProcess Workflow | **Stateful Logic App workflow** triggered by Service Bus topic messages that validates content type, calls the Processing API, and routes outcomes to success or error blob containers |
+| Place Order Flow | **Core order placement process** that validates input, checks for duplicates, saves to database, publishes OrderPlaced event to Service Bus, and records metrics |
+| OrdersPlacedCompleteProcess Workflow | **Recurring cleanup process** triggered every 3 seconds that lists blobs in the success container and deletes processed order artifacts with concurrency of 20 |
+| Batch Order Processing | **High-throughput batch process** that partitions orders into groups of 50, processes each via semaphore-controlled concurrency (max 10), skips existing orders idempotently, and enforces a 5-minute overall timeout |
+| Order Deletion Flow | **Order removal process** that verifies existence, performs cascade deletion of order and associated products, and records deletion metrics |
+| Batch Deletion Flow | **Parallel deletion process** that deletes multiple orders concurrently using scoped database contexts per item with continuation on individual errors |
 
 ### 2.5 Business Services (5)
 
-| Name                             | Description                                                                                                                                                                                | Source                                                                                   | Confidence | Maturity     |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- | ---------- | ------------ |
-| Order Management API             | **RESTful HTTP service** exposing order placement, batch placement, processing, retrieval, deletion, and batch deletion endpoints                                                          | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501                               | 1.00       | 4 - Measured |
-| Order Business Logic Service     | **Core orchestration service** managing validation, persistence, event publishing, metrics recording, and batch concurrency control for all order operations                               | src/eShop.Orders.API/Services/OrderService.cs:1-606                                      | 0.99       | 4 - Measured |
-| Event Messaging Service          | **Azure Service Bus publisher** providing single and batch message sending with retry policy (3 attempts, exponential backoff) and distributed trace context propagation                   | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425                              | 0.98       | 4 - Measured |
-| Order Processing Workflow Engine | **Logic App Standard stateful workflow** transforming Service Bus events into API calls and routing processing outcomes to blob storage                                                    | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:\* | 0.97       | 4 - Measured |
-| Order Data Repository            | **Data access service** providing order persistence with EF Core including save, paginated retrieval, existence checking, deletion, and internal timeout enforcement (30s write, 15s read) | src/eShop.Orders.API/Repositories/OrderRepository.cs:1-549                               | 0.97       | 3 - Defined  |
+| Name | Description |
+| --- | --- |
+| Order Management API | **RESTful HTTP service** exposing order placement, batch placement, processing, retrieval, deletion, and batch deletion endpoints |
+| Order Business Logic Service | **Core orchestration service** managing validation, persistence, event publishing, metrics recording, and batch concurrency control for all order operations |
+| Event Messaging Service | **Azure Service Bus publisher** providing single and batch message sending with retry policy (3 attempts, exponential backoff) and distributed trace context propagation |
+| Order Processing Workflow Engine | **Logic App Standard stateful workflow** transforming Service Bus events into API calls and routing processing outcomes to blob storage |
+| Order Data Repository | **Data access service** providing order persistence with EF Core including save, paginated retrieval, existence checking, deletion, and internal timeout enforcement (30s write, 15s read) |
 
 ### 2.6 Business Functions (0)
 
-| Name         | Description                                                                                                 | Source       | Confidence   | Maturity     |
-| ------------ | ----------------------------------------------------------------------------------------------------------- | ------------ | ------------ | ------------ |
-| Not detected | No explicit organizational business function boundaries were identified in the source code or documentation | Not detected | Not detected | Not detected |
+| Name | Description |
+| --- | --- |
+| Not detected | No explicit organizational business function boundaries were identified in the source code or documentation |
 
 Recommend establishing functional ownership mapping for order management, fulfillment, and customer operations.
 
 ### 2.7 Business Roles & Actors (4)
 
-| Name                    | Description                                                                                                                                                     | Source                                                                                   | Confidence | Maturity       |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------- | -------------- |
-| Order Processing System | **Automated actor** — Logic App workflow that autonomously consumes events, calls the Processing API, and routes outcomes without human intervention            | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:\* | 0.95       | 4 - Measured   |
-| Customer / End User     | **Human actor** who interacts via the Blazor web UI to place orders (single and batch), search orders by ID, and view order details and products                | src/eShop.Web.App/Components/Pages/PlaceOrder.razor:\*                                   | 0.92       | 3 - Defined    |
-| Operations Team         | **Human actor** who monitors platform health via Application Insights dashboards, lists all orders, and performs batch deletion operations from the admin UI    | src/eShop.Web.App/Components/Pages/Home.razor:155-200                                    | 0.88       | 2 - Repeatable |
-| Platform Infrastructure | **System actor** — .NET Aspire orchestrator and Azure Developer CLI that manages service composition, deployment lifecycle, secret management, and auto-scaling | app.AppHost/AppHost.cs:\*                                                                | 0.85       | 3 - Defined    |
+| Name | Description |
+| --- | --- |
+| Order Processing System | **Automated actor** — Logic App workflow that autonomously consumes events, calls the Processing API, and routes outcomes without human intervention |
+| Customer / End User | **Human actor** who interacts via the Blazor web UI to place orders (single and batch), search orders by ID, and view order details and products |
+| Operations Team | **Human actor** who monitors platform health via Application Insights dashboards, lists all orders, and performs batch deletion operations from the admin UI |
+| Platform Infrastructure | **System actor** — .NET Aspire orchestrator and Azure Developer CLI that manages service composition, deployment lifecycle, secret management, and auto-scaling |
 
 ### 2.8 Business Rules (7)
 
-| Name                       | Description                                                                                                 | Source                                                | Confidence | Maturity     |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ---------- | ------------ |
-| Order ID Validation        | **Mandatory field rule** requiring non-empty, non-whitespace Order ID on every order                        | src/eShop.Orders.API/Services/OrderService.cs:570-606 | 0.99       | 4 - Measured |
-| Customer ID Required       | **Mandatory field rule** requiring a Customer ID of 1-100 characters on every order                         | app.ServiceDefaults/CommonTypes.cs:30-50              | 0.99       | 4 - Measured |
-| Positive Order Total       | **Monetary validation rule** rejecting zero or negative order totals                                        | app.ServiceDefaults/CommonTypes.cs:50-60              | 0.99       | 4 - Measured |
-| Minimum Product Count      | **Order completeness rule** requiring at least 1 product per order — empty orders are prohibited            | app.ServiceDefaults/CommonTypes.cs:60-70              | 0.99       | 4 - Measured |
-| Positive Product Price     | **Line-item pricing rule** enforcing a minimum price of $0.01 — no free or negative-priced products allowed | app.ServiceDefaults/CommonTypes.cs:100-120            | 0.98       | 4 - Measured |
-| Duplicate Order Prevention | **Idempotency rule** returning 409 Conflict when an order with the same ID already exists in the database   | src/eShop.Orders.API/Services/OrderService.cs:100-130 | 0.97       | 4 - Measured |
-| Delivery Address Required  | **Mandatory field rule** requiring a delivery address of 5-500 characters on every order                    | app.ServiceDefaults/CommonTypes.cs:40-50              | 0.97       | 4 - Measured |
+| Name | Description |
+| --- | --- |
+| Order ID Validation | **Mandatory field rule** requiring non-empty, non-whitespace Order ID on every order |
+| Customer ID Required | **Mandatory field rule** requiring a Customer ID of 1-100 characters on every order |
+| Positive Order Total | **Monetary validation rule** rejecting zero or negative order totals |
+| Minimum Product Count | **Order completeness rule** requiring at least 1 product per order — empty orders are prohibited |
+| Positive Product Price | **Line-item pricing rule** enforcing a minimum price of $0.01 — no free or negative-priced products allowed |
+| Duplicate Order Prevention | **Idempotency rule** returning 409 Conflict when an order with the same ID already exists in the database |
+| Delivery Address Required | **Mandatory field rule** requiring a delivery address of 5-500 characters on every order |
 
 ### 2.9 Business Events (5)
 
-| Name                      | Description                                                                                                                                                                             | Source                                                                                              | Confidence | Maturity     |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------- | ------------ |
-| OrderPlaced Event         | **Domain event** published to Service Bus topic with Subject="OrderPlaced", JSON payload, and distributed trace context (TraceId, SpanId, TraceParent) with 3-retry exponential backoff | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:70-140                                        | 1.00       | 4 - Measured |
-| Service Bus Topic Trigger | **Workflow trigger** — Logic App polls Service Bus topic subscription every 1 second for new order messages to process                                                                  | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:115-131       | 0.99       | 4 - Measured |
-| OrderPlaced Batch Event   | **Batch domain event** publishing multiple OrderPlaced messages atomically via batch sender, each enriched with distributed trace context                                               | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:201-270                                       | 0.97       | 3 - Defined  |
-| Order Processing Callback | **Integration event** — workflow POSTs decoded order payload to the Processing API endpoint; HTTP 201 indicates success, other status codes route to error handling                     | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:15-35         | 0.96       | 3 - Defined  |
-| Recurrence Trigger        | **Timer trigger** — cleanup workflow fires every 3 seconds (CST timezone) to sweep successfully processed order blobs                                                                   | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:18-27 | 0.95       | 3 - Defined  |
+| Name | Description |
+| --- | --- |
+| OrderPlaced Event | **Domain event** published to Service Bus topic with Subject="OrderPlaced", JSON payload, and distributed trace context (TraceId, SpanId, TraceParent) with 3-retry exponential backoff |
+| Service Bus Topic Trigger | **Workflow trigger** — Logic App polls Service Bus topic subscription every 1 second for new order messages to process |
+| OrderPlaced Batch Event | **Batch domain event** publishing multiple OrderPlaced messages atomically via batch sender, each enriched with distributed trace context |
+| Order Processing Callback | **Integration event** — workflow POSTs decoded order payload to the Processing API endpoint; HTTP 201 indicates success, other status codes route to error handling |
+| Recurrence Trigger | **Timer trigger** — cleanup workflow fires every 3 seconds (CST timezone) to sweep successfully processed order blobs |
 
 ### 2.10 Business Objects/Entities (5)
 
-| Name                     | Description                                                                                                                                                                             | Source                                                        | Confidence | Maturity     |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------- | ------------ |
-| Order                    | **Core domain object** representing a customer order with Id, CustomerId, Date, DeliveryAddress, Total, and Products collection — shared across all services                            | app.ServiceDefaults/CommonTypes.cs:20-70                      | 1.00       | 4 - Measured |
-| OrderProduct             | **Domain value object** representing a line item within an order with Id, OrderId, ProductId, ProductDescription, Quantity, and Price                                                   | app.ServiceDefaults/CommonTypes.cs:75-120                     | 1.00       | 4 - Measured |
-| OrderEntity              | **Persistence entity** mapping the Order domain object to the "Orders" database table with field length constraints (Id: 100, CustomerId: 100, DeliveryAddress: 500)                    | src/eShop.Orders.API/data/Entities/OrderEntity.cs:1-57        | 0.98       | 4 - Measured |
-| OrderProductEntity       | **Persistence entity** mapping OrderProduct to the "OrderProducts" table with foreign key to OrderEntity and cascade delete behavior                                                    | src/eShop.Orders.API/data/Entities/OrderProductEntity.cs:1-63 | 0.98       | 4 - Measured |
-| OrderMessageWithMetadata | **Message envelope object** wrapping an Order with messaging metadata including MessageId, SequenceNumber, EnqueuedTime, ContentType, Subject, CorrelationId, and ApplicationProperties | src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:\*  | 0.88       | 3 - Defined  |
+| Name | Description |
+| --- | --- |
+| Order | **Core domain object** representing a customer order with Id, CustomerId, Date, DeliveryAddress, Total, and Products collection — shared across all services |
+| OrderProduct | **Domain value object** representing a line item within an order with Id, OrderId, ProductId, ProductDescription, Quantity, and Price |
+| OrderEntity | **Persistence entity** mapping the Order domain object to the "Orders" database table with field length constraints (Id: 100, CustomerId: 100, DeliveryAddress: 500) |
+| OrderProductEntity | **Persistence entity** mapping OrderProduct to the "OrderProducts" table with foreign key to OrderEntity and cascade delete behavior |
+| OrderMessageWithMetadata | **Message envelope object** wrapping an Order with messaging metadata including MessageId, SequenceNumber, EnqueuedTime, ContentType, Subject, CorrelationId, and ApplicationProperties |
 
 ### 2.11 KPIs & Metrics (4)
 
-| Name                             | Description                                                                                                               | Source                                              | Confidence | Maturity      |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ---------- | ------------- |
-| eShop.orders.placed              | **Counter metric** tracking the total number of orders successfully placed — measures business throughput                 | src/eShop.Orders.API/Services/OrderService.cs:40-60 | 1.00       | 5 - Optimized |
-| eShop.orders.processing.duration | **Histogram metric** tracking time taken to process order operations in milliseconds — measures processing efficiency     | src/eShop.Orders.API/Services/OrderService.cs:45-60 | 1.00       | 5 - Optimized |
-| eShop.orders.processing.errors   | **Counter metric** tracking the total number of order processing errors — measures failure rate and reliability           | src/eShop.Orders.API/Services/OrderService.cs:50-60 | 1.00       | 5 - Optimized |
-| eShop.orders.deleted             | **Counter metric** tracking the total number of orders successfully deleted — measures data lifecycle management activity | src/eShop.Orders.API/Services/OrderService.cs:55-65 | 1.00       | 5 - Optimized |
+| Name | Description |
+| --- | --- |
+| eShop.orders.placed | **Counter metric** tracking the total number of orders successfully placed — measures business throughput |
+| eShop.orders.processing.duration | **Histogram metric** tracking time taken to process order operations in milliseconds — measures processing efficiency |
+| eShop.orders.processing.errors | **Counter metric** tracking the total number of order processing errors — measures failure rate and reliability |
+| eShop.orders.deleted | **Counter metric** tracking the total number of orders successfully deleted — measures data lifecycle management activity |
 
 ### Business Capability Map
 
@@ -157,13 +157,13 @@ flowchart TB
     %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
     %% ═══════════════════════════════════════════════════════════════════════════
 
-    C1["📊 Order Placement\nMaturity: 4 - Measured"]:::success
-    C2["📊 Batch Order Placement\nMaturity: 4 - Measured"]:::success
-    C3["📊 Automated Order Processing\nMaturity: 4 - Measured"]:::success
-    C4["📊 Order Retrieval\nMaturity: 3 - Defined"]:::warning
-    C5["📊 Order Deletion\nMaturity: 3 - Defined"]:::warning
-    C6["📊 Order Completion Cleanup\nMaturity: 3 - Defined"]:::warning
-    C7["📊 Self-Service Order Mgmt\nMaturity: 3 - Defined"]:::warning
+    C1["📊 Order Placement"]:::success
+    C2["📊 Batch Order Placement"]:::success
+    C3["📊 Automated Order Processing"]:::success
+    C4["📊 Order Retrieval"]:::warning
+    C5["📊 Order Deletion"]:::warning
+    C6["📊 Order Completion Cleanup"]:::warning
+    C7["📊 Self-Service Order Mgmt"]:::warning
 
     C1 -->|"triggers"| C3
     C2 -->|"triggers"| C3
@@ -256,9 +256,7 @@ The principles reflect a cloud-native, event-driven design philosophy with stron
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Principle Statement** | Business processes must be decoupled through asynchronous event-driven messaging rather than synchronous point-to-point integration                                                                              |
 | **Rationale**           | Decoupling the order placement process from downstream processing enables independent scaling, fault isolation, and operational resilience — the API remains available even when workflow processors are offline |
-| **Evidence**            | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:70-140                                                                                                                                                     |
 | **Implications**        | Introduces eventual consistency between order placement and processing; requires dead-letter queue monitoring and message retry policies                                                                         |
-| **Confidence**          | 0.99                                                                                                                                                                                                             |
 
 ### 3.2 Idempotent Operations
 
@@ -266,9 +264,7 @@ The principles reflect a cloud-native, event-driven design philosophy with stron
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Principle Statement** | All order processing operations must be idempotent to support safe retries and duplicate message handling                                                                                  |
 | **Rationale**           | In an event-driven architecture with at-least-once delivery, duplicate messages are inevitable — idempotency ensures that reprocessing the same order does not create data inconsistencies |
-| **Evidence**            | src/eShop.Orders.API/Services/OrderService.cs:100-130                                                                                                                                      |
 | **Implications**        | Requires existence checks before persistence; batch operations silently skip already-existing orders rather than failing the entire batch                                                  |
-| **Confidence**          | 0.97                                                                                                                                                                                       |
 
 ### 3.3 Observability by Default
 
@@ -276,9 +272,7 @@ The principles reflect a cloud-native, event-driven design philosophy with stron
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Principle Statement** | Every business operation must emit structured telemetry (metrics, traces, logs) as a first-class architectural concern, not an afterthought                                                  |
 | **Rationale**           | Enterprise-grade order management requires real-time visibility into throughput, latency, and error rates to meet SLA commitments and enable proactive issue detection                       |
-| **Evidence**            | src/eShop.Orders.API/Services/OrderService.cs:40-65                                                                                                                                          |
 | **Implications**        | All services must integrate OpenTelemetry instrumentation; counter and histogram metrics are defined at the service layer; distributed trace context is propagated across message boundaries |
-| **Confidence**          | 0.98                                                                                                                                                                                         |
 
 ### 3.4 Fail-Safe with Graceful Degradation
 
@@ -286,9 +280,7 @@ The principles reflect a cloud-native, event-driven design philosophy with stron
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Principle Statement** | Business operations must complete their primary objective even when secondary integrations fail — order persistence takes precedence over event publishing                      |
 | **Rationale**           | Customer-facing order placement must never fail due to messaging infrastructure issues; the order is the source of truth, and event publishing is a fire-and-forget side effect |
-| **Evidence**            | src/eShop.Orders.API/Services/OrderService.cs:150-180                                                                                                                           |
 | **Implications**        | Event publishing failures are logged but do not roll back the order save; requires compensating mechanisms to detect and replay missed events                                   |
-| **Confidence**          | 0.95                                                                                                                                                                            |
 
 ### 3.5 Domain Validation at the Boundary
 
@@ -296,9 +288,7 @@ The principles reflect a cloud-native, event-driven design philosophy with stron
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Principle Statement** | All business rules must be validated at the domain boundary before persistence, using declarative constraints and explicit validation logic                                                                  |
 | **Rationale**           | Enforcing business rules (positive totals, mandatory fields, minimum product counts) at the service boundary prevents invalid data from entering the system and reduces downstream error handling complexity |
-| **Evidence**            | app.ServiceDefaults/CommonTypes.cs:20-120                                                                                                                                                                    |
 | **Implications**        | Shared common types define validation constraints (data annotations) that are enforced across all services; validation errors return structured error responses before any database interaction              |
-| **Confidence**          | 0.98                                                                                                                                                                                                         |
 
 ### 3.6 Automated Process Orchestration
 
@@ -306,9 +296,7 @@ The principles reflect a cloud-native, event-driven design philosophy with stron
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Principle Statement** | Repeatable business processes must be automated through declarative workflow definitions rather than imperative code, enabling visual process monitoring and management             |
 | **Rationale**           | Logic App Standard workflows provide stateful execution with built-in retry policies, outcome routing, and operational dashboards — reducing the need for custom orchestration code |
-| **Evidence**            | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-131                                                                                         |
 | **Implications**        | Business processes are defined as JSON workflow definitions; changes to process flow do not require code recompilation; workflow execution history is automatically captured        |
-| **Confidence**          | 0.97                                                                                                                                                                                |
 
 ---
 
@@ -324,19 +312,19 @@ The current state reflects an architecture that has evolved beyond initial imple
 
 ### Capability Maturity Assessment
 
-| Component Type            | Components | Avg Maturity | Maturity Range | Coverage |
-| ------------------------- | ---------- | ------------ | -------------- | -------- |
-| Business Strategy         | 5          | 3.4          | 3-4            | High     |
-| Business Capabilities     | 7          | 3.6          | 3-4            | High     |
-| Value Streams             | 2          | 3.5          | 3-4            | Medium   |
-| Business Processes        | 6          | 3.5          | 3-4            | High     |
-| Business Services         | 5          | 3.8          | 3-4            | High     |
-| Business Functions        | 0          | Not detected | Not detected   | None     |
-| Business Roles & Actors   | 4          | 3.0          | 2-4            | Medium   |
-| Business Rules            | 7          | 4.0          | 4              | High     |
-| Business Events           | 5          | 3.4          | 3-4            | High     |
-| Business Objects/Entities | 5          | 3.8          | 3-4            | High     |
-| KPIs & Metrics            | 4          | 5.0          | 5              | High     |
+| Component Type | Components | Coverage |
+| --- | --- | --- |
+| Business Strategy | 5 | High |
+| Business Capabilities | 7 | High |
+| Value Streams | 2 | Medium |
+| Business Processes | 6 | High |
+| Business Services | 5 | High |
+| Business Functions | 0 | None |
+| Business Roles & Actors | 4 | Medium |
+| Business Rules | 7 | High |
+| Business Events | 5 | High |
+| Business Objects/Entities | 5 | High |
+| KPIs & Metrics | 4 | High |
 
 ### Capability Maturity Heatmap
 
@@ -365,17 +353,17 @@ flowchart TB
     %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
     %% ═══════════════════════════════════════════════════════════════════════════
 
-    KPI["📊 KPIs & Metrics\nMaturity: 5 - Optimized"]:::success
-    BR["📋 Business Rules\nMaturity: 4 - Measured"]:::success
-    BS["⚙️ Business Services\nMaturity: 4 - Measured"]:::success
-    BO["📦 Business Objects\nMaturity: 4 - Measured"]:::success
-    BE["⚡ Business Events\nMaturity: 3-4"]:::warning
-    BP["🔄 Business Processes\nMaturity: 3-4"]:::warning
-    BC["📊 Business Capabilities\nMaturity: 3-4"]:::warning
-    ST["🎯 Business Strategy\nMaturity: 3-4"]:::warning
-    VS["🔗 Value Streams\nMaturity: 3-4"]:::warning
-    RA["👤 Business Roles\nMaturity: 2-4"]:::warning
-    BF["🏢 Business Functions\nMaturity: Not Detected"]:::danger
+    KPI["📊 KPIs & Metrics"]:::success
+    BR["📋 Business Rules"]:::success
+    BS["⚙️ Business Services"]:::success
+    BO["📦 Business Objects"]:::success
+    BE["⚡ Business Events"]:::warning
+    BP["🔄 Business Processes"]:::warning
+    BC["📊 Business Capabilities"]:::warning
+    ST["🎯 Business Strategy"]:::warning
+    VS["🔗 Value Streams"]:::warning
+    RA["👤 Business Roles"]:::warning
+    BF["🏢 Business Functions"]:::danger
 
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#DEECF9,stroke:#0078D4,stroke-width:2px,color:#004578
@@ -474,9 +462,6 @@ This subsection documents the strategic goals and objectives that drive the eSho
 | **Name**                   | Enterprise-Grade Order Management                                                                                                       |
 | **Type**                   | Strategic Objective                                                                                                                     |
 | **Description**            | Deliver an enterprise-grade order management platform with built-in observability for monitoring and managing cloud-native applications |
-| **Source**                 | README.md:1-30                                                                                                                          |
-| **Confidence**             | 0.97                                                                                                                                    |
-| **Maturity**               | 3 - Defined                                                                                                                             |
 | **Supported Capabilities** | Order Placement, Automated Order Processing, Self-Service Order Management                                                              |
 | **Measurable Outcome**     | Platform operational with end-to-end order lifecycle management                                                                         |
 
@@ -487,9 +472,6 @@ This subsection documents the strategic goals and objectives that drive the eSho
 | **Name**                   | Full Observability                                                                                                              |
 | **Type**                   | Strategic Goal                                                                                                                  |
 | **Description**            | End-to-end distributed tracing, metrics, and health monitoring across all services using OpenTelemetry and Application Insights |
-| **Source**                 | app.ServiceDefaults/Extensions.cs:1-100                                                                                         |
-| **Confidence**             | 0.95                                                                                                                            |
-| **Maturity**               | 4 - Measured                                                                                                                    |
 | **Supported Capabilities** | All capabilities — cross-cutting concern                                                                                        |
 | **Measurable Outcome**     | 100% of service operations emit structured telemetry                                                                            |
 
@@ -500,9 +482,6 @@ This subsection documents the strategic goals and objectives that drive the eSho
 | **Name**                   | Operational Resilience                                                                                                                                           |
 | **Type**                   | Strategic Goal                                                                                                                                                   |
 | **Description**            | Fault tolerance through retry policies (3 attempts, exponential backoff), circuit breakers (120s sampling), and request timeouts (600s overall, 60s per attempt) |
-| **Source**                 | app.ServiceDefaults/Extensions.cs:100-200                                                                                                                        |
-| **Confidence**             | 0.93                                                                                                                                                             |
-| **Maturity**               | 4 - Measured                                                                                                                                                     |
 | **Supported Capabilities** | All capabilities — cross-cutting concern                                                                                                                         |
 | **Measurable Outcome**     | Service availability maintained during transient infrastructure failures                                                                                         |
 
@@ -513,9 +492,6 @@ This subsection documents the strategic goals and objectives that drive the eSho
 | **Name**                   | Cloud-Native Scalability                                                                                      |
 | **Type**                   | Strategic Goal                                                                                                |
 | **Description**            | Elastic auto-scaling with serverless workload profiles and up to 20 workers for Logic App workflow processing |
-| **Source**                 | infra/workload/logic-app.bicep:250-280                                                                        |
-| **Confidence**             | 0.92                                                                                                          |
-| **Maturity**               | 3 - Defined                                                                                                   |
 | **Supported Capabilities** | Automated Order Processing, Order Completion Cleanup                                                          |
 | **Measurable Outcome**     | Process 1000s of orders per minute without manual scaling intervention                                        |
 
@@ -526,9 +502,6 @@ This subsection documents the strategic goals and objectives that drive the eSho
 | **Name**                   | Zero Trust Security                                                                                          |
 | **Type**                   | Strategic Goal                                                                                               |
 | **Description**            | Managed Identity authentication, TLS 1.2+ enforcement, and elimination of stored secrets across all services |
-| **Source**                 | src/eShop.Web.App/Components/Pages/Home.razor:175-200                                                        |
-| **Confidence**             | 0.90                                                                                                         |
-| **Maturity**               | 3 - Defined                                                                                                  |
 | **Supported Capabilities** | All capabilities — cross-cutting security concern                                                            |
 | **Measurable Outcome**     | Zero stored credentials in application configuration                                                         |
 
@@ -543,9 +516,6 @@ This subsection documents the 7 core business capabilities identified in the eSh
 | **Name**         | Automated Order Processing                                                                                                                   |
 | **Type**         | Core Business Capability                                                                                                                     |
 | **Description**  | Consume Service Bus events and orchestrate order processing via Logic App workflows with outcome routing to success or error blob containers |
-| **Source**       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-131                                                  |
-| **Confidence**   | 0.99                                                                                                                                         |
-| **Maturity**     | 4 - Measured                                                                                                                                 |
 | **Dependencies** | Order Placement, Event Messaging Service, Order Processing Callback                                                                          |
 | **KPIs**         | eShop.orders.processing.duration, eShop.orders.processing.errors                                                                             |
 
@@ -556,9 +526,6 @@ This subsection documents the 7 core business capabilities identified in the eSh
 | **Name**         | Order Placement                                                                                            |
 | **Type**         | Core Business Capability                                                                                   |
 | **Description**  | Accept, validate, and persist customer orders with event publishing for downstream asynchronous processing |
-| **Source**       | src/eShop.Orders.API/Services/OrderService.cs:80-180                                                       |
-| **Confidence**   | 0.98                                                                                                       |
-| **Maturity**     | 4 - Measured                                                                                               |
 | **Dependencies** | Domain Validation Rules, Order Data Repository, Event Messaging Service                                    |
 | **KPIs**         | eShop.orders.placed, eShop.orders.processing.duration                                                      |
 
@@ -569,9 +536,6 @@ This subsection documents the 7 core business capabilities identified in the eSh
 | **Name**         | Batch Order Placement                                                                                                                       |
 | **Type**         | Core Business Capability                                                                                                                    |
 | **Description**  | Process up to 10,000 orders concurrently in batches of 50 with semaphore-controlled parallelism (max 10) and idempotent duplicate detection |
-| **Source**       | src/eShop.Orders.API/Services/OrderService.cs:180-330                                                                                       |
-| **Confidence**   | 0.97                                                                                                                                        |
-| **Maturity**     | 4 - Measured                                                                                                                                |
 | **Dependencies** | Order Placement, Duplicate Order Prevention                                                                                                 |
 | **KPIs**         | eShop.orders.placed, eShop.orders.processing.errors                                                                                         |
 
@@ -582,9 +546,6 @@ This subsection documents the 7 core business capabilities identified in the eSh
 | **Name**         | Order Retrieval                                                                                               |
 | **Type**         | Core Business Capability                                                                                      |
 | **Description**  | Look up individual orders by ID or retrieve paginated order lists to satisfy customer and operational queries |
-| **Source**       | src/eShop.Orders.API/Interfaces/IOrderService.cs:\*                                                           |
-| **Confidence**   | 0.96                                                                                                          |
-| **Maturity**     | 3 - Defined                                                                                                   |
 | **Dependencies** | Order Data Repository, Order, OrderProduct                                                                    |
 | **KPIs**         | eShop.orders.processing.duration                                                                              |
 
@@ -595,9 +556,6 @@ This subsection documents the 7 core business capabilities identified in the eSh
 | **Name**         | Order Deletion                                                                                               |
 | **Type**         | Core Business Capability                                                                                     |
 | **Description**  | Remove individual orders with cascade deletion of associated products and per-order database scope isolation |
-| **Source**       | src/eShop.Orders.API/Services/OrderService.cs:440-530                                                        |
-| **Confidence**   | 0.95                                                                                                         |
-| **Maturity**     | 3 - Defined                                                                                                  |
 | **Dependencies** | Order Data Repository, Order                                                                                 |
 | **KPIs**         | eShop.orders.deleted                                                                                         |
 
@@ -608,9 +566,6 @@ This subsection documents the 7 core business capabilities identified in the eSh
 | **Name**         | Order Completion Cleanup                                                                                      |
 | **Type**         | Core Business Capability                                                                                      |
 | **Description**  | Periodic sweeping and deletion of successfully processed order blobs with concurrent processing (20 parallel) |
-| **Source**       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-83            |
-| **Confidence**   | 0.95                                                                                                          |
-| **Maturity**     | 3 - Defined                                                                                                   |
 | **Dependencies** | Automated Order Processing, Recurrence Trigger                                                                |
 | **KPIs**         | Not detected                                                                                                  |
 
@@ -621,9 +576,6 @@ This subsection documents the 7 core business capabilities identified in the eSh
 | **Name**         | Self-Service Order Management                                                                               |
 | **Type**         | Core Business Capability                                                                                    |
 | **Description**  | Interactive Blazor web frontend for customers and operators to place, search, view, list, and delete orders |
-| **Source**       | src/eShop.Web.App/Components/Pages/Home.razor:1-200                                                         |
-| **Confidence**   | 0.94                                                                                                        |
-| **Maturity**     | 3 - Defined                                                                                                 |
 | **Dependencies** | Order Management API, Customer / End User, Operations Team                                                  |
 | **KPIs**         | Not detected                                                                                                |
 
@@ -638,9 +590,6 @@ This subsection documents the 2 end-to-end value streams identified in the eShop
 | **Name**               | Order Lifecycle                                                                                                                                                                |
 | **Type**               | Primary Value Stream                                                                                                                                                           |
 | **Description**        | End-to-end flow from customer order placement through API validation, persistence, event publishing, workflow-based processing, outcome routing, cleanup, and metrics tracking |
-| **Source**             | src/eShop.Orders.API/Services/OrderService.cs:\*                                                                                                                               |
-| **Confidence**         | 0.98                                                                                                                                                                           |
-| **Maturity**           | 4 - Measured                                                                                                                                                                   |
 | **Stages**             | Place Order, Validate, Persist, Publish Event, Process via Workflow, Route Outcome, Cleanup Artifacts, Track Metrics                                                           |
 | **Processes**          | Place Order Flow, OrdersPlacedProcess Workflow, OrdersPlacedCompleteProcess Workflow                                                                                           |
 | **Measurable Outcome** | Order successfully processed and artifacts cleaned up with full observability                                                                                                  |
@@ -652,9 +601,6 @@ This subsection documents the 2 end-to-end value streams identified in the eShop
 | **Name**               | Infrastructure Delivery                                                                                                                                                                     |
 | **Type**               | Supporting Value Stream                                                                                                                                                                     |
 | **Description**        | CI/CD lifecycle from code commit through build/test validation, Bicep infrastructure provisioning, secret configuration, sample data seeding, workflow deployment, and container publishing |
-| **Source**             | azure.yaml:1-313                                                                                                                                                                            |
-| **Confidence**         | 0.90                                                                                                                                                                                        |
-| **Maturity**           | 3 - Defined                                                                                                                                                                                 |
 | **Stages**             | Preprovision (Build + Test), Provision (Bicep IaC), Postprovision (Secrets + Data), Predeploy (Workflow), Deploy (Containers)                                                               |
 | **Processes**          | Preprovision, Provision, Postprovision, Predeploy, Deploy (defined declaratively in azure.yaml)                                                                                             |
 | **Measurable Outcome** | Application deployed to Azure with all infrastructure, secrets, and workflows configured                                                                                                    |
@@ -671,9 +617,6 @@ This subsection documents the 6 operational business processes identified in the
 | **Process Type** | Stateful Logic App Workflow                                                                 |
 | **Trigger**      | Service Bus topic message (ordersplaced / orderprocessingsub, 1s polling)                   |
 | **Owner**        | Order Processing System (automated)                                                         |
-| **Source**       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-131 |
-| **Confidence**   | 1.00                                                                                        |
-| **Maturity**     | 4 - Measured                                                                                |
 
 **Process Steps:**
 
@@ -698,9 +641,6 @@ This subsection documents the 6 operational business processes identified in the
 | **Process Type** | Synchronous API Operation                            |
 | **Trigger**      | HTTP POST to /api/orders                             |
 | **Owner**        | Order Business Logic Service                         |
-| **Source**       | src/eShop.Orders.API/Services/OrderService.cs:80-180 |
-| **Confidence**   | 0.99                                                 |
-| **Maturity**     | 4 - Measured                                         |
 
 **Process Steps:**
 
@@ -728,9 +668,6 @@ This subsection documents the 6 operational business processes identified in the
 | **Process Type** | Stateful Logic App Workflow                                                                        |
 | **Trigger**      | Recurrence every 3 seconds (CST timezone)                                                          |
 | **Owner**        | Order Processing System (automated)                                                                |
-| **Source**       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-83 |
-| **Confidence**   | 0.98                                                                                               |
-| **Maturity**     | 3 - Defined                                                                                        |
 
 **Process Steps:**
 
@@ -746,9 +683,6 @@ This subsection documents the 6 operational business processes identified in the
 | **Process Type** | Asynchronous Batch Operation                          |
 | **Trigger**      | HTTP POST to /api/orders/batch                        |
 | **Owner**        | Order Business Logic Service                          |
-| **Source**       | src/eShop.Orders.API/Services/OrderService.cs:180-330 |
-| **Confidence**   | 0.97                                                  |
-| **Maturity**     | 4 - Measured                                          |
 
 **Process Steps:**
 
@@ -768,9 +702,6 @@ This subsection documents the 6 operational business processes identified in the
 | **Process Type** | Synchronous API Operation                             |
 | **Trigger**      | HTTP DELETE to /api/orders/{id}                       |
 | **Owner**        | Order Business Logic Service                          |
-| **Source**       | src/eShop.Orders.API/Services/OrderService.cs:440-530 |
-| **Confidence**   | 0.95                                                  |
-| **Maturity**     | 3 - Defined                                           |
 
 **Process Steps:**
 
@@ -786,9 +717,6 @@ This subsection documents the 6 operational business processes identified in the
 | **Process Type** | Asynchronous Batch Operation                          |
 | **Trigger**      | HTTP POST to /api/orders/batch/delete                 |
 | **Owner**        | Order Business Logic Service                          |
-| **Source**       | src/eShop.Orders.API/Services/OrderService.cs:530-590 |
-| **Confidence**   | 0.94                                                  |
-| **Maturity**     | 3 - Defined                                           |
 
 **Process Steps:**
 
@@ -926,9 +854,6 @@ This subsection documents the 5 business services identified in the eShop Order 
 | **Name**         | Order Management API                                                                                                                           |
 | **Service Type** | RESTful HTTP Service                                                                                                                           |
 | **Description**  | Exposes order placement (single + batch), processing, retrieval (single + paginated), deletion (single + batch), and message listing endpoints |
-| **Source**       | src/eShop.Orders.API/Controllers/OrdersController.cs:1-501                                                                                     |
-| **Confidence**   | 1.00                                                                                                                                           |
-| **Maturity**     | 4 - Measured                                                                                                                                   |
 | **Consumers**    | Customer / End User (via Web App), Order Processing Workflow Engine                                                                            |
 | **Dependencies** | Order Business Logic Service, Event Messaging Service                                                                                          |
 
@@ -939,9 +864,6 @@ This subsection documents the 5 business services identified in the eShop Order 
 | **Name**         | Order Business Logic Service                                                                                                      |
 | **Service Type** | Domain Service                                                                                                                    |
 | **Description**  | Orchestrates validation, persistence, event publishing, metrics recording, and batch concurrency control for all order operations |
-| **Source**       | src/eShop.Orders.API/Services/OrderService.cs:1-606                                                                               |
-| **Confidence**   | 0.99                                                                                                                              |
-| **Maturity**     | 4 - Measured                                                                                                                      |
 | **Consumers**    | Order Management API                                                                                                              |
 | **Dependencies** | Order Data Repository, Event Messaging Service, Domain Validation Rules                                                           |
 
@@ -952,9 +874,6 @@ This subsection documents the 5 business services identified in the eShop Order 
 | **Name**         | Event Messaging Service                                                                                                                                              |
 | **Service Type** | Messaging Publisher                                                                                                                                                  |
 | **Description**  | Azure Service Bus publisher providing single and batch message sending with retry policy (3 attempts, exponential backoff) and distributed trace context propagation |
-| **Source**       | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-425                                                                                                          |
-| **Confidence**   | 0.98                                                                                                                                                                 |
-| **Maturity**     | 4 - Measured                                                                                                                                                         |
 | **Consumers**    | Order Business Logic Service                                                                                                                                         |
 | **Dependencies** | Azure Service Bus (ordersplaced topic)                                                                                                                               |
 
@@ -965,9 +884,6 @@ This subsection documents the 5 business services identified in the eShop Order 
 | **Name**         | Order Processing Workflow Engine                                                                                       |
 | **Service Type** | Logic App Standard Stateful Workflow                                                                                   |
 | **Description**  | Transforms Service Bus events into API calls and routes processing outcomes to blob storage containers (success/error) |
-| **Source**       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:\*                               |
-| **Confidence**   | 0.97                                                                                                                   |
-| **Maturity**     | 4 - Measured                                                                                                           |
 | **Consumers**    | Triggered by OrderPlaced events on Service Bus                                                                         |
 | **Dependencies** | Order Management API (/api/Orders/process endpoint), Azure Blob Storage                                                |
 
@@ -978,9 +894,6 @@ This subsection documents the 5 business services identified in the eShop Order 
 | **Name**         | Order Data Repository                                                                                                                                                                        |
 | **Service Type** | Data Access Service                                                                                                                                                                          |
 | **Description**  | EF Core-based data access providing order persistence, paginated retrieval (max 100/page), existence checking, deletion with cascade, and internal timeout enforcement (30s write, 15s read) |
-| **Source**       | src/eShop.Orders.API/Repositories/OrderRepository.cs:1-549                                                                                                                                   |
-| **Confidence**   | 0.97                                                                                                                                                                                         |
-| **Maturity**     | 3 - Defined                                                                                                                                                                                  |
 | **Consumers**    | Order Business Logic Service                                                                                                                                                                 |
 | **Dependencies** | SQL Database (Orders + OrderProducts tables)                                                                                                                                                 |
 
@@ -1001,9 +914,6 @@ This subsection documents the 4 business roles and actors identified through UI 
 | **Name**               | Order Processing System                                                                                                                                    |
 | **Role Type**          | Automated Actor                                                                                                                                            |
 | **Description**        | Logic App workflow that autonomously consumes Service Bus events, calls the Processing API, and routes outcomes to blob storage without human intervention |
-| **Source**             | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:\*                                                                   |
-| **Confidence**         | 0.95                                                                                                                                                       |
-| **Maturity**           | 4 - Measured                                                                                                                                               |
 | **Responsibilities**   | Event consumption, order processing orchestration, outcome routing, error handling                                                                         |
 | **Capabilities Owned** | Automated Order Processing, Order Completion Cleanup                                                                                                       |
 
@@ -1014,9 +924,6 @@ This subsection documents the 4 business roles and actors identified through UI 
 | **Name**              | Customer / End User                                                                                                            |
 | **Role Type**         | Human Actor                                                                                                                    |
 | **Description**       | Interacts via Blazor web UI to place orders (single and batch), search orders by ID, view order details and product line items |
-| **Source**            | src/eShop.Web.App/Components/Pages/PlaceOrder.razor:\*                                                                         |
-| **Confidence**        | 0.92                                                                                                                           |
-| **Maturity**          | 3 - Defined                                                                                                                    |
 | **Responsibilities**  | Order placement, order lookup, order status viewing                                                                            |
 | **Capabilities Used** | Order Placement, Order Retrieval, Self-Service Order Management                                                                |
 
@@ -1027,9 +934,6 @@ This subsection documents the 4 business roles and actors identified through UI 
 | **Name**              | Operations Team                                                                                                                           |
 | **Role Type**         | Human Actor                                                                                                                               |
 | **Description**       | Monitors platform health via Application Insights dashboards, lists all orders, selects and batch-deletes orders from the admin interface |
-| **Source**            | src/eShop.Web.App/Components/Pages/Home.razor:155-200                                                                                     |
-| **Confidence**        | 0.88                                                                                                                                      |
-| **Maturity**          | 2 - Repeatable                                                                                                                            |
 | **Responsibilities**  | Platform monitoring, order administration, batch operations                                                                               |
 | **Capabilities Used** | Order Retrieval, Order Deletion, Self-Service Order Management                                                                            |
 
@@ -1040,9 +944,6 @@ This subsection documents the 4 business roles and actors identified through UI 
 | **Name**              | Platform Infrastructure                                                                                                                  |
 | **Role Type**         | System Actor                                                                                                                             |
 | **Description**       | .NET Aspire orchestrator and Azure Developer CLI managing service composition, deployment lifecycle, secret management, and auto-scaling |
-| **Source**            | app.AppHost/AppHost.cs:\*                                                                                                                |
-| **Confidence**        | 0.85                                                                                                                                     |
-| **Maturity**          | 3 - Defined                                                                                                                              |
 | **Responsibilities**  | Service orchestration, deployment automation, infrastructure provisioning                                                                |
 | **Capabilities Used** | Infrastructure Delivery value stream                                                                                                     |
 
@@ -1057,9 +958,6 @@ This subsection documents the 7 business rules governing order validation and pr
 | **Name**               | Order ID Validation                                                  |
 | **Rule Type**          | Mandatory Field Validation                                           |
 | **Description**        | Every order must have a non-empty, non-whitespace Order ID           |
-| **Source**             | src/eShop.Orders.API/Services/OrderService.cs:570-606                |
-| **Confidence**         | 0.99                                                                 |
-| **Maturity**           | 4 - Measured                                                         |
 | **Enforcement**        | ArgumentException thrown when Order ID is null, empty, or whitespace |
 | **Processes Affected** | Place Order Flow, Batch Order Processing                             |
 
@@ -1070,9 +968,6 @@ This subsection documents the 7 business rules governing order validation and pr
 | **Name**               | Customer ID Required                                                  |
 | **Rule Type**          | Mandatory Field Validation                                            |
 | **Description**        | Every order must be associated with a Customer ID of 1-100 characters |
-| **Source**             | app.ServiceDefaults/CommonTypes.cs:30-50                              |
-| **Confidence**         | 0.99                                                                  |
-| **Maturity**           | 4 - Measured                                                          |
 | **Enforcement**        | Required attribute + StringLength(1, 100) data annotation             |
 | **Processes Affected** | Place Order Flow, Batch Order Processing                              |
 
@@ -1083,9 +978,6 @@ This subsection documents the 7 business rules governing order validation and pr
 | **Name**               | Positive Order Total                                                                   |
 | **Rule Type**          | Monetary Validation                                                                    |
 | **Description**        | Order total must be greater than zero — zero or negative monetary amounts are rejected |
-| **Source**             | app.ServiceDefaults/CommonTypes.cs:50-60                                               |
-| **Confidence**         | 0.99                                                                                   |
-| **Maturity**           | 4 - Measured                                                                           |
 | **Enforcement**        | ArgumentException when Total is less than or equal to zero                             |
 | **Processes Affected** | Place Order Flow, Batch Order Processing                                               |
 
@@ -1096,9 +988,6 @@ This subsection documents the 7 business rules governing order validation and pr
 | **Name**               | Minimum Product Count                                                     |
 | **Rule Type**          | Order Completeness Validation                                             |
 | **Description**        | Every order must contain at least 1 product — empty orders are prohibited |
-| **Source**             | app.ServiceDefaults/CommonTypes.cs:60-70                                  |
-| **Confidence**         | 0.99                                                                      |
-| **Maturity**           | 4 - Measured                                                              |
 | **Enforcement**        | MinLength(1) data annotation on Products collection                       |
 | **Processes Affected** | Place Order Flow, Batch Order Processing                                  |
 
@@ -1109,9 +998,6 @@ This subsection documents the 7 business rules governing order validation and pr
 | **Name**               | Positive Product Price                                                                          |
 | **Rule Type**          | Line-Item Pricing Validation                                                                    |
 | **Description**        | Every product must have a price of at least $0.01 — no free or negative-priced products allowed |
-| **Source**             | app.ServiceDefaults/CommonTypes.cs:100-120                                                      |
-| **Confidence**         | 0.98                                                                                            |
-| **Maturity**           | 4 - Measured                                                                                    |
 | **Enforcement**        | Range(0.01, double.MaxValue) data annotation on Price field                                     |
 | **Processes Affected** | Place Order Flow, Batch Order Processing                                                        |
 
@@ -1122,9 +1008,6 @@ This subsection documents the 7 business rules governing order validation and pr
 | **Name**               | Duplicate Order Prevention                                                                           |
 | **Rule Type**          | Idempotency Rule                                                                                     |
 | **Description**        | If an order with the same ID already exists, return 409 Conflict — prevents duplicate order creation |
-| **Source**             | src/eShop.Orders.API/Services/OrderService.cs:100-130                                                |
-| **Confidence**         | 0.97                                                                                                 |
-| **Maturity**           | 4 - Measured                                                                                         |
 | **Enforcement**        | Existence check before persistence; AlreadyExists result for batch processing                        |
 | **Processes Affected** | Place Order Flow, Batch Order Processing                                                             |
 
@@ -1135,9 +1018,6 @@ This subsection documents the 7 business rules governing order validation and pr
 | **Name**               | Delivery Address Required                                       |
 | **Rule Type**          | Mandatory Field Validation                                      |
 | **Description**        | Every order must include a delivery address of 5-500 characters |
-| **Source**             | app.ServiceDefaults/CommonTypes.cs:40-50                        |
-| **Confidence**         | 0.97                                                            |
-| **Maturity**           | 4 - Measured                                                    |
 | **Enforcement**        | Required attribute + StringLength(5, 500) data annotation       |
 | **Processes Affected** | Place Order Flow, Batch Order Processing                        |
 
@@ -1152,9 +1032,6 @@ This subsection documents the 5 business events and triggers that drive process 
 | **Name**         | OrderPlaced Event                                                                                                                                                                            |
 | **Event Type**   | Domain Event                                                                                                                                                                                 |
 | **Description**  | Published to Service Bus topic with Subject="OrderPlaced", JSON payload containing the full order, and distributed trace context (TraceId, SpanId, TraceParent) for end-to-end observability |
-| **Source**       | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:70-140                                                                                                                                 |
-| **Confidence**   | 1.00                                                                                                                                                                                         |
-| **Maturity**     | 4 - Measured                                                                                                                                                                                 |
 | **Publisher**    | Event Messaging Service                                                                                                                                                                      |
 | **Subscribers**  | OrdersPlacedProcess Workflow                                                                                                                                                                 |
 | **Retry Policy** | 3 attempts with exponential backoff (500ms to 2s)                                                                                                                                            |
@@ -1166,9 +1043,6 @@ This subsection documents the 5 business events and triggers that drive process 
 | **Name**              | Service Bus Topic Trigger                                                                                                |
 | **Event Type**        | Workflow Trigger                                                                                                         |
 | **Description**       | Logic App polls Service Bus topic subscription (ordersplaced / orderprocessingsub) every 1 second for new order messages |
-| **Source**            | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:115-131                            |
-| **Confidence**        | 0.99                                                                                                                     |
-| **Maturity**          | 4 - Measured                                                                                                             |
 | **Triggered Process** | OrdersPlacedProcess Workflow                                                                                             |
 | **Polling Interval**  | 1 second                                                                                                                 |
 
@@ -1179,9 +1053,6 @@ This subsection documents the 5 business events and triggers that drive process 
 | **Name**        | OrderPlaced Batch Event                                                                                                 |
 | **Event Type**  | Batch Domain Event                                                                                                      |
 | **Description** | Batch-publishes multiple OrderPlaced messages atomically via batch sender, each enriched with distributed trace context |
-| **Source**      | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:201-270                                                           |
-| **Confidence**  | 0.97                                                                                                                    |
-| **Maturity**    | 3 - Defined                                                                                                             |
 | **Publisher**   | Event Messaging Service                                                                                                 |
 | **Subscribers** | OrdersPlacedProcess Workflow                                                                                            |
 
@@ -1192,9 +1063,6 @@ This subsection documents the 5 business events and triggers that drive process 
 | **Name**              | Order Processing Callback                                                                                                                                                |
 | **Event Type**        | Integration Event                                                                                                                                                        |
 | **Description**       | Workflow POSTs decoded order payload to the Processing API endpoint; HTTP 201 indicates success (route to success blob), other status codes route to error blob handling |
-| **Source**            | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:15-35                                                                              |
-| **Confidence**        | 0.96                                                                                                                                                                     |
-| **Maturity**          | 3 - Defined                                                                                                                                                              |
 | **Triggered Process** | Order processing via API                                                                                                                                                 |
 | **Success Outcome**   | Blob stored in /ordersprocessedsuccessfully                                                                                                                              |
 | **Error Outcome**     | Blob stored in /ordersprocessedwitherrors                                                                                                                                |
@@ -1206,9 +1074,6 @@ This subsection documents the 5 business events and triggers that drive process 
 | **Name**              | Recurrence Trigger                                                                                             |
 | **Event Type**        | Timer Trigger                                                                                                  |
 | **Description**       | Cleanup workflow fires every 3 seconds (CST timezone) to sweep successfully processed order blobs from storage |
-| **Source**            | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:18-27            |
-| **Confidence**        | 0.95                                                                                                           |
-| **Maturity**          | 3 - Defined                                                                                                    |
 | **Triggered Process** | OrdersPlacedCompleteProcess Workflow                                                                           |
 | **Frequency**         | Every 3 seconds                                                                                                |
 
@@ -1223,9 +1088,6 @@ This subsection documents the 5 business domain objects and entities identified 
 | **Name**          | Order                                                                                                                                                                       |
 | **Entity Type**   | Core Domain Object                                                                                                                                                          |
 | **Description**   | Primary domain object representing a customer order with Id, CustomerId, Date, DeliveryAddress, Total, and Products collection — shared across all services via CommonTypes |
-| **Source**        | app.ServiceDefaults/CommonTypes.cs:20-70                                                                                                                                    |
-| **Confidence**    | 1.00                                                                                                                                                                        |
-| **Maturity**      | 4 - Measured                                                                                                                                                                |
 | **Attributes**    | Id (string), CustomerId (string, 1-100 chars), Date (DateTime), DeliveryAddress (string, 5-500 chars), Total (decimal, >0), Products (list of OrderProduct, min 1)          |
 | **Relationships** | Contains OrderProduct (1:many), Published in OrderPlaced Event, Persisted as OrderEntity                                                                                    |
 
@@ -1236,9 +1098,6 @@ This subsection documents the 5 business domain objects and entities identified 
 | **Name**          | OrderProduct                                                                                                                      |
 | **Entity Type**   | Domain Value Object                                                                                                               |
 | **Description**   | Line item within an order representing a product with quantity and price — validated for positive price and minimum quantity of 1 |
-| **Source**        | app.ServiceDefaults/CommonTypes.cs:75-120                                                                                         |
-| **Confidence**    | 1.00                                                                                                                              |
-| **Maturity**      | 4 - Measured                                                                                                                      |
 | **Attributes**    | Id (int), OrderId (string), ProductId (string), ProductDescription (string), Quantity (int, >=1), Price (decimal, >=0.01)         |
 | **Relationships** | Belongs to Order (many:1), Persisted as OrderProductEntity                                                                        |
 
@@ -1249,9 +1108,6 @@ This subsection documents the 5 business domain objects and entities identified 
 | **Name**          | OrderEntity                                                                                                                                             |
 | **Entity Type**   | Persistence Entity                                                                                                                                      |
 | **Description**   | EF Core database entity mapping the Order domain object to the "Orders" table with field length constraints                                             |
-| **Source**        | src/eShop.Orders.API/data/Entities/OrderEntity.cs:1-57                                                                                                  |
-| **Confidence**    | 0.98                                                                                                                                                    |
-| **Maturity**      | 4 - Measured                                                                                                                                            |
 | **Attributes**    | Id (string, max 100), CustomerId (string, max 100), Date (DateTime), DeliveryAddress (string, max 500), Total (decimal), Products (navigation property) |
 | **Relationships** | Maps from Order, Contains OrderProductEntity (1:many, cascade delete)                                                                                   |
 
@@ -1262,9 +1118,6 @@ This subsection documents the 5 business domain objects and entities identified 
 | **Name**          | OrderProductEntity                                                                                                               |
 | **Entity Type**   | Persistence Entity                                                                                                               |
 | **Description**   | EF Core entity mapping OrderProduct to the "OrderProducts" table with foreign key relationship to OrderEntity and cascade delete |
-| **Source**        | src/eShop.Orders.API/data/Entities/OrderProductEntity.cs:1-63                                                                    |
-| **Confidence**    | 0.98                                                                                                                             |
-| **Maturity**      | 4 - Measured                                                                                                                     |
 | **Attributes**    | Id (int, auto-generated), OrderId (string, FK), ProductId (string), ProductDescription (string), Quantity (int), Price (decimal) |
 | **Relationships** | Belongs to OrderEntity (many:1, cascade delete)                                                                                  |
 
@@ -1275,9 +1128,6 @@ This subsection documents the 5 business domain objects and entities identified 
 | **Name**          | OrderMessageWithMetadata                                                                                                                                                                                        |
 | **Entity Type**   | Message Envelope Object                                                                                                                                                                                         |
 | **Description**   | Enriched message wrapper that pairs an Order with Service Bus messaging metadata for observability and correlation                                                                                              |
-| **Source**        | src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:\*                                                                                                                                                    |
-| **Confidence**    | 0.88                                                                                                                                                                                                            |
-| **Maturity**      | 3 - Defined                                                                                                                                                                                                     |
 | **Attributes**    | Order (Order), MessageId (string), SequenceNumber (long), EnqueuedTime (DateTimeOffset), ContentType (string), Subject (string), CorrelationId (string), MessageSize (long), ApplicationProperties (dictionary) |
 | **Relationships** | Wraps Order, Used by Event Messaging Service for message listing                                                                                                                                                |
 
@@ -1292,9 +1142,6 @@ This subsection documents the 4 KPIs and operational metrics identified in the e
 | **Name**        | eShop.orders.placed                                                                            |
 | **Metric Type** | Counter                                                                                        |
 | **Description** | Tracks the total number of orders successfully placed — primary measure of business throughput |
-| **Source**      | src/eShop.Orders.API/Services/OrderService.cs:40-60                                            |
-| **Confidence**  | 1.00                                                                                           |
-| **Maturity**    | 5 - Optimized                                                                                  |
 | **Unit**        | Count (orders)                                                                                 |
 | **Tags**        | order.id                                                                                       |
 | **Target**      | Not defined — recommend establishing baseline and target SLO                                   |
@@ -1306,9 +1153,6 @@ This subsection documents the 4 KPIs and operational metrics identified in the e
 | **Name**        | eShop.orders.processing.duration                                                                                        |
 | **Metric Type** | Histogram                                                                                                               |
 | **Description** | Tracks time taken to process order operations in milliseconds — measures processing efficiency and latency distribution |
-| **Source**      | src/eShop.Orders.API/Services/OrderService.cs:45-60                                                                     |
-| **Confidence**  | 1.00                                                                                                                    |
-| **Maturity**    | 5 - Optimized                                                                                                           |
 | **Unit**        | Milliseconds                                                                                                            |
 | **Tags**        | order.id, operation.type                                                                                                |
 | **Target**      | Not defined — recommend P99 latency SLO                                                                                 |
@@ -1320,9 +1164,6 @@ This subsection documents the 4 KPIs and operational metrics identified in the e
 | **Name**        | eShop.orders.processing.errors                                                                    |
 | **Metric Type** | Counter                                                                                           |
 | **Description** | Tracks the total number of order processing errors — measures failure rate and system reliability |
-| **Source**      | src/eShop.Orders.API/Services/OrderService.cs:50-60                                               |
-| **Confidence**  | 1.00                                                                                              |
-| **Maturity**    | 5 - Optimized                                                                                     |
 | **Unit**        | Count (errors)                                                                                    |
 | **Tags**        | error.type, order.id                                                                              |
 | **Target**      | Not defined — recommend error rate SLO threshold                                                  |
@@ -1334,9 +1175,6 @@ This subsection documents the 4 KPIs and operational metrics identified in the e
 | **Name**        | eShop.orders.deleted                                                                                 |
 | **Metric Type** | Counter                                                                                              |
 | **Description** | Tracks the total number of orders successfully deleted — measures data lifecycle management activity |
-| **Source**      | src/eShop.Orders.API/Services/OrderService.cs:55-65                                                  |
-| **Confidence**  | 1.00                                                                                                 |
-| **Maturity**    | 5 - Optimized                                                                                        |
 | **Unit**        | Count (deletions)                                                                                    |
 | **Tags**        | order.id                                                                                             |
 | **Target**      | Not defined — informational metric for lifecycle tracking                                            |
