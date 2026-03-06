@@ -79,7 +79,7 @@ flowchart TB
     subgraph api["⚙️ Application Tier"]
         direction LR
         ordersapi["⚙️ Orders API<br/>(eShop.Orders.API)"]:::core
-        aspire["🔷 .NET Aspire\nAppHost"]:::core
+        aspire["🔷 .NET Aspire<br/>AppHost"]:::core
     end
 
     subgraph messaging["📨 Messaging Tier"]
@@ -104,7 +104,7 @@ flowchart TB
     subgraph monitoring["📊 Observability"]
         direction LR
         appinsights["📊 Application Insights<br/>(OpenTelemetry)"]:::success
-        loganalytics["📋 Log Analytics\nWorkspace"]:::success
+        loganalytics["📋 Log Analytics<br/>Workspace"]:::success
     end
 
     user -->|"HTTP requests"| webapp
