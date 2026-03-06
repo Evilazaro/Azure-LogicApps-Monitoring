@@ -263,13 +263,13 @@ The application uses **Azure AD authentication** to connect to SQL Azure Databas
 
 ### Authentication Setup
 
-1. Ensure you're logged in with Azure CLI:
+1. Ensure you're **logged in with Azure CLI**:
 
    ```powershell
    az login
    ```
 
-2. Verify your account has permissions on the SQL Database
+2. **Verify your account has permissions** on the SQL Database
 
 ### Alternative: SQL Authentication (Not Recommended)
 
