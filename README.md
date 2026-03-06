@@ -175,9 +175,9 @@ The feature set spans the full lifecycle — local development with emulators, a
 
 **Overview**
 
-This solution targets Azure cloud deployment using the Azure Developer CLI (`azd`) workflow with .NET 10 SDK. The complete toolchain is validated by the `check-dev-workstation.ps1` / `check-dev-workstation.sh` scripts included in the `hooks/` directory. Running these scripts before first deployment ensures your workstation meets all version thresholds before any Azure resources are provisioned.
+This solution targets Azure cloud deployment using the Azure Developer CLI (`azd`) workflow with .NET 10 SDK. The complete toolchain is validated by the `check-dev-workstation.ps1` / `check-dev-workstation.sh` scripts included in the `hooks/` directory. **Running these scripts before first deployment** ensures your workstation meets all version thresholds before any Azure resources are provisioned.
 
-For local development, Docker is required to run the Azure Service Bus emulator used by Aspire's local mode. For Azure deployment, an active Azure subscription with sufficient quota for Container Apps, Logic Apps Standard (WorkflowStandard tier), Azure SQL, and Service Bus is required.
+For local development, **Docker is required** to run the Azure Service Bus emulator used by Aspire's local mode. For Azure deployment, an **active Azure subscription** with sufficient quota for Container Apps, Logic Apps Standard (WorkflowStandard tier), Azure SQL, and Service Bus is required.
 
 | Prerequisite           | Minimum Version | Purpose                          | Validation Script  |
 | ---------------------- | --------------- | -------------------------------- | ------------------ |
@@ -500,9 +500,9 @@ All observability data flows into the single Log Analytics workspace provisioned
 
 **Overview**
 
-All environment-specific configuration is managed through `azd` environment variables and .NET user secrets. The `postprovision.ps1` hook automatically populates user secrets for all three projects (`app.AppHost`, `eShop.Orders.API`, `eShop.Web.App`) after `azd provision` completes — no manual secret management is required for standard deployments. For CI/CD pipelines running as a `ServicePrincipal`, the same environment variables are injected automatically from the provisioned Azure resources.
+All environment-specific configuration is managed through `azd` environment variables and .NET user secrets. The `postprovision.ps1` hook automatically populates user secrets for all three projects (`app.AppHost`, `eShop.Orders.API`, `eShop.Web.App`) after `azd provision` completes — **no manual secret management is required** for standard deployments. For CI/CD pipelines running as a `ServicePrincipal`, the same environment variables are injected automatically from the provisioned Azure resources.
 
-Sensitive values (connection strings, client IDs) are never stored in source-controlled files. The solution uses **User-Assigned Managed Identity** for all Azure service authentication at runtime and **DefaultAzureCredential** for Azure SQL connections — eliminating the need for stored passwords across all environments.
+Sensitive values (connection strings, client IDs) are **never stored in source-controlled files**. The solution uses **User-Assigned Managed Identity** for all Azure service authentication at runtime and **DefaultAzureCredential** for Azure SQL connections — **eliminating the need for stored passwords** across all environments.
 
 ### Environment Variables (set by `azd` / `postprovision.ps1`)
 
@@ -620,7 +620,7 @@ The AppHost automatically switches between **local emulator mode** and **Azure m
 
 Contributions to the Azure Logic Apps Monitoring solution are welcome and encouraged. Whether you are fixing a bug, improving documentation, extending the Logic Apps workflows, or proposing new observability patterns, the project follows standard GitHub contribution conventions with an emphasis on clean, tested, and well-documented changes.
 
-All pull requests are gated by the same automated test suite that runs during `azd provision` — so passing `dotnet test` locally before opening a PR is the most reliable way to ensure CI success. New features should include test coverage in the corresponding project under `src/tests/`.
+All pull requests are gated by the same automated test suite that runs during `azd provision` — so passing `dotnet test` locally before opening a PR is the most reliable way to ensure CI success. New features **should include test coverage** in the corresponding project under `src/tests/`.
 
 **How to contribute:**
 
@@ -632,7 +632,7 @@ All pull requests are gated by the same automated test suite that runs during `a
    dotnet test --configuration Debug
    ```
 
-4. Ensure no placeholder text (`TODO`, `TBD`, `Coming soon`) remains in your changes
+4. **Ensure no placeholder text** (`TODO`, `TBD`, `Coming soon`) remains in your changes
 5. Open a pull request against `main` with a clear description of the change
 
 > [!TIP]
