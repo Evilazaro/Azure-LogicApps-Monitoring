@@ -293,11 +293,48 @@ dotnet test --configuration Debug \
 
 ## Usage
 
-### Placing an Order via the REST API
+**Overview**
 
-The Orders API exposes a standard REST surface documented via Swagger UI at `/swagger` on the deployed API URL.
+All API interactions use the base URL of the deployed `orders-api` Container App. The full OpenAPI specification is available at `<orders-api-url>/swagger` once deployed. For local Aspire development, the URL is shown in the **.NET Aspire Dashboard** under the `orders-api` resource entry. Every endpoint emits OpenTelemetry spans tagged with the HTTP method, route, and order ID — all visible in Application Insights.
 
-**Place a new order:**
+### API Reference
+
+| Method      | Endpoint              | Description                                 | Success Code     |
+| ----------- | --------------------- | ------------------------------------------- | ---------------- |
+| 📥 `POST`   | `/api/Orders`         | ➕ Place a single new order                 | `201 Created`    |
+| 📋 `GET`    | `/api/Orders`         | 📄 Retrieve all orders                      | `200 OK`         |
+| 🔍 `GET`    | `/api/Orders/{id}`    | 🔎 Retrieve a specific order by ID          | `200 OK`         |
+| 🗑️ `DELETE` | `/api/Orders/{id}`    | ❌ Delete an order by ID                    | `204 No Content` |
+| 📦 `POST`   | `/api/Orders/batch`   | 📥 Place multiple orders in one call        | `200 OK`         |
+| ⚙️ `POST`   | `/api/Orders/process` | 🔄 Called internally by Logic Apps workflow | `201 Created`    |
+
+### Request / Response Schema
+
+The `Order` object and `OrderProduct` sub-object are defined in `app.ServiceDefaults/CommonTypes.cs` and shared across all projects.
+
+**`Order` object:**
+
+| Field                | Type                | Required | Constraints                      |
+| -------------------- | ------------------- | -------- | -------------------------------- |
+| 🆔 `id`              | `string`            | ✅ Yes   | 📏 1–100 characters              |
+| 👤 `customerId`      | `string`            | ✅ Yes   | 📏 1–100 characters              |
+| 📅 `date`            | `string (ISO 8601)` | ❌ No    | ⏱️ Defaults to `DateTime.UtcNow` |
+| 📍 `deliveryAddress` | `string`            | ✅ Yes   | 📏 5–500 characters              |
+| 💰 `total`           | `decimal`           | ✅ Yes   | 🔢 Must be > 0.00                |
+| 🛒 `products`        | `OrderProduct[]`    | ✅ Yes   | 📦 At least 1 item               |
+
+**`OrderProduct` object:**
+
+| Field                   | Type      | Required | Constraints         |
+| ----------------------- | --------- | -------- | ------------------- |
+| 🆔 `id`                 | `string`  | ✅ Yes   | 📏 Non-empty        |
+| 🔗 `orderId`            | `string`  | ✅ Yes   | 📏 Non-empty        |
+| 🏷️ `productId`          | `string`  | ✅ Yes   | 📏 Non-empty        |
+| 📝 `productDescription` | `string`  | ✅ Yes   | 📏 1–500 characters |
+| 🔢 `quantity`           | `int`     | ✅ Yes   | 📊 Must be ≥ 1      |
+| 💵 `price`              | `decimal` | ✅ Yes   | 💰 Must be > 0.00   |
+
+### Place a Single Order
 
 ```http
 POST https://<orders-api-url>/api/Orders
@@ -306,81 +343,275 @@ Content-Type: application/json
 {
   "id": "order-001",
   "customerId": "customer-123",
+  "deliveryAddress": "123 Main Street, Seattle, WA 98101",
+  "total": 89.97,
   "products": [
-    { "productId": "prod-abc", "quantity": 2, "unitPrice": 19.99 },
-    { "productId": "prod-xyz", "quantity": 1, "unitPrice": 49.99 }
-  ],
-  "total": 89.97
+    {
+      "id": "op-001",
+      "orderId": "order-001",
+      "productId": "prod-abc",
+      "productDescription": "Wireless Headphones",
+      "quantity": 2,
+      "price": 19.99
+    },
+    {
+      "id": "op-002",
+      "orderId": "order-001",
+      "productId": "prod-xyz",
+      "productDescription": "USB-C Hub",
+      "quantity": 1,
+      "price": 49.99
+    }
+  ]
 }
 ```
 
-**Expected response:**
+**Expected response (`201 Created`):**
 
 ```json
-HTTP 201 Created
-Location: /api/Orders/order-001
-
 {
   "id": "order-001",
   "customerId": "customer-123",
-  "status": "Placed",
-  "products": [ ... ],
+  "deliveryAddress": "123 Main Street, Seattle, WA 98101",
+  "date": "2026-03-06T10:00:00Z",
   "total": 89.97,
-  "createdAt": "2026-03-06T10:00:00Z"
+  "products": [
+    {
+      "id": "op-001",
+      "orderId": "order-001",
+      "productId": "prod-abc",
+      "productDescription": "Wireless Headphones",
+      "quantity": 2,
+      "price": 19.99
+    },
+    {
+      "id": "op-002",
+      "orderId": "order-001",
+      "productId": "prod-xyz",
+      "productDescription": "USB-C Hub",
+      "quantity": 1,
+      "price": 49.99
+    }
+  ]
 }
 ```
 
-After the order is placed, the API publishes a Service Bus message. The **Logic Apps Standard** `OrdersPlacedProcess` workflow picks up the message and calls `POST /api/Orders/process`. On HTTP 201, the order payload is written to the `ordersprocessedsuccessfully` Blob container; on any other response, it is written to the error container.
+After the order is persisted to Azure SQL, the Orders API publishes a message to the `ordersplaced` Service Bus topic. The **Logic Apps Standard** `OrdersPlacedProcess` workflow triggers on that message, validates the `Content-Type` is `application/json`, calls `POST /api/Orders/process`, and routes the result to either the `ordersprocessedsuccessfully` Blob container (HTTP 201) or the error Blob container (any other code).
+
+### Retrieve All Orders
+
+```http
+GET https://<orders-api-url>/api/Orders
+```
+
+**Expected response (`200 OK`):**
+
+```json
+[
+  {
+    "id": "order-001",
+    "customerId": "customer-123",
+    "deliveryAddress": "123 Main Street, Seattle, WA 98101",
+    "date": "2026-03-06T10:00:00Z",
+    "total": 89.97,
+    "products": [ ... ]
+  }
+]
+```
+
+### Retrieve a Single Order
+
+```http
+GET https://<orders-api-url>/api/Orders/order-001
+```
+
+**Expected response (`200 OK`):** Returns the matching `Order` JSON object. Returns `404 Not Found` with `{ "error": "Order with ID order-001 not found", "type": "NotFoundError" }` if not found.
+
+### Delete an Order
+
+```http
+DELETE https://<orders-api-url>/api/Orders/order-001
+```
+
+**Expected response:** `204 No Content` on success, `404 Not Found` if the order does not exist.
+
+### Place Orders in Batch
+
+For load testing or bulk imports, submit an array of `Order` objects to the batch endpoint:
+
+```http
+POST https://<orders-api-url>/api/Orders/batch
+Content-Type: application/json
+
+[ { ...order1... }, { ...order2... } ]
+```
+
+**Expected response (`200 OK`):** Array of all successfully placed `Order` objects.
 
 ### Generating Test Orders
 
-A convenience script is included for generating sample orders:
+The `Generate-Orders.ps1` script creates realistic randomized order payloads in JSON format, compatible with the batch endpoint and Logic Apps triggers:
 
 ```powershell
+# Generate 2000 orders with default settings (saves to infra/data/ordersBatch.json)
 ./hooks/Generate-Orders.ps1
+
+# Generate 100 orders with 2-4 products each to a custom path
+./hooks/Generate-Orders.ps1 -OrderCount 100 -MinProducts 2 -MaxProducts 4 -OutputPath "./test-orders.json"
+
+# Dry run to preview actions without writing files
+./hooks/Generate-Orders.ps1 -WhatIf
 ```
+
+| Parameter         | Type     | Default                          | Description                                |
+| ----------------- | -------- | -------------------------------- | ------------------------------------------ |
+| 🔢 `-OrderCount`  | `int`    | `2000`                           | 📊 Number of orders to generate (1–10,000) |
+| 📁 `-OutputPath`  | `string` | `../infra/data/ordersBatch.json` | 💾 Output file path                        |
+| 🛒 `-MinProducts` | `int`    | `1`                              | 📦 Minimum products per order (1–20)       |
+| 🛍️ `-MaxProducts` | `int`    | `6`                              | 📦 Maximum products per order (1–20)       |
+| ⚡ `-Force`       | `switch` | `false`                          | 🚫 Skip confirmation prompts               |
+
+### Health Check Endpoints
+
+Both services expose standard health endpoints registered by `.NET Aspire` service defaults:
+
+| Endpoint         | Purpose                             | Expected Response                |
+| ---------------- | ----------------------------------- | -------------------------------- |
+| 🟢 `GET /health` | 🔍 Deep health check (dependencies) | `200 OK` with health report JSON |
+| 💚 `GET /alive`  | ❤️ Liveness probe (process running) | `200 OK` plain text              |
 
 ### Browsing the Web App
 
-Navigate to the deployed Web App URL to manage orders via the Blazor Server UI built with **Microsoft Fluent UI** components.
+Navigate to the deployed Web App URL to manage orders through the Blazor Server UI. The frontend is built with **Microsoft FluentUI v4.14.0** and communicates with the Orders API through Aspire service discovery — the `services:orders-api:https:0` key is automatically resolved at startup.
 
 ### Monitoring in Azure Portal
 
-- **Application Insights** → Live Metrics, Transaction Search, Dependency Map
-- **Log Analytics** → `traces`, `dependencies`, `requests`, `customEvents` tables
-- **Logic Apps Standard** → Run History panel for per-workflow-run diagnostics
+All observability data flows into the single Log Analytics workspace provisioned by the Bicep IaC:
+
+| Tool                    | Where to look                                        | What you see                                        |
+| ----------------------- | ---------------------------------------------------- | --------------------------------------------------- |
+| 📊 Application Insights | Live Metrics → Transaction Search → App Map          | 🔍 Distributed traces, dependency calls, exceptions |
+| 📋 Log Analytics        | `traces`, `dependencies`, `requests`, `customEvents` | 📄 Cross-service correlated logs                    |
+| 🔄 Logic Apps Standard  | Run History panel (per workflow)                     | ▶️ Step-level inputs/outputs and run status         |
+| 🏥 Container Apps       | Revision console + Log Stream                        | 🖥️ Container stdout and health probe results        |
 
 ## Configuration
 
 **Overview**
 
-All environment-specific configuration is managed through `azd` environment variables and .NET user secrets. The `postprovision.ps1` hook automatically populates user secrets after `azd provision` completes, so no manual secret management is required for standard deployments. For CI/CD pipelines running as a `ServicePrincipal`, the same environment variables are injected automatically from the provisioned Azure resources.
+All environment-specific configuration is managed through `azd` environment variables and .NET user secrets. The `postprovision.ps1` hook automatically populates user secrets for all three projects (`app.AppHost`, `eShop.Orders.API`, `eShop.Web.App`) after `azd provision` completes — no manual secret management is required for standard deployments. For CI/CD pipelines running as a `ServicePrincipal`, the same environment variables are injected automatically from the provisioned Azure resources.
 
-Sensitive values (connection strings, client IDs) are never stored in source-controlled files. The solution uses **User-Assigned Managed Identity** for all Azure service authentication at runtime, and **Azure AD Default** authentication for Azure SQL connections — eliminating the need for any stored passwords.
+Sensitive values (connection strings, client IDs) are never stored in source-controlled files. The solution uses **User-Assigned Managed Identity** for all Azure service authentication at runtime and **DefaultAzureCredential** for Azure SQL connections — eliminating the need for stored passwords across all environments.
 
-| Configuration Key                          | Set By                   | Description                                       |
-| ------------------------------------------ | ------------------------ | ------------------------------------------------- |
-| 📁 `Azure:ResourceGroup`                   | `azd` environment        | ☁️ Azure resource group name                      |
-| 🔒 `Azure:TenantId`                        | `azd` / user secret      | 🔑 Azure AD tenant for authentication             |
-| ⚙️ `Azure:ApplicationInsights:Name`        | `azd` environment        | 📊 Application Insights resource name             |
-| 🌍 `Azure:ServiceBus:HostName`             | `azd` / user secret      | 📨 Service Bus namespace hostname                 |
-| 🔗 `ConnectionStrings:OrderDb`             | user secret              | 🗄️ SQL Server connection string (AAD auth)        |
-| 📍 `ConnectionStrings:messaging`           | user secret              | 📨 Service Bus connection string (local emulator) |
-| 📊 `APPLICATIONINSIGHTS_CONNECTION_STRING` | `azd` environment        | 🔍 App Insights telemetry endpoint                |
-| 🌐 `services:orders-api:https:0`           | Aspire service discovery | ⚙️ Base URL for Orders API (Web App → API)        |
+### Environment Variables (set by `azd` / `postprovision.ps1`)
 
-**AppHost configuration keys** (managed in `app.AppHost/appsettings.json`):
+These variables are required at provisioning time and automatically written to `.env` by `azd provision`:
+
+| Variable                                   | Required    | Description                                              |
+| ------------------------------------------ | ----------- | -------------------------------------------------------- |
+| ☁️ `AZURE_SUBSCRIPTION_ID`                 | ✅ Yes      | 🔑 Azure subscription ID for all resource operations     |
+| 🗂️ `AZURE_RESOURCE_GROUP`                  | ✅ Yes      | 📁 Resource group containing all solution resources      |
+| 🌍 `AZURE_LOCATION`                        | ✅ Yes      | 🗺️ Azure region for resource deployment (e.g. `eastus2`) |
+| 🐳 `AZURE_CONTAINER_REGISTRY_ENDPOINT`     | ⬜ Optional | 🏗️ ACR login server URL for container image push/pull    |
+| 🗄️ `AZURE_SQL_SERVER_NAME`                 | ⬜ Optional | 💾 SQL Server hostname (set when SQL is provisioned)     |
+| 📊 `AZURE_SQL_DATABASE_NAME`               | ⬜ Optional | 🗃️ SQL Database name (defaults to `OrderDb`)             |
+| 🔒 `MANAGED_IDENTITY_NAME`                 | ⬜ Optional | 🆔 User-Assigned Managed Identity resource name          |
+| 🆔 `MANAGED_IDENTITY_CLIENT_ID`            | ⬜ Optional | 🔑 Client ID of the User-Assigned Managed Identity       |
+| 📡 `APPLICATIONINSIGHTS_CONNECTION_STRING` | ⬜ Optional | 📊 Application Insights ingestion endpoint               |
+| 📨 `MESSAGING_SERVICEBUSHOSTNAME`          | ⬜ Optional | 🌐 Fully qualified Service Bus namespace hostname        |
+
+### .NET User Secrets (set by `postprovision.ps1`)
+
+The post-provision hook calls `dotnet user-secrets set` for each project. The following tables show the exact secret keys used.
+
+**`app.AppHost` (`app.AppHost/app.AppHost.csproj`):**
+
+| Secret Key                             | Description                                          |
+| -------------------------------------- | ---------------------------------------------------- |
+| 🏗️ `Azure:ResourceGroup`               | ☁️ Azure resource group name                         |
+| 🔑 `Azure:TenantId`                    | 🔒 Azure AD tenant ID for `DefaultAzureCredential`   |
+| 🆔 `Azure:ClientId`                    | 🆔 Managed Identity client ID (local dev only)       |
+| 📊 `Azure:ApplicationInsights:Name`    | 📡 Application Insights resource name                |
+| 📨 `Azure:ServiceBus:HostName`         | 🌐 Service Bus namespace hostname                    |
+| 🔤 `Azure:ServiceBus:TopicName`        | 📨 Topic name (default: `ordersplaced`)              |
+| 🔖 `Azure:ServiceBus:SubscriptionName` | 📬 Subscription name (default: `orderprocessingsub`) |
+
+**`eShop.Orders.API` (`src/eShop.Orders.API/eShop.Orders.API.csproj`):**
+
+| Secret Key                                 | Description                                       |
+| ------------------------------------------ | ------------------------------------------------- |
+| 🗄️ `ConnectionStrings:OrderDb`             | 💾 SQL Server connection string using AAD auth    |
+| 📨 `ConnectionStrings:messaging`           | 🔌 Service Bus connection string (local emulator) |
+| 📊 `APPLICATIONINSIGHTS_CONNECTION_STRING` | 📡 Application Insights telemetry endpoint        |
+
+**`eShop.Web.App` (`src/eShop.Web.App/eShop.Web.App.csproj`):**
+
+| Secret Key                                 | Description                                |
+| ------------------------------------------ | ------------------------------------------ |
+| 📊 `APPLICATIONINSIGHTS_CONNECTION_STRING` | 📡 Application Insights telemetry endpoint |
+
+### `appsettings.json` Configuration
+
+**`app.AppHost/appsettings.json`** — controls Aspire orchestration behaviour:
 
 ```json
 {
   "Azure": {
     "AllowResourceGroupCreation": false
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Aspire.Hosting.Dcp": "Warning"
+    }
   }
 }
 ```
 
+**`src/eShop.Orders.API/appsettings.json`** — Orders API HTTP client resilience settings:
+
+```json
+{
+  "HttpClient": {
+    "OrdersAPIService": {
+      "Timeout": "00:02:00",
+      "Resilience": {
+        "AttemptTimeout": "00:00:30",
+        "TotalRequestTimeout": "00:01:30",
+        "Retry": {
+          "MaxRetryAttempts": 2
+        }
+      }
+    }
+  }
+}
+```
+
+### Azure SQL Connection String Format
+
+The `OrderDb` connection string uses **Windows Integrated / AAD authentication** — no password required:
+
+```text
+Server=tcp:<sql-server-name>.database.windows.net,1433;
+Initial Catalog=OrderDb;
+Authentication=Active Directory Default;
+Encrypt=True;
+TrustServerCertificate=False;
+Connection Timeout=30;
+```
+
+### Service Bus Configuration
+
+The AppHost automatically switches between **local emulator mode** and **Azure mode** based on `Azure:ServiceBus:HostName`:
+
+| Mode                | `HostName` value                     | Auth method                                  |
+| ------------------- | ------------------------------------ | -------------------------------------------- |
+| 🖥️ Local emulator   | `localhost` (default)                | 🔌 Emulator connection string                |
+| ☁️ Azure deployment | `<namespace>.servicebus.windows.net` | 🔒 Managed Identity (DefaultAzureCredential) |
+
 > [!NOTE]
-> The `AllowResourceGroupCreation` flag is intentionally set to `false` to prevent accidental resource group creation during local development. Set to `true` only when creating a brand-new Azure environment for the first time.
+> The `AllowResourceGroupCreation` flag in `app.AppHost/appsettings.json` is intentionally set to `false` to prevent accidental resource group creation during local development. Set it to `true` only when initializing a brand-new Azure environment for the first time with `azd env new`.
 
 ## Contributing
 
