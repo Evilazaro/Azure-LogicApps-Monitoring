@@ -50,6 +50,8 @@ config:
   theme: base
   look: classic
   layout: dagre
+  themeVariables:
+    fontSize: '16px'
   flowchart:
     htmlLabels: true
 ---
@@ -82,7 +84,7 @@ flowchart TB
 
     subgraph messaging["📨 Messaging Tier"]
         direction LR
-        servicebus["📨 Azure Service Bus\n(Topics + Subscriptions)"]:::external
+        servicebus["📨 Azure Service Bus\n(Topics + Subscriptions)"]:::core
     end
 
     subgraph workflows["🔄 Workflow Tier"]
@@ -135,7 +137,6 @@ flowchart TB
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
     classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
 ```
 
 **Component Roles:**
