@@ -73,37 +73,37 @@ flowchart TB
     subgraph clients["👥 Client Tier"]
         direction LR
         user["👤 End User"]:::neutral
-        webapp["🌐 Blazor Web App\n(eShop.Web.App)"]:::core
+        webapp["🌐 Blazor Web App<br/>(eShop.Web.App)"]:::core
     end
 
     subgraph api["⚙️ Application Tier"]
         direction LR
-        ordersapi["⚙️ Orders API\n(eShop.Orders.API)"]:::core
+        ordersapi["⚙️ Orders API<br/>(eShop.Orders.API)"]:::core
         aspire["🔷 .NET Aspire\nAppHost"]:::core
     end
 
     subgraph messaging["📨 Messaging Tier"]
         direction LR
-        servicebus["📨 Azure Service Bus\n(Topics + Subscriptions)"]:::core
+        servicebus["📨 Azure Service Bus<br/>(Topics + Subscriptions)"]:::core
     end
 
     subgraph workflows["🔄 Workflow Tier"]
         direction LR
-        logicapp["🔄 Logic Apps Standard\n(OrdersManagement)"]:::core
+        logicapp["🔄 Logic Apps Standard<br/>(OrdersManagement)"]:::core
         process1["▶️ OrdersPlacedProcess"]:::neutral
         process2["✅ OrdersPlacedCompleteProcess"]:::neutral
     end
 
     subgraph data["🗄️ Data Tier"]
         direction LR
-        sqldb["🗄️ Azure SQL Database\n(OrderDb)"]:::data
-        blobsuccess["📦 Blob Storage\n(Processed Orders)"]:::data
-        bloberror["⚠️ Blob Storage\n(Failed Orders)"]:::warning
+        sqldb["🗄️ Azure SQL Database<br/>(OrderDb)"]:::data
+        blobsuccess["📦 Blob Storage<br/>(Processed Orders)"]:::data
+        bloberror["⚠️ Blob Storage<br/>(Failed Orders)"]:::warning
     end
 
     subgraph monitoring["📊 Observability"]
         direction LR
-        appinsights["📊 Application Insights\n(OpenTelemetry)"]:::success
+        appinsights["📊 Application Insights<br/>(OpenTelemetry)"]:::success
         loganalytics["📋 Log Analytics\nWorkspace"]:::success
     end
 
