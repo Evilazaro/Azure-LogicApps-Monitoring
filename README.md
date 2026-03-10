@@ -45,6 +45,8 @@ config:
   theme: base
   look: classic
   layout: dagre
+  themeVariables:
+    fontSize: '16px'
   flowchart:
     htmlLabels: true
 ---
@@ -63,47 +65,34 @@ flowchart TB
     %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
     %% ═══════════════════════════════════════════════════════════════════════════
 
-    classDef neutral fill:#FAFAFA,stroke:#8A8886,color:#323130
-    classDef core fill:#EFF6FC,stroke:#0078D4,color:#323130
-    classDef success fill:#DFF6DD,stroke:#107C10,color:#323130
-    classDef warning fill:#FFF4CE,stroke:#FFB900,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,color:#323130
-
     subgraph Clients["Client Layer"]
-        A["🖥️ Blazor Web App"]:::core
+        A("🖥️ Blazor Web App"):::core
     end
-    style Clients fill:#F3F2F1,stroke:#8A8886
 
     subgraph Services["Application Services"]
-        B["⚙️ Orders API"]:::core
-        C["📋 Order Service"]:::core
-        D["🗄️ Order Repository"]:::data
+        B("⚙️ Orders API"):::core
+        C("📋 Order Service"):::core
+        D("🗄️ Order Repository"):::data
     end
-    style Services fill:#F3F2F1,stroke:#8A8886
 
     subgraph Messaging["Event-Driven Messaging"]
-        E["📨 Service Bus Topic"]:::warning
+        E("📨 Service Bus Topic"):::warning
     end
-    style Messaging fill:#F3F2F1,stroke:#8A8886
 
     subgraph Workflows["Workflow Automation"]
-        F["⚡ Logic App: OrdersPlacedProcess"]:::success
-        G["✅ Logic App: OrdersPlacedComplete"]:::success
+        F("⚡ Logic App: OrdersPlacedProcess"):::success
+        G("✅ Logic App: OrdersPlacedComplete"):::success
     end
-    style Workflows fill:#F3F2F1,stroke:#8A8886
 
     subgraph DataStores["Data Layer"]
-        H["🛢️ Azure SQL Database"]:::data
-        I["📦 Azure Blob Storage"]:::data
+        H("🛢️ Azure SQL Database"):::data
+        I("📦 Azure Blob Storage"):::data
     end
-    style DataStores fill:#F3F2F1,stroke:#8A8886
 
     subgraph Observability["Observability"]
-        J["📊 Application Insights"]:::external
-        K["📈 Log Analytics"]:::external
+        J("📊 Application Insights"):::external
+        K("📈 Log Analytics"):::external
     end
-    style Observability fill:#F3F2F1,stroke:#8A8886
 
     A -->|"Sends orders via HTTP"| B
     B -->|"Delegates to"| C
@@ -115,6 +104,21 @@ flowchart TB
     G -->|"Stores results"| I
     B -.->|"Emits telemetry"| J
     F -.->|"Emits logs"| K
+
+    %% Centralized classDefs
+    classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
+    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
+    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
+
+    %% Subgraph styling (6 subgraphs = 6 style directives)
+    style Clients fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style Services fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style Messaging fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style Workflows fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style DataStores fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
+    style Observability fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
 ### Architecture Decisions
