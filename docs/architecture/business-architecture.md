@@ -8,7 +8,7 @@
 | **Repository**         | Azure Logic Apps Monitoring |
 | **Components Found**   | 47                          |
 | **Average Confidence** | 0.87                        |
-| **Diagrams Included**  | 7                           |
+| **Diagrams Included**  | 10                          |
 | **Sections Generated** | 1, 2, 3, 4, 5, 8            |
 | **Generated**          | 2025-07-08T12:00:00Z        |
 
@@ -41,6 +41,73 @@ The analysis applies weighted confidence scoring (30% filename + 25% path + 35% 
 
 **Maturity Assessment:** The Business Architecture demonstrates Level 3 (Defined) maturity overall, with standardized order processing workflows, codified business rules via data annotations, and quantitative KPI instrumentation. The event-driven architecture with Service Bus decoupling and Logic Apps orchestration reflects a well-defined capability model. Areas for advancement toward Level 4 (Measured) include automated business rule governance and formal value stream mapping.
 
+```mermaid
+---
+title: Business Strategy Map — Strategic Alignment
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart TB
+    accTitle: Business Strategy Map
+    accDescr: Shows strategic alignment between platform vision, deployment strategy, and five core business capabilities in the Azure Logic Apps Monitoring repository.
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - FLUENT UI: All styling uses approved Fluent UI palette only
+    %% PHASE 2 - GROUPS: Every subgraph has semantic color via style directive
+    %% PHASE 3 - COMPONENTS: Every node has semantic classDef + icon prefix
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, WCAG AA contrast
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph Vision["🎯 Strategic Vision"]
+        SV("🎯 Platform Vision & Mission<br/>Distributed e-commerce monitoring<br/>Maturity: 3 - Defined"):::core
+        DS("🚀 Deployment & Delivery Strategy<br/>Automated Azure deployments with azd<br/>Maturity: 3 - Defined"):::core
+    end
+    style Vision fill:#EFF6FC,stroke:#0078D4
+
+    subgraph Capabilities["⚙️ Core Business Capabilities"]
+        C1("⚙️ Order Management<br/>Maturity: 4 - Measured"):::success
+        C2("⚙️ Event Publishing<br/>Maturity: 3 - Defined"):::warning
+        C3("⚙️ Workflow Processing<br/>Maturity: 3 - Defined"):::warning
+        C4("⚙️ Data Persistence<br/>Maturity: 3 - Defined"):::warning
+        C5("⚙️ Web Presentation<br/>Maturity: 2 - Repeatable"):::danger
+    end
+    style Capabilities fill:#F3F2F1,stroke:#8A8886
+
+    subgraph ValueDelivery["🔄 Value Delivery"]
+        VS("🔄 Order Fulfillment<br/>Value Stream<br/>Maturity: 3 - Defined"):::success
+    end
+    style ValueDelivery fill:#DFF6DD,stroke:#107C10
+
+    SV -->|"drives"| C1
+    SV -->|"drives"| C2
+    SV -->|"drives"| C3
+    DS -->|"enables"| C4
+    DS -->|"enables"| C5
+    C1 -->|"delivers"| VS
+    C2 -->|"supports"| VS
+    C3 -->|"supports"| VS
+    C4 -->|"supports"| VS
+    C5 -->|"supports"| VS
+
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
+    classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
+    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
+    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
+```
+
 ---
 
 ## 2. Architecture Landscape
@@ -55,15 +122,15 @@ The following subsections present the component inventory for each of the 11 Bus
 
 ### 2.1 Business Strategy (2)
 
-| Name                           | Description                                                                              | Source             | Confidence | Maturity    |
-| ------------------------------ | ---------------------------------------------------------------------------------------- | ------------------ | ---------- | ----------- |
+| Name                           | Description                                                                              | Source           | Confidence | Maturity    |
+| ------------------------------ | ---------------------------------------------------------------------------------------- | ---------------- | ---------- | ----------- |
 | Platform Vision & Mission      | Strategic vision for distributed e-commerce monitoring with .NET Aspire orchestration    | README.md:10-11  | 0.90       | 3 - Defined |
 | Deployment & Delivery Strategy | Azure Developer CLI lifecycle management with Bicep IaC and automated provisioning hooks | azure.yaml:41-76 | 0.85       | 3 - Defined |
 
 ### 2.2 Business Capabilities (5)
 
-| Name                | Description                                                                              | Source                                                                                        | Confidence | Maturity       |
-| ------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------- | -------------- |
+| Name                | Description                                                                              | Source                                                                                      | Confidence | Maturity       |
+| ------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ---------- | -------------- |
 | Order Management    | Core capability for end-to-end order lifecycle (place, process, retrieve, delete)        | src/eShop.Orders.API/Controllers/OrdersController.cs:55-406                                 | 0.90       | 4 - Measured   |
 | Event Publishing    | Capability to publish domain events to Azure Service Bus topics for decoupled processing | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:68-230                                | 0.88       | 3 - Defined    |
 | Workflow Processing | Automated order event processing through Logic Apps Standard workflows                   | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-162 | 0.90       | 3 - Defined    |
@@ -72,22 +139,22 @@ The following subsections present the component inventory for each of the 11 Bus
 
 ### 2.3 Value Streams (1)
 
-| Name              | Description                                                                                            | Source                                                                                        | Confidence | Maturity    |
-| ----------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- | ---------- | ----------- |
+| Name              | Description                                                                                            | Source                                                                                      | Confidence | Maturity    |
+| ----------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | ---------- | ----------- |
 | Order Fulfillment | End-to-end value delivery from order placement through processing, workflow automation, and completion | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-162 | 0.90       | 3 - Defined |
 
 ### 2.4 Business Processes (3)
 
-| Name                     | Description                                                                                        | Source                                                                                                | Confidence | Maturity     |
-| ------------------------ | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------- | ------------ |
+| Name                     | Description                                                                                        | Source                                                                                              | Confidence | Maturity     |
+| ------------------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------- | ------------ |
 | Place Order              | Order submission process: validate → check duplicate → persist → publish event → record metrics    | src/eShop.Orders.API/Services/OrderService.cs:82-136                                                | 0.92       | 4 - Measured |
 | Process Placed Orders    | Logic Apps workflow: receive Service Bus message → validate JSON → call Orders API → route to blob | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-162         | 0.92       | 3 - Defined  |
 | Cleanup Processed Orders | Logic Apps cleanup workflow: timer trigger → list success blobs → delete in parallel               | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-104 | 0.90       | 3 - Defined  |
 
 ### 2.5 Business Services (4)
 
-| Name                      | Description                                                                          | Source                                                         | Confidence | Maturity     |
-| ------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ---------- | ------------ |
+| Name                      | Description                                                                          | Source                                                       | Confidence | Maturity     |
+| ------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------ | ---------- | ------------ |
 | Orders REST API           | RESTful service exposing order CRUD operations and batch processing endpoints        | src/eShop.Orders.API/Controllers/OrdersController.cs:55-457  | 0.90       | 4 - Measured |
 | Order Event Publisher     | Service Bus message publishing service for domain event distribution                 | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:68-230 | 0.88       | 3 - Defined  |
 | Order Persistence Service | Business service managing order lifecycle operations with validation and idempotency | src/eShop.Orders.API/Services/OrderService.cs:82-535         | 0.90       | 4 - Measured |
@@ -95,28 +162,28 @@ The following subsections present the component inventory for each of the 11 Bus
 
 ### 2.6 Business Functions (6)
 
-| Name                          | Description                                                                        | Source                                    | Confidence | Maturity       |
-| ----------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------- | ---------- | -------------- |
-| Development Workstation Check | Validates developer environment prerequisites for local development                | hooks/check-dev-workstation.ps1:*       | 0.78       | 2 - Repeatable |
-| Pre-Provisioning              | Infrastructure pre-provisioning with build, test, and coverage validation          | hooks/preprovision.ps1:*                | 0.82       | 3 - Defined    |
-| Post-Provisioning             | Manages secrets and configuration after Azure environment provisioning             | hooks/postprovision.ps1:*               | 0.82       | 3 - Defined    |
-| SQL Identity Configuration    | Configures managed identity authentication for Azure SQL Database access           | hooks/sql-managed-identity-config.ps1:* | 0.80       | 3 - Defined    |
-| Workflow Deployment           | Deploys Logic Apps Standard workflow definitions to Azure with variable resolution | hooks/deploy-workflow.ps1:4-15          | 0.85       | 3 - Defined    |
-| Test Data Generation          | Generates randomized e-commerce order data (2000 orders) for system testing        | hooks/Generate-Orders.ps1:6-31          | 0.82       | 2 - Repeatable |
+| Name                          | Description                                                                        | Source                                   | Confidence | Maturity       |
+| ----------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------- | ---------- | -------------- |
+| Development Workstation Check | Validates developer environment prerequisites for local development                | hooks/check-dev-workstation.ps1:\*       | 0.78       | 2 - Repeatable |
+| Pre-Provisioning              | Infrastructure pre-provisioning with build, test, and coverage validation          | hooks/preprovision.ps1:\*                | 0.82       | 3 - Defined    |
+| Post-Provisioning             | Manages secrets and configuration after Azure environment provisioning             | hooks/postprovision.ps1:\*               | 0.82       | 3 - Defined    |
+| SQL Identity Configuration    | Configures managed identity authentication for Azure SQL Database access           | hooks/sql-managed-identity-config.ps1:\* | 0.80       | 3 - Defined    |
+| Workflow Deployment           | Deploys Logic Apps Standard workflow definitions to Azure with variable resolution | hooks/deploy-workflow.ps1:4-15           | 0.85       | 3 - Defined    |
+| Test Data Generation          | Generates randomized e-commerce order data (2000 orders) for system testing        | hooks/Generate-Orders.ps1:6-31           | 0.82       | 2 - Repeatable |
 
 ### 2.7 Business Roles & Actors (4)
 
-| Name              | Description                                                                                 | Source                                                                                          | Confidence | Maturity       |
-| ----------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------- | -------------- |
+| Name              | Description                                                                                 | Source                                                                                        | Confidence | Maturity       |
+| ----------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------- | -------------- |
 | Customer          | External actor who places orders through the web application and receives delivery          | app.ServiceDefaults/CommonTypes.cs:87-90                                                      | 0.85       | 3 - Defined    |
 | Logic Apps System | Automated actor that processes order events from Service Bus and orchestrates workflows     | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:113-132 | 0.88       | 3 - Defined    |
-| Development Team  | Internal role responsible for workstation setup, code development, and test data generation | hooks/check-dev-workstation.ps1:*                                                             | 0.78       | 2 - Repeatable |
+| Development Team  | Internal role responsible for workstation setup, code development, and test data generation | hooks/check-dev-workstation.ps1:\*                                                            | 0.78       | 2 - Repeatable |
 | Operations Team   | Internal role managing provisioning, deployment, identity configuration, and infrastructure | hooks/deploy-workflow.ps1:4-15                                                                | 0.80       | 3 - Defined    |
 
 ### 2.8 Business Rules (8)
 
-| Name   | Description                                                                    | Source                                                                                        | Confidence | Maturity    |
-| ------ | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- | ---------- | ----------- |
+| Name   | Description                                                                    | Source                                                                                      | Confidence | Maturity    |
+| ------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | ---------- | ----------- |
 | BR-001 | Order ID is required and must be between 1 and 100 characters                  | app.ServiceDefaults/CommonTypes.cs:80-82                                                    | 0.92       | 3 - Defined |
 | BR-002 | Customer ID is required and must be between 1 and 100 characters               | app.ServiceDefaults/CommonTypes.cs:87-90                                                    | 0.92       | 3 - Defined |
 | BR-003 | Delivery address is required and must be between 5 and 500 characters          | app.ServiceDefaults/CommonTypes.cs:97-99                                                    | 0.92       | 3 - Defined |
@@ -128,9 +195,9 @@ The following subsections present the component inventory for each of the 11 Bus
 
 ### 2.9 Business Events (5)
 
-| Name                       | Description                                                                            | Source                                                                                                | Confidence | Maturity       |
-| -------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------- | -------------- |
-| OrderPlaced                | Domain event published to Service Bus topic when an order is successfully placed       | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:84`                                            | 0.92       | 3 - Defined    |
+| Name                       | Description                                                                            | Source                                                                                              | Confidence | Maturity       |
+| -------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------- | -------------- |
+| OrderPlaced                | Domain event published to Service Bus topic when an order is successfully placed       | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:84`                                          | 0.92       | 3 - Defined    |
 | OrderProcessedSuccessfully | Event indicating successful workflow processing, recorded as blob in success container | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:40-55         | 0.88       | 3 - Defined    |
 | OrderProcessedWithError    | Event indicating failed workflow processing, recorded as blob in error container       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:56-110        | 0.88       | 3 - Defined    |
 | OrderDeleted               | Domain event recorded via metrics counter when an order is deleted                     | src/eShop.Orders.API/Services/OrderService.cs:66-68                                                 | 0.82       | 3 - Defined    |
@@ -138,15 +205,15 @@ The following subsections present the component inventory for each of the 11 Bus
 
 ### 2.10 Business Objects/Entities (2)
 
-| Name         | Description                                                                                               | Source                                       | Confidence | Maturity    |
-| ------------ | --------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ---------- | ----------- |
+| Name         | Description                                                                                               | Source                                     | Confidence | Maturity    |
+| ------------ | --------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ---------- | ----------- |
 | Order        | Core domain entity representing a customer order with ID, customer, delivery address, total, and products | app.ServiceDefaults/CommonTypes.cs:74-113  | 0.95       | 3 - Defined |
 | OrderProduct | Domain entity representing an individual product item within an order                                     | app.ServiceDefaults/CommonTypes.cs:118-159 | 0.90       | 3 - Defined |
 
 ### 2.11 KPIs & Metrics (7)
 
-| Name                          | Description                                                                                           | Source                                                                                                | Confidence | Maturity       |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------- | -------------- |
+| Name                          | Description                                                                                           | Source                                                                                              | Confidence | Maturity       |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------- | -------------- |
 | Orders Placed Counter         | Counter metric tracking number of orders successfully placed (`eShop.orders.placed`)                  | src/eShop.Orders.API/Services/OrderService.cs:57-59                                                 | 0.95       | 4 - Measured   |
 | Processing Duration Histogram | Histogram metric measuring order processing time in milliseconds (`eShop.orders.processing.duration`) | src/eShop.Orders.API/Services/OrderService.cs:60-62                                                 | 0.95       | 4 - Measured   |
 | Processing Errors Counter     | Counter metric tracking processing errors by type (`eShop.orders.processing.errors`)                  | src/eShop.Orders.API/Services/OrderService.cs:63-65                                                 | 0.95       | 4 - Measured   |
@@ -256,8 +323,8 @@ This section documents the Business Architecture principles observed through sou
 
 The principles reflect a consistent architectural philosophy centered on event-driven decoupling, automated processing, and observable business operations. Each principle is grounded in source evidence rather than aspirational statements.
 
-| ID  | Principle                       | Description                                                                                              | Rationale                                                               | Source Evidence                                                                               |
-| --- | ------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| ID  | Principle                       | Description                                                                                              | Rationale                                                               | Source Evidence                                                                             |
+| --- | ------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | P1  | Event-Driven Decoupling         | Business processes communicate through Azure Service Bus topics rather than direct service calls         | Enables independent scaling and deployment of order processing stages   | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:68-152                                |
 | P2  | Workflow-First Orchestration    | Complex business processes are implemented as Logic Apps workflows rather than imperative code           | Provides visual process modeling, built-in retry, and audit trail       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-162 |
 | P3  | Idempotent Operations           | Order placement operations detect and handle duplicates gracefully                                       | Prevents data corruption in distributed, at-least-once delivery systems | src/eShop.Orders.API/Services/OrderService.cs:100-104                                       |
@@ -266,6 +333,72 @@ The principles reflect a consistent architectural philosophy centered on event-d
 | P6  | Automated Lifecycle Management  | Infrastructure provisioning, deployment, and testing are automated through lifecycle hooks               | Reduces manual error and ensures repeatable, consistent environments    | azure.yaml:109-237                                                                          |
 | P7  | Separation of Business Concerns | Order placement, event publishing, workflow processing, and cleanup are implemented as separate concerns | Enables independent evolution and testing of each business capability   | app.AppHost/AppHost.cs:20-25                                                                |
 | P8  | Resilient Message Delivery      | Service Bus publishing uses retry logic with exponential backoff, independent of HTTP request lifecycle  | Ensures domain events are delivered even under transient failure        | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:102-118                               |
+
+```mermaid
+---
+title: Architecture Principles — Hierarchy & Relationships
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart TB
+    accTitle: Architecture Principles Hierarchy
+    accDescr: Shows the 8 business architecture principles organized by category with dependency relationships.
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - FLUENT UI: All styling uses approved Fluent UI palette only
+    %% PHASE 2 - GROUPS: Every subgraph has semantic color via style directive
+    %% PHASE 3 - COMPONENTS: Every node has semantic classDef + icon prefix
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, WCAG AA contrast
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph Foundation["🏗️ Foundational Principles"]
+        P7("📋 P7: Separation of<br/>Business Concerns"):::core
+        P1("📋 P1: Event-Driven<br/>Decoupling"):::core
+    end
+    style Foundation fill:#EFF6FC,stroke:#0078D4
+
+    subgraph Process["🔄 Process Principles"]
+        P2("📋 P2: Workflow-First<br/>Orchestration"):::success
+        P3("📋 P3: Idempotent<br/>Operations"):::success
+        P8("📋 P8: Resilient Message<br/>Delivery"):::success
+    end
+    style Process fill:#DFF6DD,stroke:#107C10
+
+    subgraph Quality["📊 Quality & Governance Principles"]
+        P4("📋 P4: Observable Business<br/>Operations"):::warning
+        P5("📋 P5: Codified Validation<br/>Rules"):::warning
+        P6("📋 P6: Automated Lifecycle<br/>Management"):::warning
+    end
+    style Quality fill:#FFF4CE,stroke:#FFB900
+
+    P7 -->|"enables"| P1
+    P1 -->|"requires"| P2
+    P1 -->|"requires"| P8
+    P2 -->|"supports"| P3
+    P8 -->|"supports"| P3
+    P7 -->|"enables"| P4
+    P4 -->|"validates"| P5
+    P5 -->|"automated by"| P6
+    P6 -->|"governs"| P2
+
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
+    classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
+    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
+    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
+```
 
 ---
 
@@ -292,6 +425,66 @@ The assessment uses the 5-level Business Capability Maturity Scale (1 - Initial 
 | Business Events           | 3 - Defined    | 5 events with clear trigger-action patterns; Service Bus topics defined          |
 | Business Objects/Entities | 3 - Defined    | 2 domain entities with comprehensive validation; shared across services          |
 | KPIs & Metrics            | 4 - Measured   | 7 metrics with 4 directly instrumented as OpenTelemetry counters/histograms      |
+
+### Capability Maturity Heatmap
+
+```mermaid
+---
+title: Capability Maturity Heatmap
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart LR
+    accTitle: Capability Maturity Heatmap
+    accDescr: Visual heatmap of maturity levels across all 11 TOGAF Business Architecture component types, color-coded from Level 1 Initial (red) through Level 5 Optimized (dark green).
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - FLUENT UI: All styling uses approved Fluent UI palette only
+    %% PHASE 2 - GROUPS: Every subgraph has semantic color via style directive
+    %% PHASE 3 - COMPONENTS: Every node has semantic classDef + icon prefix
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, WCAG AA contrast
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph Heatmap["📊 Business Component Maturity Assessment"]
+        T1("📋 Business Strategy<br/>Level 3 - Defined"):::warning
+        T2("⚙️ Business Capabilities<br/>Level 3 - Defined"):::warning
+        T3("🔄 Value Streams<br/>Level 2 - Repeatable"):::danger
+        T4("🔄 Business Processes<br/>Level 3 - Defined"):::warning
+        T5("⚙️ Business Services<br/>Level 3 - Defined"):::warning
+        T6("⚙️ Business Functions<br/>Level 2 - Repeatable"):::danger
+        T7("👤 Business Roles & Actors<br/>Level 2 - Repeatable"):::danger
+        T8("📋 Business Rules<br/>Level 3 - Defined"):::warning
+        T9("⚡ Business Events<br/>Level 3 - Defined"):::warning
+        T10("📦 Business Objects/Entities<br/>Level 3 - Defined"):::warning
+        T11("📊 KPIs & Metrics<br/>Level 4 - Measured"):::success
+    end
+    style Heatmap fill:#F3F2F1,stroke:#8A8886
+
+    subgraph Legend["🔑 Maturity Scale"]
+        L1("🔴 Level 1-2: Initial / Repeatable"):::danger
+        L2("🟡 Level 3: Defined"):::warning
+        L3("🟢 Level 4-5: Measured / Optimized"):::success
+    end
+    style Legend fill:#FAFAFA,stroke:#8A8886
+
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
+    classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
+    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
+    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
+```
 
 ### Architecture Patterns Observed
 
@@ -422,7 +615,7 @@ This subsection documents strategic business artifacts that define the platform 
 | **Scope**          | Enterprise-wide — distributed e-commerce order management with monitoring            |
 | **Key Objectives** | Demonstrate end-to-end order management with Logic Apps Standard workflow automation |
 | **Maturity**       | 3 - Defined                                                                          |
-| **Source**         | README.md:10-11                                                                    |
+| **Source**         | README.md:10-11                                                                      |
 | **Confidence**     | 0.90                                                                                 |
 
 #### 5.1.2 Deployment & Delivery Strategy
@@ -434,7 +627,7 @@ This subsection documents strategic business artifacts that define the platform 
 | **Scope**          | Full lifecycle — from code compilation through Azure provisioning and workflow deployment |
 | **Key Objectives** | Automated, repeatable Azure deployments with Bicep IaC and azd lifecycle hooks            |
 | **Maturity**       | 3 - Defined                                                                               |
-| **Source**         | azure.yaml:41-237                                                                       |
+| **Source**         | azure.yaml:41-237                                                                         |
 | **Confidence**     | 0.85                                                                                      |
 
 ### 5.2 Business Capabilities Specifications
@@ -443,39 +636,39 @@ This subsection documents the business capabilities that represent the core func
 
 #### 5.2.1 Order Management
 
-| Attribute               | Value                                                         |
-| ----------------------- | ------------------------------------------------------------- |
-| **Capability Name**     | Order Management                                              |
-| **Capability Type**     | Core Business Capability                                      |
-| **Business Owner**      | Operations Team (inferred)                                    |
-| **Processes Supported** | Place Order, Process Placed Orders, Cleanup Processed Orders  |
-| **Maturity**            | 4 - Measured                                                  |
-| **Source**              | src/eShop.Orders.API/Controllers/OrdersController.cs:55-406 |
-| **Confidence**          | 0.90                                                          |
+| Attribute               | Value                                                        |
+| ----------------------- | ------------------------------------------------------------ |
+| **Capability Name**     | Order Management                                             |
+| **Capability Type**     | Core Business Capability                                     |
+| **Business Owner**      | Operations Team (inferred)                                   |
+| **Processes Supported** | Place Order, Process Placed Orders, Cleanup Processed Orders |
+| **Maturity**            | 4 - Measured                                                 |
+| **Source**              | src/eShop.Orders.API/Controllers/OrdersController.cs:55-406  |
+| **Confidence**          | 0.90                                                         |
 
 #### 5.2.2 Event Publishing
 
-| Attribute               | Value                                                          |
-| ----------------------- | -------------------------------------------------------------- |
-| **Capability Name**     | Event Publishing                                               |
-| **Capability Type**     | Supporting Capability                                          |
-| **Business Owner**      | Operations Team (inferred)                                     |
-| **Processes Supported** | Place Order (triggers OrderPlaced event)                       |
-| **Maturity**            | 3 - Defined                                                    |
+| Attribute               | Value                                                        |
+| ----------------------- | ------------------------------------------------------------ |
+| **Capability Name**     | Event Publishing                                             |
+| **Capability Type**     | Supporting Capability                                        |
+| **Business Owner**      | Operations Team (inferred)                                   |
+| **Processes Supported** | Place Order (triggers OrderPlaced event)                     |
+| **Maturity**            | 3 - Defined                                                  |
 | **Source**              | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:68-230 |
-| **Confidence**          | 0.88                                                           |
+| **Confidence**          | 0.88                                                         |
 
 #### 5.2.3 Workflow Processing
 
-| Attribute               | Value                                                                                         |
-| ----------------------- | --------------------------------------------------------------------------------------------- |
-| **Capability Name**     | Workflow Processing                                                                           |
-| **Capability Type**     | Core Business Capability                                                                      |
-| **Business Owner**      | Logic Apps System (automated)                                                                 |
-| **Processes Supported** | Process Placed Orders, Cleanup Processed Orders                                               |
-| **Maturity**            | 3 - Defined                                                                                   |
+| Attribute               | Value                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| **Capability Name**     | Workflow Processing                                                                         |
+| **Capability Type**     | Core Business Capability                                                                    |
+| **Business Owner**      | Logic Apps System (automated)                                                               |
+| **Processes Supported** | Process Placed Orders, Cleanup Processed Orders                                             |
+| **Maturity**            | 3 - Defined                                                                                 |
 | **Source**              | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-162 |
-| **Confidence**          | 0.90                                                                                          |
+| **Confidence**          | 0.90                                                                                        |
 
 #### 5.2.4 Data Persistence
 
@@ -486,7 +679,7 @@ This subsection documents the business capabilities that represent the core func
 | **Business Owner**      | Operations Team (inferred)                                     |
 | **Processes Supported** | Place Order (persist to SQL), Process Placed Orders (callback) |
 | **Maturity**            | 3 - Defined                                                    |
-| **Source**              | src/eShop.Orders.API/Services/OrderService.cs:82-136         |
+| **Source**              | src/eShop.Orders.API/Services/OrderService.cs:82-136           |
 | **Confidence**          | 0.82                                                           |
 
 #### 5.2.5 Web Presentation
@@ -498,7 +691,7 @@ This subsection documents the business capabilities that represent the core func
 | **Business Owner**      | Development Team (inferred)       |
 | **Processes Supported** | Customer-facing order interaction |
 | **Maturity**            | 2 - Repeatable                    |
-| **Source**              | app.AppHost/AppHost.cs:22-25    |
+| **Source**              | app.AppHost/AppHost.cs:22-25      |
 | **Confidence**          | 0.80                              |
 
 ### 5.3 Value Stream Specifications
@@ -514,7 +707,7 @@ This subsection documents value streams that represent end-to-end value delivery
 | **Stakeholder**       | Customer                                                                                             |
 | **Stages**            | 1. Order Placement → 2. Event Publishing → 3. Workflow Processing → 4. Result Recording → 5. Cleanup |
 | **Maturity**          | 3 - Defined                                                                                          |
-| **Source**            | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-162        |
+| **Source**            | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-162          |
 | **Confidence**        | 0.90                                                                                                 |
 
 ```mermaid
@@ -570,15 +763,15 @@ This subsection documents business processes that define operational workflows a
 
 #### 5.4.1 Place Order
 
-| Attribute        | Value                                                  |
-| ---------------- | ------------------------------------------------------ |
-| **Process Name** | Place Order                                            |
-| **Process Type** | Core Transactional Process                             |
-| **Trigger**      | HTTP POST request to `/api/orders`                     |
-| **Owner**        | Orders REST API Service                                |
-| **Maturity**     | 4 - Measured                                           |
+| Attribute        | Value                                                |
+| ---------------- | ---------------------------------------------------- |
+| **Process Name** | Place Order                                          |
+| **Process Type** | Core Transactional Process                           |
+| **Trigger**      | HTTP POST request to `/api/orders`                   |
+| **Owner**        | Orders REST API Service                              |
+| **Maturity**     | 4 - Measured                                         |
 | **Source**       | src/eShop.Orders.API/Services/OrderService.cs:82-136 |
-| **Confidence**   | 0.92                                                   |
+| **Confidence**   | 0.92                                                 |
 
 **Process Steps:**
 
@@ -595,7 +788,7 @@ This subsection documents business processes that define operational workflows a
 | **Trigger**      | Service Bus topic subscription (`ordersplaced` / `orderprocessingsub`), polling every 1 second |
 | **Owner**        | Logic Apps System                                                                              |
 | **Maturity**     | 3 - Defined                                                                                    |
-| **Source**       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-162  |
+| **Source**       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-162    |
 | **Confidence**   | 0.92                                                                                           |
 
 **Process Steps:**
@@ -606,15 +799,15 @@ This subsection documents business processes that define operational workflows a
 
 #### 5.4.3 Cleanup Processed Orders
 
-| Attribute        | Value                                                                                                 |
-| ---------------- | ----------------------------------------------------------------------------------------------------- |
-| **Process Name** | Cleanup Processed Orders                                                                              |
-| **Process Type** | Automated Maintenance Process                                                                         |
-| **Trigger**      | Recurrence timer — every 3 seconds (CST timezone)                                                     |
-| **Owner**        | Logic Apps System                                                                                     |
-| **Maturity**     | 3 - Defined                                                                                           |
+| Attribute        | Value                                                                                               |
+| ---------------- | --------------------------------------------------------------------------------------------------- |
+| **Process Name** | Cleanup Processed Orders                                                                            |
+| **Process Type** | Automated Maintenance Process                                                                       |
+| **Trigger**      | Recurrence timer — every 3 seconds (CST timezone)                                                   |
+| **Owner**        | Logic Apps System                                                                                   |
+| **Maturity**     | 3 - Defined                                                                                         |
 | **Source**       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-104 |
-| **Confidence**   | 0.90                                                                                                  |
+| **Confidence**   | 0.90                                                                                                |
 
 **Process Steps:**
 
@@ -686,7 +879,7 @@ This subsection documents business services that expose operational capabilities
 | **Consumers**    | Customer (via Web App), Logic Apps System (via callback)                                                                    |
 | **Operations**   | PlaceOrder, PlaceOrdersBatch, ProcessOrder, GetOrders, GetOrderById, DeleteOrder, DeleteOrdersBatch, ListMessagesFromTopics |
 | **Maturity**     | 4 - Measured                                                                                                                |
-| **Source**       | src/eShop.Orders.API/Controllers/OrdersController.cs:55-457                                                               |
+| **Source**       | src/eShop.Orders.API/Controllers/OrdersController.cs:55-457                                                                 |
 | **Confidence**   | 0.90                                                                                                                        |
 
 #### 5.5.2 Order Event Publisher
@@ -698,7 +891,7 @@ This subsection documents business services that expose operational capabilities
 | **Consumers**    | Place Order Process (internal)                                                 |
 | **Operations**   | SendOrderMessageAsync, SendOrdersBatchMessageAsync, ListMessagesFromTopicAsync |
 | **Maturity**     | 3 - Defined                                                                    |
-| **Source**       | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:68-326                 |
+| **Source**       | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:68-326                   |
 | **Confidence**   | 0.88                                                                           |
 
 #### 5.5.3 Order Persistence Service
@@ -710,20 +903,20 @@ This subsection documents business services that expose operational capabilities
 | **Consumers**    | Orders REST API Controller                                                                                                                   |
 | **Operations**   | PlaceOrderAsync, PlaceOrdersBatchAsync, ProcessSingleOrderAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync |
 | **Maturity**     | 4 - Measured                                                                                                                                 |
-| **Source**       | src/eShop.Orders.API/Services/OrderService.cs:82-535                                                                                       |
+| **Source**       | src/eShop.Orders.API/Services/OrderService.cs:82-535                                                                                         |
 | **Confidence**   | 0.90                                                                                                                                         |
 
 #### 5.5.4 Order Processing API
 
-| Attribute        | Value                                                          |
-| ---------------- | -------------------------------------------------------------- |
-| **Service Name** | Order Processing API                                           |
-| **Service Type** | Integration Service                                            |
-| **Consumers**    | Logic Apps System (Process Placed Orders workflow)             |
-| **Operations**   | ProcessOrder (POST /api/orders/process)                        |
-| **Maturity**     | 3 - Defined                                                    |
+| Attribute        | Value                                                        |
+| ---------------- | ------------------------------------------------------------ |
+| **Service Name** | Order Processing API                                         |
+| **Service Type** | Integration Service                                          |
+| **Consumers**    | Logic Apps System (Process Placed Orders workflow)           |
+| **Operations**   | ProcessOrder (POST /api/orders/process)                      |
+| **Maturity**     | 3 - Defined                                                  |
 | **Source**       | src/eShop.Orders.API/Controllers/OrdersController.cs:177-183 |
-| **Confidence**   | 0.85                                                           |
+| **Confidence**   | 0.85                                                         |
 
 ### 5.6 Business Functions Specifications
 
@@ -738,7 +931,7 @@ This subsection documents business functions that represent organizational opera
 | **Owner**         | Development Team                              |
 | **Purpose**       | Validates developer environment prerequisites |
 | **Maturity**      | 2 - Repeatable                                |
-| **Source**        | hooks/check-dev-workstation.ps1:*           |
+| **Source**        | hooks/check-dev-workstation.ps1:\*            |
 | **Confidence**    | 0.78                                          |
 
 #### 5.6.2 Pre-Provisioning
@@ -750,7 +943,7 @@ This subsection documents business functions that represent organizational opera
 | **Owner**         | Operations Team                                                                                     |
 | **Purpose**       | Build validation with test execution, coverage reports, and TRX artifacts before Azure provisioning |
 | **Maturity**      | 3 - Defined                                                                                         |
-| **Source**        | hooks/preprovision.ps1:*                                                                          |
+| **Source**        | hooks/preprovision.ps1:\*                                                                           |
 | **Confidence**    | 0.82                                                                                                |
 
 #### 5.6.3 Post-Provisioning
@@ -762,7 +955,7 @@ This subsection documents business functions that represent organizational opera
 | **Owner**         | Operations Team                                                        |
 | **Purpose**       | Manages secrets and configuration after Azure environment provisioning |
 | **Maturity**      | 3 - Defined                                                            |
-| **Source**        | hooks/postprovision.ps1:*                                            |
+| **Source**        | hooks/postprovision.ps1:\*                                             |
 | **Confidence**    | 0.82                                                                   |
 
 #### 5.6.4 SQL Identity Configuration
@@ -774,7 +967,7 @@ This subsection documents business functions that represent organizational opera
 | **Owner**         | Operations Team                                                                     |
 | **Purpose**       | Configures managed identity (Entra ID) authentication for Azure SQL Database access |
 | **Maturity**      | 3 - Defined                                                                         |
-| **Source**        | hooks/sql-managed-identity-config.ps1:*                                           |
+| **Source**        | hooks/sql-managed-identity-config.ps1:\*                                            |
 | **Confidence**    | 0.80                                                                                |
 
 #### 5.6.5 Workflow Deployment
@@ -786,7 +979,7 @@ This subsection documents business functions that represent organizational opera
 | **Owner**         | Operations Team                                                                              |
 | **Purpose**       | Deploys Logic Apps Standard workflow definitions with variable resolution and zip deployment |
 | **Maturity**      | 3 - Defined                                                                                  |
-| **Source**        | hooks/deploy-workflow.ps1:4-15                                                             |
+| **Source**        | hooks/deploy-workflow.ps1:4-15                                                               |
 | **Confidence**    | 0.85                                                                                         |
 
 #### 5.6.6 Test Data Generation
@@ -798,7 +991,7 @@ This subsection documents business functions that represent organizational opera
 | **Owner**         | Development Team                                                                                |
 | **Purpose**       | Generates 2000 randomized e-commerce order records for system testing and monitoring validation |
 | **Maturity**      | 2 - Repeatable                                                                                  |
-| **Source**        | hooks/Generate-Orders.ps1:6-31                                                                |
+| **Source**        | hooks/Generate-Orders.ps1:6-31                                                                  |
 | **Confidence**    | 0.82                                                                                            |
 
 ### 5.7 Business Roles & Actors Specifications
@@ -814,20 +1007,20 @@ This subsection documents business roles and actors that participate in business
 | **Interactions** | Places orders via Web App, receives delivery at specified address |
 | **Processes**    | Place Order (initiator)                                           |
 | **Maturity**     | 3 - Defined                                                       |
-| **Source**       | app.ServiceDefaults/CommonTypes.cs:87-90                        |
+| **Source**       | app.ServiceDefaults/CommonTypes.cs:87-90                          |
 | **Confidence**   | 0.85                                                              |
 
 #### 5.7.2 Logic Apps System
 
-| Attribute        | Value                                                                                           |
-| ---------------- | ----------------------------------------------------------------------------------------------- |
-| **Role Name**    | Logic Apps System                                                                               |
-| **Role Type**    | Automated System Actor                                                                          |
-| **Interactions** | Receives events from Service Bus, calls Orders API, writes to blob storage                      |
-| **Processes**    | Process Placed Orders, Cleanup Processed Orders                                                 |
-| **Maturity**     | 3 - Defined                                                                                     |
+| Attribute        | Value                                                                                         |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| **Role Name**    | Logic Apps System                                                                             |
+| **Role Type**    | Automated System Actor                                                                        |
+| **Interactions** | Receives events from Service Bus, calls Orders API, writes to blob storage                    |
+| **Processes**    | Process Placed Orders, Cleanup Processed Orders                                               |
+| **Maturity**     | 3 - Defined                                                                                   |
 | **Source**       | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:113-132 |
-| **Confidence**   | 0.88                                                                                            |
+| **Confidence**   | 0.88                                                                                          |
 
 #### 5.7.3 Development Team
 
@@ -838,7 +1031,7 @@ This subsection documents business roles and actors that participate in business
 | **Interactions** | Workstation setup, code development, test data generation, local debugging |
 | **Processes**    | Development Workstation Check, Test Data Generation                        |
 | **Maturity**     | 2 - Repeatable                                                             |
-| **Source**       | hooks/check-dev-workstation.ps1:*                                        |
+| **Source**       | hooks/check-dev-workstation.ps1:\*                                         |
 | **Confidence**   | 0.78                                                                       |
 
 #### 5.7.4 Operations Team
@@ -850,7 +1043,7 @@ This subsection documents business roles and actors that participate in business
 | **Interactions** | Provisioning, deployment, identity configuration, infrastructure management          |
 | **Processes**    | Pre-Provisioning, Post-Provisioning, SQL Identity Configuration, Workflow Deployment |
 | **Maturity**     | 3 - Defined                                                                          |
-| **Source**       | hooks/deploy-workflow.ps1:4-15                                                     |
+| **Source**       | hooks/deploy-workflow.ps1:4-15                                                       |
 | **Confidence**   | 0.80                                                                                 |
 
 ### 5.8 Business Rules Specifications
@@ -859,8 +1052,8 @@ This subsection documents business rules that govern data validation, processing
 
 #### 5.8.1 Order Validation Rules (BR-001 through BR-005)
 
-| Rule ID | Rule Description                                              | Rule Type       | Source                                       | Confidence |
-| ------- | ------------------------------------------------------------- | --------------- | -------------------------------------------- | ---------- |
+| Rule ID | Rule Description                                              | Rule Type       | Source                                     | Confidence |
+| ------- | ------------------------------------------------------------- | --------------- | ------------------------------------------ | ---------- |
 | BR-001  | Order ID is required; length must be 1–100 characters         | Validation Rule | app.ServiceDefaults/CommonTypes.cs:80-82   | 0.92       |
 | BR-002  | Customer ID is required; length must be 1–100 characters      | Validation Rule | app.ServiceDefaults/CommonTypes.cs:87-90   | 0.92       |
 | BR-003  | Delivery address is required; length must be 5–500 characters | Validation Rule | app.ServiceDefaults/CommonTypes.cs:97-99   | 0.92       |
@@ -869,8 +1062,8 @@ This subsection documents business rules that govern data validation, processing
 
 #### 5.8.2 Processing Rules (BR-006 through BR-008)
 
-| Rule ID | Rule Description                                                 | Rule Type        | Source                                                                                        | Confidence |
-| ------- | ---------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------- | ---------- |
+| Rule ID | Rule Description                                                 | Rule Type        | Source                                                                                      | Confidence |
+| ------- | ---------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------- | ---------- |
 | BR-006  | Duplicate order detection: existing orders must not be re-placed | Idempotency Rule | src/eShop.Orders.API/Services/OrderService.cs:100-104                                       | 0.88       |
 | BR-007  | Service Bus message ContentType must be `application/json`       | Integration Rule | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:5-13  | 0.85       |
 | BR-008  | API processing response must return HTTP 201 for success routing | Processing Rule  | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:29-55 | 0.85       |
@@ -894,29 +1087,29 @@ This subsection documents business events that trigger process execution and sta
 
 #### 5.9.2 OrderProcessedSuccessfully
 
-| Attribute      | Value                                                                                         |
-| -------------- | --------------------------------------------------------------------------------------------- |
-| **Event Name** | OrderProcessedSuccessfully                                                                    |
-| **Event Type** | Process Completion Event                                                                      |
-| **Trigger**    | HTTP 201 response from Orders Process API                                                     |
-| **Channel**    | Azure Blob Storage (`/ordersprocessedsuccessfully`)                                           |
-| **Consumers**  | Cleanup Processed Orders workflow                                                             |
-| **Maturity**   | 3 - Defined                                                                                   |
+| Attribute      | Value                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------- |
+| **Event Name** | OrderProcessedSuccessfully                                                                  |
+| **Event Type** | Process Completion Event                                                                    |
+| **Trigger**    | HTTP 201 response from Orders Process API                                                   |
+| **Channel**    | Azure Blob Storage (`/ordersprocessedsuccessfully`)                                         |
+| **Consumers**  | Cleanup Processed Orders workflow                                                           |
+| **Maturity**   | 3 - Defined                                                                                 |
 | **Source**     | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:40-55 |
-| **Confidence** | 0.88                                                                                          |
+| **Confidence** | 0.88                                                                                        |
 
 #### 5.9.3 OrderProcessedWithError
 
-| Attribute      | Value                                                                                          |
-| -------------- | ---------------------------------------------------------------------------------------------- |
-| **Event Name** | OrderProcessedWithError                                                                        |
-| **Event Type** | Process Failure Event                                                                          |
-| **Trigger**    | Non-201 HTTP response or invalid content type                                                  |
-| **Channel**    | Azure Blob Storage (`/ordersprocessedwitherrors`)                                              |
-| **Consumers**  | Not consumed (requires manual review or alerting)                                              |
-| **Maturity**   | 3 - Defined                                                                                    |
+| Attribute      | Value                                                                                        |
+| -------------- | -------------------------------------------------------------------------------------------- |
+| **Event Name** | OrderProcessedWithError                                                                      |
+| **Event Type** | Process Failure Event                                                                        |
+| **Trigger**    | Non-201 HTTP response or invalid content type                                                |
+| **Channel**    | Azure Blob Storage (`/ordersprocessedwitherrors`)                                            |
+| **Consumers**  | Not consumed (requires manual review or alerting)                                            |
+| **Maturity**   | 3 - Defined                                                                                  |
 | **Source**     | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:56-110 |
-| **Confidence** | 0.88                                                                                           |
+| **Confidence** | 0.88                                                                                         |
 
 #### 5.9.4 OrderDeleted
 
@@ -928,21 +1121,21 @@ This subsection documents business events that trigger process execution and sta
 | **Channel**    | OpenTelemetry metric counter (`eShop.orders.deleted`) |
 | **Consumers**  | Observability pipeline (Application Insights)         |
 | **Maturity**   | 3 - Defined                                           |
-| **Source**     | src/eShop.Orders.API/Services/OrderService.cs:66-68 |
+| **Source**     | src/eShop.Orders.API/Services/OrderService.cs:66-68   |
 | **Confidence** | 0.82                                                  |
 
 #### 5.9.5 CleanupTimerTick
 
-| Attribute      | Value                                                                                                 |
-| -------------- | ----------------------------------------------------------------------------------------------------- |
-| **Event Name** | CleanupTimerTick                                                                                      |
-| **Event Type** | Recurring Trigger Event                                                                               |
-| **Trigger**    | Recurrence timer — every 3 seconds, CST timezone                                                      |
-| **Channel**    | Logic Apps internal scheduler                                                                         |
-| **Consumers**  | Cleanup Processed Orders workflow                                                                     |
-| **Maturity**   | 2 - Repeatable                                                                                        |
+| Attribute      | Value                                                                                               |
+| -------------- | --------------------------------------------------------------------------------------------------- |
+| **Event Name** | CleanupTimerTick                                                                                    |
+| **Event Type** | Recurring Trigger Event                                                                             |
+| **Trigger**    | Recurrence timer — every 3 seconds, CST timezone                                                    |
+| **Channel**    | Logic Apps internal scheduler                                                                       |
+| **Consumers**  | Cleanup Processed Orders workflow                                                                   |
+| **Maturity**   | 2 - Repeatable                                                                                      |
 | **Source**     | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:24-31 |
-| **Confidence** | 0.85                                                                                                  |
+| **Confidence** | 0.85                                                                                                |
 
 ### 5.10 Business Objects/Entities Specifications
 
@@ -958,7 +1151,7 @@ This subsection documents core domain entities that carry business data across p
 | **Validation Rules** | BR-001, BR-002, BR-003, BR-004, BR-005                                                                                                                              |
 | **Consumers**        | Orders REST API, Order Persistence Service, Event Publisher, Logic Apps Workflows                                                                                   |
 | **Maturity**         | 3 - Defined                                                                                                                                                         |
-| **Source**           | app.ServiceDefaults/CommonTypes.cs:74-113                                                                                                                         |
+| **Source**           | app.ServiceDefaults/CommonTypes.cs:74-113                                                                                                                           |
 | **Confidence**       | 0.95                                                                                                                                                                |
 
 #### 5.10.2 OrderProduct
@@ -971,7 +1164,7 @@ This subsection documents core domain entities that carry business data across p
 | **Validation Rules** | DataAnnotation validators on all properties                                                                                                                            |
 | **Consumers**        | Order entity (composition), Orders REST API, Event Publisher                                                                                                           |
 | **Maturity**         | 3 - Defined                                                                                                                                                            |
-| **Source**           | app.ServiceDefaults/CommonTypes.cs:118-159                                                                                                                           |
+| **Source**           | app.ServiceDefaults/CommonTypes.cs:118-159                                                                                                                             |
 | **Confidence**       | 0.90                                                                                                                                                                   |
 
 ```mermaid
@@ -1041,20 +1234,20 @@ This subsection documents key performance indicators and metrics that measure bu
 | **Unit**          | order                                                        |
 | **Business Goal** | Track order volume for demand analysis and capacity planning |
 | **Maturity**      | 4 - Measured                                                 |
-| **Source**        | src/eShop.Orders.API/Services/OrderService.cs:57-59        |
+| **Source**        | src/eShop.Orders.API/Services/OrderService.cs:57-59          |
 | **Confidence**    | 0.95                                                         |
 
 #### 5.11.2 Processing Duration Histogram
 
-| Attribute         | Value                                                 |
-| ----------------- | ----------------------------------------------------- |
-| **Metric Name**   | `eShop.orders.processing.duration`                    |
-| **Metric Type**   | Histogram                                             |
-| **Unit**          | milliseconds                                          |
-| **Business Goal** | Monitor order processing latency for SLA compliance   |
-| **Maturity**      | 4 - Measured                                          |
+| Attribute         | Value                                               |
+| ----------------- | --------------------------------------------------- |
+| **Metric Name**   | `eShop.orders.processing.duration`                  |
+| **Metric Type**   | Histogram                                           |
+| **Unit**          | milliseconds                                        |
+| **Business Goal** | Monitor order processing latency for SLA compliance |
+| **Maturity**      | 4 - Measured                                        |
 | **Source**        | src/eShop.Orders.API/Services/OrderService.cs:60-62 |
-| **Confidence**    | 0.95                                                  |
+| **Confidence**    | 0.95                                                |
 
 #### 5.11.3 Processing Errors Counter
 
@@ -1065,7 +1258,7 @@ This subsection documents key performance indicators and metrics that measure bu
 | **Unit**          | error                                                 |
 | **Business Goal** | Track error rates by category for root cause analysis |
 | **Maturity**      | 4 - Measured                                          |
-| **Source**        | src/eShop.Orders.API/Services/OrderService.cs:63-65 |
+| **Source**        | src/eShop.Orders.API/Services/OrderService.cs:63-65   |
 | **Confidence**    | 0.95                                                  |
 
 #### 5.11.4 Orders Deleted Counter
@@ -1077,20 +1270,20 @@ This subsection documents key performance indicators and metrics that measure bu
 | **Unit**          | order                                                       |
 | **Business Goal** | Track order lifecycle completions and cancellation patterns |
 | **Maturity**      | 4 - Measured                                                |
-| **Source**        | src/eShop.Orders.API/Services/OrderService.cs:66-68       |
+| **Source**        | src/eShop.Orders.API/Services/OrderService.cs:66-68         |
 | **Confidence**    | 0.95                                                        |
 
 #### 5.11.5 Workflow Success Rate
 
-| Attribute         | Value                                                                                          |
-| ----------------- | ---------------------------------------------------------------------------------------------- |
-| **Metric Name**   | Workflow Success Rate                                                                          |
-| **Metric Type**   | Derived Ratio (success blobs / total blobs)                                                    |
-| **Unit**          | percentage                                                                                     |
-| **Business Goal** | Measure end-to-end order processing reliability                                                |
-| **Maturity**      | 2 - Repeatable                                                                                 |
+| Attribute         | Value                                                                                        |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| **Metric Name**   | Workflow Success Rate                                                                        |
+| **Metric Type**   | Derived Ratio (success blobs / total blobs)                                                  |
+| **Unit**          | percentage                                                                                   |
+| **Business Goal** | Measure end-to-end order processing reliability                                              |
+| **Maturity**      | 2 - Repeatable                                                                               |
 | **Source**        | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:29-110 |
-| **Confidence**    | 0.80                                                                                           |
+| **Confidence**    | 0.80                                                                                         |
 
 #### 5.11.6 Batch Processing Throughput
 
@@ -1101,20 +1294,20 @@ This subsection documents key performance indicators and metrics that measure bu
 | **Unit**          | orders per batch cycle                                        |
 | **Business Goal** | Measure batch processing capacity (50 groups × 10 concurrent) |
 | **Maturity**      | 3 - Defined                                                   |
-| **Source**        | src/eShop.Orders.API/Services/OrderService.cs:147-225       |
+| **Source**        | src/eShop.Orders.API/Services/OrderService.cs:147-225         |
 | **Confidence**    | 0.82                                                          |
 
 #### 5.11.7 Cleanup Processing Rate
 
-| Attribute         | Value                                                                                                 |
-| ----------------- | ----------------------------------------------------------------------------------------------------- |
-| **Metric Name**   | Cleanup Processing Rate                                                                               |
-| **Metric Type**   | Configuration-Based Throughput Metric                                                                 |
-| **Unit**          | blobs per cycle                                                                                       |
-| **Business Goal** | Measure cleanup throughput (20 parallel × 3-second cycle)                                             |
-| **Maturity**      | 2 - Repeatable                                                                                        |
+| Attribute         | Value                                                                                               |
+| ----------------- | --------------------------------------------------------------------------------------------------- |
+| **Metric Name**   | Cleanup Processing Rate                                                                             |
+| **Metric Type**   | Configuration-Based Throughput Metric                                                               |
+| **Unit**          | blobs per cycle                                                                                     |
+| **Business Goal** | Measure cleanup throughput (20 parallel × 3-second cycle)                                           |
+| **Maturity**      | 2 - Repeatable                                                                                      |
 | **Source**        | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:24-88 |
-| **Confidence**    | 0.80                                                                                                  |
+| **Confidence**    | 0.80                                                                                                |
 
 ```mermaid
 ---
@@ -1229,8 +1422,8 @@ Integration patterns are characterized by loose coupling through messaging, clea
 
 ### Cross-Layer Integration Points
 
-| Integration Point   | Business Component         | Application/Technology Component        | Protocol        | Source                                                                                          |
-| ------------------- | -------------------------- | --------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------- |
+| Integration Point   | Business Component         | Application/Technology Component        | Protocol        | Source                                                                                        |
+| ------------------- | -------------------------- | --------------------------------------- | --------------- | --------------------------------------------------------------------------------------------- |
 | Order Submission    | Place Order process        | OrdersController REST endpoint          | HTTP POST       | src/eShop.Orders.API/Controllers/OrdersController.cs:55-115                                   |
 | Event Publishing    | OrderPlaced event          | OrdersMessageHandler Service Bus client | AMQP            | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:68-152                                  |
 | Workflow Trigger    | Process Placed Orders      | Logic Apps Service Bus connector        | Service Bus     | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:113-132 |
