@@ -36,7 +36,7 @@ Azure Logic Apps Monitoring is a distributed microservices solution built with *
 
 ## Architecture
 
-The solution follows a distributed microservices architecture orchestrated by .NET Aspire with event-driven messaging through Azure Service Bus and workflow automation via Logic Apps Standard.
+The solution follows a **distributed microservices architecture** orchestrated by .NET Aspire with event-driven messaging through Azure Service Bus and workflow automation via Logic Apps Standard.
 
 ```mermaid
 ---
@@ -153,7 +153,7 @@ The solution provides a comprehensive set of capabilities for order management a
 
 **Overview**
 
-These capabilities matter because they provide a production-ready foundation for enterprise order management, eliminating the need to build distributed messaging, observability, and resilience patterns from scratch. Teams adopting this solution gain immediate access to battle-tested Azure integration patterns.
+These capabilities matter because they provide a **production-ready foundation** for enterprise order management, eliminating the need to build distributed messaging, observability, and resilience patterns from scratch. Teams adopting this solution gain immediate access to **battle-tested Azure integration patterns**.
 
 The features work together through .NET Aspire orchestration, which manages service dependencies and health checks, while Azure Service Bus decouples order processing into event-driven workflows. OpenTelemetry instrumentation provides end-to-end visibility across all services, and resilience policies protect against transient failures in distributed communication.
 
@@ -241,9 +241,9 @@ Deploy the complete solution to Azure using the Azure Developer CLI (`azd`).
 
 **Overview**
 
-The deployment uses Azure Developer CLI with Bicep infrastructure templates organized into shared (networking, identity, monitoring) and workload (services, messaging, logic apps) modules. The `azd` lifecycle hooks automate build validation, SQL managed identity configuration, and Logic Apps workflow deployment. The entire flow is idempotent and safe to run multiple times.
+The deployment uses Azure Developer CLI with Bicep infrastructure templates organized into shared (networking, identity, monitoring) and workload (services, messaging, logic apps) modules. The `azd` lifecycle hooks automate build validation, SQL managed identity configuration, and Logic Apps workflow deployment. The entire flow is **idempotent** and safe to run multiple times.
 
-Deployment follows a hook-driven lifecycle defined in `azure.yaml`: preprovision validates the build and runs tests, postprovision configures SQL managed identity access and stores user secrets, and predeploy deploys Logic Apps workflow definitions via zip deployment.
+Deployment follows a **hook-driven lifecycle** defined in `azure.yaml`: preprovision validates the build and runs tests, postprovision configures SQL managed identity access and stores user secrets, and predeploy deploys Logic Apps workflow definitions via zip deployment.
 
 ### 1. Authenticate with Azure
 
@@ -546,9 +546,9 @@ The Blazor Server frontend is accessible at the `web-app` URL shown in the Aspir
 
 **Overview**
 
-Configuration management is critical in distributed systems where multiple services must coordinate credentials, endpoints, and feature flags. This layered approach ensures secrets never appear in source control while supporting both local emulators and production Azure services.
+Configuration management is critical in distributed systems where multiple services must coordinate credentials, endpoints, and feature flags. This layered approach ensures **secrets never appear in source control** while supporting both local emulators and production Azure services.
 
-The .NET Aspire host automatically injects connection strings and service endpoints through its resource reference system. In local mode, emulators are configured automatically. For Azure deployment, managed identity provides passwordless authentication to all services, and `azd` environment variables drive infrastructure provisioning parameters.
+The .NET Aspire host automatically injects connection strings and service endpoints through its resource reference system. In local mode, emulators are configured automatically. For Azure deployment, **managed identity** provides **passwordless authentication** to all services, and `azd` environment variables drive infrastructure provisioning parameters.
 
 ### Environment Variables
 
@@ -620,7 +620,7 @@ The Aspire host in `app.AppHost/appsettings.json` controls orchestration behavio
 }
 ```
 
-The `Azure:AllowResourceGroupCreation` setting must be `false` when deploying into an existing resource group managed by `azd`. Setting it to `true` allows Aspire to create a new resource group automatically.
+The `Azure:AllowResourceGroupCreation` setting **must** be `false` when deploying into an existing resource group managed by `azd`. Setting it to `true` allows Aspire to create a new resource group automatically.
 
 ### Local vs Azure Mode
 
@@ -709,7 +709,7 @@ Contributions are welcome. Please follow these guidelines:
 
 Contributions help improve the solution for the broader Azure and .NET community. Whether fixing bugs, adding features, or improving documentation, every contribution is valued and reviewed promptly.
 
-The project follows standard .NET development practices with C# coding conventions enforced through the SDK configuration. All contributions must include appropriate tests and pass the existing test suite before submission.
+The project follows standard .NET development practices with C# coding conventions enforced through the SDK configuration. All contributions **must** include appropriate tests and pass the existing test suite before submission.
 
 ### Steps
 

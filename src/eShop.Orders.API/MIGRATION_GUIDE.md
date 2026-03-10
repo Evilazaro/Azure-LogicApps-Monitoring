@@ -36,7 +36,7 @@ tags: [ef-core, migration, sql-azure, database]
 
 ## 📋 Overview
 
-The eShop.Orders.API project has been refactored to use **Entity Framework Core** with **Azure SQL Database** instead of file-based storage. This migration provides improved scalability, reliability, and data integrity for production workloads.
+The eShop.Orders.API project has been refactored to use **Entity Framework Core** with **Azure SQL Database** instead of file-based storage. This migration provides improved **scalability, reliability, and data integrity** for production workloads.
 
 ### Migration Benefits
 
@@ -273,7 +273,7 @@ The application uses **Azure AD authentication** to connect to SQL Azure Databas
 
 ### Alternative: SQL Authentication (Not Recommended)
 
-> ⚠️ **Warning**: SQL authentication is not recommended for production environments. Use Azure AD authentication for enhanced security.
+> ⚠️ **Warning**: SQL authentication is **not recommended** for production environments. Use Azure AD authentication for enhanced security.
 
 Update [appsettings.Development.json](./appsettings.Development.json) to use SQL authentication:
 
