@@ -8,7 +8,7 @@
 | **Repository**         | Azure Logic Apps Monitoring |
 | **Components Found**   | 47                          |
 | **Average Confidence** | 0.87                        |
-| **Diagrams Included**  | 10                          |
+| **Diagrams Included**  | 11                          |
 | **Sections Generated** | 1, 2, 3, 4, 5, 8            |
 | **Generated**          | 2025-07-08T12:00:00Z        |
 
@@ -136,6 +136,62 @@ The following subsections present the component inventory for each of the 11 Bus
 | Workflow Processing | Automated order event processing through Logic Apps Standard workflows                   | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-162 | 0.90       | 3 - Defined    |
 | Data Persistence    | Capability for order storage and retrieval via SQL database with Entity Framework        | src/eShop.Orders.API/Services/OrderService.cs:82-136                                        | 0.82       | 3 - Defined    |
 | Web Presentation    | Blazor Server frontend for customer-facing order interaction and monitoring              | app.AppHost/AppHost.cs:22-25                                                                | 0.80       | 2 - Repeatable |
+
+```mermaid
+---
+title: Business Capability Map
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart TB
+    accTitle: Business Capability Map
+    accDescr: Shows 5 core business capabilities with maturity levels and dependency relationships for the Azure Logic Apps Monitoring platform.
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - FLUENT UI: All styling uses approved Fluent UI palette only
+    %% PHASE 2 - GROUPS: Every subgraph has semantic color via style directive
+    %% PHASE 3 - COMPONENTS: Every node has semantic classDef + icon prefix
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, WCAG AA contrast
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph CoreCapabilities["⚙️ Core Business Capabilities"]
+        cap1("📊 Order Management<br/>Maturity: 4 - Measured"):::success
+        cap2("📊 Event Publishing<br/>Maturity: 3 - Defined"):::warning
+        cap3("📊 Workflow Processing<br/>Maturity: 3 - Defined"):::warning
+    end
+    style CoreCapabilities fill:#EFF6FC,stroke:#0078D4
+
+    subgraph SupportCapabilities["🔧 Supporting Capabilities"]
+        cap4("📊 Data Persistence<br/>Maturity: 3 - Defined"):::warning
+        cap5("📊 Web Presentation<br/>Maturity: 2 - Repeatable"):::danger
+    end
+    style SupportCapabilities fill:#F3F2F1,stroke:#8A8886
+
+    cap5 -->|"submits orders to"| cap1
+    cap1 -->|"persists via"| cap4
+    cap1 -->|"publishes events to"| cap2
+    cap2 -->|"triggers"| cap3
+    cap3 -->|"reads/writes via"| cap4
+    cap3 -->|"callbacks to"| cap1
+
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+    classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
+    classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
+    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
+    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
+```
 
 ### 2.3 Value Streams (1)
 
