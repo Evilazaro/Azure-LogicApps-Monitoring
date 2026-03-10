@@ -49,6 +49,9 @@ config:
     htmlLabels: true
 ---
 flowchart LR
+    accTitle: Azure Logic Apps Monitoring Architecture
+    accDescr: Distributed microservices architecture showing the Blazor frontend, Orders API, Azure Service Bus messaging, Logic Apps workflow processing, and data storage components.
+
     %% ═══════════════════════════════════════════════════════════════════════════
     %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
     %% (Semantic + Structural + Font + Accessibility Governance)
@@ -59,8 +62,6 @@ flowchart LR
     %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, WCAG AA contrast
     %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
     %% ═══════════════════════════════════════════════════════════════════════════
-    accTitle: Azure Logic Apps Monitoring Architecture
-    accDescr: Distributed microservices architecture showing the Blazor frontend, Orders API, Azure Service Bus messaging, Logic Apps workflow processing, and data storage components.
 
     classDef neutral fill:#FAFAFA,stroke:#8A8886,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,color:#323130
