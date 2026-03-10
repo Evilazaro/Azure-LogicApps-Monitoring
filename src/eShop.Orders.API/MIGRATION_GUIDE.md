@@ -34,7 +34,7 @@ tags: [ef-core, migration, sql-azure, database]
 
 ---
 
-## 📋 Overview
+## Overview
 
 The eShop.Orders.API project has been refactored to use **Entity Framework Core** with **Azure SQL Database** instead of file-based storage. This migration provides improved **scalability, reliability, and data integrity** for production workloads.
 
@@ -52,7 +52,7 @@ The eShop.Orders.API project has been refactored to use **Entity Framework Core*
 
 ---
 
-## 📝 Changes Made
+## Changes Made
 
 ### 1. 📦 NuGet Packages Added
 
@@ -105,7 +105,7 @@ The eShop.Orders.API project has been refactored to use **Entity Framework Core*
 
 ---
 
-## 🗄️ Database Configuration
+## Database Configuration
 
 > ⚠️ **Security**: This configuration uses Azure AD authentication for passwordless, secure database access.
 
@@ -144,7 +144,7 @@ Server=tcp:{SQL_SERVER_FQDN},1433;Initial Catalog={DATABASE_NAME};Encrypt=True;T
 
 ---
 
-## 🔄 Database Migration
+## Database Migration
 
 > ⚠️ **Prerequisites**: Ensure the connection string is properly configured in `appsettings.json` before running migrations.
 
@@ -200,7 +200,7 @@ This creates a `migration.sql` file that can be reviewed and executed by a DBA.
 
 ---
 
-## 📊 Database Schema
+## Database Schema
 
 ### 📋 Tables Created
 
@@ -236,7 +236,7 @@ This creates a `migration.sql` file that can be reviewed and executed by a DBA.
 
 ---
 
-## 🔐 Authentication Requirements
+## Authentication Requirements
 
 > ⚠️ **Security**: The application uses passwordless authentication via Azure Active Directory for enhanced security and compliance.
 
@@ -257,7 +257,7 @@ The application uses **Azure AD authentication** to connect to SQL Azure Databas
 
 ---
 
-## 💻 Local Development
+## Local Development
 
 > 💡 **Tip**: Azure CLI authentication is recommended for development. SQL authentication should only be used for testing purposes.
 
@@ -289,7 +289,7 @@ Update [appsettings.Development.json](./appsettings.Development.json) to use SQL
 
 ---
 
-## 🧪 Testing the Changes
+## Testing the Changes
 
 ### 1. 🔨 Build the Project
 
@@ -305,7 +305,7 @@ dotnet build
 dotnet run
 ```
 
-> 💡 **Success**: The application should start and display: "Now listening on: http://localhost:5000".
+> 💡 **Success**: The application should start and display: "Now listening on: `http://localhost:5000`".
 
 ### 3. 🌐 Test Endpoints
 
@@ -324,10 +324,10 @@ The API endpoints remain unchanged:
 
 ---
 
-## ⏪ Rollback Instructions
+## Rollback Instructions
 
 > ⚠️ **Warning**: Only use rollback if absolutely necessary. This reverts to the less scalable file-based storage and should be considered a temporary measure.
-
+>
 > ⚠️ **Troubleshooting**: Follow these steps in the exact order shown to safely revert to the previous storage implementation.
 
 ### Rollback Steps
@@ -364,7 +364,7 @@ The API endpoints remain unchanged:
 
 ---
 
-## ✅ Benefits of EF Core
+## Benefits of EF Core
 
 | Benefit                | Description                                              |
 | :--------------------- | :------------------------------------------------------- |
@@ -380,7 +380,7 @@ The API endpoints remain unchanged:
 
 ---
 
-## 📚 Additional Resources
+## Additional Resources
 
 | Resource                                | Link                                                                                                       |
 | :-------------------------------------- | :--------------------------------------------------------------------------------------------------------- |
