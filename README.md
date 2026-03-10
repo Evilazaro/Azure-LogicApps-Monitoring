@@ -152,7 +152,6 @@ The solution provides a comprehensive set of capabilities for order management a
 | 🚀 Azure Developer CLI     | Full `azd` lifecycle with hooks for provisioning, deployment, and workflow configuration         |
 
 **Overview**
-
 These capabilities matter because they provide a **production-ready foundation** for enterprise order management, eliminating the need to build distributed messaging, observability, and resilience patterns from scratch. Teams adopting this solution gain immediate access to **battle-tested Azure integration patterns**.
 
 The features work together through .NET Aspire orchestration, which manages service dependencies and health checks, while Azure Service Bus decouples order processing into event-driven workflows. OpenTelemetry instrumentation provides end-to-end visibility across all services, and resilience policies protect against transient failures in distributed communication.
@@ -172,7 +171,6 @@ The following tools and services are required to build, run, and deploy this sol
 | 🖥️ Node.js                     | LTS                 | Required by Azure Functions runtime for Logic Apps |
 
 **Overview**
-
 These prerequisites ensure a consistent development and deployment experience across all team members. The .NET 10 SDK and Aspire workload are essential for building the distributed application, while `azd` automates the full Azure provisioning and deployment lifecycle.
 
 All runtime dependencies are managed through NuGet packages restored automatically during build. For local development, the .NET Aspire orchestrator uses built-in emulators for Service Bus and SQL Server, reducing the need for Azure subscriptions during initial development and testing.
@@ -232,7 +230,6 @@ info: Aspire.Hosting.DistributedApplication[0]
 The Aspire dashboard opens at the URL shown in the terminal, providing a unified view of all services, logs, and traces.
 
 **Overview**
-
 The quick start runs the full distributed application locally using the .NET Aspire host. In development mode, the application uses local emulators for Azure Service Bus and SQL Server when Azure environment variables are not configured. The Aspire dashboard provides real-time telemetry for all registered services.
 
 ## Deployment
@@ -240,7 +237,6 @@ The quick start runs the full distributed application locally using the .NET Asp
 Deploy the complete solution to Azure using the Azure Developer CLI (`azd`).
 
 **Overview**
-
 The deployment uses Azure Developer CLI with Bicep infrastructure templates organized into shared (networking, identity, monitoring) and workload (services, messaging, logic apps) modules. The `azd` lifecycle hooks automate build validation, SQL managed identity configuration, and Logic Apps workflow deployment. The entire flow is **idempotent** and safe to run multiple times.
 
 Deployment follows a **hook-driven lifecycle** defined in `azure.yaml`: preprovision validates the build and runs tests, postprovision configures SQL managed identity access and stores user secrets, and predeploy deploys Logic Apps workflow definitions via zip deployment.
@@ -372,7 +368,6 @@ SUCCESS: Your application was removed from Azure.
 ## Usage
 
 **Overview**
-
 The Orders API exposes RESTful endpoints at `/api/orders` with full Swagger/OpenAPI documentation available at `/swagger`. When an order is placed, the Order Service publishes an event to the Azure Service Bus `ordersplaced` topic, which triggers the Logic Apps workflow for downstream processing. The Blazor Web App provides an interactive UI for managing orders, while the Aspire dashboard offers real-time distributed tracing and health monitoring.
 
 The end-to-end order flow works as follows: the client places an order through the API or Web App, the Order Service persists it to Azure SQL and publishes a message to the Service Bus `ordersplaced` topic, the `OrdersPlacedProcess` Logic App workflow triggers on the message and processes it, and the `OrdersPlacedCompleteProcess` workflow stores the completed result to Azure Blob Storage.
@@ -545,7 +540,6 @@ The Blazor Server frontend is accessible at the `web-app` URL shown in the Aspir
 ## Configuration
 
 **Overview**
-
 Configuration management is critical in distributed systems where multiple services must coordinate credentials, endpoints, and feature flags. This layered approach ensures **secrets never appear in source control** while supporting both local emulators and production Azure services.
 
 The .NET Aspire host automatically injects connection strings and service endpoints through its resource reference system. In local mode, emulators are configured automatically. For Azure deployment, **managed identity** provides **passwordless authentication** to all services, and `azd` environment variables drive infrastructure provisioning parameters.
@@ -706,7 +700,6 @@ Test projects are located under `src/tests/` with dedicated test projects for th
 Contributions are welcome. Please follow these guidelines:
 
 **Overview**
-
 Contributions help improve the solution for the broader Azure and .NET community. Whether fixing bugs, adding features, or improving documentation, every contribution is valued and reviewed promptly.
 
 The project follows standard .NET development practices with C# coding conventions enforced through the SDK configuration. All contributions **must** include appropriate tests and pass the existing test suite before submission.
