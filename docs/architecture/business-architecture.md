@@ -149,7 +149,7 @@ config:
   flowchart:
     htmlLabels: true
 ---
-flowchart TD
+flowchart Tb
     accTitle: Business Capability Map
     accDescr: Shows 5 core business capabilities with maturity levels and dependency relationships for the Azure Logic Apps Monitoring platform.
 
