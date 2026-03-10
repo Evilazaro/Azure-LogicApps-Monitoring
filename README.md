@@ -39,18 +39,26 @@ Azure Logic Apps Monitoring is a distributed microservices solution built with *
 The solution follows a distributed microservices architecture orchestrated by .NET Aspire with event-driven messaging through Azure Service Bus and workflow automation via Logic Apps Standard.
 
 ```mermaid
-%% ═══════════════════════════════════════════════════════════════════════════
-%% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
-%% (Semantic + Structural + Font + Accessibility Governance)
-%% ═══════════════════════════════════════════════════════════════════════════
-%% PHASE 1 - FLUENT UI: All styling uses approved Fluent UI palette only
-%% PHASE 2 - GROUPS: Every subgraph has semantic color via style directive
-%% PHASE 3 - COMPONENTS: Every node has semantic classDef + icon prefix
-%% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, WCAG AA contrast
-%% PHASE 5 - STANDARD: Governance block present, classDefs centralized
-%% ═══════════════════════════════════════════════════════════════════════════
-
-graph LR
+---
+title: "Azure Logic Apps Monitoring - System Architecture"
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  flowchart:
+    htmlLabels: true
+---
+flowchart LR
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - FLUENT UI: All styling uses approved Fluent UI palette only
+    %% PHASE 2 - GROUPS: Every subgraph has semantic color via style directive
+    %% PHASE 3 - COMPONENTS: Every node has semantic classDef + icon prefix
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, WCAG AA contrast
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
     accTitle: Azure Logic Apps Monitoring Architecture
     accDescr: Distributed microservices architecture showing the Blazor frontend, Orders API, Azure Service Bus messaging, Logic Apps workflow processing, and data storage components.
 
@@ -138,9 +146,11 @@ The solution provides a comprehensive set of capabilities for order management a
 | 🏗️ Infrastructure as Code  | Complete Bicep modules for VNet, Container Apps, SQL, Service Bus, Logic Apps, and monitoring    |
 | 🚀 Azure Developer CLI     | Full `azd` lifecycle with hooks for provisioning, deployment, and workflow configuration         |
 
-### Overview
+**Overview**
 
-Each feature is implemented following Azure best practices with production-ready patterns including structured logging, input validation, and graceful error handling. The architecture supports both local development with emulators and cloud deployment with managed Azure services.
+These capabilities matter because they provide a production-ready foundation for enterprise order management, eliminating the need to build distributed messaging, observability, and resilience patterns from scratch. Teams adopting this solution gain immediate access to battle-tested Azure integration patterns.
+
+The features work together through .NET Aspire orchestration, which manages service dependencies and health checks, while Azure Service Bus decouples order processing into event-driven workflows. OpenTelemetry instrumentation provides end-to-end visibility across all services, and resilience policies protect against transient failures in distributed communication.
 
 ## Requirements
 
@@ -156,9 +166,11 @@ The following tools and services are required to build, run, and deploy this sol
 | 📨 Azure Service Bus           | Standard or Premium | Topic-based messaging for order events             |
 | 🖥️ Node.js                     | LTS                 | Required by Azure Functions runtime for Logic Apps |
 
-### Overview
+**Overview**
 
-All runtime dependencies are managed through NuGet packages restored automatically during build. For local development, the .NET Aspire orchestrator can use built-in emulators for Service Bus and SQL Server, reducing the need for Azure subscriptions during development.
+These prerequisites ensure a consistent development and deployment experience across all team members. The .NET 10 SDK and Aspire workload are essential for building the distributed application, while `azd` automates the full Azure provisioning and deployment lifecycle.
+
+All runtime dependencies are managed through NuGet packages restored automatically during build. For local development, the .NET Aspire orchestrator uses built-in emulators for Service Bus and SQL Server, reducing the need for Azure subscriptions during initial development and testing.
 
 > [!TIP]
 > Run `dotnet workload install aspire` to install the .NET Aspire workload required for the orchestration host.
@@ -214,7 +226,7 @@ info: Aspire.Hosting.DistributedApplication[0]
 
 The Aspire dashboard opens at the URL shown in the terminal, providing a unified view of all services, logs, and traces.
 
-### Overview
+**Overview**
 
 The quick start runs the full distributed application locally using the .NET Aspire host. In development mode, the application uses local emulators for Azure Service Bus and SQL Server when Azure environment variables are not configured. The Aspire dashboard provides real-time telemetry for all registered services.
 
@@ -266,7 +278,7 @@ The deployment creates the following Azure resources through Bicep modules:
 - **User Assigned Managed Identity** for service-to-service authentication
 - **Storage Accounts** for Logic Apps and application state
 
-### Overview
+**Overview**
 
 The deployment uses Azure Developer CLI with Bicep infrastructure templates organized into shared (networking, identity, monitoring) and workload (services, messaging, logic apps) modules. Post-provisioning hooks automatically configure SQL managed identity access and deploy Logic Apps workflows.
 
@@ -338,7 +350,7 @@ Order 2 created successfully.
 Sample order generation complete.
 ```
 
-### Overview
+**Overview**
 
 The Orders API exposes RESTful endpoints at `/api/orders` with full Swagger/OpenAPI documentation available at `/swagger`. When an order is placed, the Order Service publishes an event to the Azure Service Bus `ordersplaced` topic, which triggers the Logic Apps workflow for downstream processing.
 
@@ -357,9 +369,11 @@ The application uses a layered configuration approach with environment variables
 | 📍 Azure Location   | `AZURE_LOCATION`                        | None        | Azure region for resource provisioning via `azd`         |
 | 🏷️ Environment Name | `AZURE_ENV_NAME`                        | None        | `azd` environment name for resource naming               |
 
-### Overview
+**Overview**
 
-In local development mode, the .NET Aspire host automatically configures Service Bus emulator and SQL Server connections. For Azure deployment, managed identity is used for passwordless authentication to all Azure services. Configuration values are injected through `azd` environment variables and Aspire resource references.
+Configuration management is critical in distributed systems where multiple services must coordinate credentials, endpoints, and feature flags. This layered approach ensures secrets never appear in source control while supporting both local emulators and production Azure services.
+
+The .NET Aspire host automatically injects connection strings and service endpoints through its resource reference system. In local mode, emulators are configured automatically. For Azure deployment, managed identity provides passwordless authentication to all services, and `azd` environment variables drive infrastructure provisioning parameters.
 
 > [!WARNING]
 > Never commit connection strings or secrets to source control. Use `dotnet user-secrets` for local development and Azure Key Vault or `azd` environment variables for production.
@@ -432,9 +446,11 @@ Test projects are located under `src/tests/` with dedicated test projects for th
 
 Contributions are welcome. Please follow these guidelines:
 
-### Overview
+**Overview**
 
-This project uses standard .NET development practices with C# coding conventions. All contributions must include appropriate tests and pass the existing test suite before submission.
+Contributions help improve the solution for the broader Azure and .NET community. Whether fixing bugs, adding features, or improving documentation, every contribution is valued and reviewed promptly.
+
+The project follows standard .NET development practices with C# coding conventions enforced through the SDK configuration. All contributions must include appropriate tests and pass the existing test suite before submission.
 
 ### Steps
 
