@@ -235,6 +235,12 @@ The quick start runs the full distributed application locally using the .NET Asp
 
 Deploy the complete solution to Azure using the Azure Developer CLI (`azd`).
 
+**Overview**
+
+The deployment uses Azure Developer CLI with Bicep infrastructure templates organized into shared (networking, identity, monitoring) and workload (services, messaging, logic apps) modules. The `azd` lifecycle hooks automate build validation, SQL managed identity configuration, and Logic Apps workflow deployment. The entire flow is idempotent and safe to run multiple times.
+
+Deployment follows a hook-driven lifecycle defined in `azure.yaml`: preprovision validates the build and runs tests, postprovision configures SQL managed identity access and stores user secrets, and predeploy deploys Logic Apps workflow definitions via zip deployment.
+
 ### 1. Authenticate with Azure
 
 ```bash
@@ -247,7 +253,25 @@ Expected output:
 Logged in to Azure.
 ```
 
-### 2. Provision and Deploy
+### 2. Create an Environment
+
+```bash
+azd env new my-env
+```
+
+Expected output:
+
+```text
+New environment my-env created.
+```
+
+Set the required Azure location for provisioning:
+
+```bash
+azd env set AZURE_LOCATION westus3
+```
+
+### 3. Provision and Deploy (Combined)
 
 ```bash
 azd up
@@ -266,6 +290,53 @@ SUCCESS: Your application was provisioned and deployed to Azure.
 > [!IMPORTANT]
 > The `azd up` command executes lifecycle hooks defined in `azure.yaml` including pre-provision validation, post-provision SQL managed identity configuration, and pre-deploy Logic Apps workflow deployment.
 
+### 4. Provision and Deploy (Individual Steps)
+
+Alternatively, run provisioning and deployment as separate steps:
+
+```bash
+azd provision
+```
+
+Expected output:
+
+```text
+Provisioning Azure resources (azd provision)
+SUCCESS: Your application was provisioned in Azure.
+```
+
+```bash
+azd deploy
+```
+
+Expected output:
+
+```text
+Deploying services (azd deploy)
+SUCCESS: Your application was deployed to Azure.
+```
+
+### Lifecycle Hooks
+
+The `azure.yaml` configuration defines hooks that execute automatically during the `azd` lifecycle:
+
+| Hook              | Phase                 | Actions                                                                                                    |
+| ----------------- | --------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `preprovision`    | Before infrastructure | Cleans build artifacts, restores NuGet packages, builds in Debug, runs unit tests, validates prerequisites |
+| `postprovision`   | After infrastructure  | Authenticates to ACR, configures SQL managed identity with `db_owner` role, stores .NET user secrets       |
+| `predeploy`       | Before app deployment | Deploys Logic Apps workflows via zip deployment, resolves connection placeholders, updates app settings    |
+| `postinfradelete` | After teardown        | Cleans up secrets and local configuration artifacts                                                        |
+
+### Logic Apps Workflow Deployment
+
+The `predeploy` hook runs `hooks/deploy-workflow.ps1` which automates Logic Apps workflow deployment:
+
+1. Discovers workflow directories containing `workflow.json` under `workflows/`
+2. Resolves `${VARIABLE}` placeholders in `connections.json`, `parameters.json`, and `workflow.json`
+3. Fetches Service Bus and Blob Storage connection runtime URLs from Azure
+4. Creates a zip deployment package with all workflow artifacts
+5. Updates Logic App application settings and deploys via Azure CLI
+
 ### Infrastructure Provisioned
 
 The deployment creates the following Azure resources through Bicep modules:
@@ -279,13 +350,40 @@ The deployment creates the following Azure resources through Bicep modules:
 - **User Assigned Managed Identity** for service-to-service authentication
 - **Storage Accounts** for Logic Apps and application state
 
-**Overview**
+### Teardown
 
-The deployment uses Azure Developer CLI with Bicep infrastructure templates organized into shared (networking, identity, monitoring) and workload (services, messaging, logic apps) modules. Post-provisioning hooks automatically configure SQL managed identity access and deploy Logic Apps workflows.
+Remove all provisioned Azure resources:
+
+```bash
+azd down
+```
+
+Expected output:
+
+```text
+Deleting all resources and deployments...
+SUCCESS: Your application was removed from Azure.
+```
 
 ## Usage
 
-### Place an Order via API
+**Overview**
+
+The Orders API exposes RESTful endpoints at `/api/orders` with full Swagger/OpenAPI documentation available at `/swagger`. When an order is placed, the Order Service publishes an event to the Azure Service Bus `ordersplaced` topic, which triggers the Logic Apps workflow for downstream processing. The Blazor Web App provides an interactive UI for managing orders, while the Aspire dashboard offers real-time distributed tracing and health monitoring.
+
+The end-to-end order flow works as follows: the client places an order through the API or Web App, the Order Service persists it to Azure SQL and publishes a message to the Service Bus `ordersplaced` topic, the `OrdersPlacedProcess` Logic App workflow triggers on the message and processes it, and the `OrdersPlacedCompleteProcess` workflow stores the completed result to Azure Blob Storage.
+
+### API Documentation
+
+The Orders API provides interactive Swagger/OpenAPI documentation:
+
+```text
+https://localhost:7xxx/swagger
+```
+
+The Swagger UI lists all available endpoints, request/response schemas, and allows testing directly from the browser.
+
+### Place an Order
 
 ```bash
 curl -X POST https://localhost:7xxx/api/orders \
@@ -314,6 +412,26 @@ Expected output:
 }
 ```
 
+### Place Orders in Batch
+
+```bash
+curl -X POST https://localhost:7xxx/api/orders/batch \
+  -H "Content-Type: application/json" \
+  -d '[
+    { "customerId": "c-001", "date": "2025-01-15", "deliveryAddress": "1 Main St", "total": 50.00, "products": [{ "name": "A", "price": 50.00, "quantity": 1 }] },
+    { "customerId": "c-002", "date": "2025-01-16", "deliveryAddress": "2 Oak Ave", "total": 75.00, "products": [{ "name": "B", "price": 75.00, "quantity": 1 }] }
+  ]'
+```
+
+Expected output:
+
+```json
+[
+  { "id": "guid-1", "customerId": "c-001", "total": 50.0 },
+  { "id": "guid-2", "customerId": "c-002", "total": 75.0 }
+]
+```
+
 ### Retrieve All Orders
 
 ```bash
@@ -329,9 +447,40 @@ Expected output:
     "customerId": "customer-001",
     "date": "2025-01-15",
     "total": 99.99,
-    "products": [...]
+    "products": [{ "name": "Widget", "price": 49.99, "quantity": 2 }]
   }
 ]
+```
+
+### Retrieve a Single Order
+
+```bash
+curl https://localhost:7xxx/api/orders/{id}
+```
+
+Expected output:
+
+```json
+{
+  "id": "order-guid",
+  "customerId": "customer-001",
+  "date": "2025-01-15",
+  "deliveryAddress": "123 Main St",
+  "total": 99.99,
+  "products": [{ "name": "Widget", "price": 49.99, "quantity": 2 }]
+}
+```
+
+### Delete an Order
+
+```bash
+curl -X DELETE https://localhost:7xxx/api/orders/{id}
+```
+
+Expected output:
+
+```text
+HTTP/1.1 204 No Content
 ```
 
 ### Generate Sample Orders
@@ -339,42 +488,147 @@ Expected output:
 Use the provided script to populate test data:
 
 ```powershell
-./hooks/Generate-Orders.ps1
+./hooks/Generate-Orders.ps1 -OrderCount 100
 ```
 
 Expected output:
 
 ```text
 Generating sample orders...
-Order 1 created successfully.
-Order 2 created successfully.
-Sample order generation complete.
+Order generation complete: 100 orders written to infra/data/ordersBatch.json
 ```
 
-**Overview**
+The script supports configurable parameters including `-OrderCount` (1–10,000), `-MinProducts`, and `-MaxProducts` for controlling generated data.
 
-The Orders API exposes RESTful endpoints at `/api/orders` with full Swagger/OpenAPI documentation available at `/swagger`. When an order is placed, the Order Service publishes an event to the Azure Service Bus `ordersplaced` topic, which triggers the Logic Apps workflow for downstream processing.
+### Health Check Endpoints
+
+The API exposes Kubernetes-compatible health probes:
+
+| Endpoint  | Purpose                                                    |
+| --------- | ---------------------------------------------------------- |
+| `/health` | Readiness probe — checks database and Service Bus          |
+| `/alive`  | Liveness probe — confirms the application process is alive |
+
+```bash
+curl https://localhost:7xxx/health
+```
+
+Expected output:
+
+```json
+{
+  "status": "Healthy",
+  "entries": {
+    "db": { "status": "Healthy" },
+    "servicebus": { "status": "Healthy" }
+  }
+}
+```
+
+### Aspire Dashboard
+
+When running locally with `dotnet run --project app.AppHost`, the .NET Aspire dashboard is available at the URL printed in the terminal output (typically `https://localhost:15178`). The dashboard provides:
+
+- **Resources** — Live status of all registered services (`orders-api`, `web-app`)
+- **Traces** — Distributed tracing across API calls, database queries, and Service Bus operations
+- **Metrics** — Application-level and runtime performance metrics
+- **Structured Logs** — Aggregated structured logs from all services
+
+### Web Application
+
+The Blazor Server frontend is accessible at the `web-app` URL shown in the Aspire dashboard output. The Web App uses Microsoft Fluent UI components and connects to the Orders API via service discovery with built-in retry, timeout, and circuit breaker resilience policies.
 
 ## Configuration
-
-The application uses a layered configuration approach with environment variables, user secrets, and Aspire service defaults.
-
-| Setting             | Environment Variable                    | Default     | Description                                              |
-| ------------------- | --------------------------------------- | ----------- | -------------------------------------------------------- |
-| 📊 App Insights     | `APPLICATIONINSIGHTS_CONNECTION_STRING` | None        | Azure Monitor telemetry connection string                |
-| 📨 Service Bus Host | `MESSAGING_HOST`                        | `localhost` | Service Bus namespace FQDN or `localhost` for emulator   |
-| 🗄️ SQL Connection   | `ConnectionStrings:OrderDb`             | None        | Azure SQL or local SQL Server connection string          |
-| ☁️ Azure Tenant     | `AZURE_TENANT_ID`                       | None        | Azure AD tenant for local development authentication     |
-| 🔑 Azure Client     | `AZURE_CLIENT_ID`                       | None        | Managed identity client ID for local development         |
-| 📊 OTLP Endpoint    | `OTEL_EXPORTER_OTLP_ENDPOINT`           | None        | OpenTelemetry collector endpoint for distributed tracing |
-| 📍 Azure Location   | `AZURE_LOCATION`                        | None        | Azure region for resource provisioning via `azd`         |
-| 🏷️ Environment Name | `AZURE_ENV_NAME`                        | None        | `azd` environment name for resource naming               |
 
 **Overview**
 
 Configuration management is critical in distributed systems where multiple services must coordinate credentials, endpoints, and feature flags. This layered approach ensures secrets never appear in source control while supporting both local emulators and production Azure services.
 
 The .NET Aspire host automatically injects connection strings and service endpoints through its resource reference system. In local mode, emulators are configured automatically. For Azure deployment, managed identity provides passwordless authentication to all services, and `azd` environment variables drive infrastructure provisioning parameters.
+
+### Environment Variables
+
+The application uses a layered configuration approach with environment variables, user secrets, and Aspire service defaults.
+
+| Setting                  | Environment Variable                    | Default     | Description                                              |
+| ------------------------ | --------------------------------------- | ----------- | -------------------------------------------------------- |
+| 📊 App Insights          | `APPLICATIONINSIGHTS_CONNECTION_STRING` | None        | Azure Monitor telemetry connection string                |
+| 📨 Service Bus Host      | `MESSAGING_HOST`                        | `localhost` | Service Bus namespace FQDN or `localhost` for emulator   |
+| 🗄️ SQL Connection        | `ConnectionStrings:OrderDb`             | None        | Azure SQL or local SQL Server connection string          |
+| ☁️ Azure Tenant          | `AZURE_TENANT_ID`                       | None        | Azure AD tenant for local development authentication     |
+| 🔑 Azure Client          | `AZURE_CLIENT_ID`                       | None        | Managed identity client ID for local development         |
+| 📊 OTLP Endpoint         | `OTEL_EXPORTER_OTLP_ENDPOINT`           | None        | OpenTelemetry collector endpoint for distributed tracing |
+| 📍 Azure Location        | `AZURE_LOCATION`                        | None        | Azure region for resource provisioning via `azd`         |
+| 🏷️ Environment Name      | `AZURE_ENV_NAME`                        | None        | `azd` environment name for resource naming               |
+| 🗄️ SQL Server Name       | `AZURE_SQL_SERVER_NAME`                 | None        | Azure SQL logical server name for managed identity setup |
+| 🗄️ SQL Database Name     | `AZURE_SQL_DATABASE_NAME`               | None        | Azure SQL database name used by postprovision hook       |
+| 🔑 Managed Identity Name | `MANAGED_IDENTITY_NAME`                 | None        | User assigned managed identity name for RBAC             |
+| 🔑 Managed Identity ID   | `MANAGED_IDENTITY_CLIENT_ID`            | None        | Client ID for the managed identity                       |
+| 📨 Service Bus FQDN      | `MESSAGING_SERVICEBUSHOSTNAME`          | None        | Fully qualified Service Bus namespace hostname           |
+| ⚡ Logic App Name        | `LOGIC_APP_NAME`                        | None        | Azure Logic Apps Standard app name for workflow deploy   |
+| 📦 Container Registry    | `AZURE_CONTAINER_REGISTRY_ENDPOINT`     | None        | ACR login server endpoint for container image push       |
+
+### Local Development with User Secrets
+
+For local development, the `postprovision` hook automatically configures .NET user secrets for three projects:
+
+```bash
+dotnet user-secrets set "Azure:TenantId" "<your-tenant-id>" --project app.AppHost/app.AppHost.csproj
+dotnet user-secrets set "Azure:ClientId" "<your-client-id>" --project app.AppHost/app.AppHost.csproj
+dotnet user-secrets set "Azure:ResourceGroup" "<your-rg>" --project app.AppHost/app.AppHost.csproj
+```
+
+The following projects receive user secrets during postprovision:
+
+| Project                                        | Secrets Configured                                                      |
+| ---------------------------------------------- | ----------------------------------------------------------------------- |
+| `app.AppHost/app.AppHost.csproj`               | Azure tenant, client ID, resource group, SQL, Service Bus, App Insights |
+| `src/eShop.Orders.API/eShop.Orders.API.csproj` | Azure tenant, client ID, SQL connection, Service Bus, App Insights      |
+| `src/eShop.Web.App/eShop.Web.App.csproj`       | Azure tenant, client ID, App Insights connection string                 |
+
+### Azure Deployment Configuration
+
+Set deployment-specific values using `azd env set`:
+
+```bash
+azd env set AZURE_LOCATION westus3
+azd env set AZURE_ENV_NAME my-environment
+```
+
+These values are passed as parameters to the Bicep infrastructure templates during `azd provision`.
+
+### Aspire Host Configuration
+
+The Aspire host in `app.AppHost/appsettings.json` controls orchestration behavior:
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Aspire.Hosting.Dcp": "Warning"
+    }
+  },
+  "Azure": {
+    "AllowResourceGroupCreation": false
+  }
+}
+```
+
+The `Azure:AllowResourceGroupCreation` setting must be `false` when deploying into an existing resource group managed by `azd`. Setting it to `true` allows Aspire to create a new resource group automatically.
+
+### Local vs Azure Mode
+
+The Aspire host detects the execution context and configures services accordingly:
+
+| Setting           | Local Development                         | Azure Deployment                               |
+| ----------------- | ----------------------------------------- | ---------------------------------------------- |
+| Service Bus       | Built-in emulator (no Azure subscription) | Azure Service Bus via managed identity         |
+| SQL Database      | Local SQL Server or emulator              | Azure SQL with managed identity authentication |
+| App Insights      | User secrets connection string (optional) | Injected by Container Apps infrastructure      |
+| Service Discovery | Localhost ports via Aspire dashboard      | Container Apps internal DNS                    |
+| Authentication    | `AZURE_TENANT_ID` + `AZURE_CLIENT_ID`     | User assigned managed identity (automatic)     |
 
 > [!WARNING]
 > Never commit connection strings or secrets to source control. Use `dotnet user-secrets` for local development and Azure Key Vault or `azd` environment variables for production.
