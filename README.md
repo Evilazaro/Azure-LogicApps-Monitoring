@@ -48,7 +48,7 @@ config:
   flowchart:
     htmlLabels: true
 ---
-flowchart LR
+flowchart TB
     accTitle: Azure Logic Apps Monitoring Architecture
     accDescr: Distributed microservices architecture showing the Blazor frontend, Orders API, Azure Service Bus messaging, Logic Apps workflow processing, and data storage components.
 
