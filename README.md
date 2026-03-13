@@ -148,16 +148,15 @@ Azure Logic Apps Monitoring eliminates the need to assemble monitoring boilerpla
 
 All telemetry flows through a unified OpenTelemetry pipeline that surfaces distributed traces across six service boundaries, custom business metrics (`eShop.orders.*`), and structured log correlation. All authentication uses Azure Managed Identity, removing every static secret from the stack and making the solution compliant with zero-standing-privilege security patterns from day one.
 
-| Feature                         | Description                                                                                                        | Status    |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------- |
-| 🚀 One-command deploy           | `azd up` provisions all Azure resources and deploys all services end-to-end                                        | ✅ Stable |
-| ⚙️ Orders REST API              | Full CRUD endpoints (`POST`, `GET`, `DELETE`) with OpenAPI/Swagger documentation                                   | ✅ Stable |
-| 🌐 Blazor Web UI                | Interactive Blazor Server front end built with Microsoft FluentUI v4.14 components                                 | ✅ Stable |
-| ⚡ Logic Apps workflows         | Two Standard workflows: Service Bus–triggered processing and recurrence-based completion                           | ✅ Stable |
-| 📊 OpenTelemetry observability  | Distributed traces, custom counters and histograms, structured logs via OTLP and Azure Monitor                     | ✅ Stable |
-| 🔒 Managed Identity auth        | Passwordless SQL, Service Bus, Blob Storage, and Application Insights via `DefaultAzureCredential`                 | ✅ Stable |
-| 🏗️ .NET Aspire orchestration    | Local dev with SQL container, Service Bus emulator, service discovery, and health checks at `/health` and `/alive` | ✅ Stable |
-| 🛡️ Bicep infrastructure as code | Shared + workload Bicep modules with private endpoints, virtual network isolation, and resource tagging            | ✅ Stable |
+| Feature                         | Description                                                                                                                         | Status    |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| 🚀 One-command deploy           | `azd up` provisions all Azure resources and deploys all services end-to-end                                                         | ✅ Stable |
+| ⚙️ Orders REST API              | Full CRUD endpoints (`POST`, `GET`, `DELETE`) with OpenAPI/Swagger documentation                                                    | ✅ Stable |
+| 🌐 Blazor Web UI                | Interactive Blazor Server front end built with Microsoft FluentUI v4.14 components                                                  | ✅ Stable |
+| ⚡ Logic Apps workflows         | Two Standard workflows: Service Bus–triggered processing and recurrence-based completion                                            | ✅ Stable |
+| 📊 OpenTelemetry observability  | Distributed traces, custom counters and histograms, structured logs via OTLP and Azure Monitor                                      | ✅ Stable |
+| 🔒 Managed Identity auth        | Passwordless SQL, Service Bus, Blob Storage, and Application Insights via `DefaultAzureCredential` — no static secrets in the stack | ✅ Stable |
+| 🛡️ Bicep infrastructure as code | Shared + workload Bicep modules with private endpoints, virtual network isolation, and resource governance                          | ✅ Stable |
 
 ## Requirements
 
