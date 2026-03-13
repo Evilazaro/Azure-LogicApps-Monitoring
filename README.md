@@ -231,7 +231,7 @@ To run everything **locally** with .NET Aspire:
 dotnet run --project app.AppHost
 ```
 
-The Aspire dashboard opens at `http://localhost:15888` and provides real-time structured logs, distributed traces, and health status for every service.
+The Aspire dashboard opens at `https://localhost:17267` (HTTPS profile) or `http://localhost:15175` (HTTP profile) and provides real-time structured logs, distributed traces, and health status for every service.
 
 ## Configuration
 
@@ -340,9 +340,14 @@ dotnet test \
 ### Generating Sample Orders (Load Simulation)
 
 ```powershell
-# Generate 50 sample orders against the deployed Orders API
-.\hooks\Generate-Orders.ps1 -Count 50 -BaseUrl "https://<orders-api-url>"
+# Generate 100 sample orders and write to ./infra/data/ordersBatch.json (default output path)
+.\hooks\Generate-Orders.ps1 -OrderCount 100
+
+# Generate orders with a custom output path
+.\hooks\Generate-Orders.ps1 -OrderCount 500 -OutputPath "C:\temp\orders.json" -Force
 ```
+
+The script writes randomized e-commerce orders (with configurable product counts, price variation, and global delivery addresses) to a JSON file. Use `-OrderCount` (1–10,000; default `2000`), `-OutputPath` (default `./infra/data/ordersBatch.json`), `-MinProducts` / `-MaxProducts` (1–20; defaults `1` / `6`), and `-Force` to suppress confirmation prompts.
 
 ### Viewing Observability Data
 
