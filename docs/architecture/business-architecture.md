@@ -345,6 +345,65 @@ flowchart LR
 | Fulfillment Success Rate | Blob path (`/ordersprocessedsuccessfully`)    | Inferred from blob count — no explicit KPI metric |
 | Fulfillment Error Rate   | Blob path (`/ordersprocessedwitherrors`)      | Inferred from blob count — no explicit KPI metric |
 
+```mermaid
+---
+title: Business Capability Maturity Heatmap
+config:
+  theme: base
+  look: classic
+  layout: dagre
+  themeVariables:
+    fontSize: '16px'
+  flowchart:
+    htmlLabels: true
+---
+flowchart TB
+    accTitle: Business Capability Maturity Heatmap
+    accDescr: Groups all 6 business capabilities by maturity level from 1 to 5 showing current state distribution across the Azure Logic Apps Monitoring eShop solution
+
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+    %% (Semantic + Structural + Font + Accessibility Governance)
+    %% ═══════════════════════════════════════════════════════════════════════════
+    %% PHASE 1 - FLUENT UI: All styling uses approved Fluent UI palette only
+    %% PHASE 2 - GROUPS: Every subgraph has semantic color via style directive
+    %% PHASE 3 - COMPONENTS: Every node has semantic classDef + icon prefix
+    %% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, WCAG AA contrast
+    %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+    %% ═══════════════════════════════════════════════════════════════════════════
+
+    subgraph l4["📊 Level 4 — Measured"]
+        m4a("📦 Order Placement"):::success
+        m4b("📋 Order Inquiry"):::success
+        m4c("📊 Observability & Monitoring"):::success
+    end
+
+    subgraph l3["📋 Level 3 — Defined"]
+        m3a("🔄 Order Fulfillment"):::warning
+        m3b("🗑️ Order Lifecycle Mgmt"):::warning
+        m3c("🛒 Customer Commerce"):::warning
+    end
+
+    subgraph target["🎯 Target State (Level 4)"]
+        t1("🔄 Order Fulfillment\n→ Add fulfillment KPIs"):::neutral
+        t2("🗑️ Order Lifecycle Mgmt\n→ Add lifecycle policy"):::neutral
+        t3("🛒 Customer Commerce\n→ Add conversion metrics"):::neutral
+    end
+
+    m3a -.->|"evolve to"| t1
+    m3b -.->|"evolve to"| t2
+    m3c -.->|"evolve to"| t3
+
+    %% Centralized classDefs
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
+
+    style l4 fill:#F3F2F1,stroke:#107C10,stroke-width:2px,color:#323130
+    style l3 fill:#F3F2F1,stroke:#FFB900,stroke-width:2px,color:#323130
+    style target fill:#F3F2F1,stroke:#0078D4,stroke-width:2px,color:#323130
+```
+
 **Current State Gaps Observed:**
 
 1. No SLA targets defined for the Order-to-Fulfillment value stream latency
