@@ -62,11 +62,12 @@ azd up
 
 `azd up` runs the full deployment lifecycle in sequence:
 
-1. `preprovision.ps1` — validates prerequisites and clears .NET user secrets
-2. Bicep IaC (`infra/main.bicep`) — provisions VNet, SQL Database, Service Bus, Container Apps, Logic Apps Standard, ACR, private endpoints, and DNS zones
-3. Aspire AppHost deployment — builds and deploys `eShop.Orders.API` and `eShop.Web.App` as Container Apps
-4. `postprovision.ps1` — configures SQL managed identity access and sets all `.NET user-secrets` for local development
-5. `deploy-workflow.ps1` — deploys Logic Apps Standard workflows from `workflows/OrdersManagement/`
+1. `preprovision.ps1` — runs `dotnet clean/restore/build/test` and validates all prerequisite tool versions and Azure resource provider registrations
+2. Bicep IaC (`infra/main.bicep`) — provisions VNet, SQL Database, Service Bus, Container Apps Environment, Logic Apps Standard, ACR, private endpoints, and DNS zones
+3. Container image build — compiles and containerizes `eShop.Orders.API` and `eShop.Web.App`, then pushes images to Azure Container Registry
+4. `deploy-workflow.ps1` — deploys Logic Apps Standard workflows from `workflows/OrdersManagement/` (`predeploy` hook, runs before Container Apps deployment)
+5. Container Apps deployment — deploys `eShop.Orders.API` and `eShop.Web.App` to the Azure Container Apps environment
+6. `postprovision.ps1` — grants the managed identity `db_owner` access on the SQL Database and writes all `.NET user-secrets` to every project for local development
 
 **5. Verify the deployment**
 
@@ -77,6 +78,14 @@ The Blazor web app URL is printed at the end of `azd up`. Open it in a browser t
 ```powershell
 .\hooks\Generate-Orders.ps1
 ```
+
+**Running locally (no Azure subscription required)**
+
+```bash
+dotnet run --project app.AppHost
+```
+
+The .NET Aspire dashboard is available at `https://localhost:17267`. In local mode the AppHost substitutes Azure Service Bus with an emulator and SQL Server with a Docker container — no Azure subscription required. All project user secrets are populated by `postprovision.ps1` after the first `azd up`.
 
 ## Architecture
 
@@ -167,6 +176,23 @@ flowchart TB
 4. On success (HTTP 201), the workflow writes a result blob to `/ordersprocessedsuccessfully/{MessageId}`. On any other status code, it writes to `/ordersprocessedwitherrors/{MessageId}`.
 5. The **`OrdersPlacedCompleteProcess`** Logic App recurrence workflow runs every three seconds, lists blobs in the success folder, and deletes them to complete the cleanup cycle.
 6. All components export OpenTelemetry traces, metrics, and logs to **Application Insights**, which forwards data to the **Log Analytics Workspace** for long-term retention and querying.
+
+**Provisioned Azure resources:**
+
+| Component                     | Azure Service            | SKU / Configuration                       | Role                                                                                                        |
+| ----------------------------- | ------------------------ | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 🌐 Virtual Network            | Azure VNet               | `10.0.0.0/16`, 4 subnets                  | Network isolation — Container Apps, data, Logic Apps, and web app subnets                                   |
+| ☁️ Container Apps Environment | Azure Container Apps     | VNet-integrated with Log Analytics        | Hosts Orders API and Blazor Web App                                                                         |
+| ⚙️ Orders API                 | Azure Container App      | External HTTPS ingress, port 8080         | REST API for order management (`/api/orders`)                                                               |
+| 🎨 Blazor Web App             | Azure Container App      | External HTTPS, sticky sessions (SignalR) | Interactive order management UI                                                                             |
+| ⚡ Logic Apps Standard        | Logic Apps Standard      | WS1 WorkflowStandard, up to 20 workers    | Two stateful workflows for order processing and cleanup                                                     |
+| 📨 Service Bus                | Azure Service Bus        | Standard SKU                              | Topic `ordersplaced`, subscription `orderprocessingsub`, 14-day message TTL                                 |
+| 🗄️ SQL Database               | Azure SQL Database       | General Purpose, Gen5, 2 vCores           | Order persistence; Entra ID-only auth, private endpoint                                                     |
+| 📦 Blob Storage               | Azure Storage Account    | Standard_LRS, StorageV2                   | Processing results (`/ordersprocessedsuccessfully`, `/ordersprocessedwitherrors`) and Logic Apps file share |
+| 📊 Application Insights       | Azure Monitor            | Workspace-based                           | Distributed traces, custom metrics, and structured logs                                                     |
+| 📋 Log Analytics Workspace    | Azure Log Analytics      | —                                         | Long-term telemetry retention; diagnostic settings for all resources                                        |
+| 🔑 Managed Identity           | User-Assigned            | 15+ role assignments                      | Passwordless authentication across SQL, Service Bus, Blob Storage, and ACR                                  |
+| 🐳 Container Registry         | Azure Container Registry | Premium SKU, admin disabled               | Stores and distributes Docker images for Container Apps                                                     |
 
 ## Features
 
@@ -262,6 +288,21 @@ For advanced scenarios — such as pointing the solution to a pre-existing Azure
 
 ## Usage
 
+### Orders API Endpoints Reference
+
+| Method      | Endpoint               | Description                                                                                                              |
+| ----------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| ➕ `POST`   | `/api/orders`          | Place a single order; saves to SQL and publishes a message to Service Bus topic `ordersplaced`                           |
+| 📦 `POST`   | `/api/orders/batch`    | Place up to 50 orders concurrently (parallel limit: 10, total timeout: 5 min, exponential backoff retries)               |
+| ⚙️ `POST`   | `/api/orders/process`  | Mark an order as processed; called by `OrdersPlacedProcess` Logic App workflow (HTTP 201 = success, writes success blob) |
+| 📋 `GET`    | `/api/orders`          | Retrieve all orders                                                                                                      |
+| 🔍 `GET`    | `/api/orders/{id}`     | Retrieve a single order by ID; returns 404 if not found                                                                  |
+| 🗑️ `DELETE` | `/api/orders/{id}`     | Delete a single order by ID; returns 204 on success                                                                      |
+| 🗑️ `DELETE` | `/api/orders/batch`    | Delete a set of orders by IDs in a single request                                                                        |
+| 📨 `GET`    | `/api/orders/messages` | List messages peeked from the Service Bus topic                                                                          |
+| 💚 `GET`    | `/health`              | Aggregate health check: DB connectivity + Service Bus connectivity (tagged `ready`)                                      |
+| 🟢 `GET`    | `/alive`               | Liveness probe (tagged `live`); used by Container Apps health probes                                                     |
+
 ### Placing an Order via REST API
 
 Submit a new order by sending a `POST` request to the `/api/orders` endpoint. Every order requires at least one product with a positive price and quantity.
@@ -332,6 +373,17 @@ curl -X GET https://<orders-api-url>/api/orders/ORDER-001
 # Delete a specific order
 curl -X DELETE https://<orders-api-url>/api/orders/ORDER-001
 ```
+
+### Running Locally with .NET Aspire
+
+```bash
+dotnet run --project app.AppHost
+```
+
+The .NET Aspire dashboard is available at `https://localhost:17267`. In local mode the AppHost auto-provisions Service Bus as an emulator (`RunAsEmulator()`) and SQL Server as a Docker container with a persistent data volume — no Azure subscription required. Service endpoints and port bindings are listed in the dashboard resource view.
+
+> [!NOTE]
+> After a successful `azd up`, `postprovision.ps1` populates all project user secrets. These secrets enable a hybrid local-Azure mode: set `Azure:ServiceBus:HostName` and `Azure:SqlServer:Name` in the AppHost user secrets to connect local Aspire runs to pre-existing Azure resources instead of containers.
 
 ### Running Tests Locally
 
