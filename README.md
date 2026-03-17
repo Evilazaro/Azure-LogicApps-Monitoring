@@ -241,6 +241,15 @@ Configuration follows two distinct paths: local development settings are managed
 
 For advanced scenarios — such as pointing the solution to a pre-existing Azure Service Bus namespace, SQL Server, or Application Insights instance — override the corresponding `Azure:*` keys in the Aspire AppHost user secrets. The `app.AppHost/AppHost.cs` reads these keys and calls `RunAsExisting()` or `AsExisting()` on the respective Aspire resource builder, bypassing provisioning for those specific resources.
 
+**`azd` environment variables** (set via `azd env set` before `azd up`):
+
+| Variable                     | Default  | Description                                                                                                      |
+| ---------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
+| 📍 `AZURE_LOCATION`          | Required | Azure region for all resources (e.g., `eastus`, `westeurope`)                                                    |
+| 🏷️ `AZURE_ENV_NAME`          | Required | Environment label applied to resource names and tags: `dev`, `test`, `staging`, or `prod`                        |
+| 👤 `DEPLOYER_PRINCIPAL_TYPE` | `User`   | Bicep role assignment principal type: `User` for interactive deployments, `ServicePrincipal` for CI/CD pipelines |
+| 🩺 `DEPLOY_HEALTH_MODEL`     | `true`   | Provisions the Azure Monitor Health Model alongside the solution when set to `true`                              |
+
 **AppHost user secrets** (set via `dotnet user-secrets set` in `app.AppHost/`):
 
 ```json
