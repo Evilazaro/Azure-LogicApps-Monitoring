@@ -547,7 +547,7 @@ Business component descriptions in this catalog document business intent and sem
 
 This subsection documents the high-level strategic intent observable in the repository's project files and documentation. The single detected Business Strategy component describes the overarching business objective that drives the architecture's design decisions.
 
-#### 5.1.1 Cloud-Native Event-Driven Order Management Strategy
+#### 🏁 5.1.1 Cloud-Native Event-Driven Order Management Strategy
 
 | 🔑 Attribute            | 📋 Value                                                                                                              |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -569,7 +569,7 @@ This subsection documents the high-level strategic intent observable in the repo
 
 This subsection documents the three core business capabilities that define what the organisation's system is able to do. Capabilities are long-lived, stable architectural building blocks sourced from service interface contracts and operational features observable in the codebase.
 
-#### 5.2.1 Order Management Capability
+#### 💡 5.2.1 Order Management Capability
 
 | 🔑 Attribute        | 📋 Value                                                                                                                                   |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -580,7 +580,7 @@ This subsection documents the three core business capabilities that define what 
 
 **Sub-capabilities**: Place Single Order, Place Batch Orders, Get All Orders, Get Order by ID, Delete Single Order, Delete Batch Orders, List Messages
 
-#### 5.2.2 Event-Driven Order Processing Capability
+#### 💡 5.2.2 Event-Driven Order Processing Capability
 
 | 🔑 Attribute        | 📋 Value                                                                                                                                          |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -591,7 +591,7 @@ This subsection documents the three core business capabilities that define what 
 
 **Sub-capabilities**: Service Bus Consumption, HTTP-based Order Processing, Blob-based Outcome Recording, Blob Lifecycle Cleanup
 
-#### 5.2.3 Observability & Monitoring Capability
+#### 💡 5.2.3 Observability & Monitoring Capability
 
 | 🔑 Attribute        | 📋 Value                                                                                                                                       |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -608,7 +608,7 @@ This subsection documents the three core business capabilities that define what 
 
 This subsection documents the two end-to-end value streams that describe how business value flows from customer intent to fulfilment outcome. Both streams are evidenced by the flow documented in README.md and realised through the service and workflow implementations.
 
-#### 5.3.1 Order Placement Value Stream
+#### 🌊 5.3.1 Order Placement Value Stream
 
 | 🔑 Attribute          | 📋 Value                                                                                                           |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -617,7 +617,7 @@ This subsection documents the two end-to-end value streams that describe how bus
 | **Outcome**           | Order persisted to database and queued for asynchronous processing                                                 |
 | **Steps**             | 1. Customer submits → 2. Validate order data → 3. Check uniqueness → 4. Persist to SQL → 5. Publish to Service Bus |
 
-#### 5.3.2 Order Fulfillment & Cleanup Value Stream
+#### 🌊 5.3.2 Order Fulfillment & Cleanup Value Stream
 
 | 🔑 Attribute          | 📋 Value                                                                                                                                                                                             |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -632,7 +632,7 @@ This subsection documents the two end-to-end value streams that describe how bus
 
 This subsection documents the four business processes representing standardised operational workflows observable in the service implementation and Logic Apps workflow definitions.
 
-#### 5.4.1 Single Order Placement Process
+#### 🔄 5.4.1 Single Order Placement Process
 
 | 🔑 Attribute     | 📋 Value                            |
 | ---------------- | ----------------------------------- |
@@ -647,7 +647,7 @@ This subsection documents the four business processes representing standardised 
 
 **Business Rules Applied**: BR-001, BR-002, BR-003, BR-004
 
-#### 5.4.2 Batch Order Placement Process
+#### 🔄 5.4.2 Batch Order Placement Process
 
 | 🔑 Attribute     | 📋 Value                                                   |
 | ---------------- | ---------------------------------------------------------- |
@@ -662,7 +662,7 @@ This subsection documents the four business processes representing standardised 
 
 **Business Rules Applied**: BR-001, BR-002, BR-003, BR-004, BR-005
 
-#### 5.4.3 Order Fulfillment Process (OrdersPlacedProcess Workflow)
+#### 🔄 5.4.3 Order Fulfillment Process (OrdersPlacedProcess Workflow)
 
 | 🔑 Attribute     | 📋 Value                                                              |
 | ---------------- | --------------------------------------------------------------------- |
@@ -677,7 +677,7 @@ This subsection documents the four business processes representing standardised 
 
 **Business Rules Applied**: BR-006
 
-#### 5.4.4 Order Cleanup Process (OrdersPlacedCompleteProcess Workflow)
+#### 🔄 5.4.4 Order Cleanup Process (OrdersPlacedCompleteProcess Workflow)
 
 | 🔑 Attribute     | 📋 Value                                           |
 | ---------------- | -------------------------------------------------- |
@@ -696,7 +696,7 @@ This subsection documents the four business processes representing standardised 
 
 This subsection documents the four business service contracts that represent the functional boundaries within the architecture. Each service is defined by an interface contract (with one exception, the web client service).
 
-#### 5.5.1 Order Management Service
+#### 🛠️ 5.5.1 Order Management Service
 
 | 🔑 Attribute     | 📋 Value                                                                                                                                                                         |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -704,7 +704,7 @@ This subsection documents the four business service contracts that represent the
 | **Service Type** | Core Domain Service                                                                                                                                                              |
 | **Contract**     | `IOrderService` — 7 operations: PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync, ListMessagesFromTopicsAsync |
 
-#### 5.5.2 Order Repository Service
+#### 🛠️ 5.5.2 Order Repository Service
 
 | 🔑 Attribute     | 📋 Value                                                                                                                                         |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -712,7 +712,7 @@ This subsection documents the four business service contracts that represent the
 | **Service Type** | Data Access Service                                                                                                                              |
 | **Contract**     | `IOrderRepository` — 5 operations: SaveOrderAsync, GetAllOrdersAsync, GetOrdersPagedAsync, GetOrderByIdAsync, DeleteOrderAsync, OrderExistsAsync |
 
-#### 5.5.3 Order Messaging Service
+#### 🛠️ 5.5.3 Order Messaging Service
 
 | 🔑 Attribute     | 📋 Value                                                                         |
 | ---------------- | -------------------------------------------------------------------------------- |
@@ -720,7 +720,7 @@ This subsection documents the four business service contracts that represent the
 | **Service Type** | Integration Service                                                              |
 | **Contract**     | `IOrdersMessageHandler` — 2 operations: SendOrderMessageAsync, ListMessagesAsync |
 
-#### 5.5.4 Orders Web Client Service
+#### 🛠️ 5.5.4 Orders Web Client Service
 
 | 🔑 Attribute     | 📋 Value                                                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -734,7 +734,7 @@ This subsection documents the four business service contracts that represent the
 
 This subsection documents the three business functions that represent the discrete, named units of business activity delivered by this solution.
 
-#### 5.6.1 Order Placement Function
+#### 🧩 5.6.1 Order Placement Function
 
 | 🔑 Attribute       | 📋 Value                                                        |
 | ------------------ | --------------------------------------------------------------- |
@@ -743,7 +743,7 @@ This subsection documents the three business functions that represent the discre
 | **Inputs**         | Order object (Id, CustomerId, DeliveryAddress, Total, Products) |
 | **Outputs**        | Confirmed order (HTTP 201) or error (HTTP 400/409/500)          |
 
-#### 5.6.2 Order Orchestration Function
+#### 🧩 5.6.2 Order Orchestration Function
 
 | 🔑 Attribute       | 📋 Value                                                                                   |
 | ------------------ | ------------------------------------------------------------------------------------------ |
@@ -752,7 +752,7 @@ This subsection documents the three business functions that represent the discre
 | **Inputs**         | Service Bus message (serialised Order, ContentType: application/json)                      |
 | **Outputs**        | Processing result blob in `/ordersprocessedsuccessfully/` or `/ordersprocessedwitherrors/` |
 
-#### 5.6.3 Order Monitoring & Cleanup Function
+#### 🧩 5.6.3 Order Monitoring & Cleanup Function
 
 | 🔑 Attribute       | 📋 Value                                                                      |
 | ------------------ | ----------------------------------------------------------------------------- |
@@ -767,7 +767,7 @@ This subsection documents the three business functions that represent the discre
 
 This subsection documents the four business roles and actors who interact with the order management system. Roles are inferred from usage documentation, deployment scripts, and workflow trigger types. All role descriptions focus on business interaction, not technical implementation.
 
-#### 5.7.1 Customer / User
+#### 👤 5.7.1 Customer / User
 
 | 🔑 Attribute         | 📋 Value                                                                                                                         |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -776,7 +776,7 @@ This subsection documents the four business roles and actors who interact with t
 | **Responsibilities** | Submits orders via Blazor web UI or REST API; views order history; selects orders for deletion                                   |
 | **Interactions**     | `/placeorder` (single), `/listallorders` (browse + delete), `/vieworder` (look up), `POST /api/orders`, `POST /api/orders/batch` |
 
-#### 5.7.2 Operations Engineer
+#### 👤 5.7.2 Operations Engineer
 
 | 🔑 Attribute         | 📋 Value                                                                                                                              |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -785,7 +785,7 @@ This subsection documents the four business roles and actors who interact with t
 | **Responsibilities** | Monitors order processing health, reviews Logic Apps run history, queries Application Insights traces and metrics, diagnoses failures |
 | **Interactions**     | Azure Portal (Application Insights, Logic Apps Workflows), `GET /health`, `GET /alive`, KPI dashboards                                |
 
-#### 5.7.3 Logic Apps Automated Agent
+#### 👤 5.7.3 Logic Apps Automated Agent
 
 | 🔑 Attribute         | 📋 Value                                                                                                                                  |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
@@ -794,7 +794,7 @@ This subsection documents the four business roles and actors who interact with t
 | **Responsibilities** | Polls Service Bus, validates messages, calls Orders API, writes processing blobs, runs cleanup recurrence                                 |
 | **Interactions**     | Service Bus `ordersplaced` topic, `POST /api/Orders/process`, Blob Storage (`/ordersprocessedsuccessfully`, `/ordersprocessedwitherrors`) |
 
-#### 5.7.4 CI/CD Pipeline Agent
+#### 👤 5.7.4 CI/CD Pipeline Agent
 
 | 🔑 Attribute         | 📋 Value                                                                                                                                                                           |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -809,7 +809,7 @@ This subsection documents the four business roles and actors who interact with t
 
 This subsection documents the six business rules governing order validity, uniqueness, processing eligibility, and operational limits. All rules are enforced as first-class constraints in service logic or workflow conditions.
 
-#### 5.8.1 BR-001: Order ID Required
+#### 📐 5.8.1 BR-001: Order ID Required
 
 | 🔑 Attribute            | 📋 Value                                                |
 | ----------------------- | ------------------------------------------------------- |
@@ -819,7 +819,7 @@ This subsection documents the six business rules governing order validity, uniqu
 | **Condition**           | `order.Id` must be non-null, non-empty, non-whitespace  |
 | **Action on Violation** | `ArgumentException` thrown; HTTP 400 returned to caller |
 
-#### 5.8.2 BR-002: Positive Order Total
+#### 📐 5.8.2 BR-002: Positive Order Total
 
 | 🔑 Attribute            | 📋 Value                                                |
 | ----------------------- | ------------------------------------------------------- |
@@ -829,7 +829,7 @@ This subsection documents the six business rules governing order validity, uniqu
 | **Condition**           | `order.Total` must be greater than zero                 |
 | **Action on Violation** | `ArgumentException` thrown; HTTP 400 returned to caller |
 
-#### 5.8.3 BR-003: Minimum One Product
+#### 📐 5.8.3 BR-003: Minimum One Product
 
 | 🔑 Attribute            | 📋 Value                                                           |
 | ----------------------- | ------------------------------------------------------------------ |
@@ -839,7 +839,7 @@ This subsection documents the six business rules governing order validity, uniqu
 | **Condition**           | `order.Products` must not be null and must contain at least 1 item |
 | **Action on Violation** | `ArgumentException` thrown; HTTP 400 returned to caller            |
 
-#### 5.8.4 BR-004: Unique Order Identity
+#### 📐 5.8.4 BR-004: Unique Order Identity
 
 | 🔑 Attribute            | 📋 Value                                                                                       |
 | ----------------------- | ---------------------------------------------------------------------------------------------- |
@@ -849,7 +849,7 @@ This subsection documents the six business rules governing order validity, uniqu
 | **Condition**           | An order with the same `Id` must not already exist in the data store                           |
 | **Action on Violation** | `InvalidOperationException` thrown; HTTP 409 Conflict returned; batch silently skips duplicate |
 
-#### 5.8.5 BR-005: Batch Size Limit
+#### 📐 5.8.5 BR-005: Batch Size Limit
 
 | 🔑 Attribute            | 📋 Value                                                                                      |
 | ----------------------- | --------------------------------------------------------------------------------------------- |
@@ -859,7 +859,7 @@ This subsection documents the six business rules governing order validity, uniqu
 | **Condition**           | Batch operations are processed in groups of up to 50 orders; maximum 10 concurrent operations |
 | **Action on Violation** | Partitioned automatically into sub-batches; overall timeout enforced at 5 minutes             |
 
-#### 5.8.6 BR-006: JSON Content-Type Gate
+#### 📐 5.8.6 BR-006: JSON Content-Type Gate
 
 | 🔑 Attribute            | 📋 Value                                                                                           |
 | ----------------------- | -------------------------------------------------------------------------------------------------- |
@@ -875,7 +875,7 @@ This subsection documents the six business rules governing order validity, uniqu
 
 This subsection documents the five business events that trigger or result from business process execution. Events are derived from observable state transitions and message publications in service code and workflow definitions.
 
-#### 5.9.1 OrderPlaced
+#### ⚡ 5.9.1 OrderPlaced
 
 | 🔑 Attribute   | 📋 Value                                                                                                   |
 | -------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -884,7 +884,7 @@ This subsection documents the five business events that trigger or result from b
 | **Trigger**    | Order passes validation, is persisted to SQL, and message is published to Service Bus topic `ordersplaced` |
 | **Payload**    | Serialised `Order` object (JSON, MessageId = order.Id, Subject = "OrderPlaced")                            |
 
-#### 5.9.2 OrderProcessed
+#### ⚡ 5.9.2 OrderProcessed
 
 | 🔑 Attribute   | 📋 Value                                                                                                    |
 | -------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -893,7 +893,7 @@ This subsection documents the five business events that trigger or result from b
 | **Trigger**    | Logic Apps receives HTTP 201 from Orders API `/api/Orders/process`                                          |
 | **Payload**    | Order data from Service Bus message binary body; blob written to `/ordersprocessedsuccessfully/{MessageId}` |
 
-#### 5.9.3 OrderProcessingFailed
+#### ⚡ 5.9.3 OrderProcessingFailed
 
 | 🔑 Attribute   | 📋 Value                                                                   |
 | -------------- | -------------------------------------------------------------------------- |
@@ -902,7 +902,7 @@ This subsection documents the five business events that trigger or result from b
 | **Trigger**    | Logic Apps receives non-201 response from Orders API `/api/Orders/process` |
 | **Payload**    | Order data blob written to `/ordersprocessedwitherrors/{MessageId}`        |
 
-#### 5.9.4 BlobCleanupTriggered
+#### ⚡ 5.9.4 BlobCleanupTriggered
 
 | 🔑 Attribute   | 📋 Value                                                                             |
 | -------------- | ------------------------------------------------------------------------------------ |
@@ -911,7 +911,7 @@ This subsection documents the five business events that trigger or result from b
 | **Trigger**    | Recurrence trigger fires every 3 seconds in the OrdersPlacedCompleteProcess workflow |
 | **Payload**    | None (trigger-only event); initiates blob listing in `/ordersprocessedsuccessfully/` |
 
-#### 5.9.5 BatchProcessingRequested
+#### ⚡ 5.9.5 BatchProcessingRequested
 
 | 🔑 Attribute   | 📋 Value                                                                     |
 | -------------- | ---------------------------------------------------------------------------- |
@@ -926,7 +926,7 @@ This subsection documents the five business events that trigger or result from b
 
 This subsection documents the four domain business objects that form the data model of the order management domain. All objects are defined as immutable record types or structured JSON artefacts.
 
-#### 5.10.1 Order
+#### 📦 5.10.1 Order
 
 | 🔑 Attribute    | 📋 Value                                                                                                                                                                                                |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -935,7 +935,7 @@ This subsection documents the four domain business objects that form the data mo
 | **Attributes**  | Id (string, required, max 100), CustomerId (string, required, max 100), Date (DateTime UTC), DeliveryAddress (string, required, 5–500 chars), Total (decimal, >0), Products (List<OrderProduct>, min 1) |
 | **Invariants**  | Id unique, Total > 0, Products non-empty                                                                                                                                                                |
 
-#### 5.10.2 OrderProduct
+#### 📦 5.10.2 OrderProduct
 
 | 🔑 Attribute    | 📋 Value                                                                                                                                                                 |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -944,7 +944,7 @@ This subsection documents the four domain business objects that form the data mo
 | **Attributes**  | Id (string, required), OrderId (string, required), ProductId (string, required), ProductDescription (string, required, 1–500 chars), Quantity (int, ≥1), Price (decimal) |
 | **Invariants**  | Quantity ≥ 1; belongs to a parent Order via OrderId                                                                                                                      |
 
-#### 5.10.3 OrderMessage
+#### 📦 5.10.3 OrderMessage
 
 | 🔑 Attribute    | 📋 Value                                                                                                                                                                  |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -953,7 +953,7 @@ This subsection documents the four domain business objects that form the data mo
 | **Attributes**  | MessageId = order.Id, ContentType = "application/json", Subject = "OrderPlaced", Body = serialised Order JSON, ApplicationProperties: TraceId (distributed trace context) |
 | **Invariants**  | MessageId must equal Order.Id; ContentType must be application/json for downstream processing                                                                             |
 
-#### 5.10.4 ProcessingResult
+#### 📦 5.10.4 ProcessingResult
 
 | 🔑 Attribute    | 📋 Value                                                                                                                               |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -968,7 +968,7 @@ This subsection documents the four domain business objects that form the data mo
 
 This subsection documents the four business KPIs instrumented in the Order Management Service via the `eShop.Orders.API` OpenTelemetry Meter. All metrics are emitted in production and accessible via Application Insights.
 
-#### 5.11.1 eShop.orders.placed
+#### 📈 5.11.1 eShop.orders.placed
 
 | 🔑 Attribute         | 📋 Value                                                                              |
 | -------------------- | ------------------------------------------------------------------------------------- |
@@ -979,7 +979,7 @@ This subsection documents the four business KPIs instrumented in the Order Manag
 | **Tags**             | `order.status`: success                                                               |
 | **Business Meaning** | Total orders successfully placed, validated, and published to the processing pipeline |
 
-#### 5.11.2 eShop.orders.processing.duration
+#### 📈 5.11.2 eShop.orders.processing.duration
 
 | 🔑 Attribute         | 📋 Value                                                                           |
 | -------------------- | ---------------------------------------------------------------------------------- |
@@ -990,7 +990,7 @@ This subsection documents the four business KPIs instrumented in the Order Manag
 | **Tags**             | `order.status`: success / failed                                                   |
 | **Business Meaning** | Latency of complete order operation cycle; enables p50/p95/p99 percentile analysis |
 
-#### 5.11.3 eShop.orders.processing.errors
+#### 📈 5.11.3 eShop.orders.processing.errors
 
 | 🔑 Attribute         | 📋 Value                                                                                         |
 | -------------------- | ------------------------------------------------------------------------------------------------ |
@@ -1001,7 +1001,7 @@ This subsection documents the four business KPIs instrumented in the Order Manag
 | **Tags**             | `error.type`: exception class name; `order.status`: failed                                       |
 | **Business Meaning** | Total number of order processing failures, categorised by error type for triage and SLO tracking |
 
-#### 5.11.4 eShop.orders.deleted
+#### 📈 5.11.4 eShop.orders.deleted
 
 | 🔑 Attribute         | 📋 Value                                                                          |
 | -------------------- | --------------------------------------------------------------------------------- |

@@ -1,6 +1,27 @@
 
-$file = "z:\logic\docs\architecture\business-architecture.md"
-$lines = [System.IO.File]::ReadAllLines($file, [System.Text.Encoding]::UTF8)
+$f = "z:\logic\docs\architecture\business-architecture.md"
+$c = [System.IO.File]::ReadAllText($f, [System.Text.Encoding]::UTF8)
+$map = @{
+    '1'  = [System.Char]::ConvertFromUtf32(0x1F3C1)
+    '2'  = [System.Char]::ConvertFromUtf32(0x1F4A1)
+    '3'  = [System.Char]::ConvertFromUtf32(0x1F30A)
+    '4'  = [System.Char]::ConvertFromUtf32(0x1F504)
+    '5'  = [System.Char]::ConvertFromUtf32(0x1F6E0) + [char]0xFE0F
+    '6'  = [System.Char]::ConvertFromUtf32(0x1F9E9)
+    '7'  = [System.Char]::ConvertFromUtf32(0x1F464)
+    '8'  = [System.Char]::ConvertFromUtf32(0x1F4D0)
+    '9'  = [System.Char]::ConvertFromUtf32(0x26A1)
+    '10' = [System.Char]::ConvertFromUtf32(0x1F4E6)
+    '11' = [System.Char]::ConvertFromUtf32(0x1F4C8)
+}
+foreach ($sec in $map.Keys) {
+    $emoji = $map[$sec]
+    $pat = "(?m)^(#### )(5\.$sec\.\d+)"
+    $c = [regex]::Replace($c, $pat, "`$1$emoji `$2")
+}
+[System.IO.File]::WriteAllText($f, $c, [System.Text.Encoding]::UTF8)
+Write-Host "Done"
+
 
 # Keep first $keep pipe-delimited columns of a markdown table row
 function Cut-Cols($line, $keep) {
