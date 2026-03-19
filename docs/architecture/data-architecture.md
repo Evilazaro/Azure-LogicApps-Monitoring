@@ -231,11 +231,11 @@ Not detected in source files. The data domain is entirely transactional (order l
 
 ### 📝 2.10 Data Contracts
 
-| Name                  | Description                                                                                                                                                                                             | Classification |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| IOrderRepository      | Interface contract defining 5 async data operations: SaveOrderAsync, GetAllOrdersAsync, GetOrdersPagedAsync, GetOrderByIdAsync, DeleteOrderAsync, OrderExistsAsync                                      | Internal       |
-| IOrderService         | Service contract defining 7 async business operations: PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync, ListMessagesFromTopicsAsync | Internal       |
-| IOrdersMessageHandler | Messaging contract for async order publishing: SendOrderMessageAsync, SendOrdersBatchMessageAsync, ListMessagesAsync                                                                                    | Internal       |
+| Name                     | Description                                                                                                                                                                                             | Classification |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| 📝 IOrderRepository      | Interface contract defining 5 async data operations: SaveOrderAsync, GetAllOrdersAsync, GetOrdersPagedAsync, GetOrderByIdAsync, DeleteOrderAsync, OrderExistsAsync                                      | Internal       |
+| 📝 IOrderService         | Service contract defining 7 async business operations: PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync, ListMessagesFromTopicsAsync | Internal       |
+| 📝 IOrdersMessageHandler | Messaging contract for async order publishing: SendOrderMessageAsync, SendOrdersBatchMessageAsync, ListMessagesAsync                                                                                    | Internal       |
 
 ### 🔒 2.11 Data Security
 
@@ -265,16 +265,16 @@ Security-by-design is applied at every tier with no fallback to password-based c
 
 ### 🏛️ Core Data Principles
 
-| Principle                     | Description                                                                                                | Implementation Evidence                                                   | Source File                                                   |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| Bounded Context Ownership     | Each service owns its data store exclusively; the Orders API is the sole writer to the Orders database     | `OrderDbContext` is only accessible within `eShop.Orders.API`             | `src/eShop.Orders.API/data/OrderDbContext.cs:L1-80`           |
-| Domain–Persistence Separation | Domain models are decoupled from EF Core entities via explicit mapper; domain models are immutable records | `OrderMapper.cs` bridges `Order` ↔ `OrderEntity`                          | `src/eShop.Orders.API/data/OrderMapper.cs:L1-80`              |
-| Security by Design            | All data store access uses Managed Identity; no passwords or connection string secrets in workflows        | `connections.json` uses `ManagedServiceIdentity` for Service Bus and Blob | `workflows/.../connections.json:L1-55`                        |
-| Schema Versioning             | Database schema changes managed via EF Core migration pipeline with versioned migration files              | `20251227014858_OrderDbV1.cs` baseline migration                          | `src/eShop.Orders.API/Migrations/20251227014858_OrderDbV1.cs` |
-| Resilient Data Access         | Transient fault handling built into the repository layer with configurable retry and timeout policy        | `EnableRetryOnFailure(5, 30s)` in `Program.cs`                            | `src/eShop.Orders.API/Program.cs:L35-50`                      |
-| Outcome-Partitioned Archival  | Blob containers named by processing outcome (success, error, completed) rather than generic storage        | Three named containers in `infra/shared/data/main.bicep`                  | `infra/shared/data/main.bicep:L202-225`                       |
-| Async Data Propagation        | Order data is published to Service Bus after SQL persistence to decouple downstream consumers              | `OrderService` publishes after `SaveOrderAsync` completes                 | `src/eShop.Orders.API/Services/OrderService.cs:L1-80`         |
-| Observability-First           | Metrics for orders placed, processing duration, and errors instrumented at the service layer               | OTel metrics in `OrderService.cs`                                         | `src/eShop.Orders.API/Services/OrderService.cs:L30-65`        |
+| Principle                        | Description                                                                                                |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 🏗️ Bounded Context Ownership     | Each service owns its data store exclusively; the Orders API is the sole writer to the Orders database     |
+| 🔀 Domain–Persistence Separation | Domain models are decoupled from EF Core entities via explicit mapper; domain models are immutable records |
+| 🛡️ Security by Design            | All data store access uses Managed Identity; no passwords or connection string secrets in workflows        |
+| 📜 Schema Versioning             | Database schema changes managed via EF Core migration pipeline with versioned migration files              |
+| 🔄 Resilient Data Access         | Transient fault handling built into the repository layer with configurable retry and timeout policy        |
+| ☁️ Outcome-Partitioned Archival  | Blob containers named by processing outcome (success, error, completed) rather than generic storage        |
+| 📨 Async Data Propagation        | Order data is published to Service Bus after SQL persistence to decouple downstream consumers              |
+| 📊 Observability-First           | Metrics for orders placed, processing duration, and errors instrumented at the service layer               |
 
 ### 📏 Data Schema Design Standards
 
@@ -287,13 +287,13 @@ Security-by-design is applied at every tier with no fallback to password-based c
 
 ### 🏷️ Data Classification Taxonomy
 
-| Level | Label            | Description                             | Examples in This Domain                    |
-| ----- | ---------------- | --------------------------------------- | ------------------------------------------ |
-| L1    | **Public**       | No access restriction                   | Not applicable                             |
-| L2    | **Internal**     | Internal business data                  | Order IDs, Dates, Status flags             |
-| L3    | **Financial**    | Monetary or commercially sensitive data | Order Total, Product Price                 |
-| L4    | **Confidential** | Personal delivery information           | DeliveryAddress, CustomerId (indirect PII) |
-| L5    | **Restricted**   | High-sensitivity credentials or PII     | Not applicable in this codebase            |
+| Level | Label | Description | Examples in This Domain |
+| --- | --- | --- | --- |
+| L1 | 🌐 **Public** | No access restriction | Not applicable |
+| L2 | 🔓 **Internal** | Internal business data | Order IDs, Dates, Status flags |
+| L3 | 💰 **Financial** | Monetary or commercially sensitive data | Order Total, Product Price |
+| L4 | 🔒 **Confidential** | Personal delivery information | DeliveryAddress, CustomerId (indirect PII) |
+| L5 | 🚫 **Restricted** | High-sensitivity credentials or PII | Not applicable in this codebase |
 
 > **Note**: `DeliveryAddress` and `CustomerId` are classified L4 (Confidential) due to potential PII linkage. The codebase does not store raw personal identifiers beyond opaque IDs and addresses. Full PII classification requires a formal data privacy assessment outside the scope of this document.
 
