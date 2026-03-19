@@ -287,13 +287,13 @@ Security-by-design is applied at every tier with no fallback to password-based c
 
 ### 🏷️ Data Classification Taxonomy
 
-| Level | Label | Description | Examples in This Domain |
-| --- | --- | --- | --- |
-| L1 | 🌐 **Public** | No access restriction | Not applicable |
-| L2 | 🔓 **Internal** | Internal business data | Order IDs, Dates, Status flags |
-| L3 | 💰 **Financial** | Monetary or commercially sensitive data | Order Total, Product Price |
-| L4 | 🔒 **Confidential** | Personal delivery information | DeliveryAddress, CustomerId (indirect PII) |
-| L5 | 🚫 **Restricted** | High-sensitivity credentials or PII | Not applicable in this codebase |
+| Level | Label               | Description                             | Examples in This Domain                    |
+| ----- | ------------------- | --------------------------------------- | ------------------------------------------ |
+| L1    | 🌐 **Public**       | No access restriction                   | Not applicable                             |
+| L2    | 🔓 **Internal**     | Internal business data                  | Order IDs, Dates, Status flags             |
+| L3    | 💰 **Financial**    | Monetary or commercially sensitive data | Order Total, Product Price                 |
+| L4    | 🔒 **Confidential** | Personal delivery information           | DeliveryAddress, CustomerId (indirect PII) |
+| L5    | 🚫 **Restricted**   | High-sensitivity credentials or PII     | Not applicable in this codebase            |
 
 > **Note**: `DeliveryAddress` and `CustomerId` are classified L4 (Confidential) due to potential PII linkage. The codebase does not store raw personal identifiers beyond opaque IDs and addresses. Full PII classification requires a formal data privacy assessment outside the scope of this document.
 
