@@ -130,16 +130,16 @@ Data movement is orchestrated through two channels: synchronous REST API calls f
 
 ### ✨ Data Quality Scorecard
 
-| Quality Dimension     | Score  | Assessment                                                       | Evidence                            |
-| --------------------- | ------ | ---------------------------------------------------------------- | ----------------------------------- |
-| Schema Completeness   | 90/100 | Strong — all fields typed and constrained                        | `OrderDbContext.cs`, `OrderDbV1.cs` |
-| Validation Coverage   | 85/100 | Good — DataAnnotations on domain models                          | `CommonTypes.cs:L80–L170`           |
-| Referential Integrity | 95/100 | Excellent — FK with CASCADE configured                           | `OrderDbV1.cs:L42–L52`              |
-| Index Coverage        | 90/100 | Good — CustomerId and Date indexes present                       | `OrderDbV1.cs:L55–L68`              |
-| Security Posture      | 88/100 | Strong — MSI, TLS 1.2, private endpoints                         | `infra/shared/data/main.bicep`      |
-| Data Classification   | 70/100 | Adequate — Financial/Internal assigned; no formal catalog        | Inferred from source                |
-| Retention Policy      | 40/100 | Gap — no explicit retention policy documented                    | Not detected in source              |
-| Observability         | 75/100 | Moderate — diagnostic settings on storage; EF logging configured | `main.bicep`, `Program.cs`          |
+| Quality Dimension        | Score  | Assessment                                                       |
+| ------------------------ | ------ | ---------------------------------------------------------------- |
+| ✅ Schema Completeness   | 90/100 | Strong — all fields typed and constrained                        |
+| 🔍 Validation Coverage   | 85/100 | Good — DataAnnotations on domain models                          |
+| 🔗 Referential Integrity | 95/100 | Excellent — FK with CASCADE configured                           |
+| 📇 Index Coverage        | 90/100 | Good — CustomerId and Date indexes present                       |
+| 🔒 Security Posture      | 88/100 | Strong — MSI, TLS 1.2, private endpoints                         |
+| 🏷️ Data Classification   | 70/100 | Adequate — Financial/Internal assigned; no formal catalog        |
+| ⏱️ Retention Policy      | 40/100 | Gap — no explicit retention policy documented                    |
+| 👁️ Observability         | 75/100 | Moderate — diagnostic settings on storage; EF logging configured |
 
 ### 📊 Coverage Summary
 
