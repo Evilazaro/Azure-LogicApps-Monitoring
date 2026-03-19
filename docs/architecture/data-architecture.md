@@ -107,7 +107,7 @@ data_layer_reasoning:
 
 ## 📋 Section 1: Executive Summary
 
-### Overview
+### 🔭 Overview
 
 The **Azure-LogicApps-Monitoring** solution implements a focused, event-driven order management data architecture on the Microsoft Azure platform. At its core, the data layer supports the lifecycle of e-commerce orders from submission through asynchronous processing and archival. The data domain is deliberately narrow: two relational tables (`Orders`, `OrderProducts`) in Azure SQL Database serve as the authoritative transactional store, while Azure Blob Storage provides outcome-based archival containers for Logic App workflow state and order processing records.
 
@@ -149,7 +149,7 @@ The data domain is well-defined and fully traced to source files with a confiden
 
 ## 🗺️ Section 2: Architecture Landscape
 
-### Overview
+### 🔭 Overview
 
 The data landscape of the Azure-LogicApps-Monitoring solution centres on order lifecycle management. Data components span the application layer (`src/eShop.Orders.API`), the shared domain library (`app.ServiceDefaults`), and the infrastructure layer (`infra/shared/data`). Workflows in the `workflows/OrdersManagement` folder add asynchronous processing artefacts in Blob Storage. The landscape is intentionally lean — one database, one messaging topic, one blob storage account — reflecting the focused scope of the order processing domain.
 
@@ -247,7 +247,7 @@ Not detected in source files. The data domain is entirely transactional (order l
 | Network Isolation via Private Endpoints     | All SQL and Storage services accessed via private endpoints; VNet-linked private DNS zones prevent public resolution              | Internal       |
 | Sensitive Data Logging Gated to Development | `EnableSensitiveDataLogging()` and `EnableDetailedErrors()` enabled only when `IsDevelopment()` is true; suppressed in production | Internal       |
 
-### Summary
+### 📝 Summary
 
 The data landscape is compact and well-structured. All 11 canonical component type categories have been assessed; Master Data (2.8) is the only category with no applicable components, which is correct for a transactional order-processing domain. The security posture is notably strong, with consistent application of Managed Identity, TLS 1.2, and private endpoints across all data stores. The primary governance gap is the absence of formal data retention policies and a data classification catalog — areas recommended for future investment.
 
@@ -255,7 +255,7 @@ The data landscape is compact and well-structured. All 11 canonical component ty
 
 ## 🏛️ Section 3: Architecture Principles
 
-### Overview
+### 🔭 Overview
 
 The data architecture of the Azure-LogicApps-Monitoring solution embodies a set of observable principles that can be inferred directly from source code and infrastructure definitions. These principles are not formally documented in the repository but are consistently applied across the data layer. They align with TOGAF 10 Data Architecture guidance and Microsoft Azure Well-Architected Framework data pillars.
 
@@ -341,7 +341,7 @@ flowchart TB
 
 ## 📊 Section 4: Current State Baseline
 
-### Overview
+### 🔭 Overview
 
 The current state of the data architecture reflects a functioning, production-aligned baseline. The relational schema is established via a single versioned EF Core migration (`OrderDbV1`, 2025-12-27) that created the `Orders` and `OrderProducts` tables with all constraints, indexes, and the foreign key relationship. The infrastructure is provisioned via Bicep and supports both local development (EF Core with connection string, Service Bus emulator) and Azure deployment (Azure SQL with Entra ID, Azure Service Bus with MSI).
 
@@ -398,7 +398,7 @@ Evidence: Security controls are consistently applied (MSI, TLS 1.2, private endp
 | Retention Policy      | ❌ Not detected      | No blob lifecycle policy or SQL data retention configuration                 | Not detected in source                             |
 | PII Handling          | ⚠️ Dev only          | Sensitive data logging suppressed in production; no masking in storage       | `Program.cs:L57–L61`                               |
 
-### Summary
+### 📝 Summary
 
 The current state baseline represents a well-engineered MVP data architecture. The fundamentals — relational schema, domain separation, secure access, resilient queries — are in place and production-ready. The main gaps centre on governance maturity: retention policies, formal data classification, SQL audit configuration, and PII masking are areas requiring investment before the solution scales to higher data volumes or regulated workloads.
 
@@ -406,7 +406,7 @@ The current state baseline represents a well-engineered MVP data architecture. T
 
 ## 📦 Section 5: Component Catalog
 
-### Overview
+### 🔭 Overview
 
 This section provides detailed specifications for all 38 identified data components across the 11 canonical BDAT Data layer types. Each component is traced to its source file with line-range references. Components are classified by data sensitivity, storage type, and ownership. Confidence scores follow the base-layer-config formula: 30% filename pattern + 25% path pattern + 35% content keyword match + 10% cross-reference.
 
@@ -551,7 +551,7 @@ Not detected in source files. The solution manages transactional order data only
 | Private Endpoint Network Isolation | Blob, File, Table, Queue, and SQL services accessed via private endpoints; private DNS zones (e.g., `privatelink.blob.core.windows.net`) linked to VNet; public DNS resolution blocked                                    | Internal       | N/A (network)        | Infrastructure team               | Permanent | N/A           | Azure VNet      | All data consumers   | infra/shared/data/main.bicep:L244-400  |
 | Sensitive Data Logging Gate        | `EnableSensitiveDataLogging()` and `EnableDetailedErrors()` conditional on `IsDevelopment()` only; prevents PII/Financial data from appearing in production logs                                                          | Internal       | N/A (logging config) | Orders API team                   | N/A       | N/A           | EF Core logging | Application Insights | src/eShop.Orders.API/Program.cs:L56-61 |
 
-### Summary
+### 📝 Summary
 
 38 data components were identified and catalogued across all 11 canonical data component types. The dominant pattern is a well-disciplined **relational-plus-event** architecture: SQL for durable transactional state and Service Bus + Blob Storage for async workflow orchestration. All components achieve confidence ≥ 0.90. Master Data (5.8) has no applicable components — appropriate for a purely transactional domain. The primary catalogue gap is the absence of documented data retention policies across all stores; this is the single highest-priority governance remediation item.
 
@@ -559,7 +559,7 @@ Not detected in source files. The solution manages transactional order data only
 
 ## ⚖️ Section 6: Architecture Decisions
 
-### Overview
+### 🔭 Overview
 
 Architecture decisions for the data layer reflect pragmatic choices aligned with the Azure ecosystem, the microservices nature of the solution, and the need for production-grade security from day one. The following ADRs are inferred from source code and infrastructure configuration; none are formally documented in an ADR file in the repository. The `Inferred` status indicates decisions observable in code but not recorded in a formal decision log.
 
@@ -679,7 +679,7 @@ This section captures the most architecturally significant choices. Teams should
 
 ## 📐 Section 7: Architecture Standards
 
-### Overview
+### 🔭 Overview
 
 The data layer architecture follows a consistent set of observable standards derived from the codebase. These standards are applied uniformly but are not yet formalised in a written governance document. The following standards and conventions are recommended for adoption as formal team standards.
 
@@ -725,7 +725,7 @@ The codebase demonstrates good discipline in naming, schema design, and security
 
 ## 🔗 Section 8: Dependencies & Integration
 
-### Overview
+### 🔭 Overview
 
 The data layer participates in a bidirectional integration topology. The SQL database is the synchronous source of truth, while Blob Storage and Service Bus form the asynchronous event and archival backbone. The Logic App workflows bridge the messaging and storage dimensions. The .NET Aspire AppHost orchestrates discovery and connection string injection in both local and cloud environments, abstracting the deployment topology from the application code.
 
@@ -840,7 +840,7 @@ flowchart TB
 | Logic App `OrdersPlacedProcess`         | HTTP POST to Orders API         | HTTP             | Orders API                              | Re-ingestion of processed order |
 | Logic App `OrdersPlacedCompleteProcess` | Delete ops on success container | Blob Managed API | None (terminal)                         | Housekeeping                    |
 
-### Summary
+### 📝 Summary
 
 The data integration topology is clean, event-driven, and security-consistent. All cross-system data movement uses either standardised REST contracts (`Order` JSON) or platform-native async transports (Service Bus, Blob). The MSI authentication pattern is uniformly applied across all integration points. The primary integration health concern is the absence of dead-letter queue handling and duplicate detection configuration on the Service Bus subscription, which could result in data loss or duplicate processing under failure conditions.
 
@@ -848,7 +848,7 @@ The data integration topology is clean, event-driven, and security-consistent. A
 
 ## 🛡️ Section 9: Governance & Management
 
-### Overview
+### 🔭 Overview
 
 Data governance in the Azure-LogicApps-Monitoring solution is implemented at the infrastructure and runtime level through access control, network isolation, and diagnostic logging. The governance model follows the principle of least privilege via Managed Identity, and security controls are embedded in the Bicep infrastructure-as-code definitions, ensuring governance policy is enforced at provisioning time rather than runtime configuration.
 
