@@ -452,4 +452,6 @@ The codebase is organized as a multi-project .NET Aspire solution with clear sep
 
 This project is licensed under the [MIT License](LICENSE).
 
-Copyright &copy; 2025 Evilázaro Alves.
+## Developed by
+
+**Evilazaro Alves | Principal Cloud Solution Architect | Cloud Platforms and AI Apps | Microsoft**
