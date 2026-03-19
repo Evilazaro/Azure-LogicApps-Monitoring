@@ -567,15 +567,15 @@ This section captures the most architecturally significant choices. Teams should
 
 ### 📋 ADR Summary
 
-| ID      | Title                                                                 | Status   | Date     |
-| ------- | --------------------------------------------------------------------- | -------- | -------- |
-| ADR-001 | Use Entity Framework Core with Repository Pattern for SQL Data Access | Inferred | Inferred |
-| ADR-002 | Separate Domain Models from Persistence Entities via Explicit Mapper  | Inferred | Inferred |
-| ADR-003 | Azure SQL Database as the Primary Relational Store                    | Inferred | Inferred |
-| ADR-004 | Azure Blob Storage for Logic App Workflow Outcome Archival            | Inferred | Inferred |
-| ADR-005 | Azure Service Bus Topic for Async Order Event Propagation             | Inferred | Inferred |
-| ADR-006 | Managed Identity for All Service-to-Data Authentication               | Inferred | Inferred |
-| ADR-007 | Application-Generated String PKs over Database Auto-Increment         | Inferred | Inferred |
+| ID      | Title                                                                    | Status   | Date     |
+| ------- | ------------------------------------------------------------------------ | -------- | -------- |
+| ADR-001 | 🗄️ Use Entity Framework Core with Repository Pattern for SQL Data Access | Inferred | Inferred |
+| ADR-002 | 🔀 Separate Domain Models from Persistence Entities via Explicit Mapper  | Inferred | Inferred |
+| ADR-003 | 🗃️ Azure SQL Database as the Primary Relational Store                    | Inferred | Inferred |
+| ADR-004 | ☁️ Azure Blob Storage for Logic App Workflow Outcome Archival            | Inferred | Inferred |
+| ADR-005 | 📨 Azure Service Bus Topic for Async Order Event Propagation             | Inferred | Inferred |
+| ADR-006 | 🪺 Managed Identity for All Service-to-Data Authentication               | Inferred | Inferred |
+| ADR-007 | 🔑 Application-Generated String PKs over Database Auto-Increment         | Inferred | Inferred |
 
 ### 📄 6.1 Detailed ADRs
 
@@ -687,39 +687,39 @@ The codebase demonstrates good discipline in naming, schema design, and security
 
 ### 📛 Data Naming Conventions
 
-| Convention            | Rule                                             | Examples                                              | Source                                    |
-| --------------------- | ------------------------------------------------ | ----------------------------------------------------- | ----------------------------------------- |
-| Table Names           | PascalCase, plural noun                          | `Orders`, `OrderProducts`                             | `OrderDbV1.cs:L13`                        |
-| Column Names          | PascalCase                                       | `CustomerId`, `DeliveryAddress`, `ProductDescription` | `OrderEntity.cs`, `OrderProductEntity.cs` |
-| Primary Keys          | `Id` (not `OrderId` on the owning table)         | `Orders.Id`, `OrderProducts.Id`                       | `OrderEntity.cs:L18`                      |
-| Foreign Keys          | `{ReferencedEntityName}Id`                       | `OrderProducts.OrderId` → `Orders.Id`                 | `OrderProductEntity.cs:L27`               |
-| EF Core Entity Suffix | Entity classes use `Entity` suffix               | `OrderEntity`, `OrderProductEntity`                   | `Entities/` folder                        |
-| Domain Model Naming   | No suffix; C# records                            | `Order`, `OrderProduct`                               | `CommonTypes.cs`                          |
-| Repository Interface  | `I{Entity}Repository`                            | `IOrderRepository`                                    | `Interfaces/IOrderRepository.cs`          |
-| Service Interface     | `I{Domain}Service`                               | `IOrderService`                                       | `Interfaces/IOrderService.cs`             |
-| Index Names           | `IX_{Table}_{Column}`                            | `IX_Orders_CustomerId`, `IX_OrderProducts_OrderId`    | `OrderDbV1.cs:L56-68`                     |
-| Constraint Names      | `PK_{Table}`, `FK_{Table}_{Referenced}_{Column}` | `PK_Orders`, `FK_OrderProducts_Orders_OrderId`        | `OrderDbV1.cs:L25-50`                     |
+| Convention               | Rule                                             | Examples                                              |
+| ------------------------ | ------------------------------------------------ | ----------------------------------------------------- |
+| 🏷️ Table Names           | PascalCase, plural noun                          | `Orders`, `OrderProducts`                             |
+| 📋 Column Names          | PascalCase                                       | `CustomerId`, `DeliveryAddress`, `ProductDescription` |
+| 🔑 Primary Keys          | `Id` (not `OrderId` on the owning table)         | `Orders.Id`, `OrderProducts.Id`                       |
+| 🔗 Foreign Keys          | `{ReferencedEntityName}Id`                       | `OrderProducts.OrderId` → `Orders.Id`                 |
+| 🏗️ EF Core Entity Suffix | Entity classes use `Entity` suffix               | `OrderEntity`, `OrderProductEntity`                   |
+| 📦 Domain Model Naming   | No suffix; C# records                            | `Order`, `OrderProduct`                               |
+| 📚 Repository Interface  | `I{Entity}Repository`                            | `IOrderRepository`                                    |
+| ⚙️ Service Interface     | `I{Domain}Service`                               | `IOrderService`                                       |
+| 📇 Index Names           | `IX_{Table}_{Column}`                            | `IX_Orders_CustomerId`, `IX_OrderProducts_OrderId`    |
+| 🔒 Constraint Names      | `PK_{Table}`, `FK_{Table}_{Referenced}_{Column}` | `PK_Orders`, `FK_OrderProducts_Orders_OrderId`        |
 
 ### 📏 Schema Design Standards
 
-| Standard                  | Description                                                                             | Implementation                                |
-| ------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------- |
-| String Length Constraints | All string columns have explicit MaxLength (100 or 500); no unbounded `nvarchar(max)`   | EF Fluent API in `OrderDbContext.cs`          |
-| Decimal Precision         | Financial decimal fields use `decimal(18,2)` — `HasPrecision(18,2)`                     | `OrderDbContext.cs:L75`, `OrderDbV1.cs:L22`   |
-| DateTime Type             | Use `datetime2` for all timestamp columns                                               | `OrderDbV1.cs:L17`                            |
-| Required Fields           | All business-critical fields are `IsRequired()` in EF and `[Required]` in domain models | Both `OrderDbContext.cs` and `CommonTypes.cs` |
-| Cascade Delete            | Child entities (OrderProducts) CASCADE DELETE on parent (Order) deletion                | `OrderDbContext.cs:L82-85`                    |
-| Migration Naming          | `{timestamp}_{MigrationName}` format                                                    | `20251227014858_OrderDbV1.cs`                 |
+| Standard                     | Description                                                                             | Implementation                                |
+| ---------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------- |
+| 📏 String Length Constraints | All string columns have explicit MaxLength (100 or 500); no unbounded `nvarchar(max)`   | EF Fluent API in `OrderDbContext.cs`          |
+| 💰 Decimal Precision         | Financial decimal fields use `decimal(18,2)` — `HasPrecision(18,2)`                     | `OrderDbContext.cs:L75`, `OrderDbV1.cs:L22`   |
+| 📅 DateTime Type             | Use `datetime2` for all timestamp columns                                               | `OrderDbV1.cs:L17`                            |
+| ✅ Required Fields           | All business-critical fields are `IsRequired()` in EF and `[Required]` in domain models | Both `OrderDbContext.cs` and `CommonTypes.cs` |
+| 🗑️ Cascade Delete            | Child entities (OrderProducts) CASCADE DELETE on parent (Order) deletion                | `OrderDbContext.cs:L82-85`                    |
+| 📝 Migration Naming          | `{timestamp}_{MigrationName}` format                                                    | `20251227014858_OrderDbV1.cs`                 |
 
 ### ✅ Data Quality Standards
 
-| Standard                            | Description                                                                                                  | Enforcement Point                                     |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| Input Validation at Domain Boundary | DataAnnotations on domain models enforce business rules before persistence                                   | `CommonTypes.cs` — validated by ASP.NET model binding |
-| Null Safety                         | All required properties use `= string.Empty` or `[Required]`; `ArgumentNullException.ThrowIfNull` in mappers | `OrderMapper.cs:L30`, `OrderRepository.cs:L68`        |
-| Retry on Transient Failure          | EF Core `EnableRetryOnFailure` (5 retries, 30s max) and HttpClient resilience policy configured              | `Program.cs:L38-50`                                   |
-| Pagination Required for Bulk Reads  | `GetOrdersPagedAsync(page, size, max:100)` prevents unbounded memory loads                                   | `IOrderRepository.cs:L35-40`                          |
-| Sensitive Data gated to Development | `EnableSensitiveDataLogging` only in `IsDevelopment()`                                                       | `Program.cs:L57-61`                                   |
+| Standard                               | Description                                                                                                  | Enforcement Point                                     |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| 🚧 Input Validation at Domain Boundary | DataAnnotations on domain models enforce business rules before persistence                                   | `CommonTypes.cs` — validated by ASP.NET model binding |
+| 🛡️ Null Safety                         | All required properties use `= string.Empty` or `[Required]`; `ArgumentNullException.ThrowIfNull` in mappers | `OrderMapper.cs:L30`, `OrderRepository.cs:L68`        |
+| 🔄 Retry on Transient Failure          | EF Core `EnableRetryOnFailure` (5 retries, 30s max) and HttpClient resilience policy configured              | `Program.cs:L38-50`                                   |
+| 📄 Pagination Required for Bulk Reads  | `GetOrdersPagedAsync(page, size, max:100)` prevents unbounded memory loads                                   | `IOrderRepository.cs:L35-40`                          |
+| 👁️ Sensitive Data gated to Development | `EnableSensitiveDataLogging` only in `IsDevelopment()`                                                       | `Program.cs:L57-61`                                   |
 
 ---
 
