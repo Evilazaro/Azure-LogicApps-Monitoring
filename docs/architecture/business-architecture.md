@@ -30,20 +30,20 @@ The portfolio centres on three core business capabilities — **Order Management
 
 **Component summary by type**:
 
-| Component Type            |  Count |
-| ------------------------- | -----: |
-| Business Strategy         |      1 |
-| Business Capabilities     |      3 |
-| Value Streams             |      2 |
-| Business Processes        |      4 |
-| Business Services         |      4 |
-| Business Functions        |      3 |
-| Business Roles & Actors   |      4 |
-| Business Rules            |      6 |
-| Business Events           |      5 |
-| Business Objects/Entities |      4 |
-| KPIs & Metrics            |      4 |
-| **Total**                 | **40** |
+| 🏗️ Component Type           | #️⃣ Count |
+| ---------------------------- | -------: |
+| 🏁 Business Strategy         |        1 |
+| 💡 Business Capabilities     |        3 |
+| 🌊 Value Streams             |        2 |
+| 🔄 Business Processes        |        4 |
+| 🛠️ Business Services         |        4 |
+| 🧩 Business Functions        |        3 |
+| 👤 Business Roles & Actors   |        4 |
+| 📏 Business Rules            |        6 |
+| ⚡ Business Events           |        5 |
+| 📦 Business Objects/Entities |        4 |
+| 📈 KPIs & Metrics            |        4 |
+| **Total**                    |   **40** |
 
 **Average confidence score**: 0.86 (HIGH)  
 **Capability maturity range**: Level 3 (Defined) – Level 4 (Measured)  
@@ -291,7 +291,7 @@ flowchart LR
 | eShop.orders.processing.errors   | Counter metric recording the total number of order processing errors categorised by `error.type`, supporting failure-rate analysis | `src/eShop.Orders.API/Services/OrderService.cs:73-76` | 0.93       | 4 – Measured |
 | eShop.orders.deleted             | Counter metric tracking the total number of orders successfully deleted from the system                                            | `src/eShop.Orders.API/Services/OrderService.cs:77-80` | 0.93       | 4 – Measured |
 
-### Summary
+### 📝 Summary
 
 The workspace contains 40 Business layer components across all 11 required TOGAF 10 types, significantly exceeding the comprehensive quality threshold of 20 components across 8 types. Business Rules (6), Business Events (5), Business Services (4), Business Processes (4), Roles & Actors (4), Business Objects (4), and KPIs & Metrics (4) are the most densely populated types, reflecting the system's operational depth in order lifecycle management. Average confidence is 0.86 (HIGH), with the highest-confidence components being domain models (0.95) and KPI definitions (0.93). Business Strategy (1) is the thinnest type, as strategic documentation is embedded in the README rather than dedicated strategy artefacts.
 
@@ -523,7 +523,7 @@ flowchart TB
 | Parallel Batch (max 10)  | `SemaphoreSlim(10)` concurrency gate                    | `OrderService.cs:210-215`                         |
 | Idempotent Placement     | Pre-save existence check via `OrderExistsAsync`         | `OrderService.cs:110-118`                         |
 
-### Summary
+### 📝 Summary
 
 The current Business Architecture baseline demonstrates a well-structured, event-driven order management platform with measurable KPIs and standardised processes. The four core business processes (Single Order Placement, Batch Order Placement, Order Fulfillment, and Order Cleanup) are formally defined in typed service contracts and Logic Apps workflow JSON, providing a reproducible and auditable process topology. Capability maturity sits at Level 3–4 for all three core capabilities, reflecting an architecture that is both standardised and quantitatively monitored. The observable business rules (validation gates, idempotency, batch limits, JSON content gating) provide a strong governance baseline.
 
@@ -1207,7 +1207,7 @@ flowchart TB
 
 ---
 
-### Summary
+### 📝 Summary
 
 The Component Catalog documents 40 Business layer components across all 11 TOGAF 10 types with full source traceability, confidence scoring, and maturity classifications. The highest-confidence components are the four KPI definitions (0.93) and the two domain entities (0.95), reflecting their explicit, formal definition in source code. The highest-maturity components are the Order entity, Business Rules BR-001 through BR-004, the KPIs, and the Order Management Service — all at Level 4 (Measured). The most business-critical catalogue entries are the Order Fulfillment Process (BR-006, Logic Apps integration), the OrderPlaced event, and the eShop.orders.processing.duration histogram.
 
@@ -1344,7 +1344,7 @@ flowchart TB
 | Event-Driven Processing    | Azure Service Bus, Azure Logic Apps Standard (WS1), Azure Blob Storage | Strong — capability exclusively enabled by these PaaS services     |
 | Observability & Monitoring | OpenTelemetry SDK, Azure Application Insights, Azure Log Analytics     | Strong — full-stack telemetry pipeline from all components         |
 
-### Summary
+### 📝 Summary
 
 The Business layer integrates with the Application, Data, and Observability layers through well-defined, loosely coupled protocols. The dominant integration pattern is event-driven: the OrderPlaced domain event, published to Azure Service Bus, decouples the order placement business process from the order fulfilment workflow operated by Logic Apps. Synchronous dependencies are limited to the internal delegation from the Orders Controller to the Order Management Service and the reverse HTTP callback from Logic Apps to the Orders API's `/process` endpoint. All Data layer integrations use Managed Identity exclusively; no credential coupling exists. The observability integration provides full-stack trace correlation across all three capabilities via OpenTelemetry.
 
