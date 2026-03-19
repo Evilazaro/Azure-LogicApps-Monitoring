@@ -89,7 +89,23 @@ data_layer_reasoning:
 
 ---
 
-## Section 1: Executive Summary
+## 📑 Quick Table of Contents
+
+| Section | Title                         | Summary                                                            |
+| ------- | ----------------------------- | ------------------------------------------------------------------ |
+| §1      | 📋 Executive Summary          | Key findings · data quality scorecard · coverage summary           |
+| §2      | 🗺️ Architecture Landscape     | 11 canonical data component types fully inventoried                |
+| §3      | 🏛️ Architecture Principles    | 8 core principles · schema standards · classification taxonomy     |
+| §4      | 📊 Current State Baseline     | Baseline architecture · storage distribution · governance maturity |
+| §5      | 📦 Component Catalog          | 38 components across all 11 data layer types                       |
+| §6      | ⚖️ Architecture Decisions     | 7 inferred ADRs for key architectural choices                      |
+| §7      | 📐 Architecture Standards     | Naming conventions · schema design · data quality standards        |
+| §8      | 🔗 Dependencies & Integration | Data flow patterns · producer-consumer relationships               |
+| §9      | 🛡️ Governance & Management    | Data ownership · access control · audit & compliance               |
+
+---
+
+## 📋 Section 1: Executive Summary
 
 ### Overview
 
@@ -99,7 +115,7 @@ The architecture follows a clear separation between the domain model, the EF Cor
 
 Data movement is orchestrated through two channels: synchronous REST API calls from the web front-end to the Orders API, and asynchronous messaging via Azure Service Bus. Logic App Standard workflows consume Service Bus messages, invoke the API, and persist processing outcomes to Blob Storage containers partitioned by result state. All data access to external services is secured via User-Assigned Managed Identity, eliminating credential management risks.
 
-### Key Findings
+### 🔍 Key Findings
 
 | Metric                           | Value       | Assessment                                                           |
 | -------------------------------- | ----------- | -------------------------------------------------------------------- |
@@ -112,7 +128,7 @@ Data movement is orchestrated through two channels: synchronous REST API calls f
 | Governance Coverage              | Partial     | Logging and auth covered; no formal data catalog or retention policy |
 | Schema Migrations                | 1 versioned | `OrderDbV1` migration — baseline schema established                  |
 
-### Data Quality Scorecard
+### ✨ Data Quality Scorecard
 
 | Quality Dimension     | Score  | Assessment                                                       | Evidence                            |
 | --------------------- | ------ | ---------------------------------------------------------------- | ----------------------------------- |
@@ -125,13 +141,13 @@ Data movement is orchestrated through two channels: synchronous REST API calls f
 | Retention Policy      | 40/100 | Gap — no explicit retention policy documented                    | Not detected in source              |
 | Observability         | 75/100 | Moderate — diagnostic settings on storage; EF logging configured | `main.bicep`, `Program.cs`          |
 
-### Coverage Summary
+### 📊 Coverage Summary
 
 The data domain is well-defined and fully traced to source files with a confidence score of 0.91. The architecture demonstrates strong security discipline (Managed Identity everywhere, Entra ID-only SQL authentication, TLS 1.2 minimum) and solid relational modelling with proper indexing and referential integrity. Key governance gaps include the absence of a formal data classification catalog, explicit data retention policies, and data lineage tooling. Master data management is not applicable to this domain — all data is transactional order data rather than reference or master data.
 
 ---
 
-## Section 2: Architecture Landscape
+## 🗺️ Section 2: Architecture Landscape
 
 ### Overview
 
@@ -139,7 +155,7 @@ The data landscape of the Azure-LogicApps-Monitoring solution centres on order l
 
 The architecture distinguishes between three tiers: the **domain model tier** (immutable C# records in `CommonTypes.cs`), the **persistence tier** (EF Core entities with database-specific constraints), and the **infrastructure tier** (Azure SQL Database and Blob Storage provisioned via Bicep). The mapper layer bridges domain and persistence without polluting either.
 
-### 2.1 Data Entities
+### 🧩 2.1 Data Entities
 
 | Name               | Description                                                                           | Classification       |
 | ------------------ | ------------------------------------------------------------------------------------- | -------------------- |
@@ -148,7 +164,7 @@ The architecture distinguishes between three tiers: the **domain model tier** (i
 | OrderEntity        | EF Core persistence entity mapping to the `Orders` SQL table                          | Internal / Financial |
 | OrderProductEntity | EF Core persistence entity mapping to the `OrderProducts` SQL table                   | Internal / Financial |
 
-### 2.2 Data Models
+### 📐 2.2 Data Models
 
 | Name                        | Description                                                                                                        | Classification |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------- |
@@ -156,7 +172,7 @@ The architecture distinguishes between three tiers: the **domain model tier** (i
 | OrderMapper                 | Static extension class providing bidirectional mapping between domain models and EF Core entities                  | Internal       |
 | OrderDbContextModelSnapshot | Auto-generated EF Core model snapshot capturing the current database schema state for migration diffing            | Internal       |
 
-### 2.3 Data Stores
+### 🗄️ 2.3 Data Stores
 
 | Name                                        | Description                                                                                                       | Classification       |
 | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------- |
@@ -166,7 +182,7 @@ The architecture distinguishes between three tiers: the **domain model tier** (i
 | Blob Container: ordersprocessedcompleted    | Stores blobs moved from success container after completion workflow runs                                          | Internal             |
 | Azure File Share: workflowstate             | SMB file share (5 GB, `workflowstate`) for Logic Apps Standard workflow state persistence                         | Internal             |
 
-### 2.4 Data Flows
+### 🌊 2.4 Data Flows
 
 | Name                          | Description                                                                                                                        | Classification       |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
@@ -175,7 +191,7 @@ The architecture distinguishes between three tiers: the **domain model tier** (i
 | Logic App Processing Flow     | Service Bus trigger → Logic App `OrdersPlacedProcess` → HTTP POST to Orders API → Blob write (success or error container)          | Internal             |
 | Order Completion Cleanup Flow | Recurrence trigger → Logic App `OrdersPlacedCompleteProcess` → Blob list → Blob metadata read → Blob delete from success container | Internal             |
 
-### 2.5 Data Services
+### ⚙️ 2.5 Data Services
 
 | Name            | Description                                                                                                                           | Classification |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
@@ -183,7 +199,7 @@ The architecture distinguishes between three tiers: the **domain model tier** (i
 | OrderService    | Business logic service orchestrating PlaceOrder, GetOrders, DeleteOrder with metrics, distributed tracing, and Service Bus publishing | Internal       |
 | Orders REST API | ASP.NET Core Web API exposing `/api/Orders` endpoints (POST, GET, DELETE) consumed by Web App and Logic Apps                          | Internal       |
 
-### 2.6 Data Governance
+### 🏛️ 2.6 Data Governance
 
 | Name                             | Description                                                                                            | Classification |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------ | -------------- |
@@ -192,7 +208,7 @@ The architecture distinguishes between three tiers: the **domain model tier** (i
 | Diagnostic Settings              | Storage account metrics forwarded to Log Analytics workspace; EF Core logging at Warning level         | Internal       |
 | Private Endpoints                | Private DNS zones and endpoints for Blob, File, Table, Queue, and SQL services; network isolation      | Internal       |
 
-### 2.7 Data Quality Rules
+### ✅ 2.7 Data Quality Rules
 
 | Name                          | Description                                                                                                                                | Classification |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------- |
@@ -202,18 +218,18 @@ The architecture distinguishes between three tiers: the **domain model tier** (i
 | EF Core Retry on Failure      | `EnableRetryOnFailure` (maxRetry: 5, maxDelay: 30s) for transient SQL Azure connection failures                                            | Internal       |
 | Command Timeout               | 120-second command timeout configured on SQL operations to prevent long-running query hangs                                                | Internal       |
 
-### 2.8 Master Data
+### 🌐 2.8 Master Data
 
 Not detected in source files. The data domain is entirely transactional (order lifecycle). No master data management (MDM) hub, reference data store, or golden record patterns were identified in the workspace.
 
-### 2.9 Data Transformations
+### 🔄 2.9 Data Transformations
 
 | Name                          | Description                                                                                                                                 | Classification |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
 | OrderMapper (Domain ↔ Entity) | `ToEntity()` converts `Order` → `OrderEntity`; `ToDomainModel()` converts `OrderEntity` → `Order`; same for product types                   | Internal       |
 | Base64 Decode in Logic App    | Service Bus message `ContentData` decoded via `base64ToString()` / `base64ToBinary()` in Logic App workflow before HTTP and Blob operations | Internal       |
 
-### 2.10 Data Contracts
+### 📝 2.10 Data Contracts
 
 | Name                  | Description                                                                                                                                                                                             | Classification |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
@@ -221,7 +237,7 @@ Not detected in source files. The data domain is entirely transactional (order l
 | IOrderService         | Service contract defining 7 async business operations: PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync, ListMessagesFromTopicsAsync | Internal       |
 | IOrdersMessageHandler | Messaging contract for async order publishing: SendOrderMessageAsync, SendOrdersBatchMessageAsync, ListMessagesAsync                                                                                    | Internal       |
 
-### 2.11 Data Security
+### 🔒 2.11 Data Security
 
 | Name                                        | Description                                                                                                                       | Classification |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------- |
@@ -237,7 +253,7 @@ The data landscape is compact and well-structured. All 11 canonical component ty
 
 ---
 
-## Section 3: Architecture Principles
+## 🏛️ Section 3: Architecture Principles
 
 ### Overview
 
@@ -247,7 +263,7 @@ The dominant design philosophy is **data isolation and ownership by bounded cont
 
 Security-by-design is applied at every tier with no fallback to password-based credential sharing in production configurations. All inter-service data access relies on identity-based authentication tokens, reducing the blast radius of any compromised surface.
 
-### Core Data Principles
+### 🏛️ Core Data Principles
 
 | Principle                     | Description                                                                                                | Implementation Evidence                                                   | Source File                                                   |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------- |
@@ -260,7 +276,7 @@ Security-by-design is applied at every tier with no fallback to password-based c
 | Async Data Propagation        | Order data is published to Service Bus after SQL persistence to decouple downstream consumers              | `OrderService` publishes after `SaveOrderAsync` completes                 | `src/eShop.Orders.API/Services/OrderService.cs:L1-80`         |
 | Observability-First           | Metrics for orders placed, processing duration, and errors instrumented at the service layer               | OTel metrics in `OrderService.cs`                                         | `src/eShop.Orders.API/Services/OrderService.cs:L30-65`        |
 
-### Data Schema Design Standards
+### 📏 Data Schema Design Standards
 
 - **String fields** use `nvarchar` with explicit `MaxLength` constraints (100 or 500 characters) — no unbounded `nvarchar(max)` columns.
 - **Decimal fields** use `decimal(18,2)` precision for financial amounts — prevents floating-point rounding errors in monetary values.
@@ -269,7 +285,7 @@ Security-by-design is applied at every tier with no fallback to password-based c
 - **Index strategy** includes non-clustered indexes on `CustomerId` and `Date` for common query predicates.
 - **Timestamp fields** use `datetime2` — higher precision and wider range than `datetime`.
 
-### Data Classification Taxonomy
+### 🏷️ Data Classification Taxonomy
 
 | Level | Label            | Description                             | Examples in This Domain                    |
 | ----- | ---------------- | --------------------------------------- | ------------------------------------------ |
@@ -323,7 +339,7 @@ flowchart TB
 
 ---
 
-## Section 4: Current State Baseline
+## 📊 Section 4: Current State Baseline
 
 ### Overview
 
@@ -333,7 +349,7 @@ The data access pattern is straightforward: a scoped `OrderRepository` handles a
 
 There are no observable data archival, partitioning, or sharding strategies beyond the Blob Storage outcome containers. The SQL database does not currently use table partitioning or temporal tables. Monitoring coverage is functional — storage diagnostics and EF Core query logging are configured — but there is no dedicated data quality monitoring or anomaly detection pipeline.
 
-### Baseline Data Architecture
+### 🏗️ Baseline Data Architecture
 
 The architecture uses a **layered data access pattern**:
 
@@ -342,7 +358,7 @@ The architecture uses a **layered data access pattern**:
 3. **Service Layer** — `OrderService` composes repository and message handler with business rules and metrics.
 4. **Infrastructure Layer** — Azure SQL Database (private endpoint) and Azure Blob Storage (private endpoint) provisioned via Bicep.
 
-### Storage Distribution
+### 💾 Storage Distribution
 
 | Store                                       | Type           | Engine                 | Data Domain                  | Approx. Schema Size        |
 | ------------------------------------------- | -------------- | ---------------------- | ---------------------------- | -------------------------- |
@@ -352,7 +368,7 @@ The architecture uses a **layered data access pattern**:
 | Blob Container: ordersprocessedcompleted    | Object storage | Azure Blob (StorageV2) | Completed order archive      | Schema-free                |
 | Azure File Share: workflowstate             | File storage   | Azure Files (SMB)      | Logic App workflow state     | Schema-free                |
 
-### Quality Baseline
+### 📊 Quality Baseline
 
 | Dimension                | Current State                         | Target State                               | Gap                                                          |
 | ------------------------ | ------------------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
@@ -363,13 +379,13 @@ The architecture uses a **layered data access pattern**:
 | Data masking             | None detected                         | PII fields masked in logs                  | DeliveryAddress may appear in EF debug logs (dev only)       |
 | Retention                | Not defined                           | Defined per data class                     | No explicit retention policy in Bicep or code                |
 
-### Governance Maturity
+### 🎯 Governance Maturity
 
 **Level: Managed (Level 3 / 5)**
 
 Evidence: Security controls are consistently applied (MSI, TLS 1.2, private endpoints), schema is version-controlled via EF Core migrations, and diagnostic logging is configured. However, there is no formal data catalog, no documented data ownership RACI, no explicit retention or archival policies, and no data lineage tooling. The architecture surpasses ad-hoc (Level 1–2) but has not reached the Optimized (Level 4–5) tier.
 
-### Compliance Posture
+### 🔐 Compliance Posture
 
 | Control               | Status               | Evidence                                                                     |
 | --------------------- | -------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------- |
@@ -388,7 +404,7 @@ The current state baseline represents a well-engineered MVP data architecture. T
 
 ---
 
-## Section 5: Component Catalog
+## 📦 Section 5: Component Catalog
 
 ### Overview
 
@@ -398,7 +414,7 @@ All components have confidence scores ≥ 0.90 based on strong combined signals 
 
 The EF Core entity relationship diagram (ERD) follows immediately after the Data Entities table (Section 5.1), as required by the ERD Presence Gate.
 
-### 5.1 Data Entities
+### 🧩 5.1 Data Entities
 
 | Component             | Description                                                                                                                                       | Classification           | Storage                  | Owner           | Retention    | Freshness SLA    | Source Systems        | Consumers                  | Source File                                                    |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ | ------------------------ | --------------- | ------------ | ---------------- | --------------------- | -------------------------- | -------------------------------------------------------------- |
@@ -452,7 +468,7 @@ erDiagram
 
 ✅ Mermaid Verification: 5/5 | Score: 98/100 | Diagrams: 1 | Violations: 0
 
-### 5.2 Data Models
+### 📐 5.2 Data Models
 
 | Component                   | Description                                                                                                                                                                     | Classification | Storage               | Owner           | Retention          | Freshness SLA  | Source Systems  | Consumers                   | Source File                                                          |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | --------------------- | --------------- | ------------------ | -------------- | --------------- | --------------------------- | -------------------------------------------------------------------- |
@@ -460,7 +476,7 @@ erDiagram
 | OrderMapper                 | Static class with 4 extension methods for bidirectional mapping: `ToEntity(Order)`, `ToDomainModel(OrderEntity)`, `ToEntity(OrderProduct)`, `ToDomainModel(OrderProductEntity)` | Internal       | N/A (transformation)  | Orders API team | Not detected       | N/A            | Orders API      | OrderRepository             | src/eShop.Orders.API/data/OrderMapper.cs:L1-80                       |
 | OrderDbContextModelSnapshot | Auto-generated EF Core snapshot of the current model; used by migration tooling to compute schema diffs for future migrations                                                   | Internal       | Source control        | Orders API team | Version-controlled | Migration-time | EF Core tooling | EF Core migration pipeline  | src/eShop.Orders.API/Migrations/OrderDbContextModelSnapshot.cs:L1-90 |
 
-### 5.3 Data Stores
+### 🗄️ 5.3 Data Stores
 
 | Component                                   | Description                                                                                                                                             | Classification           | Storage                | Owner                            | Retention    | Freshness SLA    | Source Systems                        | Consumers                             | Source File                           |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ | ---------------------- | -------------------------------- | ------------ | ---------------- | ------------------------------------- | ------------------------------------- | ------------------------------------- |
@@ -470,7 +486,7 @@ erDiagram
 | Blob Container: ordersprocessedcompleted    | Stores completed order blobs moved after final processing via `OrdersPlacedCompleteProcess`; acts as archival tier                                      | Internal                 | Azure Blob (StorageV2) | Logic App / Infrastructure team  | Not detected | Workflow-time    | Logic App OrdersPlacedCompleteProcess | Archival / audit                      | infra/shared/data/main.bicep:L226-235 |
 | Azure File Share: workflowstate             | 5 GB SMB file share for Logic Apps Standard workflow runtime state persistence; required by Logic Apps Standard for content sharing over VNet           | Internal                 | Azure Files (SMB)      | Infrastructure team              | Not detected | Runtime-bound    | Logic App runtime                     | Logic App engine                      | infra/shared/data/main.bicep:L180-197 |
 
-### 5.4 Data Flows
+### 🌊 5.4 Data Flows
 
 | Component                           | Description                                                                                                                                                             | Classification       | Storage            | Owner                        | Retention                     | Freshness SLA                   | Source Systems         | Consumers                       | Source File                                                    |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | ------------------ | ---------------------------- | ----------------------------- | ------------------------------- | ---------------------- | ------------------------------- | -------------------------------------------------------------- |
@@ -479,7 +495,7 @@ erDiagram
 | Logic App Placement Processing Flow | Service Bus trigger → `OrdersPlacedProcess` workflow → check ContentType → HTTP POST to Orders API → if 201: write to success container; else: write to error container | Internal             | Azure Blob Storage | Logic App / Integration team | Blob retention (not detected) | Workflow execution time         | Azure Service Bus      | Blob Storage (two containers)   | workflows/.../OrdersPlacedProcess/workflow.json:L1-100         |
 | Logic App Completion Cleanup Flow   | Recurrence trigger (every 3s, CST) → `OrdersPlacedCompleteProcess` → list blobs in success container → for each: get metadata → delete blob                             | Internal             | Azure Blob Storage | Logic App / Integration team | N/A (deletion flow)           | 3-second polling interval       | Azure Blob Storage     | None (terminal flow)            | workflows/.../OrdersPlacedCompleteProcess/workflow.json:L1-100 |
 
-### 5.5 Data Services
+### ⚙️ 5.5 Data Services
 
 | Component                          | Description                                                                                                                                                                                                                                                    | Classification | Storage             | Owner           | Retention | Freshness SLA            | Source Systems                          | Consumers       | Source File                                                  |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------- | --------------- | --------- | ------------------------ | --------------------------------------- | --------------- | ------------------------------------------------------------ |
@@ -487,7 +503,7 @@ erDiagram
 | OrderService                       | Business logic service (IOrderService); PlaceOrderAsync with OTel tracing + counter metrics; PlaceOrdersBatchAsync; GetOrdersAsync; GetOrderByIdAsync; DeleteOrderAsync; DeleteOrdersBatchAsync; ListMessagesFromTopicsAsync; uses Meter for observability     | Internal       | N/A (orchestration) | Orders API team | N/A       | Inherits repository SLAs | IOrderRepository, IOrdersMessageHandler | API Controllers | src/eShop.Orders.API/Services/OrderService.cs:L1-80          |
 | Orders REST API (eShop.Orders.API) | ASP.NET Core Web API; exposes CRUD endpoints to eShop Web App and Logic App workflows; configures OpenAPI/Swagger; health checks for DB and Service Bus                                                                                                        | Internal       | N/A (API gateway)   | Orders API team | N/A       | Per endpoint SLA         | eShop Web App, Logic App                | OrderService    | src/eShop.Orders.API/Program.cs:L1-160                       |
 
-### 5.6 Data Governance
+### 🏛️ 5.6 Data Governance
 
 | Component                          | Description                                                                                                                                                                | Classification | Storage       | Owner               | Retention               | Freshness SLA  | Source Systems | Consumers                       | Source File                           |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------- | ------------------- | ----------------------- | -------------- | -------------- | ------------------------------- | ------------------------------------- |
@@ -496,7 +512,7 @@ erDiagram
 | Diagnostic Settings (Storage)      | Storage account metrics exported to Log Analytics workspace and a dedicated storage account for metrics; diagnostic resource `${wfSA.name}-diag`                           | Internal       | Log Analytics | Infrastructure team | Log Analytics retention | Near-real-time | Azure Monitor  | Log Analytics workspace         | infra/shared/data/main.bicep:L233-242 |
 | Private Endpoint Network Isolation | Private DNS zones and endpoints for blob, file, table, queue (storage) and SQL services; VNet-linked with `registrationEnabled: false`; prevents public DNS resolution     | Internal       | N/A (network) | Infrastructure team | N/A                     | N/A            | Azure VNet     | All data store consumers        | infra/shared/data/main.bicep:L244-400 |
 
-### 5.7 Data Quality Rules
+### ✅ 5.7 Data Quality Rules
 
 | Component                      | Description                                                                                                                                                                           | Classification | Storage                   | Owner           | Retention | Freshness SLA        | Source Systems    | Consumers             | Source File                                        |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------- | --------------- | --------- | -------------------- | ----------------- | --------------------- | -------------------------------------------------- |
@@ -506,18 +522,18 @@ erDiagram
 | EF Core Retry on Failure       | `EnableRetryOnFailure(maxRetryCount:5, maxRetryDelay:30s)` configured on SqlServer options; handles Azure SQL transient faults automatically                                          | Internal       | N/A (resiliency)          | Orders API team | N/A       | 30s max retry window | Azure SQL         | OrderRepository       | src/eShop.Orders.API/Program.cs:L38-45             |
 | SQL Command Timeout            | 120-second command timeout on all SQL operations; prevents runaway queries from exhausting connection pool                                                                            | Internal       | N/A (resiliency)          | Orders API team | N/A       | 120s max             | Azure SQL         | OrderRepository       | src/eShop.Orders.API/Program.cs:L47-50             |
 
-### 5.8 Master Data
+### 🌐 5.8 Master Data
 
 Not detected in source files. The solution manages transactional order data only. No master data entities (golden records, canonical customer profiles, product catalogues, or reference data stores) were identified. If the solution evolves to include product catalogue or customer master data, this section should be revisited.
 
-### 5.9 Data Transformations
+### 🔄 5.9 Data Transformations
 
 | Component               | Description                                                                                                                                                                                                                                                                     | Classification | Storage                  | Owner            | Retention | Freshness SLA | Source Systems          | Consumers                | Source File                                            |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------ | ---------------- | --------- | ------------- | ----------------------- | ------------------------ | ------------------------------------------------------ |
 | OrderMapper             | 4 extension methods providing bidirectional mapping: (1) `Order.ToEntity()` → `OrderEntity`, (2) `OrderEntity.ToDomainModel()` → `Order`, (3) `OrderProduct.ToEntity()` → `OrderProductEntity`, (4) `OrderProductEntity.ToDomainModel()` → `OrderProduct`; null checks enforced | Internal       | N/A (in-memory)          | Orders API team  | N/A       | In-process    | Domain models           | EF Core entities         | src/eShop.Orders.API/data/OrderMapper.cs:L1-80         |
 | Logic App Base64 Decode | Service Bus message ContentData decoded via `base64ToString()` for HTTP POST body and `base64ToBinary()` for Blob write body; standard Logic Apps workflow expression pattern                                                                                                   | Internal       | N/A (runtime expression) | Integration team | N/A       | Workflow-time | Service Bus ContentData | HTTP action, Blob action | workflows/.../OrdersPlacedProcess/workflow.json:L18-25 |
 
-### 5.10 Data Contracts
+### 📝 5.10 Data Contracts
 
 | Component             | Description                                                                                                                                                                                                                             | Classification | Storage        | Owner           | Retention          | Freshness SLA | Source Systems                                 | Consumers       | Source File                                                    |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------- | --------------- | ------------------ | ------------- | ---------------------------------------------- | --------------- | -------------------------------------------------------------- |
@@ -525,7 +541,7 @@ Not detected in source files. The solution manages transactional order data only
 | IOrderService         | Interface defining 7 async operations: PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync, ListMessagesFromTopicsAsync; service boundary contract                      | Internal       | N/A (contract) | Orders API team | Version-controlled | N/A           | OrderService (impl)                            | API Controllers | src/eShop.Orders.API/Interfaces/IOrderService.cs:L1-60         |
 | IOrdersMessageHandler | Interface defining 3 async messaging operations: SendOrderMessageAsync, SendOrdersBatchMessageAsync, ListMessagesAsync; supports both real (Service Bus) and no-op (development) implementations                                        | Internal       | N/A (contract) | Orders API team | Version-controlled | N/A           | OrdersMessageHandler, NoOpOrdersMessageHandler | OrderService    | src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:L1-40 |
 
-### 5.11 Data Security
+### 🔒 5.11 Data Security
 
 | Component                          | Description                                                                                                                                                                                                               | Classification | Storage              | Owner                             | Retention | Freshness SLA | Source Systems  | Consumers            | Source File                            |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------------- | --------------------------------- | --------- | ------------- | --------------- | -------------------- | -------------------------------------- |
@@ -541,7 +557,7 @@ Not detected in source files. The solution manages transactional order data only
 
 ---
 
-## Section 6: Architecture Decisions
+## ⚖️ Section 6: Architecture Decisions
 
 ### Overview
 
@@ -549,7 +565,7 @@ Architecture decisions for the data layer reflect pragmatic choices aligned with
 
 This section captures the most architecturally significant choices. Teams should formalise these ADRs in a dedicated `/docs/decisions/` directory with full context, alternatives considered, and consequences.
 
-### ADR Summary
+### 📋 ADR Summary
 
 | ID      | Title                                                                 | Status   | Date     |
 | ------- | --------------------------------------------------------------------- | -------- | -------- |
@@ -561,7 +577,7 @@ This section captures the most architecturally significant choices. Teams should
 | ADR-006 | Managed Identity for All Service-to-Data Authentication               | Inferred | Inferred |
 | ADR-007 | Application-Generated String PKs over Database Auto-Increment         | Inferred | Inferred |
 
-### 6.1 Detailed ADRs
+### 📄 6.1 Detailed ADRs
 
 #### 6.1.1 ADR-001: Use Entity Framework Core with Repository Pattern
 
@@ -661,7 +677,7 @@ This section captures the most architecturally significant choices. Teams should
 
 ---
 
-## Section 7: Architecture Standards
+## 📐 Section 7: Architecture Standards
 
 ### Overview
 
@@ -669,7 +685,7 @@ The data layer architecture follows a consistent set of observable standards der
 
 The codebase demonstrates good discipline in naming, schema design, and security. The primary gap is the absence of a written standards document that codifies these practices for new contributors.
 
-### Data Naming Conventions
+### 📛 Data Naming Conventions
 
 | Convention            | Rule                                             | Examples                                              | Source                                    |
 | --------------------- | ------------------------------------------------ | ----------------------------------------------------- | ----------------------------------------- |
@@ -684,7 +700,7 @@ The codebase demonstrates good discipline in naming, schema design, and security
 | Index Names           | `IX_{Table}_{Column}`                            | `IX_Orders_CustomerId`, `IX_OrderProducts_OrderId`    | `OrderDbV1.cs:L56-68`                     |
 | Constraint Names      | `PK_{Table}`, `FK_{Table}_{Referenced}_{Column}` | `PK_Orders`, `FK_OrderProducts_Orders_OrderId`        | `OrderDbV1.cs:L25-50`                     |
 
-### Schema Design Standards
+### 📏 Schema Design Standards
 
 | Standard                  | Description                                                                             | Implementation                                |
 | ------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------- |
@@ -695,7 +711,7 @@ The codebase demonstrates good discipline in naming, schema design, and security
 | Cascade Delete            | Child entities (OrderProducts) CASCADE DELETE on parent (Order) deletion                | `OrderDbContext.cs:L82-85`                    |
 | Migration Naming          | `{timestamp}_{MigrationName}` format                                                    | `20251227014858_OrderDbV1.cs`                 |
 
-### Data Quality Standards
+### ✅ Data Quality Standards
 
 | Standard                            | Description                                                                                                  | Enforcement Point                                     |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
@@ -707,7 +723,7 @@ The codebase demonstrates good discipline in naming, schema design, and security
 
 ---
 
-## Section 8: Dependencies & Integration
+## 🔗 Section 8: Dependencies & Integration
 
 ### Overview
 
@@ -717,7 +733,7 @@ Integration contracts are defined at the interface boundary (`IOrderRepository`,
 
 The two Logic App workflows represent the external data integration surface: `OrdersPlacedProcess` is the data intake pipeline (Service Bus → API → Blob), and `OrdersPlacedCompleteProcess` is the data housekeeping pipeline (Blob → archive/delete). Both depend on the Orders REST API as their data access gateway.
 
-### Data Flow Patterns
+### 🌊 Data Flow Patterns
 
 | Pattern                 | Direction                            | Transport                  | Contract                                  | Source                                      |
 | ----------------------- | ------------------------------------ | -------------------------- | ----------------------------------------- | ------------------------------------------- |
@@ -813,7 +829,7 @@ flowchart TB
 
 ✅ Mermaid Verification: 5/5 | Score: 97/100 | Diagrams: 1 | Violations: 0
 
-### Producer-Consumer Relationships
+### 🔄 Producer-Consumer Relationships
 
 | Producer                                | Data Produced                   | Transport        | Consumer                                | Data Used For                   |
 | --------------------------------------- | ------------------------------- | ---------------- | --------------------------------------- | ------------------------------- |
@@ -830,7 +846,7 @@ The data integration topology is clean, event-driven, and security-consistent. A
 
 ---
 
-## Section 9: Governance & Management
+## 🛡️ Section 9: Governance & Management
 
 ### Overview
 
@@ -838,7 +854,7 @@ Data governance in the Azure-LogicApps-Monitoring solution is implemented at the
 
 Formal governance artefacts — data ownership RACI, retention schedules, classification registry, and a data lineage graph — are not present in the current codebase. The architecture is production-secure but pre-mature from a formal data governance standpoint. The recommendations below define the remediation path.
 
-### Data Ownership Model
+### 👤 Data Ownership Model
 
 | Data Asset                          | Owning Team                  | Steward Role               | Access Pattern                                  | Source Evidence                         |
 | ----------------------------------- | ---------------------------- | -------------------------- | ----------------------------------------------- | --------------------------------------- |
@@ -848,7 +864,7 @@ Formal governance artefacts — data ownership RACI, retention schedules, classi
 | Azure Service Bus (ordersplaced)    | Orders API team              | API lead                   | API write; Logic App read (MSI)                 | `app.AppHost/AppHost.cs:L160-200`       |
 | Domain models (Order, OrderProduct) | Shared / Platform team       | app.ServiceDefaults owners | Shared across all services                      | `app.ServiceDefaults/CommonTypes.cs`    |
 
-### Access Control Model
+### 🔐 Access Control Model
 
 ```mermaid
 ---
@@ -922,7 +938,7 @@ flowchart LR
 
 ✅ Mermaid Verification: 5/5 | Score: 96/100 | Diagrams: 1 | Violations: 0
 
-### Audit & Compliance
+### 🔍 Audit & Compliance
 
 | Control                      | Status                       | Configuration                                              | Gap / Recommendation                       |
 | ---------------------------- | ---------------------------- | ---------------------------------------------------------- | ------------------------------------------ |
@@ -935,7 +951,7 @@ flowchart LR
 | PII Access Audit             | ⚠️ Partial                   | Sensitive logging suppressed in prod; no field-level audit | Add audit trail for DeliveryAddress access |
 | Network Audit Logs           | ✅ Configured                | Private endpoints with DNS zones                           | Review NSG flow logs if VNet extended      |
 
-### Governance Recommendations (Priority Order)
+### 💡 Governance Recommendations (Priority Order)
 
 1. **P1 — Define Data Retention Policies**: Add Azure Blob lifecycle management rules for all three order containers; define SQL retention period for Orders/OrderProducts; implement via Bicep `Microsoft.Storage/storageAccounts/managementPolicies`.
 2. **P1 — Configure SQL Server Audit**: Enable SQL audit to Log Analytics workspace via Bicep `Microsoft.Sql/servers/auditingSettings`; capture login, query, and schema-change events.
@@ -945,7 +961,7 @@ flowchart LR
 
 ---
 
-## Document Metadata
+## 📂 Document Metadata
 
 | Field              | Value                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------- |
