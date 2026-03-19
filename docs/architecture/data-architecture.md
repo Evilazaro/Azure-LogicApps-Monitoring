@@ -360,24 +360,24 @@ The architecture uses a **layered data access pattern**:
 
 ### 💾 Storage Distribution
 
-| Store                                       | Type           | Engine                 | Data Domain                  | Approx. Schema Size        |
-| ------------------------------------------- | -------------- | ---------------------- | ---------------------------- | -------------------------- |
-| Azure SQL Database                          | Relational     | SQL Server (Azure)     | Orders, OrderProducts        | 2 tables, 11 columns total |
-| Blob Container: ordersprocessedsuccessfully | Object storage | Azure Blob (StorageV2) | Processed order blobs (JSON) | Schema-free                |
-| Blob Container: ordersprocessedwitherrors   | Object storage | Azure Blob (StorageV2) | Error order blobs (JSON)     | Schema-free                |
-| Blob Container: ordersprocessedcompleted    | Object storage | Azure Blob (StorageV2) | Completed order archive      | Schema-free                |
-| Azure File Share: workflowstate             | File storage   | Azure Files (SMB)      | Logic App workflow state     | Schema-free                |
+| Store                                          | Type           | Engine                 | Data Domain                  | Approx. Schema Size        |
+| ---------------------------------------------- | -------------- | ---------------------- | ---------------------------- | -------------------------- |
+| 🗄️ Azure SQL Database                          | Relational     | SQL Server (Azure)     | Orders, OrderProducts        | 2 tables, 11 columns total |
+| ☁️ Blob Container: ordersprocessedsuccessfully | Object storage | Azure Blob (StorageV2) | Processed order blobs (JSON) | Schema-free                |
+| ☁️ Blob Container: ordersprocessedwitherrors   | Object storage | Azure Blob (StorageV2) | Error order blobs (JSON)     | Schema-free                |
+| ☁️ Blob Container: ordersprocessedcompleted    | Object storage | Azure Blob (StorageV2) | Completed order archive      | Schema-free                |
+| 📁 Azure File Share: workflowstate             | File storage   | Azure Files (SMB)      | Logic App workflow state     | Schema-free                |
 
 ### 📊 Quality Baseline
 
-| Dimension                | Current State                         | Target State                               | Gap                                                          |
-| ------------------------ | ------------------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
-| Schema completeness      | All fields typed and constrained      | All fields typed with documented semantics | Missing field-level descriptions in DB                       |
-| Referential integrity    | FK + CASCADE DELETE enforced          | FK enforced, cascade reviewed              | Cascade delete may be too broad for auditing                 |
-| Input validation         | DataAnnotations on domain models      | Validated at all entry points              | No custom validators in API controllers beyond model binding |
-| Transient fault handling | Retry logic in EF Core and HttpClient | Circuit breaker pattern                    | No circuit breaker for DB; retry only                        |
-| Data masking             | None detected                         | PII fields masked in logs                  | DeliveryAddress may appear in EF debug logs (dev only)       |
-| Retention                | Not defined                           | Defined per data class                     | No explicit retention policy in Bicep or code                |
+| Dimension                   | Current State                         | Target State                               | Gap                                                          |
+| --------------------------- | ------------------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
+| 🏗️ Schema completeness      | All fields typed and constrained      | All fields typed with documented semantics | Missing field-level descriptions in DB                       |
+| 🔗 Referential integrity    | FK + CASCADE DELETE enforced          | FK enforced, cascade reviewed              | Cascade delete may be too broad for auditing                 |
+| ✅ Input validation         | DataAnnotations on domain models      | Validated at all entry points              | No custom validators in API controllers beyond model binding |
+| 🔄 Transient fault handling | Retry logic in EF Core and HttpClient | Circuit breaker pattern                    | No circuit breaker for DB; retry only                        |
+| 👁️ Data masking             | None detected                         | PII fields masked in logs                  | DeliveryAddress may appear in EF debug logs (dev only)       |
+| ⏱️ Retention                | Not defined                           | Defined per data class                     | No explicit retention policy in Bicep or code                |
 
 ### 🎯 Governance Maturity
 
