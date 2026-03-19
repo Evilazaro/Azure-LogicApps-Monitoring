@@ -7,7 +7,20 @@
 
 ---
 
-## 1. Executive Summary
+## 📑 Quick Navigation
+
+| #   | 🔖 Section                                                    | 📄 Description                                          |
+| --- | ------------------------------------------------------------- | ------------------------------------------------------- |
+| 1   | [📋 Executive Summary](#1-executive-summary)                  | Component stats, quality gate, coverage assessment      |
+| 2   | [🗺️ Architecture Landscape](#2-architecture-landscape)        | 11-type TOGAF component inventory with Mermaid diagrams |
+| 3   | [🧭 Architecture Principles](#3-architecture-principles)      | 5 cloud-native design principles with evidence          |
+| 4   | [📍 Current State Baseline](#4-current-state-baseline)        | As-is capability maturity & value stream analysis       |
+| 5   | [📚 Component Catalog](#5-component-catalog)                  | Detailed specifications for all 40 components           |
+| 8   | [🔗 Dependencies & Integration](#8-dependencies--integration) | Cross-layer dependency & integration maps               |
+
+---
+
+## 1. 📋 Executive Summary
 
 ### Overview
 
@@ -38,7 +51,7 @@ The portfolio centres on three core business capabilities — **Order Management
 
 ---
 
-## 2. Architecture Landscape
+## 2. 🗺️ Architecture Landscape
 
 ### Overview
 
@@ -48,7 +61,7 @@ The repository encodes its business architecture through three artefact types: s
 
 The inventory identifies strong capability coverage in order management and event-driven processing, moderate coverage in roles and actor definitions, and foundational but well-defined KPI instrumentation. No major gaps were detected in core operational processes; the absence of explicit strategy and governance documents is the most notable structural gap relative to a full TOGAF Business Architecture artefact set.
 
-### Business Capability Map
+### 🗺️ Business Capability Map
 
 ```mermaid
 ---
@@ -114,7 +127,7 @@ flowchart TB
 
 ---
 
-### Business Component Inventory Overview
+### 📊 Business Component Inventory Overview
 
 ```mermaid
 ---
@@ -183,13 +196,13 @@ flowchart LR
 
 ---
 
-### 2.1 Business Strategy (1)
+### 2.1 🏁 Business Strategy (1)
 
 | Name                                       | Description                                                                                                                                                                                                                        | Source           | Confidence | Maturity    |
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------- | ----------- |
 | Cloud-Native Event-Driven Order Management | Strategic intent to deliver a production-grade reference implementation for resilient, observable, event-driven order processing on Azure, integrating .NET 10 Aspire with Logic Apps Standard and managed identity authentication | `README.md:1-15` | 0.82       | 3 – Defined |
 
-### 2.2 Business Capabilities (3)
+### 2.2 💡 Business Capabilities (3)
 
 | Name                          | Description                                                                                                                                           | Source                                                                                        | Confidence | Maturity     |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------- | ------------ |
@@ -197,14 +210,14 @@ flowchart LR
 | Event-Driven Order Processing | Asynchronous processing of placed orders via Azure Service Bus topic subscriptions and Logic Apps Standard stateful workflows                         | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-120` | 0.89       | 3 – Defined  |
 | Observability & Monitoring    | Full-stack OpenTelemetry telemetry including distributed traces, custom counters and histograms, and structured logs exported to Application Insights | `src/eShop.Orders.API/Services/OrderService.cs:55-75`                                         | 0.87       | 4 – Measured |
 
-### 2.3 Value Streams (2)
+### 2.3 🌊 Value Streams (2)
 
 | Name                                     | Description                                                                                                                                                   | Source              | Confidence | Maturity    |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | ---------- | ----------- |
 | Order Placement Value Stream             | End-to-end flow from customer order submission through validation, persistence, and event publication to Service Bus                                          | `README.md:103-116` | 0.81       | 3 – Defined |
 | Order Fulfillment & Cleanup Value Stream | Asynchronous flow from Service Bus message consumption through Logic Apps orchestration, API processing, and blob-based state tracking with automated cleanup | `README.md:116-126` | 0.81       | 3 – Defined |
 
-### 2.4 Business Processes (4)
+### 2.4 🔄 Business Processes (4)
 
 | Name                                        | Description                                                                                                                                                                        | Source                                                                                               | Confidence | Maturity     |
 | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------- | ------------ |
@@ -213,7 +226,7 @@ flowchart LR
 | Order Fulfillment (OrdersPlacedProcess)     | Stateful Logic Apps workflow: polls Service Bus every second, validates message content type, calls Orders API `/process` endpoint, writes processing result to Azure Blob Storage | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-120`        | 0.93       | 3 – Defined  |
 | Order Cleanup (OrdersPlacedCompleteProcess) | Recurrence-based Logic Apps workflow: triggered every 3 seconds, lists successfully processed blobs, retrieves metadata, and deletes each blob to complete the order lifecycle     | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-80` | 0.93       | 3 – Defined  |
 
-### 2.5 Business Services (4)
+### 2.5 🛠️ Business Services (4)
 
 | Name                      | Description                                                                                                                      | Source                                                           | Confidence | Maturity     |
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ---------- | ------------ |
@@ -222,7 +235,7 @@ flowchart LR
 | Order Messaging Service   | Service Bus messaging contract for publishing and listing order messages via Azure Service Bus topics                            | `src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:1-30`  | 0.87       | 3 – Defined  |
 | Orders Web Client Service | HTTP client service providing order management operations (place, list, view, delete) from the Blazor frontend to the Orders API | `src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-60` | 0.84       | 3 – Defined  |
 
-### 2.6 Business Functions (3)
+### 2.6 🧩 Business Functions (3)
 
 | Name                       | Description                                                                                                                                      | Source                                                                                               | Confidence | Maturity     |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ---------- | ------------ |
@@ -230,7 +243,7 @@ flowchart LR
 | Order Orchestration        | Logic Apps workflow execution function that consumes Service Bus events, calls the Orders API process endpoint, and writes outcome blobs         | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:5-70`         | 0.91       | 3 – Defined  |
 | Order Monitoring & Cleanup | Recurrence function that inspects processed-order blob state and removes completed records, maintaining storage hygiene                          | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:5-80` | 0.88       | 3 – Defined  |
 
-### 2.7 Business Roles & Actors (4)
+### 2.7 👤 Business Roles & Actors (4)
 
 | Name                       | Description                                                                                                                                                               | Source                                                                                       | Confidence | Maturity    |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------- | ----------- |
@@ -239,7 +252,7 @@ flowchart LR
 | Logic Apps Automated Agent | Automated system actor executing the OrdersPlacedProcess and OrdersPlacedCompleteProcess workflows; interacts with Service Bus, Orders API, and Blob Storage              | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:5-25` | 0.85       | 3 – Defined |
 | CI/CD Pipeline Agent       | Automated deployment actor (`azd`, GitHub Actions) that provisions infrastructure, builds container images, deploys Logic Apps workflows, and configures managed identity | `azure.yaml:55-130`                                                                          | 0.80       | 3 – Defined |
 
-### 2.8 Business Rules (6)
+### 2.8 📐 Business Rules (6)
 
 | Name                           | Description                                                                                                                                                                      | Source                                                                                       | Confidence | Maturity     |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------- | ------------ |
@@ -250,7 +263,7 @@ flowchart LR
 | BR-005: Batch Size Limit       | Batch order placement is capped at 50 orders per batch request with a maximum of 10 concurrent operations                                                                        | `src/eShop.Orders.API/Services/OrderService.cs:195-200`                                      | 0.89       | 3 – Defined  |
 | BR-006: JSON Content-Type Gate | Logic Apps process workflow only proceeds with order processing if the incoming Service Bus message has `ContentType = application/json`; non-JSON messages are silently skipped | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:8-16` | 0.93       | 3 – Defined  |
 
-### 2.9 Business Events (5)
+### 2.9 ⚡ Business Events (5)
 
 | Name                     | Description                                                                                                                                                      | Source                                                                                                | Confidence | Maturity     |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------- | ------------ |
@@ -260,7 +273,7 @@ flowchart LR
 | BlobCleanupTriggered     | Emitted every 3 seconds by the OrdersPlacedCompleteProcess recurrence trigger to initiate cleanup of successfully processed order blobs                          | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:20-30` | 0.88       | 3 – Defined  |
 | BatchProcessingRequested | Emitted when the `/api/orders/batch` endpoint is invoked with a collection of orders for parallel placement                                                      | `src/eShop.Orders.API/Controllers/OrdersController.cs:150-175`                                        | 0.84       | 3 – Defined  |
 
-### 2.10 Business Objects/Entities (4)
+### 2.10 📦 Business Objects/Entities (4)
 
 | Name             | Description                                                                                                                                                                                       | Source                                                                                        | Confidence | Maturity     |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------- | ------------ |
@@ -269,7 +282,7 @@ flowchart LR
 | OrderMessage     | Event envelope representing a serialised Order payload published to the Azure Service Bus topic `ordersplaced` with `MessageId`, `ContentType: application/json`, and OpenTelemetry trace context | `src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:75-110`                                | 0.87       | 3 – Defined  |
 | ProcessingResult | Processing outcome artefact persisted as an Azure Blob Storage object in either `/ordersprocessedsuccessfully/{MessageId}` or `/ordersprocessedwitherrors/{MessageId}`                            | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:36-80` | 0.88       | 3 – Defined  |
 
-### 2.11 KPIs & Metrics (4)
+### 2.11 📈 KPIs & Metrics (4)
 
 | Name                             | Description                                                                                                                        | Source                                                | Confidence | Maturity     |
 | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ---------- | ------------ |
@@ -286,7 +299,7 @@ The primary gap is the absence of explicit TOGAF-style strategy, capability mode
 
 ---
 
-## 3. Architecture Principles
+## 3. 🧭 Architecture Principles
 
 ### Overview
 
@@ -296,35 +309,35 @@ The principles reflect a cloud-native, event-driven philosophy that prioritises 
 
 Five core principles were identified, spanning business capability design, security posture, operational quality, data integrity, and infrastructure governance. These principles are consistent with TOGAF 10 Business Architecture standards and informed by observable patterns in the service contracts, workflow definitions, and infrastructure-as-code modules.
 
-### P1: Event-Driven Decoupling
+### ⚡ P1: Event-Driven Decoupling
 
 Business capabilities communicate exclusively through events rather than direct synchronous calls between the order placement and order fulfilment domains. The Orders API publishes to Service Bus; Logic Apps consumes from Service Bus. Neither side has a direct reference to the other's runtime configuration at design time.
 
 **Evidence**: `src/eShop.Orders.API/Services/OrderService.cs` (`SendOrderMessageAsync` call after `SaveOrderAsync`); `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json` (Service Bus trigger configuration).  
 **Rationale**: Decoupling placement from fulfilment enables independent scaling, failure isolation, and incremental delivery of order processing logic without requiring coordinated deployments.
 
-### P2: Managed Identity First (Zero Secrets)
+### 🔐 P2: Managed Identity First (Zero Secrets)
 
 All service-to-service authentication uses user-assigned managed identities; no passwords, connection strings, or API keys are stored in application code or configuration.
 
 **Evidence**: `azure.yaml:55-80` (managed identity configuration); `README.md:200-215` (features table, Managed Identity row); `infra/shared/identity/main.bicep`.  
 **Rationale**: Eliminating secrets reduces the attack surface, simplifies secret rotation, and enforces least-privilege access automatically through Azure RBAC role assignments.
 
-### P3: Observability by Design
+### 👁️ P3: Observability by Design
 
 Every business operation emits distributed traces (via `ActivitySource`), custom metrics (via `Meter` / `Counter` / `Histogram`), and structured logs (via `ILogger`) with full correlation identifiers. KPIs are measurable from day one of deployment.
 
 **Evidence**: `src/eShop.Orders.API/Services/OrderService.cs:45-80` (meter, counters, histogram initialisation); `app.ServiceDefaults/Extensions.cs` (OpenTelemetry configuration).  
 **Rationale**: Quantitative observability is a prerequisite for measuring business capability maturity at Level 4 (Measured); it also enables data-driven incident response and capacity planning.
 
-### P4: Idempotent Order Operations
+### 🔁 P4: Idempotent Order Operations
 
 Order placement and processing operations are idempotent: re-submitting an existing order ID is handled gracefully (either returning the existing order or skipping duplicate processing), preventing double-charging or double-fulfilment.
 
 **Evidence**: `src/eShop.Orders.API/Services/OrderService.cs:110-118` (duplicate detection gate); `src/eShop.Orders.API/Services/OrderService.cs:265-273` (batch idempotency check).  
 **Rationale**: Idempotency is mandatory in distributed event-driven systems where at-least-once delivery can cause messages to be replayed; it protects business integrity under failure and retry conditions.
 
-### P5: Infrastructure as Code — Reproducible Environments
+### 🏗️ P5: Infrastructure as Code — Reproducible Environments
 
 All Azure resources (networking, identity, compute, storage, messaging, Logic Apps) are defined in versioned Bicep modules under `infra/`. A single `azd up` command provisions the complete topology from scratch.
 
@@ -333,7 +346,7 @@ All Azure resources (networking, identity, compute, storage, messaging, Logic Ap
 
 ---
 
-## 4. Current State Baseline
+## 4. 📍 Current State Baseline
 
 ### Overview
 
@@ -343,7 +356,7 @@ The current state is characterised by clear separation between the synchronous o
 
 Gaps in the current state baseline include the absence of formal business process model (BPMN) documents, a formal capability model registry, and explicit SLA/SLO definitions. The solution is well-suited for continued evolution toward Level 4–5 maturity by formalising these artefacts alongside the existing instrumented metrics.
 
-### Order Processing Value Stream Flow
+### 🌊 Order Processing Value Stream Flow
 
 ```mermaid
 ---
@@ -410,7 +423,7 @@ flowchart LR
 
 ---
 
-### As-Is Business Architecture View
+### 🏛️ As-Is Business Architecture View
 
 ```mermaid
 ---
@@ -518,7 +531,7 @@ Gaps in the current state include the absence of formal SLA/SLO targets mapped t
 
 ---
 
-## 5. Component Catalog
+## 5. 📚 Component Catalog
 
 ### Overview
 
@@ -530,7 +543,7 @@ Business component descriptions in this catalog document business intent and sem
 
 ---
 
-### 5.1 Business Strategy Specifications
+### 5.1 🏁 Business Strategy Specifications
 
 This subsection documents the high-level strategic intent observable in the repository's project files and documentation. The single detected Business Strategy component describes the overarching business objective that drives the architecture's design decisions.
 
@@ -555,7 +568,7 @@ This subsection documents the high-level strategic intent observable in the repo
 
 ---
 
-### 5.2 Business Capabilities Specifications
+### 5.2 💡 Business Capabilities Specifications
 
 This subsection documents the three core business capabilities that define what the organisation's system is able to do. Capabilities are long-lived, stable architectural building blocks sourced from service interface contracts and operational features observable in the codebase.
 
@@ -603,7 +616,7 @@ This subsection documents the three core business capabilities that define what 
 
 ---
 
-### 5.3 Value Streams Specifications
+### 5.3 🌊 Value Streams Specifications
 
 This subsection documents the two end-to-end value streams that describe how business value flows from customer intent to fulfilment outcome. Both streams are evidenced by the flow documented in README.md and realised through the service and workflow implementations.
 
@@ -633,7 +646,7 @@ This subsection documents the two end-to-end value streams that describe how bus
 
 ---
 
-### 5.4 Business Processes Specifications
+### 5.4 🔄 Business Processes Specifications
 
 This subsection documents the four business processes representing standardised operational workflows observable in the service implementation and Logic Apps workflow definitions.
 
@@ -709,7 +722,7 @@ This subsection documents the four business processes representing standardised 
 
 ---
 
-### 5.5 Business Services Specifications
+### 5.5 🛠️ Business Services Specifications
 
 This subsection documents the four business service contracts that represent the functional boundaries within the architecture. Each service is defined by an interface contract (with one exception, the web client service).
 
@@ -759,7 +772,7 @@ This subsection documents the four business service contracts that represent the
 
 ---
 
-### 5.6 Business Functions Specifications
+### 5.6 🧩 Business Functions Specifications
 
 This subsection documents the three business functions that represent the discrete, named units of business activity delivered by this solution.
 
@@ -801,7 +814,7 @@ This subsection documents the three business functions that represent the discre
 
 ---
 
-### 5.7 Business Roles & Actors Specifications
+### 5.7 👤 Business Roles & Actors Specifications
 
 This subsection documents the four business roles and actors who interact with the order management system. Roles are inferred from usage documentation, deployment scripts, and workflow trigger types. All role descriptions focus on business interaction, not technical implementation.
 
@@ -855,7 +868,7 @@ This subsection documents the four business roles and actors who interact with t
 
 ---
 
-### 5.8 Business Rules Specifications
+### 5.8 📐 Business Rules Specifications
 
 This subsection documents the six business rules governing order validity, uniqueness, processing eligibility, and operational limits. All rules are enforced as first-class constraints in service logic or workflow conditions.
 
@@ -939,7 +952,7 @@ This subsection documents the six business rules governing order validity, uniqu
 
 ---
 
-### 5.9 Business Events Specifications
+### 5.9 ⚡ Business Events Specifications
 
 This subsection documents the five business events that trigger or result from business process execution. Events are derived from observable state transitions and message publications in service code and workflow definitions.
 
@@ -1005,7 +1018,7 @@ This subsection documents the five business events that trigger or result from b
 
 ---
 
-### 5.10 Business Objects/Entities Specifications
+### 5.10 📦 Business Objects/Entities Specifications
 
 This subsection documents the four domain business objects that form the data model of the order management domain. All objects are defined as immutable record types or structured JSON artefacts.
 
@@ -1059,7 +1072,7 @@ This subsection documents the four domain business objects that form the data mo
 
 ---
 
-### 5.11 KPIs & Metrics Specifications
+### 5.11 📈 KPIs & Metrics Specifications
 
 This subsection documents the four business KPIs instrumented in the Order Management Service via the `eShop.Orders.API` OpenTelemetry Meter. All metrics are emitted in production and accessible via Application Insights.
 
@@ -1121,7 +1134,7 @@ This subsection documents the four business KPIs instrumented in the Order Manag
 
 ---
 
-### Order Fulfillment Process Flow
+### ⚡ Order Fulfillment Process Flow
 
 ```mermaid
 ---
@@ -1202,7 +1215,7 @@ Gaps identified in the Component Catalog include the absence of SLO/SLA specific
 
 ---
 
-## 8. Dependencies & Integration
+## 8. 🔗 Dependencies & Integration
 
 ### Overview
 
@@ -1212,7 +1225,7 @@ The integration topology follows a hub-and-spoke pattern around the Orders API, 
 
 Business dependencies on infrastructure services (Service Bus, SQL Database, Blob Storage) are all accessed via managed identity, eliminating credential-based coupling. The Aspire AppHost substitutes these services with local emulators during development, preserving the integration contracts without requiring live Azure resources. Cross-cutting observability integration routes all components to Application Insights via OpenTelemetry, providing unified trace and metric correlation across the Business layer.
 
-### Dependencies & Integration Map
+### 🔗 Dependencies & Integration Map
 
 ```mermaid
 ---
