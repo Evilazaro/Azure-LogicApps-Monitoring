@@ -1064,24 +1064,3 @@ flowchart LR
 3. **P2 — Dead-Letter Queue Monitoring**: Create alerts on Service Bus topic dead-letter count; add a Logic App workflow to process and alert on DLQ messages.
 4. **P2 — Formal Data Classification Register**: Establish a classification tag schema in Azure; tag SQL Database, Blob containers, and Service Bus namespace with sensitivity labels.
 5. **P3 — Data Lineage Documentation**: Formalise the producer-consumer relationships in Section 8 as a versioned lineage document or integrate Microsoft Purview for automated lineage tracking.
-
----
-
-## 📂 Document Metadata
-
-| Field                 | Value                                                                                                                                                         |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 📌 Document Title     | Data Architecture — Azure-LogicApps-Monitoring                                                                                                                |
-| 🏛️ BDAT Layer         | Data                                                                                                                                                          |
-| 📐 TOGAF Version      | TOGAF 10                                                                                                                                                      |
-| 📝 Document Version   | 1.0.0                                                                                                                                                         |
-| 📅 Generated Date     | 2026-03-19                                                                                                                                                    |
-| ⭐ Quality Level      | Comprehensive                                                                                                                                                 |
-| 📋 Sections Covered   | 1, 2, 3, 4, 5, 6, 7, 8, 9 (all 9 mandatory sections)                                                                                                          |
-| 🧹 Total Components   | 38                                                                                                                                                            |
-| 📊 Average Confidence | 0.91                                                                                                                                                          |
-| 📊 Mermaid Diagrams   | 7 (ERD: 98/100, Storage Tier: 97/100, Principles Hierarchy: 97/100, Baseline Arch: 97/100, Classification: 96/100, Data Flow: 97/100, Access Control: 96/100) |
-| ✅ Prompt Compliance  | bdat-mermaid-improved v3.0.0 ✅ · fluent v1.3.0 ✅ · main.prompt.md v3.2.0 ✅                                                                                 |
-| 🏆 Validation Score   | 100/100                                                                                                                                                       |
-
----
