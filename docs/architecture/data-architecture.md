@@ -387,16 +387,16 @@ Evidence: Security controls are consistently applied (MSI, TLS 1.2, private endp
 
 ### 🔐 Compliance Posture
 
-| Control               | Status               | Evidence                                                                     |
-| --------------------- | -------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------- |
-| Encryption in Transit | ✅ Enforced          | TLS 1.2 minimum on all storage; HTTPS-only                                   | `infra/shared/data/main.bicep:L168`                |
-| Encryption at Rest    | ✅ Platform-default  | Azure SQL and Storage use platform-managed keys by default                   | Azure platform default                             |
-| Access Control        | ✅ Identity-based    | MSI for all service-to-data connections; Entra ID-only SQL                   | `connections.json`, `infra/shared/data/main.bicep` |
-| Network Isolation     | ✅ Private endpoints | All SQL and Storage endpoints private; DNS zones configured                  | `infra/shared/data/main.bicep:L240–L400`           |
-| Audit Logging         | ⚠️ Partial           | Storage diagnostics configured; SQL audit not explicitly configured in Bicep | `infra/shared/data/main.bicep:L233–L240`           |
-| Data Classification   | ⚠️ Informal          | No formal classification policy — classification inferred from field naming  | Not detected in source                             |
-| Retention Policy      | ❌ Not detected      | No blob lifecycle policy or SQL data retention configuration                 | Not detected in source                             |
-| PII Handling          | ⚠️ Dev only          | Sensitive data logging suppressed in production; no masking in storage       | `Program.cs:L57–L61`                               |
+| Control                  | Status               | Notes                                                                        |
+| ------------------------ | -------------------- | ---------------------------------------------------------------------------- |
+| 🔐 Encryption in Transit | ✅ Enforced          | TLS 1.2 minimum on all storage; HTTPS-only                                   |
+| 🔐 Encryption at Rest    | ✅ Platform-default  | Azure SQL and Storage use platform-managed keys by default                   |
+| 🪪 Access Control        | ✅ Identity-based    | MSI for all service-to-data connections; Entra ID-only SQL                   |
+| 🔌 Network Isolation     | ✅ Private endpoints | All SQL and Storage endpoints private; DNS zones configured                  |
+| 📋 Audit Logging         | ⚠️ Partial           | Storage diagnostics configured; SQL audit not explicitly configured in Bicep |
+| 🏷️ Data Classification   | ⚠️ Informal          | No formal classification policy — classification inferred from field naming  |
+| ⏱️ Retention Policy      | ❌ Not detected      | No blob lifecycle policy or SQL data retention configuration                 |
+| 👁️ PII Handling          | ⚠️ Dev only          | Sensitive data logging suppressed in production; no masking in storage       |
 
 ### 📝 Summary
 
@@ -416,12 +416,12 @@ The EF Core entity relationship diagram (ERD) follows immediately after the Data
 
 ### 🧩 5.1 Data Entities
 
-| Component             | Description                                                                                                                                       | Classification           | Storage                  | Owner           | Retention    | Freshness SLA    | Source Systems        | Consumers                  | Source File                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ | ------------------------ | --------------- | ------------ | ---------------- | --------------------- | -------------------------- | -------------------------------------------------------------- |
-| Order (domain)        | Immutable C# record representing a customer order; Id (string, required), CustomerId, Date (UTC), DeliveryAddress, Total (decimal), Products list | Confidential / Financial | In-memory (domain layer) | Orders API team | Not detected | Real-time        | Web App, Logic App    | Orders API Service         | app.ServiceDefaults/CommonTypes.cs:L67-115                     |
-| OrderProduct (domain) | Immutable C# record for a product line item; Id, OrderId (FK), ProductId, ProductDescription, Quantity, Price                                     | Internal / Financial     | In-memory (domain layer) | Orders API team | Not detected | Real-time        | Orders API            | Orders API Service         | app.ServiceDefaults/CommonTypes.cs:L117-170                    |
-| OrderEntity           | EF Core entity sealed class mapping to `Orders` SQL table; PK: Id (nvarchar 100), FK-owner for OrderProducts cascade                              | Confidential / Financial | Azure SQL Database       | Orders API team | Not detected | Transaction-time | Orders API Repository | OrderDbContext, Migrations | src/eShop.Orders.API/data/Entities/OrderEntity.cs:L1-57        |
-| OrderProductEntity    | EF Core entity sealed class mapping to `OrderProducts` SQL table; PK: Id, FK: OrderId → Orders.Id (CASCADE DELETE)                                | Internal / Financial     | Azure SQL Database       | Orders API team | Not detected | Transaction-time | Orders API Repository | OrderDbContext, Migrations | src/eShop.Orders.API/data/Entities/OrderProductEntity.cs:L1-62 |
+| Component                | Description                                                                                                                                       | Classification           | Storage                  | Owner           | Retention    | Freshness SLA    | Source Systems        | Consumers                  |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ | ------------------------ | --------------- | ------------ | ---------------- | --------------------- | -------------------------- |
+| 🧩 Order (domain)        | Immutable C# record representing a customer order; Id (string, required), CustomerId, Date (UTC), DeliveryAddress, Total (decimal), Products list | Confidential / Financial | In-memory (domain layer) | Orders API team | Not detected | Real-time        | Web App, Logic App    | Orders API Service         |
+| 🧩 OrderProduct (domain) | Immutable C# record for a product line item; Id, OrderId (FK), ProductId, ProductDescription, Quantity, Price                                     | Internal / Financial     | In-memory (domain layer) | Orders API team | Not detected | Real-time        | Orders API            | Orders API Service         |
+| 🗃️ OrderEntity           | EF Core entity sealed class mapping to `Orders` SQL table; PK: Id (nvarchar 100), FK-owner for OrderProducts cascade                              | Confidential / Financial | Azure SQL Database       | Orders API team | Not detected | Transaction-time | Orders API Repository | OrderDbContext, Migrations |
+| 🗃️ OrderProductEntity    | EF Core entity sealed class mapping to `OrderProducts` SQL table; PK: Id, FK: OrderId → Orders.Id (CASCADE DELETE)                                | Internal / Financial     | Azure SQL Database       | Orders API team | Not detected | Transaction-time | Orders API Repository | OrderDbContext, Migrations |
 
 ```mermaid
 ---
