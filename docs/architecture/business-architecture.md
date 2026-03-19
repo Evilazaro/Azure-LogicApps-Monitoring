@@ -30,7 +30,7 @@ The portfolio centres on three core business capabilities — **Order Management
 
 **Component summary by type**:
 
-| 🏗️ Component Type           | #️⃣ Count |
+| 🏗️ Component Type            | #️⃣ Count |
 | ---------------------------- | -------: |
 | 🏁 Business Strategy         |        1 |
 | 💡 Business Capabilities     |        3 |
