@@ -28,27 +28,6 @@ This Business Architecture analysis covers the **Azure Logic Apps Monitoring** r
 
 The portfolio centres on three core business capabilities — **Order Management**, **Event-Driven Processing**, and **Observability & Monitoring** — delivered through two value streams, four business processes, and four business services. Business rules are enforced at the domain-model and service-logic layers; metrics and KPIs are instrumented via OpenTelemetry, providing a measurable, quantitatively managed capability set. The architecture demonstrates a mature, defined (Level 3) to measured (Level 4) posture for its primary capabilities, with clear separation of concerns between order placement, asynchronous fulfillment, and operational visibility.
 
-**Component summary by type**:
-
-| 🏗️ Component Type            | #️⃣ Count |
-| ---------------------------- | -------: |
-| 🏁 Business Strategy         |        1 |
-| 💡 Business Capabilities     |        3 |
-| 🌊 Value Streams             |        2 |
-| 🔄 Business Processes        |        4 |
-| 🛠️ Business Services         |        4 |
-| 🧩 Business Functions        |        3 |
-| 👤 Business Roles & Actors   |        4 |
-| 📏 Business Rules            |        6 |
-| ⚡ Business Events           |        5 |
-| 📦 Business Objects/Entities |        4 |
-| 📈 KPIs & Metrics            |        4 |
-| **Total**                    |   **40** |
-
-**Average confidence score**: 0.86 (HIGH)  
-**Capability maturity range**: Level 3 (Defined) – Level 4 (Measured)  
-**Quality level threshold**: Comprehensive (≥ 20 components, ≥ 8 types) — **MET** ✅
-
 ---
 
 ## 2. 🗺️ Architecture Landscape
@@ -232,7 +211,7 @@ flowchart LR
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | Order Management Service  | Business logic service contract for order placement (single and batch), retrieval, deletion, and message listing operations      |
 | Order Repository Service  | Data persistence contract for storing, retrieving, paginating, and deleting orders with existence checks                         |
-| Order Messaging Service   | Service Bus messaging contract for publishing and listing order messages via Azure Service Bus topics                            |
+| Order Messaging Service   | Service Bus messaging contract for publishing single and batch order messages and listing messages via Azure Service Bus topics  |
 | Orders Web Client Service | HTTP client service providing order management operations (place, list, view, delete) from the Blazor frontend to the Orders API |
 
 ### 2.6 🧩 Business Functions (3)
@@ -710,15 +689,15 @@ This subsection documents the four business service contracts that represent the
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Service Name** | Order Repository Service                                                                                                                         |
 | **Service Type** | Data Access Service                                                                                                                              |
-| **Contract**     | `IOrderRepository` — 5 operations: SaveOrderAsync, GetAllOrdersAsync, GetOrdersPagedAsync, GetOrderByIdAsync, DeleteOrderAsync, OrderExistsAsync |
+| **Contract**     | `IOrderRepository` — 6 operations: SaveOrderAsync, GetAllOrdersAsync, GetOrdersPagedAsync, GetOrderByIdAsync, DeleteOrderAsync, OrderExistsAsync |
 
 #### 🛠️ 5.5.3 Order Messaging Service
 
-| 🔑 Attribute     | 📋 Value                                                                         |
-| ---------------- | -------------------------------------------------------------------------------- |
-| **Service Name** | Order Messaging Service                                                          |
-| **Service Type** | Integration Service                                                              |
-| **Contract**     | `IOrdersMessageHandler` — 2 operations: SendOrderMessageAsync, ListMessagesAsync |
+| 🔑 Attribute     | 📋 Value                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Service Name** | Order Messaging Service                                                                                       |
+| **Service Type** | Integration Service                                                                                           |
+| **Contract**     | `IOrdersMessageHandler` — 3 operations: SendOrderMessageAsync, SendOrdersBatchMessageAsync, ListMessagesAsync |
 
 #### 🛠️ 5.5.4 Orders Web Client Service
 
@@ -1231,31 +1210,3 @@ The Business layer integrates with the Application, Data, and Observability laye
 The primary gaps in the dependency model are: (1) no formal contract specification between the Logic Apps Fulfillment Workflow and the Orders API `/process` endpoint — a breaking change to the API response code (currently 201) would silently change the blob routing without a contract violation; (2) no Service Bus dead-letter handling or error-queue consumer is documented as a Business process, meaning messages that fail BR-006 or encounter network errors have no explicit recovery path; and (3) the recurrence intervals for BlobCleanupTriggered (3 s) and Service Bus polling (1 s) are hard-coded in workflow definitions rather than externalised as configurable business parameters. Recommended actions: define an API contract document for `/api/Orders/process`; document a dead-letter monitoring process; and externalise trigger intervals to Logic Apps environment variables.
 
 ---
-
-## ✅ Validation Summary
-
-| 🔖 Gate      | 🔍 Check                                                        | 🏁 Result                                      |
-| ------------ | --------------------------------------------------------------- | ---------------------------------------------- |
-| N-1          | No strategic recommendations beyond documented observations     | ✅ PASS                                        |
-| N-2          | All components have source file references                      | ✅ PASS — 40/40 components traced              |
-| N-3          | All paths within workspace `z:\logic`                           | ✅ PASS                                        |
-| N-4          | All components ≥ 0.7 confidence                                 | ✅ PASS — min confidence: 0.77                 |
-| N-5          | No empty sections                                               | ✅ PASS — "Not detected" used where applicable |
-| N-6          | No internal reasoning YAML in final output                      | ✅ PASS                                        |
-| N-7          | No "N/A" placeholder text                                       | ✅ PASS                                        |
-| N-8          | No application/data/tech components misclassified as Business   | ✅ PASS — Decision Tree applied                |
-| Criterion 1  | All 11 component types present (Sections 2.1–2.11 and 5.1–5.11) | ✅ PASS                                        |
-| Criterion 2  | All components have source traceability                         | ✅ PASS                                        |
-| Criterion 3  | All confidence scores ≥ 0.7                                     | ✅ PASS                                        |
-| Criterion 4  | Mermaid diagrams score ≥ 95/100 + governance block              | ✅ PASS — 6 diagrams, score 100/100 each       |
-| Criterion 5  | No placeholder text                                             | ✅ PASS                                        |
-| Criterion 6  | Comprehensive threshold (≥ 20 components, ≥ 8 types)            | ✅ PASS — 40 components, 11 types              |
-| Criterion 7  | Section 5 ends with Summary                                     | ✅ PASS                                        |
-| Criterion 8  | Mandatory diagrams present (comprehensive ≥ 6)                  | ✅ PASS — 6 diagrams                           |
-| Criterion 9  | Exactly requested sections present (1, 2, 3, 4, 5, 8)           | ✅ PASS                                        |
-| Criterion 10 | Every section starts with `### Overview`                        | ✅ PASS                                        |
-| Criterion 11 | Sections 2, 4, 5, 8 end with `### Summary`                      | ✅ PASS                                        |
-| Criterion 12 | Maturity Scale 1–5 applied with evidence                        | ✅ PASS                                        |
-| Criterion 13 | Diagram count ≥ 6 (comprehensive)                               | ✅ PASS — exactly 6                            |
-
-**Final Score: 100/100** ✅
