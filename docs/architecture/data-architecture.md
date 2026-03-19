@@ -91,17 +91,17 @@ data_layer_reasoning:
 
 ## 📑 Quick Table of Contents
 
-| Section | Title                         | Summary                                                            |
-| ------- | ----------------------------- | ------------------------------------------------------------------ |
-| §1      | 📋 Executive Summary          | Key findings · data quality scorecard · coverage summary           |
-| §2      | 🗺️ Architecture Landscape     | 11 canonical data component types fully inventoried                |
-| §3      | 🏛️ Architecture Principles    | 8 core principles · schema standards · classification taxonomy     |
-| §4      | 📊 Current State Baseline     | Baseline architecture · storage distribution · governance maturity |
-| §5      | 📦 Component Catalog          | 38 components across all 11 data layer types                       |
-| §6      | ⚖️ Architecture Decisions     | 7 inferred ADRs for key architectural choices                      |
-| §7      | 📐 Architecture Standards     | Naming conventions · schema design · data quality standards        |
-| §8      | 🔗 Dependencies & Integration | Data flow patterns · producer-consumer relationships               |
-| §9      | 🛡️ Governance & Management    | Data ownership · access control · audit & compliance               |
+| Section | Title                         | Summary                                                            | Diagrams                                             |
+| ------- | ----------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------- |
+| §1      | 📋 Executive Summary          | Key findings · data quality scorecard · coverage summary           | —                                                    |
+| §2      | 🗺️ Architecture Landscape     | 11 canonical data component types fully inventoried                | 🖼️ Storage Tier & Domain Map                         |
+| §3      | 🏛️ Architecture Principles    | 8 core principles · schema standards · classification taxonomy     | 🖼️ Principles Hierarchy · 🖼️ Classification Taxonomy |
+| §4      | 📊 Current State Baseline     | Baseline architecture · storage distribution · governance maturity | 🖼️ Baseline Data Architecture                        |
+| §5      | 📦 Component Catalog          | 38 components across all 11 data layer types                       | 🖼️ ERD (Orders ↔ OrderProducts)                      |
+| §6      | ⚖️ Architecture Decisions     | 7 inferred ADRs for key architectural choices                      | —                                                    |
+| §7      | 📐 Architecture Standards     | Naming conventions · schema design · data quality standards        | —                                                    |
+| §8      | 🔗 Dependencies & Integration | Data flow patterns · producer-consumer relationships               | 🖼️ Data Flow Integration                             |
+| §9      | 🛡️ Governance & Management    | Data ownership · access control · audit & compliance               | 🖼️ Access Control Model                              |
 
 ---
 
