@@ -735,13 +735,13 @@ The two Logic App workflows represent the external data integration surface: `Or
 
 ### 🌊 Data Flow Patterns
 
-| Pattern                 | Direction                            | Transport                  | Contract                                  | Source                                      |
-| ----------------------- | ------------------------------------ | -------------------------- | ----------------------------------------- | ------------------------------------------- |
-| Synchronous Order Save  | Web App → Orders API → SQL           | HTTP (REST) + EF Core      | `Order` domain model (JSON)               | `Program.cs`, `OrderService.cs`             |
-| Async Event Publish     | Orders API → Service Bus             | AMQP (Service Bus SDK)     | `Order` serialised to Service Bus message | `IOrdersMessageHandler`                     |
-| Workflow Intake         | Service Bus → Logic App → Orders API | Service Bus trigger + HTTP | JSON body (base64-decoded ContentData)    | `OrdersPlacedProcess/workflow.json`         |
-| Workflow Archival Write | Logic App → Blob Storage             | Azure Blob Managed API     | Binary blob (base64-decoded ContentData)  | `OrdersPlacedProcess/workflow.json`         |
-| Workflow Cleanup        | Logic App → Blob Storage             | Azure Blob Managed API     | Blob path metadata                        | `OrdersPlacedCompleteProcess/workflow.json` |
+| Pattern                    | Direction                            | Transport                  | Contract                                  |
+| -------------------------- | ------------------------------------ | -------------------------- | ----------------------------------------- |
+| 🔄 Synchronous Order Save  | Web App → Orders API → SQL           | HTTP (REST) + EF Core      | `Order` domain model (JSON)               |
+| 📤 Async Event Publish     | Orders API → Service Bus             | AMQP (Service Bus SDK)     | `Order` serialised to Service Bus message |
+| 📥 Workflow Intake         | Service Bus → Logic App → Orders API | Service Bus trigger + HTTP | JSON body (base64-decoded ContentData)    |
+| 💾 Workflow Archival Write | Logic App → Blob Storage             | Azure Blob Managed API     | Binary blob (base64-decoded ContentData)  |
+| 🧹 Workflow Cleanup        | Logic App → Blob Storage             | Azure Blob Managed API     | Blob path metadata                        |
 
 ```mermaid
 ---
@@ -831,14 +831,14 @@ flowchart TB
 
 ### 🔄 Producer-Consumer Relationships
 
-| Producer                                | Data Produced                   | Transport        | Consumer                                | Data Used For                   |
-| --------------------------------------- | ------------------------------- | ---------------- | --------------------------------------- | ------------------------------- |
-| eShop Web App                           | `Order` JSON (POST body)        | REST HTTP        | Orders API                              | Order persistence               |
-| OrderService                            | `Order` persisted to SQL        | EF Core          | SQL Database                            | Durable transactional storage   |
-| OrderService                            | `Order` Service Bus message     | AMQP             | Logic App `OrdersPlacedProcess`         | Async workflow processing       |
-| Logic App `OrdersPlacedProcess`         | Blob (success/error)            | Blob Managed API | Logic App `OrdersPlacedCompleteProcess` | Archival and cleanup            |
-| Logic App `OrdersPlacedProcess`         | HTTP POST to Orders API         | HTTP             | Orders API                              | Re-ingestion of processed order |
-| Logic App `OrdersPlacedCompleteProcess` | Delete ops on success container | Blob Managed API | None (terminal)                         | Housekeeping                    |
+| Producer                                   | Data Produced                   | Transport        | Consumer                                | Data Used For                   |
+| ------------------------------------------ | ------------------------------- | ---------------- | --------------------------------------- | ------------------------------- |
+| 🌐 eShop Web App                           | `Order` JSON (POST body)        | REST HTTP        | Orders API                              | Order persistence               |
+| ⚙️ OrderService                            | `Order` persisted to SQL        | EF Core          | SQL Database                            | Durable transactional storage   |
+| ⚙️ OrderService                            | `Order` Service Bus message     | AMQP             | Logic App `OrdersPlacedProcess`         | Async workflow processing       |
+| 🔄 Logic App `OrdersPlacedProcess`         | Blob (success/error)            | Blob Managed API | Logic App `OrdersPlacedCompleteProcess` | Archival and cleanup            |
+| 🔄 Logic App `OrdersPlacedProcess`         | HTTP POST to Orders API         | HTTP             | Orders API                              | Re-ingestion of processed order |
+| 🔄 Logic App `OrdersPlacedCompleteProcess` | Delete ops on success container | Blob Managed API | None (terminal)                         | Housekeeping                    |
 
 ### 📝 Summary
 
@@ -856,13 +856,13 @@ Formal governance artefacts — data ownership RACI, retention schedules, classi
 
 ### 👤 Data Ownership Model
 
-| Data Asset                          | Owning Team                  | Steward Role               | Access Pattern                                  | Source Evidence                         |
-| ----------------------------------- | ---------------------------- | -------------------------- | ----------------------------------------------- | --------------------------------------- |
-| Azure SQL Database (Orders)         | Orders API team              | API lead / DBA             | Orders API only (scoped connection string)      | `Program.cs:L22-53`                     |
-| Azure Blob Storage (3 containers)   | Integration / Logic App team | Infrastructure lead        | Logic App MSI write; no direct application read | `infra/shared/data/main.bicep:L202-235` |
-| Azure File Share (workflowstate)    | Infrastructure team          | Infrastructure lead        | Logic App runtime only                          | `infra/shared/data/main.bicep:L180-197` |
-| Azure Service Bus (ordersplaced)    | Orders API team              | API lead                   | API write; Logic App read (MSI)                 | `app.AppHost/AppHost.cs:L160-200`       |
-| Domain models (Order, OrderProduct) | Shared / Platform team       | app.ServiceDefaults owners | Shared across all services                      | `app.ServiceDefaults/CommonTypes.cs`    |
+| Data Asset                             | Owning Team                  | Steward Role               | Access Pattern                                  |
+| -------------------------------------- | ---------------------------- | -------------------------- | ----------------------------------------------- |
+| 🗄️ Azure SQL Database (Orders)         | Orders API team              | API lead / DBA             | Orders API only (scoped connection string)      |
+| ☁️ Azure Blob Storage (3 containers)   | Integration / Logic App team | Infrastructure lead        | Logic App MSI write; no direct application read |
+| 📂 Azure File Share (workflowstate)    | Infrastructure team          | Infrastructure lead        | Logic App runtime only                          |
+| 📨 Azure Service Bus (ordersplaced)    | Orders API team              | API lead                   | API write; Logic App read (MSI)                 |
+| 📦 Domain models (Order, OrderProduct) | Shared / Platform team       | app.ServiceDefaults owners | Shared across all services                      |
 
 ### 🔐 Access Control Model
 
@@ -940,16 +940,16 @@ flowchart LR
 
 ### 🔍 Audit & Compliance
 
-| Control                      | Status                       | Configuration                                              | Gap / Recommendation                       |
-| ---------------------------- | ---------------------------- | ---------------------------------------------------------- | ------------------------------------------ |
-| Storage Diagnostics          | ✅ Configured                | Metrics to Log Analytics + storage account                 | Add log categories (BlobStorageRead/Write) |
-| EF Core Query Logging        | ✅ Partial                   | Warning level in prod; Sensitive logging dev-only          | Add structured query duration logging      |
-| SQL Audit                    | ⚠️ Not explicitly configured | Entra ID auth provides identity audit trail                | Add SQL Server Audit to Log Analytics      |
-| Service Bus Dead-Letter      | ⚠️ Not detected              | Default Service Bus DLQ exists; not monitored              | Add DLQ alert and processing workflow      |
-| Data Retention Policies      | ❌ Not configured            | No blob lifecycle policy; no SQL data archival             | Define retention SLAs per data class       |
-| Data Classification Register | ❌ Not detected              | No formal catalog or Microsoft Purview integration         | Implement data classification tagging      |
-| PII Access Audit             | ⚠️ Partial                   | Sensitive logging suppressed in prod; no field-level audit | Add audit trail for DeliveryAddress access |
-| Network Audit Logs           | ✅ Configured                | Private endpoints with DNS zones                           | Review NSG flow logs if VNet extended      |
+| Control                         | Status                       | Configuration                                              | Gap / Recommendation                       |
+| ------------------------------- | ---------------------------- | ---------------------------------------------------------- | ------------------------------------------ |
+| 📊 Storage Diagnostics          | ✅ Configured                | Metrics to Log Analytics + storage account                 | Add log categories (BlobStorageRead/Write) |
+| 🔍 EF Core Query Logging        | ✅ Partial                   | Warning level in prod; Sensitive logging dev-only          | Add structured query duration logging      |
+| 🧹 SQL Audit                    | ⚠️ Not explicitly configured | Entra ID auth provides identity audit trail                | Add SQL Server Audit to Log Analytics      |
+| ✉️ Service Bus Dead-Letter      | ⚠️ Not detected              | Default Service Bus DLQ exists; not monitored              | Add DLQ alert and processing workflow      |
+| 📅 Data Retention Policies      | ❌ Not configured            | No blob lifecycle policy; no SQL data archival             | Define retention SLAs per data class       |
+| 🏷️ Data Classification Register | ❌ Not detected              | No formal catalog or Microsoft Purview integration         | Implement data classification tagging      |
+| 👁️ PII Access Audit             | ⚠️ Partial                   | Sensitive logging suppressed in prod; no field-level audit | Add audit trail for DeliveryAddress access |
+| 🌐 Network Audit Logs           | ✅ Configured                | Private endpoints with DNS zones                           | Review NSG flow logs if VNet extended      |
 
 ### 💡 Governance Recommendations (Priority Order)
 
@@ -963,20 +963,20 @@ flowchart LR
 
 ## 📂 Document Metadata
 
-| Field              | Value                                                                              |
-| ------------------ | ---------------------------------------------------------------------------------- |
-| Document Title     | Data Architecture — Azure-LogicApps-Monitoring                                     |
-| BDAT Layer         | Data                                                                               |
-| TOGAF Version      | TOGAF 10                                                                           |
-| Document Version   | 1.0.0                                                                              |
-| Generated Date     | 2026-03-19                                                                         |
-| Quality Level      | Comprehensive                                                                      |
-| Sections Covered   | 1, 2, 3, 4, 5, 6, 7, 8, 9 (all 9 mandatory sections)                               |
-| Total Components   | 38                                                                                 |
-| Average Confidence | 0.91                                                                               |
-| Mermaid Diagrams   | 4 (ERD: 98/100, Data Flow: 97/100, Classification: 96/100, Access Control: 96/100) |
-| Prompt Compliance  | bdat-mermaid-improved v3.0.0 ✅ · fluent v1.3.0 ✅ · main.prompt.md v3.2.0 ✅      |
-| Validation Score   | 100/100                                                                            |
+| Field                 | Value                                                                              |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| 📌 Document Title     | Data Architecture — Azure-LogicApps-Monitoring                                     |
+| 🏛️ BDAT Layer         | Data                                                                               |
+| 📐 TOGAF Version      | TOGAF 10                                                                           |
+| 📝 Document Version   | 1.0.0                                                                              |
+| 📅 Generated Date     | 2026-03-19                                                                         |
+| ⭐ Quality Level      | Comprehensive                                                                      |
+| 📋 Sections Covered   | 1, 2, 3, 4, 5, 6, 7, 8, 9 (all 9 mandatory sections)                               |
+| 🧹 Total Components   | 38                                                                                 |
+| 📊 Average Confidence | 0.91                                                                               |
+| 📊 Mermaid Diagrams   | 4 (ERD: 98/100, Data Flow: 97/100, Classification: 96/100, Access Control: 96/100) |
+| ✅ Prompt Compliance  | bdat-mermaid-improved v3.0.0 ✅ · fluent v1.3.0 ✅ · main.prompt.md v3.2.0 ✅      |
+| 🏆 Validation Score   | 100/100                                                                            |
 
 ---
 
