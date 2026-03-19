@@ -198,50 +198,50 @@ flowchart LR
 
 ### 2.1 🏁 Business Strategy (1)
 
-| Name                                       | Description                                                                                                                                                                                                                        | Source           | Confidence | Maturity    |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------- | ----------- |
-| Cloud-Native Event-Driven Order Management | Strategic intent to deliver a production-grade reference implementation for resilient, observable, event-driven order processing on Azure, integrating .NET 10 Aspire with Logic Apps Standard and managed identity authentication | `README.md:1-15` | 0.82       | 3 – Defined |
+| 🏁 Name                                    | 💬 Description                                                                                                                                                                                                                     |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloud-Native Event-Driven Order Management | Strategic intent to deliver a production-grade reference implementation for resilient, observable, event-driven order processing on Azure, integrating .NET 10 Aspire with Logic Apps Standard and managed identity authentication |
 
 ### 2.2 💡 Business Capabilities (3)
 
-| Name                          | Description                                                                                                                                           | Source                                                                                        | Confidence | Maturity     |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------- | ------------ |
-| Order Management              | End-to-end order lifecycle management including placement, validation, retrieval, processing, and deletion of customer orders                         | `src/eShop.Orders.API/Interfaces/IOrderService.cs:1-70`                                       | 0.91       | 4 – Measured |
-| Event-Driven Order Processing | Asynchronous processing of placed orders via Azure Service Bus topic subscriptions and Logic Apps Standard stateful workflows                         | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-120` | 0.89       | 3 – Defined  |
-| Observability & Monitoring    | Full-stack OpenTelemetry telemetry including distributed traces, custom counters and histograms, and structured logs exported to Application Insights | `src/eShop.Orders.API/Services/OrderService.cs:55-75`                                         | 0.87       | 4 – Measured |
+| 💡 Name                       | 💬 Description                                                                                                                                        |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Order Management              | End-to-end order lifecycle management including placement, validation, retrieval, processing, and deletion of customer orders                         |
+| Event-Driven Order Processing | Asynchronous processing of placed orders via Azure Service Bus topic subscriptions and Logic Apps Standard stateful workflows                         |
+| Observability & Monitoring    | Full-stack OpenTelemetry telemetry including distributed traces, custom counters and histograms, and structured logs exported to Application Insights |
 
 ### 2.3 🌊 Value Streams (2)
 
-| Name                                     | Description                                                                                                                                                   | Source              | Confidence | Maturity    |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | ---------- | ----------- |
-| Order Placement Value Stream             | End-to-end flow from customer order submission through validation, persistence, and event publication to Service Bus                                          | `README.md:103-116` | 0.81       | 3 – Defined |
-| Order Fulfillment & Cleanup Value Stream | Asynchronous flow from Service Bus message consumption through Logic Apps orchestration, API processing, and blob-based state tracking with automated cleanup | `README.md:116-126` | 0.81       | 3 – Defined |
+| 🌊 Name                                  | 💬 Description                                                                                                                                                |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Order Placement Value Stream             | End-to-end flow from customer order submission through validation, persistence, and event publication to Service Bus                                          |
+| Order Fulfillment & Cleanup Value Stream | Asynchronous flow from Service Bus message consumption through Logic Apps orchestration, API processing, and blob-based state tracking with automated cleanup |
 
 ### 2.4 🔄 Business Processes (4)
 
-| Name                                        | Description                                                                                                                                                                        | Source                                                                                               | Confidence | Maturity     |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------- | ------------ |
-| Single Order Placement                      | Process by which a single customer order is validated, persisted to the database, and published to the Service Bus topic                                                           | `src/eShop.Orders.API/Services/OrderService.cs:95-145`                                               | 0.88       | 4 – Measured |
-| Batch Order Placement                       | Parallel process for placing up to 50 orders with concurrency limit of 10, exponential backoff retries, and a 5-minute timeout                                                     | `src/eShop.Orders.API/Services/OrderService.cs:165-280`                                              | 0.87       | 3 – Defined  |
-| Order Fulfillment (OrdersPlacedProcess)     | Stateful Logic Apps workflow: polls Service Bus every second, validates message content type, calls Orders API `/process` endpoint, writes processing result to Azure Blob Storage | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-120`        | 0.93       | 3 – Defined  |
-| Order Cleanup (OrdersPlacedCompleteProcess) | Recurrence-based Logic Apps workflow: triggered every 3 seconds, lists successfully processed blobs, retrieves metadata, and deletes each blob to complete the order lifecycle     | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-80` | 0.93       | 3 – Defined  |
+| 🔄 Name                                     | 💬 Description                                                                                                                                                                     |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Single Order Placement                      | Process by which a single customer order is validated, persisted to the database, and published to the Service Bus topic                                                           |
+| Batch Order Placement                       | Parallel process for placing up to 50 orders with concurrency limit of 10, exponential backoff retries, and a 5-minute timeout                                                     |
+| Order Fulfillment (OrdersPlacedProcess)     | Stateful Logic Apps workflow: polls Service Bus every second, validates message content type, calls Orders API `/process` endpoint, writes processing result to Azure Blob Storage |
+| Order Cleanup (OrdersPlacedCompleteProcess) | Recurrence-based Logic Apps workflow: triggered every 3 seconds, lists successfully processed blobs, retrieves metadata, and deletes each blob to complete the order lifecycle     |
 
 ### 2.5 🛠️ Business Services (4)
 
-| Name                      | Description                                                                                                                      | Source                                                           | Confidence | Maturity     |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ---------- | ------------ |
-| Order Management Service  | Business logic service contract for order placement (single and batch), retrieval, deletion, and message listing operations      | `src/eShop.Orders.API/Interfaces/IOrderService.cs:1-70`          | 0.91       | 4 – Measured |
-| Order Repository Service  | Data persistence contract for storing, retrieving, paginating, and deleting orders with existence checks                         | `src/eShop.Orders.API/Interfaces/IOrderRepository.cs:1-75`       | 0.88       | 3 – Defined  |
-| Order Messaging Service   | Service Bus messaging contract for publishing and listing order messages via Azure Service Bus topics                            | `src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:1-30`  | 0.87       | 3 – Defined  |
-| Orders Web Client Service | HTTP client service providing order management operations (place, list, view, delete) from the Blazor frontend to the Orders API | `src/eShop.Web.App/Components/Services/OrdersAPIService.cs:1-60` | 0.84       | 3 – Defined  |
+| 🛠️ Name                   | 💬 Description                                                                                                                   |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Order Management Service  | Business logic service contract for order placement (single and batch), retrieval, deletion, and message listing operations      |
+| Order Repository Service  | Data persistence contract for storing, retrieving, paginating, and deleting orders with existence checks                         |
+| Order Messaging Service   | Service Bus messaging contract for publishing and listing order messages via Azure Service Bus topics                            |
+| Orders Web Client Service | HTTP client service providing order management operations (place, list, view, delete) from the Blazor frontend to the Orders API |
 
 ### 2.6 🧩 Business Functions (3)
 
-| Name                       | Description                                                                                                                                      | Source                                                                                               | Confidence | Maturity     |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ---------- | ------------ |
-| Order Placement            | Validates, persists, and publishes a new order; spans the REST endpoint, service validation, repository persistence, and Service Bus publication | `src/eShop.Orders.API/Controllers/OrdersController.cs:55-110`                                        | 0.87       | 4 – Measured |
-| Order Orchestration        | Logic Apps workflow execution function that consumes Service Bus events, calls the Orders API process endpoint, and writes outcome blobs         | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:5-70`         | 0.91       | 3 – Defined  |
-| Order Monitoring & Cleanup | Recurrence function that inspects processed-order blob state and removes completed records, maintaining storage hygiene                          | `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:5-80` | 0.88       | 3 – Defined  |
+| 🧩 Name                    | 💬 Description                                                                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Order Placement            | Validates, persists, and publishes a new order; spans the REST endpoint, service validation, repository persistence, and Service Bus publication |
+| Order Orchestration        | Logic Apps workflow execution function that consumes Service Bus events, calls the Orders API process endpoint, and writes outcome blobs         |
+| Order Monitoring & Cleanup | Recurrence function that inspects processed-order blob state and removes completed records, maintaining storage hygiene                          |
 
 ### 2.7 👤 Business Roles & Actors (4)
 
