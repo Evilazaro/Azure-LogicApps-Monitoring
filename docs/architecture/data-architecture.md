@@ -117,16 +117,16 @@ Data movement is orchestrated through two channels: synchronous REST API calls f
 
 ### 🔍 Key Findings
 
-| Metric                           | Value       | Assessment                                                           |
-| -------------------------------- | ----------- | -------------------------------------------------------------------- |
-| Total Data Components Identified | 38          | Comprehensive                                                        |
-| Data Entities                    | 4           | Complete — Order, OrderProduct (domain + persistence)                |
-| Data Stores                      | 5           | SQL Database, 3 Blob containers, 1 File share                        |
-| Data Flow Patterns               | 4           | Sync REST, async Service Bus, blob write, blob delete                |
-| Average Confidence Score         | 0.91        | High — all components backed by source evidence                      |
-| Security Controls                | 5           | MSI auth, TLS 1.2, private endpoints, Entra ID-only SQL              |
-| Governance Coverage              | Partial     | Logging and auth covered; no formal data catalog or retention policy |
-| Schema Migrations                | 1 versioned | `OrderDbV1` migration — baseline schema established                  |
+| Metric                              | Value       | Assessment                                                           |
+| ----------------------------------- | ----------- | -------------------------------------------------------------------- |
+| 🔢 Total Data Components Identified | 38          | Comprehensive                                                        |
+| 🧩 Data Entities                    | 4           | Complete — Order, OrderProduct (domain + persistence)                |
+| 🗄️ Data Stores                      | 5           | SQL Database, 3 Blob containers, 1 File share                        |
+| 🌊 Data Flow Patterns               | 4           | Sync REST, async Service Bus, blob write, blob delete                |
+| 📊 Average Confidence Score         | 0.91        | High — all components backed by source evidence                      |
+| 🔒 Security Controls                | 5           | MSI auth, TLS 1.2, private endpoints, Entra ID-only SQL              |
+| 🏛️ Governance Coverage              | Partial     | Logging and auth covered; no formal data catalog or retention policy |
+| 🗃️ Schema Migrations                | 1 versioned | `OrderDbV1` migration — baseline schema established                  |
 
 ### ✨ Data Quality Scorecard
 
