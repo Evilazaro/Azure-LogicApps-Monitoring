@@ -22,7 +22,7 @@
 
 ## 1. 📋 Executive Summary
 
-### Overview
+### 🔍 Overview
 
 This Business Architecture analysis covers the **Azure Logic Apps Monitoring** repository (`Evilazaro/Azure-LogicApps-Monitoring`), a cloud-native, event-driven order-processing reference solution built on .NET 10 Aspire, Azure Container Apps, and Azure Logic Apps Standard. The analysis identified 40 Business layer components across all 11 TOGAF 10 Business Architecture component types, drawn from source evidence in service interfaces, domain models, workflow definitions, and project documentation. All components were validated against the Layer Classification Decision Tree and scored above the 0.70 confidence threshold using the weighted formula: 30 % filename signal + 25 % path signal + 35 % content signal + 10 % crossref signal.
 
@@ -53,7 +53,7 @@ The portfolio centres on three core business capabilities — **Order Management
 
 ## 2. 🗺️ Architecture Landscape
 
-### Overview
+### 🔍 Overview
 
 This section provides the complete inventory of all Business layer components detected in the workspace, organised across the 11 mandatory TOGAF 10 Business Architecture subsections. Every component is traceable to a source file within the workspace root (`z:\logic`) and was classified using the Layer Classification Decision Tree. Components from application-layer code files (`.cs`) are included where the component documents observable **business intent** — rules, domain models, capability contracts, and measurable KPIs — rather than technical implementation details.
 
@@ -301,7 +301,7 @@ The primary gap is the absence of explicit TOGAF-style strategy, capability mode
 
 ## 3. 🧭 Architecture Principles
 
-### Overview
+### 🔍 Overview
 
 This section documents the Business Architecture principles observable in the source code, configuration, and project documentation of the Azure Logic Apps Monitoring solution. These principles govern how the system is designed to deliver value, how components interact, and how the architecture evolves. Each principle is derived from concrete evidence in the source files and is cross-referenced to the components it governs.
 
@@ -348,7 +348,7 @@ All Azure resources (networking, identity, compute, storage, messaging, Logic Ap
 
 ## 4. 📍 Current State Baseline
 
-### Overview
+### 🔍 Overview
 
 This section captures the current state of the Business Architecture as observable from the source files. The as-is baseline reflects a solution at a generally **Level 3 (Defined)** to **Level 4 (Measured)** maturity, with standardised, documented processes for order management and quantitatively instrumented KPIs for the core Order Management and Observability capabilities. Business processes are formally encoded in Logic Apps workflow definitions (`workflow.json`), service interfaces are strongly typed via C# contracts, and domain models are validated at the boundary with data-annotation constraints.
 
@@ -533,7 +533,7 @@ Gaps in the current state include the absence of formal SLA/SLO targets mapped t
 
 ## 5. 📚 Component Catalog
 
-### Overview
+### 🔍 Overview
 
 This section provides detailed specifications for each of the 40 Business layer components identified across all 11 TOGAF 10 Business Architecture component types. Each subsection opens with a brief description of the component type's scope within this architecture and follows with structured specification tables. Components are ordered by decreasing confidence score within each subsection.
 
@@ -1217,7 +1217,7 @@ Gaps identified in the Component Catalog include the absence of SLO/SLA specific
 
 ## 8. 🔗 Dependencies & Integration
 
-### Overview
+### 🔍 Overview
 
 This section documents the cross-layer business dependencies and integration points observed between components of the Business layer and their application, data, and platform counterparts. Dependencies are classified by integration protocol (event-driven, REST, IaC) and assessed by coupling strength (tight = synchronous direct call; loose = asynchronous event or contract).
 
