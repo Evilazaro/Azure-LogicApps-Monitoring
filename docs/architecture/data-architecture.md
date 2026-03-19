@@ -579,7 +579,7 @@ This section captures the most architecturally significant choices. Teams should
 
 ### 📄 6.1 Detailed ADRs
 
-#### 6.1.1 ADR-001: Use Entity Framework Core with Repository Pattern
+#### 🗄️ 6.1.1 ADR-001: Use Entity Framework Core with Repository Pattern
 
 **Context**: The Orders API requires reliable, async SQL database operations with support for retry, pagination, and transactional safety. A data access abstraction is needed to enable unit testing.
 
@@ -593,7 +593,7 @@ This section captures the most architecturally significant choices. Teams should
 
 ---
 
-#### 6.1.2 ADR-002: Separate Domain Models from Persistence Entities
+#### 🔀 6.1.2 ADR-002: Separate Domain Models from Persistence Entities
 
 **Context**: EF Core entities carry database-specific concerns (navigations, key configurations, precision). Exposing them as domain objects couples the business layer to the persistence layer.
 
@@ -607,7 +607,7 @@ This section captures the most architecturally significant choices. Teams should
 
 ---
 
-#### 6.1.3 ADR-003: Azure SQL Database as Primary Relational Store
+#### 🗃️ 6.1.3 ADR-003: Azure SQL Database as Primary Relational Store
 
 **Context**: Order data requires ACID transactions, referential integrity (Orders → OrderProducts), and the ability to query by CustomerId and Date with index support.
 
@@ -621,7 +621,7 @@ This section captures the most architecturally significant choices. Teams should
 
 ---
 
-#### 6.1.4 ADR-004: Azure Blob Storage for Workflow Outcome Archival
+#### ☁️ 6.1.4 ADR-004: Azure Blob Storage for Workflow Outcome Archival
 
 **Context**: Logic App workflows need a durable store for processed order blobs, partitioned by outcome (success, error, completed) to support audit, error investigation, and retry patterns.
 
@@ -635,7 +635,7 @@ This section captures the most architecturally significant choices. Teams should
 
 ---
 
-#### 6.1.5 ADR-005: Azure Service Bus Topic for Async Order Event Propagation
+#### 📨 6.1.5 ADR-005: Azure Service Bus Topic for Async Order Event Propagation
 
 **Context**: Order processing by Logic Apps must be decoupled from the synchronous REST API call to avoid tight coupling and enable fan-out to multiple consumers.
 
@@ -649,7 +649,7 @@ This section captures the most architecturally significant choices. Teams should
 
 ---
 
-#### 6.1.6 ADR-006: Managed Identity for All Service-to-Data Authentication
+#### 🪺 6.1.6 ADR-006: Managed Identity for All Service-to-Data Authentication
 
 **Context**: Logic App workflows must authenticate to Service Bus and Blob Storage without storing connection strings or passwords in configuration or source control.
 
@@ -663,7 +663,7 @@ This section captures the most architecturally significant choices. Teams should
 
 ---
 
-#### 6.1.7 ADR-007: Application-Generated String PKs
+#### 🔑 6.1.7 ADR-007: Application-Generated String PKs
 
 **Context**: Primary keys for Orders and OrderProducts must support distributed generation and be transferable across system boundaries without coordination.
 
