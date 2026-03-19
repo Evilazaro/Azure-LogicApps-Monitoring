@@ -157,66 +157,66 @@ The architecture distinguishes between three tiers: the **domain model tier** (i
 
 ### 🧩 2.1 Data Entities
 
-| Name               | Description                                                                           | Classification       |
-| ------------------ | ------------------------------------------------------------------------------------- | -------------------- |
-| Order              | Domain model representing a customer order with delivery information and total amount | Internal / Financial |
-| OrderProduct       | Domain model for individual product line items within an order                        | Internal / Financial |
-| OrderEntity        | EF Core persistence entity mapping to the `Orders` SQL table                          | Internal / Financial |
-| OrderProductEntity | EF Core persistence entity mapping to the `OrderProducts` SQL table                   | Internal / Financial |
+| Name                  | Description                                                                           | Classification       |
+| --------------------- | ------------------------------------------------------------------------------------- | -------------------- |
+| 🧩 Order              | Domain model representing a customer order with delivery information and total amount | Internal / Financial |
+| 🧩 OrderProduct       | Domain model for individual product line items within an order                        | Internal / Financial |
+| 🗃️ OrderEntity        | EF Core persistence entity mapping to the `Orders` SQL table                          | Internal / Financial |
+| 🗃️ OrderProductEntity | EF Core persistence entity mapping to the `OrderProducts` SQL table                   | Internal / Financial |
 
 ### 📐 2.2 Data Models
 
-| Name                        | Description                                                                                                        | Classification |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------- |
-| OrderDbContext              | EF Core DbContext configuring the Orders and OrderProducts tables with Fluent API relationships and cascade delete | Internal       |
-| OrderMapper                 | Static extension class providing bidirectional mapping between domain models and EF Core entities                  | Internal       |
-| OrderDbContextModelSnapshot | Auto-generated EF Core model snapshot capturing the current database schema state for migration diffing            | Internal       |
+| Name                           | Description                                                                                                        | Classification |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------ | -------------- |
+| 📐 OrderDbContext              | EF Core DbContext configuring the Orders and OrderProducts tables with Fluent API relationships and cascade delete | Internal       |
+| 🔄 OrderMapper                 | Static extension class providing bidirectional mapping between domain models and EF Core entities                  | Internal       |
+| 📸 OrderDbContextModelSnapshot | Auto-generated EF Core model snapshot capturing the current database schema state for migration diffing            | Internal       |
 
 ### 🗄️ 2.3 Data Stores
 
-| Name                                        | Description                                                                                                       | Classification       |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------- |
-| Azure SQL Database (OrdersDb)               | Primary relational store for Orders and OrderProducts tables; Azure SQL managed via EF Core with private endpoint | Internal / Financial |
-| Blob Container: ordersprocessedsuccessfully | Stores JSON blobs for orders successfully processed via Logic App workflow                                        | Internal             |
-| Blob Container: ordersprocessedwitherrors   | Stores JSON blobs for orders that failed during processing; enables error analysis and retry                      | Internal             |
-| Blob Container: ordersprocessedcompleted    | Stores blobs moved from success container after completion workflow runs                                          | Internal             |
-| Azure File Share: workflowstate             | SMB file share (5 GB, `workflowstate`) for Logic Apps Standard workflow state persistence                         | Internal             |
+| Name                                           | Description                                                                                                       | Classification       |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------- |
+| 🗄️ Azure SQL Database (OrdersDb)               | Primary relational store for Orders and OrderProducts tables; Azure SQL managed via EF Core with private endpoint | Internal / Financial |
+| ☁️ Blob Container: ordersprocessedsuccessfully | Stores JSON blobs for orders successfully processed via Logic App workflow                                        | Internal             |
+| ☁️ Blob Container: ordersprocessedwitherrors   | Stores JSON blobs for orders that failed during processing; enables error analysis and retry                      | Internal             |
+| ☁️ Blob Container: ordersprocessedcompleted    | Stores blobs moved from success container after completion workflow runs                                          | Internal             |
+| 📁 Azure File Share: workflowstate             | SMB file share (5 GB, `workflowstate`) for Logic Apps Standard workflow state persistence                         | Internal             |
 
 ### 🌊 2.4 Data Flows
 
-| Name                          | Description                                                                                                                        | Classification       |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| Order Placement Flow          | Web App → Orders API (REST POST) → OrderRepository → SQL Database; synchronous order persistence                                   | Internal / Financial |
-| Order Message Publishing Flow | OrderService → Azure Service Bus `ordersplaced` topic; async fanout after successful persistence                                   | Internal             |
-| Logic App Processing Flow     | Service Bus trigger → Logic App `OrdersPlacedProcess` → HTTP POST to Orders API → Blob write (success or error container)          | Internal             |
-| Order Completion Cleanup Flow | Recurrence trigger → Logic App `OrdersPlacedCompleteProcess` → Blob list → Blob metadata read → Blob delete from success container | Internal             |
+| Name                             | Description                                                                                                                        | Classification       |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| 🌊 Order Placement Flow          | Web App → Orders API (REST POST) → OrderRepository → SQL Database; synchronous order persistence                                   | Internal / Financial |
+| 📨 Order Message Publishing Flow | OrderService → Azure Service Bus `ordersplaced` topic; async fanout after successful persistence                                   | Internal             |
+| 🔄 Logic App Processing Flow     | Service Bus trigger → Logic App `OrdersPlacedProcess` → HTTP POST to Orders API → Blob write (success or error container)          | Internal             |
+| 🧹 Order Completion Cleanup Flow | Recurrence trigger → Logic App `OrdersPlacedCompleteProcess` → Blob list → Blob metadata read → Blob delete from success container | Internal             |
 
 ### ⚙️ 2.5 Data Services
 
-| Name            | Description                                                                                                                           | Classification |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| OrderRepository | EF Core repository providing async CRUD operations (Save, GetAll, GetPaged, GetById, Delete, Exists) with retry and tracing           | Internal       |
-| OrderService    | Business logic service orchestrating PlaceOrder, GetOrders, DeleteOrder with metrics, distributed tracing, and Service Bus publishing | Internal       |
-| Orders REST API | ASP.NET Core Web API exposing `/api/Orders` endpoints (POST, GET, DELETE) consumed by Web App and Logic Apps                          | Internal       |
+| Name               | Description                                                                                                                           | Classification |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| ⚙️ OrderRepository | EF Core repository providing async CRUD operations (Save, GetAll, GetPaged, GetById, Delete, Exists) with retry and tracing           | Internal       |
+| ⚙️ OrderService    | Business logic service orchestrating PlaceOrder, GetOrders, DeleteOrder with metrics, distributed tracing, and Service Bus publishing | Internal       |
+| 🌐 Orders REST API | ASP.NET Core Web API exposing `/api/Orders` endpoints (POST, GET, DELETE) consumed by Web App and Logic Apps                          | Internal       |
 
 ### 🏛️ 2.6 Data Governance
 
-| Name                             | Description                                                                                            | Classification |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------ | -------------- |
-| Managed Identity Authentication  | User-Assigned MSI used for all Service Bus and Blob Storage connections; eliminates credential storage | Internal       |
-| Entra ID-Only SQL Authentication | SQL Server configured for Entra ID authentication only; shared-key access controlled via flag          | Internal       |
-| Diagnostic Settings              | Storage account metrics forwarded to Log Analytics workspace; EF Core logging at Warning level         | Internal       |
-| Private Endpoints                | Private DNS zones and endpoints for Blob, File, Table, Queue, and SQL services; network isolation      | Internal       |
+| Name                                | Description                                                                                            | Classification |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------ | -------------- |
+| 🪺 Managed Identity Authentication  | User-Assigned MSI used for all Service Bus and Blob Storage connections; eliminates credential storage | Internal       |
+| 🛡️ Entra ID-Only SQL Authentication | SQL Server configured for Entra ID authentication only; shared-key access controlled via flag          | Internal       |
+| 📊 Diagnostic Settings              | Storage account metrics forwarded to Log Analytics workspace; EF Core logging at Warning level         | Internal       |
+| 🔌 Private Endpoints                | Private DNS zones and endpoints for Blob, File, Table, Queue, and SQL services; network isolation      | Internal       |
 
 ### ✅ 2.7 Data Quality Rules
 
-| Name                          | Description                                                                                                                                | Classification |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------- |
-| Order Field Validation        | DataAnnotations on `Order` domain model: Required Id (1–100 chars), Required CustomerId, Required DeliveryAddress (5–500 chars), Total > 0 | Internal       |
-| OrderProduct Field Validation | DataAnnotations: Required Id, Required OrderId, Required ProductId, Required ProductDescription, Required Quantity and Price               | Internal       |
-| Database Schema Constraints   | EF Core configuration: MaxLength on all string fields, precision (18,2) on decimals, IsRequired enforcement                                | Internal       |
-| EF Core Retry on Failure      | `EnableRetryOnFailure` (maxRetry: 5, maxDelay: 30s) for transient SQL Azure connection failures                                            | Internal       |
-| Command Timeout               | 120-second command timeout configured on SQL operations to prevent long-running query hangs                                                | Internal       |
+| Name                             | Description                                                                                                                                | Classification |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------- |
+| ✅ Order Field Validation        | DataAnnotations on `Order` domain model: Required Id (1–100 chars), Required CustomerId, Required DeliveryAddress (5–500 chars), Total > 0 | Internal       |
+| ✅ OrderProduct Field Validation | DataAnnotations: Required Id, Required OrderId, Required ProductId, Required ProductDescription, Required Quantity and Price               | Internal       |
+| 🔧 Database Schema Constraints   | EF Core configuration: MaxLength on all string fields, precision (18,2) on decimals, IsRequired enforcement                                | Internal       |
+| 🔄 EF Core Retry on Failure      | `EnableRetryOnFailure` (maxRetry: 5, maxDelay: 30s) for transient SQL Azure connection failures                                            | Internal       |
+| ⏱️ Command Timeout               | 120-second command timeout configured on SQL operations to prevent long-running query hangs                                                | Internal       |
 
 ### 🌐 2.8 Master Data
 
@@ -224,10 +224,10 @@ Not detected in source files. The data domain is entirely transactional (order l
 
 ### 🔄 2.9 Data Transformations
 
-| Name                          | Description                                                                                                                                 | Classification |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| OrderMapper (Domain ↔ Entity) | `ToEntity()` converts `Order` → `OrderEntity`; `ToDomainModel()` converts `OrderEntity` → `Order`; same for product types                   | Internal       |
-| Base64 Decode in Logic App    | Service Bus message `ContentData` decoded via `base64ToString()` / `base64ToBinary()` in Logic App workflow before HTTP and Blob operations | Internal       |
+| Name                             | Description                                                                                                                                 | Classification |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| 🔄 OrderMapper (Domain ↔ Entity) | `ToEntity()` converts `Order` → `OrderEntity`; `ToDomainModel()` converts `OrderEntity` → `Order`; same for product types                   | Internal       |
+| 🔄 Base64 Decode in Logic App    | Service Bus message `ContentData` decoded via `base64ToString()` / `base64ToBinary()` in Logic App workflow before HTTP and Blob operations | Internal       |
 
 ### 📝 2.10 Data Contracts
 
@@ -239,13 +239,13 @@ Not detected in source files. The data domain is entirely transactional (order l
 
 ### 🔒 2.11 Data Security
 
-| Name                                        | Description                                                                                                                       | Classification |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| TLS 1.2 Minimum Enforcement                 | `minimumTlsVersion: 'TLS1_2'` set on all storage accounts; `supportsHttpsTrafficOnly: true`                                       | Internal       |
-| Managed Service Identity (MSI)              | Service Bus and Blob Storage connections use `ManagedServiceIdentity` audience-scoped tokens; no connection string secrets stored | Internal       |
-| Entra ID SQL Authentication                 | SQL Server uses Entra ID-only auth; `allowSharedKeyAccess: true` limited to initial provisioning only                             | Internal       |
-| Network Isolation via Private Endpoints     | All SQL and Storage services accessed via private endpoints; VNet-linked private DNS zones prevent public resolution              | Internal       |
-| Sensitive Data Logging Gated to Development | `EnableSensitiveDataLogging()` and `EnableDetailedErrors()` enabled only when `IsDevelopment()` is true; suppressed in production | Internal       |
+| Name                                           | Description                                                                                                                       | Classification |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| 🔒 TLS 1.2 Minimum Enforcement                 | `minimumTlsVersion: 'TLS1_2'` set on all storage accounts; `supportsHttpsTrafficOnly: true`                                       | Internal       |
+| 🪺 Managed Service Identity (MSI)              | Service Bus and Blob Storage connections use `ManagedServiceIdentity` audience-scoped tokens; no connection string secrets stored | Internal       |
+| 🛡️ Entra ID SQL Authentication                 | SQL Server uses Entra ID-only auth; `allowSharedKeyAccess: true` limited to initial provisioning only                             | Internal       |
+| 🔌 Network Isolation via Private Endpoints     | All SQL and Storage services accessed via private endpoints; VNet-linked private DNS zones prevent public resolution              | Internal       |
+| 👁️ Sensitive Data Logging Gated to Development | `EnableSensitiveDataLogging()` and `EnableDetailedErrors()` enabled only when `IsDevelopment()` is true; suppressed in production | Internal       |
 
 ### 📝 Summary
 
