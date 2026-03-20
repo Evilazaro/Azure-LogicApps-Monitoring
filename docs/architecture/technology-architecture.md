@@ -75,31 +75,31 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 
 ---
 
-## Section 2: Architecture Landscape
+## 🗺️ Section 2: Architecture Landscape
 
-### 2.1 Compute Resources (5)
+### ⚙️ 2.1 Compute Resources (5)
 
-| Component Name                      | Component Type             | Classification       | Source File                              | Confidence |
-| ----------------------------------- | -------------------------- | -------------------- | ---------------------------------------- | ---------- |
-| Logic App Standard App Service Plan | App Service Plan           | PaaS / Serverless    | `infra/workload/logic-app.bicep`         | 1.00       |
-| Container Apps Environment          | Managed Container Platform | PaaS / Serverless    | `infra/workload/services/main.bicep`     | 0.91       |
-| Orders API Container App            | Container Application      | PaaS / Container     | `app.AppHost/infra/orders-api.tmpl.yaml` | 0.98       |
-| Web App Container App               | Container Application      | PaaS / Container     | `app.AppHost/infra/web-app.tmpl.yaml`    | 0.98       |
-| Aspire Dashboard                    | Managed dotNetComponent    | PaaS / Observability | `infra/workload/services/main.bicep`     | 0.91       |
+| ⚙️ Component Name                   | 🏷️ Component Type          | 🔖 Classification    |
+| ----------------------------------- | -------------------------- | -------------------- |
+| Logic App Standard App Service Plan | App Service Plan           | PaaS / Serverless    |
+| Container Apps Environment          | Managed Container Platform | PaaS / Serverless    |
+| Orders API Container App            | Container Application      | PaaS / Container     |
+| Web App Container App               | Container Application      | PaaS / Container     |
+| Aspire Dashboard                    | Managed dotNetComponent    | PaaS / Observability |
 
-### 2.2 Storage Systems (7)
+### 🗄️ 2.2 Storage Systems (7)
 
-| Component Name                               | Component Type     | Classification    | Source File                          | Confidence |
-| -------------------------------------------- | ------------------ | ----------------- | ------------------------------------ | ---------- |
-| Storage Account — Diagnostic Logs            | Azure Blob Storage | StorageV2 / LRS   | `infra/shared/monitoring/main.bicep` | 1.00       |
-| Storage Account — Workflow State             | Azure Blob + File  | StorageV2 / LRS   | `infra/shared/data/main.bicep`       | 1.00       |
-| Blob Container — ordersprocessedsuccessfully | Blob Container     | Hot tier          | `infra/shared/data/main.bicep`       | 1.00       |
-| Blob Container — ordersprocessedwitherrors   | Blob Container     | Hot tier          | `infra/shared/data/main.bicep`       | 1.00       |
-| Blob Container — ordersprocessedcompleted    | Blob Container     | Hot tier          | `infra/shared/data/main.bicep`       | 1.00       |
-| File Share — workflowstate                   | Azure File Share   | SMB / 5 GB quota  | `infra/shared/data/main.bicep`       | 1.00       |
-| Azure SQL Server + Database                  | Azure SQL Database | PaaS / Serverless | `infra/shared/data/main.bicep`       | 1.00       |
+| 🗄️ Component Name                            | 🏷️ Component Type  | 🔖 Classification |
+| -------------------------------------------- | ------------------ | ----------------- |
+| Storage Account — Diagnostic Logs            | Azure Blob Storage | StorageV2 / LRS   |
+| Storage Account — Workflow State             | Azure Blob + File  | StorageV2 / LRS   |
+| Blob Container — ordersprocessedsuccessfully | Blob Container     | Hot tier          |
+| Blob Container — ordersprocessedwitherrors   | Blob Container     | Hot tier          |
+| Blob Container — ordersprocessedcompleted    | Blob Container     | Hot tier          |
+| File Share — workflowstate                   | Azure File Share   | SMB / 5 GB quota  |
+| Azure SQL Server + Database                  | Azure SQL Database | PaaS / Serverless |
 
-### 2.3 Network Infrastructure (9)
+### 🌐 2.3 Network Infrastructure (9)
 
 | Component Name                 | Component Type   | Classification                        | Source File                       | Confidence |
 | ------------------------------ | ---------------- | ------------------------------------- | --------------------------------- | ---------- |
@@ -113,14 +113,14 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 | Private Endpoint — queue       | Private Endpoint | Storage queue subresource             | `infra/shared/data/main.bicep`    | 1.00       |
 | Private Endpoint — sql         | Private Endpoint | SQL Server subresource                | `infra/shared/data/main.bicep`    | 1.00       |
 
-### 2.4 Container Platforms (2)
+### 🐳 2.4 Container Platforms (2)
 
 | Component Name                   | Component Type             | Classification               | Source File                          | Confidence |
 | -------------------------------- | -------------------------- | ---------------------------- | ------------------------------------ | ---------- |
 | Azure Container Registry (Basic) | Container Registry         | OCI artifact store           | `infra/workload/services/main.bicep` | 0.91       |
 | Container Apps Environment (CAE) | Managed Container Platform | Consumption workload profile | `infra/workload/services/main.bicep` | 0.91       |
 
-### 2.5 Cloud Services (PaaS/SaaS) (3)
+### ☁️ 2.5 Cloud Services (PaaS/SaaS) (3)
 
 | Component Name            | Component Type       | Classification                | Source File                            | Confidence |
 | ------------------------- | -------------------- | ----------------------------- | -------------------------------------- | ---------- |
@@ -128,7 +128,7 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 | .NET Aspire 13.1.2        | Cloud Orchestration  | Dev-time + infra provisioning | `app.AppHost/app.AppHost.csproj`       | 0.73       |
 | Azure Developer CLI (azd) | Deployment Toolchain | IaC + lifecycle management    | `azure.yaml`, `hooks/preprovision.ps1` | 0.73       |
 
-### 2.6 Security Infrastructure (6)
+### 🔒 2.6 Security Infrastructure (6)
 
 | Component Name                   | Component Type       | Classification                 | Source File                                | Confidence |
 | -------------------------------- | -------------------- | ------------------------------ | ------------------------------------------ | ---------- |
@@ -139,7 +139,7 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 | GitHub Actions OIDC Federation   | Federated Credential | Passwordless CI/CD auth        | `hooks/configure-federated-credential.ps1` | 0.73       |
 | Entra ID–Only SQL Authentication | Entra ID Auth        | No-password SQL access         | `infra/shared/data/main.bicep`             | 1.00       |
 
-### 2.7 Messaging Infrastructure (5)
+### 📨 2.7 Messaging Infrastructure (5)
 
 | Component Name                                | Component Type           | Classification        | Source File                           | Confidence |
 | --------------------------------------------- | ------------------------ | --------------------- | ------------------------------------- | ---------- |
@@ -149,7 +149,7 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 | API Connection — servicebus (V2)              | Logic App API Conn.      | Managed Identity auth | `infra/workload/logic-app.bicep`      | 1.00       |
 | API Connection — azureblob (V2)               | Logic App API Conn.      | Managed Identity auth | `infra/workload/logic-app.bicep`      | 1.00       |
 
-### 2.8 Monitoring & Observability (4)
+### 📡 2.8 Monitoring & Observability (4)
 
 | Component Name                           | Component Type       | Classification              | Source File                                      | Confidence |
 | ---------------------------------------- | -------------------- | --------------------------- | ------------------------------------------------ | ---------- |
@@ -158,20 +158,20 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 | OpenTelemetry SDK (OTLP + Azure Monitor) | OTel Exporter        | Multi-sink telemetry export | `app.ServiceDefaults/app.ServiceDefaults.csproj` | 0.73       |
 | Aspire Dashboard                         | Observability UI     | Local telemetry aggregation | `infra/workload/services/main.bicep`             | 0.91       |
 
-### 2.9 Identity & Access (2)
+### 🔑 2.9 Identity & Access (2)
 
 | Component Name                 | Component Type    | Classification          | Source File                        | Confidence |
 | ------------------------------ | ----------------- | ----------------------- | ---------------------------------- | ---------- |
 | Microsoft Entra ID             | Identity Provider | Tenant authentication   | `infra/shared/data/main.bicep`     | 1.00       |
 | User-Assigned Managed Identity | Managed Identity  | Service-to-service auth | `infra/shared/identity/main.bicep` | 0.93       |
 
-### 2.10 API Management (1)
+### 🔀 2.10 API Management (1)
 
 | Component Name                    | Component Type  | Classification          | Source File                              | Confidence |
 | --------------------------------- | --------------- | ----------------------- | ---------------------------------------- | ---------- |
 | Container Apps Ingress (External) | Managed Ingress | HTTPS / external-facing | `app.AppHost/infra/orders-api.tmpl.yaml` | 0.98       |
 
-### 2.11 Caching Infrastructure (1)
+### ⚡ 2.11 Caching Infrastructure (1)
 
 | Component Name           | Component Type           | Classification       | Source File                    | Confidence |
 | ------------------------ | ------------------------ | -------------------- | ------------------------------ | ---------- |
