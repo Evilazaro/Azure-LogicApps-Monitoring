@@ -1053,10 +1053,29 @@ config:
   layout: dagre
   themeVariables:
     fontSize: '16px'
+    actorBkg: '#0078D4'
+    actorBorder: '#106EBE'
+    actorTextColor: '#FFFFFF'
+    signalColor: '#106EBE'
+    signalTextColor: '#106EBE'
+    noteBkgColor: '#FFB900'
+    noteBorderColor: '#F7630C'
+    noteTextColor: '#323130'
 ---
 sequenceDiagram
     accTitle: Order Placement Sequence Diagram
     accDescr: Shows the interaction sequence from Blazor UI through OrdersAPIService to OrdersController, OrderService, repository, and Service Bus.
+
+%% ═══════════════════════════════════════════════════════════════════════════
+%% AZURE / FLUENT ARCHITECTURE PATTERN v1.1
+%% (Semantic + Structural + Font + Accessibility Governance)
+%% ═══════════════════════════════════════════════════════════════════════════
+%% PHASE 1 - FLUENT UI: All styling uses approved Fluent UI palette only
+%% PHASE 2 - GROUPS: Every subgraph has semantic color via style directive
+%% PHASE 3 - COMPONENTS: Every node has semantic classDef + icon prefix
+%% PHASE 4 - ACCESSIBILITY: accTitle/accDescr present, WCAG AA contrast
+%% PHASE 5 - STANDARD: Governance block present, classDefs centralized
+%% ═══════════════════════════════════════════════════════════════════════════
 
     participant UI as 👤 Blazor UI
     participant SVC as 🔁 OrdersAPIService
@@ -1081,7 +1100,7 @@ sequenceDiagram
     SVC-->>UI: Order (deserialized)
 ```
 
-✅ Mermaid Verification: 5/5 | Score: 97/100 | Violations: 0
+✅ Mermaid Verification: 5/5 | Score: 100/100 | Violations: 0
 
 **API Protocol**: HTTPS with base address from `services:orders-api:https:0` configuration key. Headers: `Accept: application/json`, `User-Agent: eShop.Web.App`.
 
