@@ -141,22 +141,22 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 
 ### 📨 2.7 Messaging Infrastructure (5)
 
-| Component Name                                | Component Type           | Classification        | Source File                           | Confidence |
-| --------------------------------------------- | ------------------------ | --------------------- | ------------------------------------- | ---------- |
-| Service Bus Namespace (Standard)              | Azure Service Bus        | Enterprise messaging  | `infra/workload/messaging/main.bicep` | 0.91       |
-| Service Bus Topic — ordersplaced              | Service Bus Topic        | Pub/sub channel       | `infra/workload/messaging/main.bicep` | 0.91       |
-| Service Bus Subscription — orderprocessingsub | Service Bus Subscription | Durable consume       | `infra/workload/messaging/main.bicep` | 0.91       |
-| API Connection — servicebus (V2)              | Logic App API Conn.      | Managed Identity auth | `infra/workload/logic-app.bicep`      | 1.00       |
-| API Connection — azureblob (V2)               | Logic App API Conn.      | Managed Identity auth | `infra/workload/logic-app.bicep`      | 1.00       |
+| 📨 Component Name                             | 🏷️ Component Type        | 🔖 Classification     |
+| --------------------------------------------- | ------------------------ | --------------------- |
+| Service Bus Namespace (Standard)              | Azure Service Bus        | Enterprise messaging  |
+| Service Bus Topic — ordersplaced              | Service Bus Topic        | Pub/sub channel       |
+| Service Bus Subscription — orderprocessingsub | Service Bus Subscription | Durable consume       |
+| API Connection — servicebus (V2)              | Logic App API Conn.      | Managed Identity auth |
+| API Connection — azureblob (V2)               | Logic App API Conn.      | Managed Identity auth |
 
 ### 📡 2.8 Monitoring & Observability (4)
 
-| Component Name                           | Component Type       | Classification              | Source File                                      | Confidence |
-| ---------------------------------------- | -------------------- | --------------------------- | ------------------------------------------------ | ---------- |
-| Log Analytics Workspace (PerGB2018)      | Log Analytics        | 30-day retention workspace  | `infra/shared/monitoring/main.bicep`             | 1.00       |
-| Application Insights (workspace-based)   | Application Insights | APM + distributed tracing   | `infra/shared/monitoring/main.bicep`             | 1.00       |
-| OpenTelemetry SDK (OTLP + Azure Monitor) | OTel Exporter        | Multi-sink telemetry export | `app.ServiceDefaults/app.ServiceDefaults.csproj` | 0.73       |
-| Aspire Dashboard                         | Observability UI     | Local telemetry aggregation | `infra/workload/services/main.bicep`             | 0.91       |
+| 📡 Component Name                        | 🏷️ Component Type    | 🔖 Classification           |
+| ---------------------------------------- | -------------------- | --------------------------- |
+| Log Analytics Workspace (PerGB2018)      | Log Analytics        | 30-day retention workspace  |
+| Application Insights (workspace-based)   | Application Insights | APM + distributed tracing   |
+| OpenTelemetry SDK (OTLP + Azure Monitor) | OTel Exporter        | Multi-sink telemetry export |
+| Aspire Dashboard                         | Observability UI     | Local telemetry aggregation |
 
 ### 🔑 2.9 Identity & Access (2)
 
