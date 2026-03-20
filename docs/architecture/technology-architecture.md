@@ -326,12 +326,12 @@ flowchart TB
 
 ### 🚀 4.3 Deployment Models
 
-| Service            | Deployment Model | Host Type            | Runtime                 | Min Replicas     | Source                                   |
-| ------------------ | ---------------- | -------------------- | ----------------------- | ---------------- | ---------------------------------------- |
-| Orders API         | Container App    | Container Apps Env   | .NET 10 / ASP.NET Core  | 10               | `app.AppHost/infra/orders-api.tmpl.yaml` |
-| Web App (Blazor)   | Container App    | Container Apps Env   | .NET 10 / Blazor Server | 5                | `app.AppHost/infra/web-app.tmpl.yaml`    |
-| Logic App Standard | App Service Plan | WS1 WorkflowStandard | Functions v4 (.NET)     | Elastic (max 20) | `infra/workload/logic-app.bicep`         |
-| Aspire Dashboard   | dotNetComponent  | Container Apps Env   | ASP.NET Core            | Platform-managed | `infra/workload/services/main.bicep`     |
+| 🚀 Service         | 🏗️ Deployment Model | 🖥️ Host Type         | ⚙️ Runtime              | 📊 Min Replicas  |
+| ------------------ | ------------------- | -------------------- | ----------------------- | ---------------- |
+| Orders API         | Container App       | Container Apps Env   | .NET 10 / ASP.NET Core  | 10               |
+| Web App (Blazor)   | Container App       | Container Apps Env   | .NET 10 / Blazor Server | 5                |
+| Logic App Standard | App Service Plan    | WS1 WorkflowStandard | Functions v4 (.NET)     | Elastic (max 20) |
+| Aspire Dashboard   | dotNetComponent     | Container Apps Env   | ASP.NET Core            | Platform-managed |
 
 ### ✅ 4.4 Availability Posture
 
