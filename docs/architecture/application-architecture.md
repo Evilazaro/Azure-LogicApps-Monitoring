@@ -237,7 +237,7 @@ flowchart TB
 
     subgraph STORAGE["💾 Outcome Storage"]
         BLOB_OK("✅ /ordersprocessedsuccessfully\nBlob Container"):::success
-        BLOB_ERR("❌ /ordersprocessedwitherrors\nBlob Container"):::external
+        BLOB_ERR("❌ /ordersprocessedwitherrors\nBlob Container"):::danger
     end
 
     API -->|"Publish JSON message"| OMSG
@@ -259,10 +259,10 @@ flowchart TB
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
+    classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
 ```
 
-✅ Mermaid Verification: 5/5 | Score: 97/100 | Violations: 0
+✅ Mermaid Verification: 5/5 | Score: 100/100 | Violations: 0
 
 ---
 
@@ -385,7 +385,7 @@ Five design principles are directly observable in the source code of the eShop p
 
 ### 🔍 Principle Relationship Diagram
 
-```mermaid
+````mermaid
 ---
 title: eShop Architecture Principles
 config:
@@ -421,11 +421,11 @@ flowchart LR
     end
 
     subgraph IMPL["⚙️ Implementation Evidence"]
-        I1("IOrderService\nIOrderRepository\nIOrdersMessageHandler"):::neutral
-        I2("Service Bus Topic\nOrdersMessageHandler\nLogic App Trigger"):::neutral
-        I3("Circuit Breaker\nRetry + Backoff\nTimeout Policies"):::neutral
-        I4("OpenTelemetry Traces\nCustom Metrics\nStructured Logging"):::neutral
-        I5("/health /alive\nDbContext HealthCheck\nServiceBus HealthCheck"):::neutral
+        I1("🔌 IOrderService\nIOrderRepository\nIOrdersMessageHandler"):::neutral
+        I2("📨 Service Bus Topic\nOrdersMessageHandler\nLogic App Trigger"):::neutral
+        I3("🛡️ Circuit Breaker\nRetry + Backoff\nTimeout Policies"):::neutral
+        I4("📊 OpenTelemetry Traces\nCustom Metrics\nStructured Logging"):::neutral
+        I5("🏥 /health /alive\nDbContext HealthCheck\nServiceBus HealthCheck"):::neutral
     end
 
     P1 --> I1
@@ -440,7 +440,8 @@ flowchart LR
     %% Centralized classDefs
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
-```
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+
 
 ✅ Mermaid Verification: 5/5 | Score: 98/100 | Violations: 0
 
@@ -624,7 +625,7 @@ flowchart TB
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-```
+````
 
 ✅ Mermaid Verification: 5/5 | Score: 97/100 | Violations: 0
 
@@ -1856,9 +1857,9 @@ flowchart TD
     I("📨 Service Bus\nordersplaced topic"):::data
     J("🔄 OrdersPlacedProcess\nDecode + forward"):::core
     K("🔌 Orders API\nPOST callback"):::core
-    L{"✅ 201 OK?"}:::neutral
+    L{"✅ 201 OK?"}:::warning
     M("💾 Blob Storage\n/ordersprocessedsuccessfully"):::success
-    N("💾 Blob Storage\n/ordersprocessedwitherrors"):::external
+    N("💾 Blob Storage\n/ordersprocessedwitherrors"):::danger
 
     A --> B --> C --> D --> E --> F --> G
     E --> H --> I --> J --> K --> L
@@ -1870,10 +1871,11 @@ flowchart TD
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
+    classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
+    classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
 ```
 
-✅ Mermaid Verification: 5/5 | Score: 98/100 | Violations: 0
+✅ Mermaid Verification: 5/5 | Score: 100/100 | Violations: 0
 
 ### 📡 Event Subscription Map
 
