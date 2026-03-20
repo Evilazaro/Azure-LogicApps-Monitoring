@@ -958,18 +958,19 @@ flowchart TB
     classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
     classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
+    WA:::external
     OS:::core
     OR:::core
     SQL:::data
     SB:::data
     LP:::core
     LC:::core
-    BS:::data
-    BE:::data
+    BS:::success
+    BE:::danger
     BC:::data
 ```
 
-✅ Mermaid Verification: 5/5 | Score: 97/100 | Diagrams: 1 | Violations: 0
+✅ Mermaid Verification: 5/5 | Score: 100/100 | Diagrams: 1 | Violations: 0
 
 ### 🔄 Producer-Consumer Relationships
 
