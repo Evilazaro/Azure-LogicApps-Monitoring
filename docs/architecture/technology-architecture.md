@@ -160,10 +160,10 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 
 ### 🔑 2.9 Identity & Access (2)
 
-| Component Name                 | Component Type    | Classification          | Source File                        | Confidence |
-| ------------------------------ | ----------------- | ----------------------- | ---------------------------------- | ---------- |
-| Microsoft Entra ID             | Identity Provider | Tenant authentication   | `infra/shared/data/main.bicep`     | 1.00       |
-| User-Assigned Managed Identity | Managed Identity  | Service-to-service auth | `infra/shared/identity/main.bicep` | 0.93       |
+| 🔑 Component Name              | 🏷️ Component Type | 🔖 Classification       |
+| ------------------------------ | ----------------- | ----------------------- |
+| Microsoft Entra ID             | Identity Provider | Tenant authentication   |
+| User-Assigned Managed Identity | Managed Identity  | Service-to-service auth |
 
 ### 🔀 2.10 API Management (1)
 
