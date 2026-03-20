@@ -221,9 +221,9 @@ All application services export telemetry through a unified OpenTelemetry pipeli
 
 ---
 
-## Section 4: Current State Baseline
+## 🗺️ Section 4: Current State Baseline
 
-### 4.1 Infrastructure Topology
+### 🌐 4.1 Infrastructure Topology
 
 The solution is deployed as a single Azure Resource Group (`rg-{solutionName}-{envName}-{location[:8]}`) under an Azure subscription. Infrastructure is organized into **Shared Services** (identity, networking, monitoring, data) and **Workload Services** (messaging, container services, Logic Apps).
 
@@ -231,7 +231,7 @@ All workload compute is VNet-integrated into a hub VNet (`10.0.0.0/16`) with thr
 
 **Source**: `infra/main.bicep`, `infra/shared/main.bicep`, `infra/workload/main.bicep`
 
-### 4.2 Network Baseline Diagram
+### 📡 4.2 Network Baseline Diagram
 
 ```mermaid
 ---
@@ -324,7 +324,7 @@ flowchart TB
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Violations: 0
 
-### 4.3 Deployment Models
+### 🚀 4.3 Deployment Models
 
 | Service            | Deployment Model | Host Type            | Runtime                 | Min Replicas     | Source                                   |
 | ------------------ | ---------------- | -------------------- | ----------------------- | ---------------- | ---------------------------------------- |
@@ -333,7 +333,7 @@ flowchart TB
 | Logic App Standard | App Service Plan | WS1 WorkflowStandard | Functions v4 (.NET)     | Elastic (max 20) | `infra/workload/logic-app.bicep`         |
 | Aspire Dashboard   | dotNetComponent  | Container Apps Env   | ASP.NET Core            | Platform-managed | `infra/workload/services/main.bicep`     |
 
-### 4.4 Availability Posture
+### ✅ 4.4 Availability Posture
 
 | Resource           | Redundancy Model            | Configuration Evidence                                                        |
 | ------------------ | --------------------------- | ----------------------------------------------------------------------------- |
@@ -344,7 +344,7 @@ flowchart TB
 | Logic App Standard | Elastic workers             | `maximumElasticWorkerCount: 20` — `infra/workload/logic-app.bicep`            |
 | Service Bus        | Standard tier               | No zone-redundancy declared — `infra/workload/messaging/main.bicep`           |
 
-### 4.5 Security Configuration Status
+### 🔒 4.5 Security Configuration Status
 
 | Control                           | Status            | Configuration                                     | Source                                     |
 | --------------------------------- | ----------------- | ------------------------------------------------- | ------------------------------------------ |
