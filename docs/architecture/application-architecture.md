@@ -389,7 +389,7 @@ Five design principles are directly observable in the source code of the eShop p
 
 ### 🔍 Principle Relationship Diagram
 
-````mermaid
+```mermaid
 ---
 title: eShop Architecture Principles
 config:
@@ -446,7 +446,7 @@ flowchart LR
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-
+```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Violations: 0
 
@@ -631,7 +631,7 @@ flowchart TB
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-````
+```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Violations: 0
 
