@@ -649,9 +649,9 @@ flowchart TB
 
 ### 🔀 5.10 API Management
 
-| Resource Name                     | Resource Type   | Deployment Model | SKU / Config                                  | Region              | Availability SLA | Cost Tag                                    | Source                                   |
-| --------------------------------- | --------------- | ---------------- | --------------------------------------------- | ------------------- | ---------------- | ------------------------------------------- | ---------------------------------------- |
-| Container Apps Ingress (External) | Managed Ingress | PaaS / CAE       | HTTPS, allowInsecure: false, targetPort: 8080 | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `app.AppHost/infra/orders-api.tmpl.yaml` |
+| 🔀 Resource Name                  | 🏷️ Resource Type | 🚀 Deployment Model | 📋 SKU / Config                               | 🌍 Region           | 🕐 Availability SLA | 🏷️ Cost Tag                                 |
+| --------------------------------- | ---------------- | ------------------- | --------------------------------------------- | ------------------- | ------------------- | ------------------------------------------- |
+| Container Apps Ingress (External) | Managed Ingress  | PaaS / CAE          | HTTPS, allowInsecure: false, targetPort: 8080 | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
 
 **Security Posture:**
 
@@ -684,9 +684,9 @@ flowchart TB
 
 ### ⚡ 5.11 Caching Infrastructure
 
-| Resource Name            | Resource Type            | Deployment Model  | SKU / Config                                       | Region | Availability SLA | Cost Tag | Source                         |
-| ------------------------ | ------------------------ | ----------------- | -------------------------------------------------- | ------ | ---------------- | -------- | ------------------------------ |
-| Distributed Memory Cache | In-Process ASP.NET Cache | Application-level | `AddDistributedMemoryCache()`, 30-min session idle | N/A    | N/A              | N/A      | `src/eShop.Web.App/Program.cs` |
+| ⚡ Resource Name         | 🏷️ Resource Type         | 🚀 Deployment Model | 📋 SKU / Config                                    | 🌍 Region | 🕐 Availability SLA | 🏷️ Cost Tag |
+| ------------------------ | ------------------------ | ------------------- | -------------------------------------------------- | --------- | ------------------- | ----------- |
+| Distributed Memory Cache | In-Process ASP.NET Cache | Application-level   | `AddDistributedMemoryCache()`, 30-min session idle | N/A       | N/A                 | N/A         |
 
 **Security Posture:**
 
@@ -717,9 +717,9 @@ flowchart TB
 
 ---
 
-## Section 8: Dependencies & Integration
+## 🔗 Section 8: Dependencies & Integration
 
-### 8.1 Resource Dependency Graph
+### 🗺️ 8.1 Resource Dependency Graph
 
 The following diagram shows the service-to-infrastructure bindings, data flow directions, and authentication relationships across all deployed components.
 
@@ -808,40 +808,40 @@ flowchart LR
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Violations: 0
 
-### 8.2 Network Connectivity Map
+### 🌐 8.2 Network Connectivity Map
 
-| Source Service       | Target Service                      | Protocol / Port | Auth Method                | Binding                                  | Source Evidence                                                       |
-| -------------------- | ----------------------------------- | --------------- | -------------------------- | ---------------------------------------- | --------------------------------------------------------------------- |
-| Browser              | Web App (CAE)                       | HTTPS / 443     | Anonymous (ingress)        | External CAE ingress                     | `app.AppHost/infra/web-app.tmpl.yaml`                                 |
-| Browser              | Orders API (CAE)                    | HTTPS / 443     | Anonymous (ingress)        | External CAE ingress                     | `app.AppHost/infra/orders-api.tmpl.yaml`                              |
-| Web App              | Orders API                          | HTTP/HTTPS      | Service Discovery          | `services__orders-api__https__0` env var | `app.AppHost/infra/web-app.tmpl.yaml`                                 |
-| Orders API           | Azure SQL                           | TCP / 1433      | Entra ID token             | Private Endpoint (data subnet)           | `src/eShop.Orders.API/Program.cs`, `infra/shared/data/main.bicep`     |
-| Orders API           | Service Bus                         | AMQP / 5671     | Managed Identity           | Public endpoint (SB namespace)           | `app.ServiceDefaults/Extensions.cs`                                   |
-| Logic App            | Service Bus                         | AMQP / APIConn  | Managed Identity (V2 conn) | VNet-integrated                          | `infra/workload/logic-app.bicep`, `connections.json`                  |
-| Logic App            | Blob Storage                        | HTTPS / APIConn | Managed Identity (V2 conn) | Private Endpoint (data subnet)           | `infra/workload/logic-app.bicep`, `connections.json`                  |
-| Logic App            | Orders API                          | HTTPS           | Anonymous (CAE ingress)    | External FQDN                            | `workflows/OrdersManagement/.../workflow.json`                        |
-| All services         | Application Insights                | HTTPS / OTel    | Connection String          | Public endpoint                          | `app.ServiceDefaults/Extensions.cs`, `infra/workload/logic-app.bicep` |
-| Application Insights | Log Analytics Workspace             | Internal Azure  | Workspace binding          | Platform-managed                         | `infra/shared/monitoring/main.bicep`                                  |
-| CAE                  | Log Analytics Workspace             | Platform        | Shared Key                 | appLogsConfiguration                     | `infra/workload/services/main.bicep`                                  |
-| Logic App / WebJobs  | Workflow Storage (blob/queue/table) | HTTPS           | Managed Identity           | Private Endpoint (data subnet)           | `infra/workload/logic-app.bicep` (AzureWebJobsStorage\_\_credential)  |
+| 🌐 Source Service    | 🎯 Target Service                   | 🔌 Protocol / Port | 🔑 Auth Method             | 🔗 Binding                               |
+| -------------------- | ----------------------------------- | ------------------ | -------------------------- | ---------------------------------------- |
+| Browser              | Web App (CAE)                       | HTTPS / 443        | Anonymous (ingress)        | External CAE ingress                     |
+| Browser              | Orders API (CAE)                    | HTTPS / 443        | Anonymous (ingress)        | External CAE ingress                     |
+| Web App              | Orders API                          | HTTP/HTTPS         | Service Discovery          | `services__orders-api__https__0` env var |
+| Orders API           | Azure SQL                           | TCP / 1433         | Entra ID token             | Private Endpoint (data subnet)           |
+| Orders API           | Service Bus                         | AMQP / 5671        | Managed Identity           | Public endpoint (SB namespace)           |
+| Logic App            | Service Bus                         | AMQP / APIConn     | Managed Identity (V2 conn) | VNet-integrated                          |
+| Logic App            | Blob Storage                        | HTTPS / APIConn    | Managed Identity (V2 conn) | Private Endpoint (data subnet)           |
+| Logic App            | Orders API                          | HTTPS              | Anonymous (CAE ingress)    | External FQDN                            |
+| All services         | Application Insights                | HTTPS / OTel       | Connection String          | Public endpoint                          |
+| Application Insights | Log Analytics Workspace             | Internal Azure     | Workspace binding          | Platform-managed                         |
+| CAE                  | Log Analytics Workspace             | Platform           | Shared Key                 | appLogsConfiguration                     |
+| Logic App / WebJobs  | Workflow Storage (blob/queue/table) | HTTPS              | Managed Identity           | Private Endpoint (data subnet)           |
 
-### 8.3 Service-to-Infrastructure Bindings
+### 🔌 8.3 Service-to-Infrastructure Bindings
 
-| Service            | Infrastructure Resource    | Binding Mechanism                                | Configuration Key                                  | Source                                         |
-| ------------------ | -------------------------- | ------------------------------------------------ | -------------------------------------------------- | ---------------------------------------------- |
-| Orders API         | Azure SQL                  | Connection string via EF Core (`orderdb`)        | `ConnectionStrings__orderdb`                       | `orders-api.tmpl.yaml`, `Program.cs`           |
-| Orders API         | Service Bus                | `ServiceBusClient` + `DefaultAzureCredential`    | `MESSAGING_HOST` / `ConnectionStrings__messaging`  | `app.ServiceDefaults/Extensions.cs`            |
-| Logic App (host)   | Workflow Storage Account   | `AzureWebJobsStorage__managedIdentityResourceId` | App Settings in `logic-app.bicep`                  | `infra/workload/logic-app.bicep`               |
-| Logic App          | Service Bus API Connection | `SERVICE_BUS_CONNECTION_RUNTIME_URL`             | `connections.json`                                 | `infra/workload/logic-app.bicep`               |
-| Logic App          | Blob API Connection        | `AZURE_BLOB_CONNECTION_RUNTIME_URL`              | `connections.json`                                 | `infra/workload/logic-app.bicep`               |
-| All apps           | Application Insights       | `APPLICATIONINSIGHTS_CONNECTION_STRING`          | App Settings / env var                             | `azure.yaml`, `infra/workload/logic-app.bicep` |
-| Logic App runtime  | Azure Resource Manager     | `WORKFLOWS_MANAGEMENT_BASE_URI`                  | `environment().resourceManager`                    | `infra/workload/logic-app.bicep`               |
-| Orders API         | ACR (image pull)           | Managed Identity + ACRPull RBAC                  | `AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID`     | `orders-api.tmpl.yaml`                         |
-| Web App            | ACR (image pull)           | Managed Identity + ACRPull RBAC                  | `AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID`     | `web-app.tmpl.yaml`                            |
-| CAE                | Log Analytics Workspace    | Shared key via `appLogsConfiguration`            | `AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID`        | `infra/workload/services/main.bicep`           |
-| postprovision hook | Azure SQL                  | Entra token via `Microsoft.Data.SqlClient`       | `AZURE_SQL_SERVER_NAME`, `AZURE_SQL_DATABASE_NAME` | `hooks/postprovision.ps1`                      |
+| ⚙️ Service         | 🏗️ Infrastructure Resource | 🔌 Binding Mechanism                             | 🔑 Configuration Key                               |
+| ------------------ | -------------------------- | ------------------------------------------------ | -------------------------------------------------- |
+| Orders API         | Azure SQL                  | Connection string via EF Core (`orderdb`)        | `ConnectionStrings__orderdb`                       |
+| Orders API         | Service Bus                | `ServiceBusClient` + `DefaultAzureCredential`    | `MESSAGING_HOST` / `ConnectionStrings__messaging`  |
+| Logic App (host)   | Workflow Storage Account   | `AzureWebJobsStorage__managedIdentityResourceId` | App Settings in `logic-app.bicep`                  |
+| Logic App          | Service Bus API Connection | `SERVICE_BUS_CONNECTION_RUNTIME_URL`             | `connections.json`                                 |
+| Logic App          | Blob API Connection        | `AZURE_BLOB_CONNECTION_RUNTIME_URL`              | `connections.json`                                 |
+| All apps           | Application Insights       | `APPLICATIONINSIGHTS_CONNECTION_STRING`          | App Settings / env var                             |
+| Logic App runtime  | Azure Resource Manager     | `WORKFLOWS_MANAGEMENT_BASE_URI`                  | `environment().resourceManager`                    |
+| Orders API         | ACR (image pull)           | Managed Identity + ACRPull RBAC                  | `AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID`     |
+| Web App            | ACR (image pull)           | Managed Identity + ACRPull RBAC                  | `AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID`     |
+| CAE                | Log Analytics Workspace    | Shared key via `appLogsConfiguration`            | `AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID`        |
+| postprovision hook | Azure SQL                  | Entra token via `Microsoft.Data.SqlClient`       | `AZURE_SQL_SERVER_NAME`, `AZURE_SQL_DATABASE_NAME` |
 
-### 8.4 External Service Integrations
+### 🌍 8.4 External Service Integrations
 
 | External Service          | Integration Type       | Authentication       | Configuration                                                                         | Source                                           |
 | ------------------------- | ---------------------- | -------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------ |
@@ -851,7 +851,7 @@ flowchart LR
 | Azure Monitor (OTLP sink) | OpenTelemetry exporter | Connection String    | `Azure.Monitor.OpenTelemetry.Exporter 1.6.0`                                          | `app.ServiceDefaults/app.ServiceDefaults.csproj` |
 | OTLP Collector (dev)      | OpenTelemetry exporter | None (dev only)      | `OTEL_EXPORTER_OTLP_ENDPOINT` env var                                                 | `app.ServiceDefaults/Extensions.cs`              |
 
-### 8.5 Order Processing Flow — End-to-End Binding
+### 🔄 8.5 Order Processing Flow — End-to-End Binding
 
 The complete end-to-end order processing integration spans 5 infrastructure hops traceable to source:
 
