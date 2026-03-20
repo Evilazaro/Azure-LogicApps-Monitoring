@@ -130,14 +130,14 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 
 ### 🔒 2.6 Security Infrastructure (6)
 
-| Component Name                   | Component Type       | Classification                 | Source File                                | Confidence |
-| -------------------------------- | -------------------- | ------------------------------ | ------------------------------------------ | ---------- |
-| User-Assigned Managed Identity   | Managed Identity     | Azure AD identity for services | `infra/shared/identity/main.bicep`         | 0.93       |
-| RBAC Role Assignments (20)       | Azure RBAC           | Least-privilege access control | `infra/shared/identity/main.bicep`         | 0.93       |
-| TLS 1.2 Minimum Policy           | Transport Security   | Storage account policy         | `infra/types.bicep`                        | 1.00       |
-| HTTPS-Only Traffic Policy        | Transport Security   | Storage account policy         | `infra/types.bicep`                        | 1.00       |
-| GitHub Actions OIDC Federation   | Federated Credential | Passwordless CI/CD auth        | `hooks/configure-federated-credential.ps1` | 0.73       |
-| Entra ID–Only SQL Authentication | Entra ID Auth        | No-password SQL access         | `infra/shared/data/main.bicep`             | 1.00       |
+| 🔒 Component Name                | 🏷️ Component Type    | 🔖 Classification              |
+| -------------------------------- | -------------------- | ------------------------------ |
+| User-Assigned Managed Identity   | Managed Identity     | Azure AD identity for services |
+| RBAC Role Assignments (20)       | Azure RBAC           | Least-privilege access control |
+| TLS 1.2 Minimum Policy           | Transport Security   | Storage account policy         |
+| HTTPS-Only Traffic Policy        | Transport Security   | Storage account policy         |
+| GitHub Actions OIDC Federation   | Federated Credential | Passwordless CI/CD auth        |
+| Entra ID–Only SQL Authentication | Entra ID Auth        | No-password SQL access         |
 
 ### 📨 2.7 Messaging Infrastructure (5)
 
