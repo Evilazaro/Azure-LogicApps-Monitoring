@@ -166,14 +166,20 @@ The data landscape is compact and well-structured. All 11 canonical component ty
 
 ```mermaid
 ---
+title: eShop Orders Data Storage Tier and Domain Map
 config:
   theme: base
   look: classic
   layout: dagre
   themeVariables:
     fontSize: '16px'
+    primaryColor: '#0078D4'
+    primaryBorderColor: '#106EBE'
+    primaryTextColor: '#FFFFFF'
+    lineColor: '#0078D4'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart TB
     accTitle: eShop Orders Data Storage Tier and Domain Map
@@ -218,12 +224,12 @@ flowchart TB
     style PersistenceTier fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
     style InfrastructureTier fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
-    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 97/100 | Diagrams: 1 | Violations: 0
@@ -255,14 +261,20 @@ Security-by-design is applied at every tier with no fallback to password-based c
 
 ```mermaid
 ---
+title: Data Architecture Principles Hierarchy
 config:
   theme: base
   look: classic
   layout: dagre
   themeVariables:
     fontSize: '16px'
+    primaryColor: '#0078D4'
+    primaryBorderColor: '#106EBE'
+    primaryTextColor: '#FFFFFF'
+    lineColor: '#0078D4'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart LR
     accTitle: Data Architecture Principles Hierarchy
@@ -304,11 +316,11 @@ flowchart LR
     style SchemaSub fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
     style OpsSub fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
-    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 97/100 | Diagrams: 1 | Violations: 0
@@ -336,14 +348,20 @@ flowchart LR
 
 ```mermaid
 ---
+title: Data Classification Taxonomy
 config:
   theme: base
   look: classic
   layout: dagre
   themeVariables:
     fontSize: '16px'
+    primaryColor: '#0078D4'
+    primaryBorderColor: '#106EBE'
+    primaryTextColor: '#FFFFFF'
+    lineColor: '#0078D4'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart TB
     accTitle: Data Classification Taxonomy
@@ -397,14 +415,20 @@ The architecture uses a **layered data access pattern**:
 
 ```mermaid
 ---
+title: eShop Orders Baseline Data Architecture Diagram
 config:
   theme: base
   look: classic
   layout: dagre
   themeVariables:
     fontSize: '16px'
+    primaryColor: '#0078D4'
+    primaryBorderColor: '#106EBE'
+    primaryTextColor: '#FFFFFF'
+    lineColor: '#0078D4'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart TB
     accTitle: eShop Orders Baseline Data Architecture Diagram
@@ -456,10 +480,10 @@ flowchart TB
     style ServiceLayer fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
     style InfraLayer fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
-    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 97/100 | Diagrams: 1 | Violations: 0
@@ -531,11 +555,16 @@ The EF Core entity relationship diagram (ERD) follows immediately after the Data
 
 ```mermaid
 ---
+title: eShop Orders Database Entity-Relationship Diagram
 config:
   theme: base
   look: classic
   themeVariables:
     fontSize: '16px'
+    primaryColor: '#0078D4'
+    primaryBorderColor: '#106EBE'
+    primaryTextColor: '#FFFFFF'
+    lineColor: '#0078D4'
 ---
 erDiagram
     accTitle: eShop Orders Database Entity-Relationship Diagram
@@ -851,14 +880,20 @@ The two Logic App workflows represent the external data integration surface: `Or
 
 ```mermaid
 ---
+title: eShop Order Data Flow and Integration Diagram
 config:
   theme: base
   look: classic
   layout: dagre
   themeVariables:
     fontSize: '16px'
+    primaryColor: '#0078D4'
+    primaryBorderColor: '#106EBE'
+    primaryTextColor: '#FFFFFF'
+    lineColor: '#0078D4'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart TB
     accTitle: eShop Order Data Flow and Integration Diagram
@@ -917,11 +952,12 @@ flowchart TB
     style WorkflowLayer fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
     style BlobLayer fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
+    classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
     classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
-
-    WA:::external
     OS:::core
     OR:::core
     SQL:::data
@@ -974,14 +1010,20 @@ Formal governance artefacts — data ownership RACI, retention schedules, classi
 
 ```mermaid
 ---
+title: Data Access Control Model
 config:
   theme: base
   look: classic
   layout: dagre
   themeVariables:
     fontSize: '16px'
+    primaryColor: '#0078D4'
+    primaryBorderColor: '#106EBE'
+    primaryTextColor: '#FFFFFF'
+    lineColor: '#0078D4'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart LR
     accTitle: Data Access Control Model
