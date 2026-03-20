@@ -666,7 +666,7 @@ flowchart TB
 
 **Confidence Score**: 0.98 (HIGH)
 
-#### Azure API Management (Full Gateway)
+#### 🔀 Azure API Management (Full Gateway)
 
 **Status**: Not detected in current infrastructure configuration.
 
@@ -702,7 +702,7 @@ flowchart TB
 
 - Filename: `Program.cs` (0.0) × 0.30 + Path `/src/eShop.Web.App/` (0.0) × 0.25 + Content `AddDistributedMemoryCache`, `AddSession`, `IdleTimeout` (0.9) × 0.35 + Crossref tied to CAE sticky sessions config (0.8) × 0.10 = **0.395** — included at medium confidence as a technology infrastructure decision with direct impact on Container Apps scaling configuration
 
-#### Azure Cache for Redis
+#### ⚡ Azure Cache for Redis
 
 **Status**: Not detected in current infrastructure configuration.
 
@@ -843,13 +843,13 @@ flowchart LR
 
 ### 🌍 8.4 External Service Integrations
 
-| External Service          | Integration Type       | Authentication       | Configuration                                                                         | Source                                           |
-| ------------------------- | ---------------------- | -------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| GitHub Actions (CI/CD)    | OIDC Token Exchange    | Federated Credential | Issuer: `token.actions.githubusercontent.com`, Audience: `api://AzureADTokenExchange` | `hooks/configure-federated-credential.ps1`       |
-| Microsoft Entra ID        | Identity Provider      | OAuth 2.0 / OIDC     | `administratorLogin` omitted; Entra-only auth                                         | `infra/shared/data/main.bicep`                   |
-| Azure Resource Manager    | Management API         | Managed Identity     | `WORKFLOWS_MANAGEMENT_BASE_URI: environment().resourceManager`                        | `infra/workload/logic-app.bicep`                 |
-| Azure Monitor (OTLP sink) | OpenTelemetry exporter | Connection String    | `Azure.Monitor.OpenTelemetry.Exporter 1.6.0`                                          | `app.ServiceDefaults/app.ServiceDefaults.csproj` |
-| OTLP Collector (dev)      | OpenTelemetry exporter | None (dev only)      | `OTEL_EXPORTER_OTLP_ENDPOINT` env var                                                 | `app.ServiceDefaults/Extensions.cs`              |
+| 🌍 External Service       | 🔗 Integration Type    | 🔑 Authentication    | ⚙️ Configuration                                                                      |
+| ------------------------- | ---------------------- | -------------------- | ------------------------------------------------------------------------------------- |
+| GitHub Actions (CI/CD)    | OIDC Token Exchange    | Federated Credential | Issuer: `token.actions.githubusercontent.com`, Audience: `api://AzureADTokenExchange` |
+| Microsoft Entra ID        | Identity Provider      | OAuth 2.0 / OIDC     | `administratorLogin` omitted; Entra-only auth                                         |
+| Azure Resource Manager    | Management API         | Managed Identity     | `WORKFLOWS_MANAGEMENT_BASE_URI: environment().resourceManager`                        |
+| Azure Monitor (OTLP sink) | OpenTelemetry exporter | Connection String    | `Azure.Monitor.OpenTelemetry.Exporter 1.6.0`                                          |
+| OTLP Collector (dev)      | OpenTelemetry exporter | None (dev only)      | `OTEL_EXPORTER_OTLP_ENDPOINT` env var                                                 |
 
 ### 🔄 8.5 Order Processing Flow — End-to-End Binding
 
