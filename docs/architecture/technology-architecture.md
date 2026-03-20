@@ -179,41 +179,41 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 
 ---
 
-## Section 3: Architecture Principles
+## 📐 Section 3: Architecture Principles
 
 The following infrastructure principles are directly observed in source code and configuration files. All principles are traceable to specific implementation evidence.
 
-### P-01: Infrastructure-as-Code First
+### 🏗️ P-01: Infrastructure-as-Code First
 
 All Azure resources are defined as parameterized Bicep modules. No manual portal-provisioned resources exist in scope. The deployment is fully reproducible via `azd provision` invoking `infra/main.bicep` at subscription scope.
 
 **Source Evidence**: `infra/main.bicep` (subscription-scoped), `infra/shared/main.bicep` (module composition), `infra/workload/main.bicep` (workload modules), `azure.yaml` (azd configuration, `infra.provider: bicep`).
 
-### P-02: Managed Identity — Zero Persistent Secrets
+### 🔑 P-02: Managed Identity — Zero Persistent Secrets
 
 All service-to-service authentication uses User-Assigned Managed Identity with RBAC role assignments. No connection strings or passwords are stored in application configuration for runtime access to Azure services. The SQL Server enforces `azureADOnlyAuthentication: true`, explicitly blocking all password-based connections.
 
 **Source Evidence**: `infra/shared/identity/main.bicep` (20 RBAC assignments), `infra/shared/data/main.bicep` (`administrators.azureADOnlyAuthentication: true`), `infra/workload/logic-app.bicep` (`parameterValueSet.name: managedIdentityAuth`), `app.ServiceDefaults/Extensions.cs` (`DefaultAzureCredential`).
 
-### P-03: Defense in Depth — Network Isolation
+### 🛡️ P-03: Defense in Depth — Network Isolation
 
 Data-tier services (Azure SQL, Blob, File, Table, Queue storage) are accessible exclusively through Private Endpoints in a dedicated data subnet with network policies disabled. All VNet subnets carry service delegations to enforce workload binding. Container Apps and Logic Apps are VNet-integrated, routing all outbound traffic through the VNet.
 
 **Source Evidence**: `infra/shared/network/main.bicep` (VNet 10.0.0.0/16, subnet delegations), `infra/shared/data/main.bicep` (5 private endpoints + Private DNS zone linkages), `infra/workload/logic-app.bicep` (`WEBSITE_CONTENTOVERVNET: 1`, `apiSubnetId`).
 
-### P-04: Least Privilege Access Control
+### 🔐 P-04: Least Privilege Access Control
 
 The single User-Assigned Managed Identity carries exactly the RBAC roles required for each service. Role assignments are scoped to the minimum required resource level: Storage Blob Data Owner for workflow state access, Service Bus Data Owner for message processing, ACRPull for container image pulls. No Contributor or Owner roles are assigned at the resource group level for runtime workloads.
 
 **Source Evidence**: `infra/shared/identity/main.bicep` (20 role assignments enumerated: Storage Blob Data Owner/Reader/Contributor, Service Bus Data Owner/Sender/Receiver, Monitoring Contributor/Reader, ACRPull/ACRPush, and others).
 
-### P-05: Cloud-Native Serverless Design
+### ☁️ P-05: Cloud-Native Serverless Design
 
 All compute uses serverless or elastic PaaS tiers — no IaaS VMs exist in the topology. Logic Apps Standard uses the `WorkflowStandard` (WS1) elastic plan with `maximumElasticWorkerCount: 20`. Container Apps use Consumption workload profile with scale-to-zero capability. This eliminates OS patching, VM lifecycle management, and static capacity provisioning.
 
 **Source Evidence**: `infra/workload/logic-app.bicep` (App Service Plan `sku: WS1 / tier: WorkflowStandard`), `infra/workload/services/main.bicep` (CAE `workloadProfiles: [{name: Consumption, workloadProfileType: Consumption}]`), `app.AppHost/infra/orders-api.tmpl.yaml` (`minReplicas: 10`).
 
-### P-06: Unified Observability via OpenTelemetry
+### 📡 P-06: Unified Observability via OpenTelemetry
 
 All application services export telemetry through a unified OpenTelemetry pipeline supporting dual sinks: OTLP protocol (for Aspire Dashboard in development) and Azure Monitor exporter (for Application Insights in production). Logic Apps Standard is configured with `AzureFunctionsJobHost__telemetryMode: OpenTelemetry`, aligning workflow telemetry with the application-level OTel pipeline. Custom business metrics (order counters, processing duration histograms) are emitted from application code.
 
