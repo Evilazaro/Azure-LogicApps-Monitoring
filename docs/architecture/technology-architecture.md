@@ -167,15 +167,15 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 
 ### 🔀 2.10 API Management (1)
 
-| Component Name                    | Component Type  | Classification          | Source File                              | Confidence |
-| --------------------------------- | --------------- | ----------------------- | ---------------------------------------- | ---------- |
-| Container Apps Ingress (External) | Managed Ingress | HTTPS / external-facing | `app.AppHost/infra/orders-api.tmpl.yaml` | 0.98       |
+| 🔀 Component Name                 | 🏷️ Component Type | 🔖 Classification       |
+| --------------------------------- | ----------------- | ----------------------- |
+| Container Apps Ingress (External) | Managed Ingress   | HTTPS / external-facing |
 
 ### ⚡ 2.11 Caching Infrastructure (1)
 
-| Component Name           | Component Type           | Classification       | Source File                    | Confidence |
-| ------------------------ | ------------------------ | -------------------- | ------------------------------ | ---------- |
-| Distributed Memory Cache | In-Process Session Cache | ASP.NET Core session | `src/eShop.Web.App/Program.cs` | 0.73       |
+| ⚡ Component Name          | 🏷️ Component Type        | 🔖 Classification      |
+| -------------------------- | ------------------------ | ---------------------- |
+| Distributed Memory Cache   | In-Process Session Cache | ASP.NET Core session   |
 
 ---
 
