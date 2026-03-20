@@ -41,19 +41,6 @@ Data movement is orchestrated through two channels: synchronous REST API calls f
 | 🏛️ Governance Coverage              | Partial     | Logging and auth covered; no formal data catalog or retention policy |
 | 🗃️ Schema Migrations                | 1 versioned | `OrderDbV1` migration — baseline schema established                  |
 
-### ✨ Data Quality Scorecard
-
-| Quality Dimension        | Score  | Assessment                                                       |
-| ------------------------ | ------ | ---------------------------------------------------------------- |
-| ✅ Schema Completeness   | 90/100 | Strong — all fields typed and constrained                        |
-| 🔍 Validation Coverage   | 85/100 | Good — DataAnnotations on domain models                          |
-| 🔗 Referential Integrity | 95/100 | Excellent — FK with CASCADE configured                           |
-| 📇 Index Coverage        | 90/100 | Good — CustomerId and Date indexes present                       |
-| 🔒 Security Posture      | 88/100 | Strong — MSI, TLS 1.2, private endpoints                         |
-| 🏷️ Data Classification   | 70/100 | Adequate — Financial/Internal assigned; no formal catalog        |
-| ⏱️ Retention Policy      | 40/100 | Gap — no explicit retention policy documented                    |
-| 👁️ Observability         | 75/100 | Moderate — diagnostic settings on storage; EF logging configured |
-
 ### 📊 Coverage Summary
 
 The data domain is well-defined and fully traced to source files with a confidence score of 0.91. The architecture demonstrates strong security discipline (Managed Identity everywhere, Entra ID-only SQL authentication, TLS 1.2 minimum) and solid relational modelling with proper indexing and referential integrity. Key governance gaps include the absence of a formal data classification catalog, explicit data retention policies, and data lineage tooling. Master data management is not applicable to this domain — all data is transactional order data rather than reference or master data.
