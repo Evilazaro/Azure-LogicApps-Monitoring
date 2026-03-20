@@ -433,17 +433,17 @@ flowchart TB
 
 ### 🌐 5.3 Network Infrastructure
 
-| Resource Name                  | Resource Type    | Deployment Model | SKU / Config                                  | Region              | Availability SLA | Cost Tag                                    | Source                            |
-| ------------------------------ | ---------------- | ---------------- | --------------------------------------------- | ------------------- | ---------------- | ------------------------------------------- | --------------------------------- |
-| Virtual Network (10.0.0.0/16)  | Azure VNet       | Regional VNet    | Standard                                      | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/network/main.bicep` |
-| API Subnet (10.0.1.0/24)       | VNet Subnet      | Subnet           | `Microsoft.App/environments` delegation       | Inherited           | Inherited        | Inherited                                   | `infra/shared/network/main.bicep` |
-| Data Subnet (10.0.2.0/24)      | VNet Subnet      | Subnet           | `privateLinkServiceNetworkPolicies: Disabled` | Inherited           | Inherited        | Inherited                                   | `infra/shared/network/main.bicep` |
-| Workflows Subnet (10.0.3.0/24) | VNet Subnet      | Subnet           | `Microsoft.Web/serverFarms` delegation        | Inherited           | Inherited        | Inherited                                   | `infra/shared/network/main.bicep` |
-| Private Endpoint — blob        | Private Endpoint | Data Subnet      | groupId: blob                                 | Inherited           | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/data/main.bicep`    |
-| Private Endpoint — file        | Private Endpoint | Data Subnet      | groupId: file                                 | Inherited           | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/data/main.bicep`    |
-| Private Endpoint — table       | Private Endpoint | Data Subnet      | groupId: table                                | Inherited           | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/data/main.bicep`    |
-| Private Endpoint — queue       | Private Endpoint | Data Subnet      | groupId: queue                                | Inherited           | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/data/main.bicep`    |
-| Private Endpoint — sql         | Private Endpoint | Data Subnet      | groupId: sqlServer                            | Inherited           | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/data/main.bicep`    |
+| 🌐 Resource Name                 | 🏷️ Resource Type  | 🚀 Deployment Model | 📋 SKU / Config                                | 🌍 Region           | 🕐 Availability SLA | 🏷️ Cost Tag                                   |
+| -------------------------------- | ---------------- | ------------------- | ---------------------------------------------- | ------------------- | ------------------- | --------------------------------------------- |
+| Virtual Network (10.0.0.0/16)    | Azure VNet       | Regional VNet       | Standard                                       | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team   |
+| API Subnet (10.0.1.0/24)         | VNet Subnet      | Subnet              | `Microsoft.App/environments` delegation        | Inherited           | Inherited           | Inherited                                     |
+| Data Subnet (10.0.2.0/24)        | VNet Subnet      | Subnet              | `privateLinkServiceNetworkPolicies: Disabled`  | Inherited           | Inherited           | Inherited                                     |
+| Workflows Subnet (10.0.3.0/24)   | VNet Subnet      | Subnet              | `Microsoft.Web/serverFarms` delegation         | Inherited           | Inherited           | Inherited                                     |
+| Private Endpoint — blob          | Private Endpoint | Data Subnet         | groupId: blob                                  | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team   |
+| Private Endpoint — file          | Private Endpoint | Data Subnet         | groupId: file                                  | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team   |
+| Private Endpoint — table         | Private Endpoint | Data Subnet         | groupId: table                                 | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team   |
+| Private Endpoint — queue         | Private Endpoint | Data Subnet         | groupId: queue                                 | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team   |
+| Private Endpoint — sql           | Private Endpoint | Data Subnet         | groupId: sqlServer                             | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team   |
 
 **Security Posture:**
 
