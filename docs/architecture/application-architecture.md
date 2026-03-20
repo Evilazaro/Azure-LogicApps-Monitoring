@@ -61,6 +61,7 @@ config:
     fontSize: '16px'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart TB
     accTitle: eShop Application System Context Diagram
@@ -81,16 +82,16 @@ flowchart TB
 
     subgraph CLOUD["☁️ Azure Cloud — eShop Platform"]
         subgraph APPS["🖥️ Application Tier"]
-            WEB("🌐 eShop.Web.App\nBlazor Server"):::core
-            API("🔌 eShop.Orders.API\nASP.NET Core 10"):::core
+            WEB("🌐 eShop.Web.App<br>Blazor Server"):::core
+            API("🔌 eShop.Orders.API<br>ASP.NET Core 10"):::core
         end
         subgraph DATA["🗄️ Data & Messaging"]
             DB("🗄️ Azure SQL Database"):::data
-            SB("📨 Azure Service Bus\nordersplaced topic"):::data
-            BLOB("💾 Azure Blob Storage\nOrder Archives"):::data
+            SB("📨 Azure Service Bus<br>ordersplaced topic"):::data
+            BLOB("💾 Azure Blob Storage<br>Order Archives"):::data
         end
         subgraph WORKFLOW["⚙️ Workflow"]
-            LA("🔄 Logic App Standard\nOrdersManagement"):::core
+            LA("🔄 Logic App Standard<br>OrdersManagement"):::core
         end
         AI("📊 Application Insights"):::success
     end
@@ -132,6 +133,7 @@ config:
     fontSize: '16px'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart LR
     accTitle: eShop Service Ecosystem Map
@@ -149,25 +151,25 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph ORCH["🚀 Orchestration"]
-        AH("🏗️ app.AppHost\n.NET Aspire"):::neutral
+        AH("🏗️ app.AppHost<br>.NET Aspire"):::neutral
     end
 
     subgraph SHARED["📦 Shared Library"]
-        SD("🔧 app.ServiceDefaults\nCross-cutting"):::neutral
+        SD("🔧 app.ServiceDefaults<br>Cross-cutting"):::neutral
     end
 
     subgraph FE["🖥️ Frontend"]
-        WEB("🌐 eShop.Web.App\nBlazor Server"):::core
-        APIS("🔁 OrdersAPIService\nTyped HttpClient"):::core
+        WEB("🌐 eShop.Web.App<br>Blazor Server"):::core
+        APIS("🔁 OrdersAPIService<br>Typed HttpClient"):::core
     end
 
     subgraph BE["⚙️ Backend"]
-        API("🔌 eShop.Orders.API\nREST API"):::core
-        SVC("⚙️ OrderService\nBusiness Logic"):::core
+        API("🔌 eShop.Orders.API<br>REST API"):::core
+        SVC("⚙️ OrderService<br>Business Logic"):::success
     end
 
     subgraph WF["🔄 Workflow"]
-        LA("📋 OrdersManagementLogicApp\nLogic App Standard"):::neutral
+        LA("📋 OrdersManagementLogicApp<br>Logic App Standard"):::neutral
     end
 
     AH -->|"configures"| WEB
@@ -188,9 +190,10 @@ flowchart LR
     %% Centralized classDefs
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
+    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 ```
 
-✅ Mermaid Verification: 5/5 | Score: 97/100 | Violations: 0
+✅ Mermaid Verification: 5/5 | Score: 100/100 | Violations: 0
 
 ### 🔀 Integration Tier Diagram
 
@@ -205,6 +208,7 @@ config:
     fontSize: '16px'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart TB
     accTitle: eShop Integration Tier Diagram
@@ -223,21 +227,21 @@ flowchart TB
 
     subgraph PRODUCER["📤 Event Producer"]
         API("🔌 eShop.Orders.API"):::core
-        OMSG("📨 OrdersMessageHandler\nPub via ServiceBusClient"):::core
+        OMSG("📨 OrdersMessageHandler<br>Pub via ServiceBusClient"):::core
     end
 
     subgraph BROKER["📡 Message Broker"]
-        TOPIC("📋 ordersplaced\nService Bus Topic"):::data
+        TOPIC("📋 ordersplaced<br>Service Bus Topic"):::data
     end
 
     subgraph CONSUMER["📥 Event Consumer"]
-        LA_PROC("🔄 OrdersPlacedProcess\nService Bus Trigger"):::core
-        LA_COMP("🔁 OrdersPlacedCompleteProcess\nRecurrence — 3s"):::core
+        LA_PROC("🔄 OrdersPlacedProcess<br>Service Bus Trigger"):::core
+        LA_COMP("🔁 OrdersPlacedCompleteProcess<br>Recurrence — 3s"):::core
     end
 
     subgraph STORAGE["💾 Outcome Storage"]
-        BLOB_OK("✅ /ordersprocessedsuccessfully\nBlob Container"):::success
-        BLOB_ERR("❌ /ordersprocessedwitherrors\nBlob Container"):::danger
+        BLOB_OK("✅ /ordersprocessedsuccessfully<br>Blob Container"):::success
+        BLOB_ERR("❌ /ordersprocessedwitherrors<br>Blob Container"):::danger
     end
 
     API -->|"Publish JSON message"| OMSG
@@ -396,6 +400,7 @@ config:
     fontSize: '16px'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart LR
     accTitle: eShop Architecture Principles Relationship Diagram
@@ -413,19 +418,19 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph PRINCIPLES["📐 Architecture Principles"]
-        P1("🔌 Interface-First\nDesign"):::core
-        P2("🔗 Loose Coupling\nvia Events"):::core
-        P3("🛡️ Resilience\nby Default"):::core
-        P4("📊 Observability\nFirst"):::core
-        P5("🏥 Health-Gate\nDeployment"):::core
+        P1("🔌 Interface-First<br>Design"):::core
+        P2("🔗 Loose Coupling<br>via Events"):::core
+        P3("🛡️ Resilience<br>by Default"):::core
+        P4("📊 Observability<br>First"):::core
+        P5("🏥 Health-Gate<br>Deployment"):::core
     end
 
     subgraph IMPL["⚙️ Implementation Evidence"]
-        I1("🔌 IOrderService\nIOrderRepository\nIOrdersMessageHandler"):::neutral
-        I2("📨 Service Bus Topic\nOrdersMessageHandler\nLogic App Trigger"):::neutral
-        I3("🛡️ Circuit Breaker\nRetry + Backoff\nTimeout Policies"):::neutral
-        I4("📊 OpenTelemetry Traces\nCustom Metrics\nStructured Logging"):::neutral
-        I5("🏥 /health /alive\nDbContext HealthCheck\nServiceBus HealthCheck"):::neutral
+        I1("🔌 IOrderService<br>IOrderRepository<br>IOrdersMessageHandler"):::neutral
+        I2("📨 Service Bus Topic<br>OrdersMessageHandler<br>Logic App Trigger"):::neutral
+        I3("🛡️ Circuit Breaker<br>Retry + Backoff<br>Timeout Policies"):::neutral
+        I4("📊 OpenTelemetry Traces<br>Custom Metrics<br>Structured Logging"):::neutral
+        I5("🏥 /health /alive<br>DbContext HealthCheck<br>ServiceBus HealthCheck"):::neutral
     end
 
     P1 --> I1
@@ -551,6 +556,7 @@ config:
     fontSize: '16px'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart TB
     accTitle: eShop Current State Baseline Architecture Diagram
@@ -573,29 +579,29 @@ flowchart TB
 
     subgraph ACA["☁️ Azure Container Apps"]
         subgraph WEB_TIER["🖥️ Web Tier"]
-            WEB("🌐 eShop.Web.App\nBlazor Server / net10.0"):::core
+            WEB("🌐 eShop.Web.App<br>Blazor Server / net10.0"):::core
         end
         subgraph API_TIER["⚙️ API Tier"]
-            API("🔌 eShop.Orders.API\nASP.NET Core / net10.0"):::core
-            SVC("⚙️ OrderService"):::core
+            API("🔌 eShop.Orders.API<br>ASP.NET Core / net10.0"):::core
+            SVC("⚙️ OrderService"):::success
             REPO("🗃️ OrderRepository"):::core
             OMSG("📨 OrdersMessageHandler"):::core
         end
     end
 
     subgraph DATA_LAYER["🗄️ Data Layer"]
-        DB("🗄️ Azure SQL\nOrders table"):::data
-        SB("📨 Service Bus\nordersplaced topic"):::data
-        BLOB("💾 Blob Storage\nOrder archives"):::data
+        DB("🗄️ Azure SQL<br>Orders table"):::data
+        SB("📨 Service Bus<br>ordersplaced topic"):::data
+        BLOB("💾 Blob Storage<br>Order archives"):::data
     end
 
     subgraph WF_LAYER["🔄 Workflow Layer"]
-        LA1("📋 OrdersPlacedProcess\nService Bus trigger"):::core
-        LA2("🔁 OrdersPlacedCompleteProcess\nRecurrence 3s"):::core
+        LA1("📋 OrdersPlacedProcess<br>Service Bus trigger"):::core
+        LA2("🔁 OrdersPlacedCompleteProcess<br>Recurrence 3s"):::core
     end
 
     subgraph OBS["📊 Observability"]
-        AI("📊 App Insights\nOTLP Export"):::success
+        AI("📊 App Insights<br>OTLP Export"):::success
     end
 
     USR -->|"HTTPS"| WEB
@@ -1765,6 +1771,7 @@ config:
     fontSize: '16px'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart LR
     accTitle: eShop Service Call Graph
@@ -1783,7 +1790,7 @@ flowchart LR
 
     WEB("🌐 eShop.Web.App"):::core
     API("🔌 eShop.Orders.API"):::core
-    SVC("⚙️ OrderService"):::core
+    SVC("⚙️ OrderService"):::success
     REPO("🗃️ OrderRepository"):::core
     OMSG("📨 OrdersMessageHandler"):::core
     LA("🔄 OrdersManagementLogicApp"):::neutral
@@ -1830,6 +1837,7 @@ config:
     fontSize: '16px'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart TD
     accTitle: eShop Order Data Flow Diagram
@@ -1847,19 +1855,19 @@ flowchart TD
     %% ═══════════════════════════════════════════════════════════════════════════
 
     A("👤 User submits order form"):::neutral
-    B("🌐 Blazor Page\nPlaceOrder.razor"):::core
-    C("🔁 OrdersAPIService\nPOST /api/orders"):::core
-    D("🔌 OrdersController\nValidate + dispatch"):::core
-    E("⚙️ OrderService\nBusiness logic"):::core
-    F("🗃️ OrderRepository\nSaveOrderAsync"):::core
-    G("🗄️ Azure SQL\nOrders table insert"):::data
-    H("📨 OrdersMessageHandler\nSerialize + publish"):::core
-    I("📨 Service Bus\nordersplaced topic"):::data
-    J("🔄 OrdersPlacedProcess\nDecode + forward"):::core
-    K("🔌 Orders API\nPOST callback"):::core
+    B("🌐 Blazor Page<br>PlaceOrder.razor"):::core
+    C("🔁 OrdersAPIService<br>POST /api/orders"):::core
+    D("🔌 OrdersController<br>Validate + dispatch"):::core
+    E("⚙️ OrderService<br>Business logic"):::success
+    F("🗃️ OrderRepository<br>SaveOrderAsync"):::core
+    G("🗄️ Azure SQL<br>Orders table insert"):::data
+    H("📨 OrdersMessageHandler<br>Serialize + publish"):::core
+    I("📨 Service Bus<br>ordersplaced topic"):::data
+    J("🔄 OrdersPlacedProcess<br>Decode + forward"):::core
+    K("🔌 Orders API<br>POST callback"):::core
     L{"✅ 201 OK?"}:::warning
-    M("💾 Blob Storage\n/ordersprocessedsuccessfully"):::success
-    N("💾 Blob Storage\n/ordersprocessedwitherrors"):::danger
+    M("💾 Blob Storage<br>/ordersprocessedsuccessfully"):::success
+    N("💾 Blob Storage<br>/ordersprocessedwitherrors"):::danger
 
     A --> B --> C --> D --> E --> F --> G
     E --> H --> I --> J --> K --> L
@@ -1890,6 +1898,7 @@ config:
     fontSize: '16px'
   flowchart:
     htmlLabels: true
+    curve: cardinal
 ---
 flowchart LR
     accTitle: eShop Event Subscription Map
@@ -1907,23 +1916,23 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph PUB["📤 Publisher"]
-        API("🔌 eShop.Orders.API\nOrdersMessageHandler"):::core
+        API("🔌 eShop.Orders.API<br>OrdersMessageHandler"):::core
     end
 
     subgraph BROKER["📡 Azure Service Bus"]
-        TOPIC("📋 ordersplaced\nTopic"):::data
-        SUB("📥 Subscription\nOrdersPlacedProcess"):::data
+        TOPIC("📋 ordersplaced<br>Topic"):::data
+        SUB("📥 Subscription<br>OrdersPlacedProcess"):::data
     end
 
     subgraph SUB_CONSUMERS["📥 Consumers"]
-        LA_P("🔄 OrdersPlacedProcess\nTrigger: Service Bus"):::core
+        LA_P("🔄 OrdersPlacedProcess<br>Trigger: Service Bus"):::core
     end
 
     subgraph AUTH["🔐 Identity"]
-        MSI("🪪 User-Assigned\nManaged Identity"):::neutral
+        MSI("🪪 User-Assigned<br>Managed Identity"):::neutral
     end
 
-    API -->|"AMQP publish\nSubject: OrderPlaced"| TOPIC
+    API -->|"AMQP publish<br>Subject: OrderPlaced"| TOPIC
     TOPIC -->|"routes to"| SUB
     SUB -->|"triggers"| LA_P
     MSI -->|"authenticates publisher"| API
