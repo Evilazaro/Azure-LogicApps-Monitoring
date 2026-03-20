@@ -122,11 +122,11 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 
 ### ☁️ 2.5 Cloud Services (PaaS/SaaS) (3)
 
-| ☁️ Component Name          | 🏷️ Component Type    | 🔖 Classification              |
-| -------------------------- | -------------------- | ------------------------------ |
-| Azure Logic Apps Standard  | Logic App            | PaaS Workflow Platform         |
-| .NET Aspire 13.1.2         | Cloud Orchestration  | Dev-time + infra provisioning  |
-| Azure Developer CLI (azd)  | Deployment Toolchain | IaC + lifecycle management     |
+| ☁️ Component Name         | 🏷️ Component Type    | 🔖 Classification             |
+| ------------------------- | -------------------- | ----------------------------- |
+| Azure Logic Apps Standard | Logic App            | PaaS Workflow Platform        |
+| .NET Aspire 13.1.2        | Cloud Orchestration  | Dev-time + infra provisioning |
+| Azure Developer CLI (azd) | Deployment Toolchain | IaC + lifecycle management    |
 
 ### 🔒 2.6 Security Infrastructure (6)
 
