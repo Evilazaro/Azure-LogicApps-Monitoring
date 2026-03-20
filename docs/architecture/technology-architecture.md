@@ -433,17 +433,17 @@ flowchart TB
 
 ### 🌐 5.3 Network Infrastructure
 
-| 🌐 Resource Name                 | 🏷️ Resource Type  | 🚀 Deployment Model | 📋 SKU / Config                                | 🌍 Region           | 🕐 Availability SLA | 🏷️ Cost Tag                                   |
-| -------------------------------- | ---------------- | ------------------- | ---------------------------------------------- | ------------------- | ------------------- | --------------------------------------------- |
-| Virtual Network (10.0.0.0/16)    | Azure VNet       | Regional VNet       | Standard                                       | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team   |
-| API Subnet (10.0.1.0/24)         | VNet Subnet      | Subnet              | `Microsoft.App/environments` delegation        | Inherited           | Inherited           | Inherited                                     |
-| Data Subnet (10.0.2.0/24)        | VNet Subnet      | Subnet              | `privateLinkServiceNetworkPolicies: Disabled`  | Inherited           | Inherited           | Inherited                                     |
-| Workflows Subnet (10.0.3.0/24)   | VNet Subnet      | Subnet              | `Microsoft.Web/serverFarms` delegation         | Inherited           | Inherited           | Inherited                                     |
-| Private Endpoint — blob          | Private Endpoint | Data Subnet         | groupId: blob                                  | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team   |
-| Private Endpoint — file          | Private Endpoint | Data Subnet         | groupId: file                                  | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team   |
-| Private Endpoint — table         | Private Endpoint | Data Subnet         | groupId: table                                 | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team   |
-| Private Endpoint — queue         | Private Endpoint | Data Subnet         | groupId: queue                                 | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team   |
-| Private Endpoint — sql           | Private Endpoint | Data Subnet         | groupId: sqlServer                             | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team   |
+| 🌐 Resource Name               | 🏷️ Resource Type | 🚀 Deployment Model | 📋 SKU / Config                               | 🌍 Region           | 🕐 Availability SLA | 🏷️ Cost Tag                                 |
+| ------------------------------ | ---------------- | ------------------- | --------------------------------------------- | ------------------- | ------------------- | ------------------------------------------- |
+| Virtual Network (10.0.0.0/16)  | Azure VNet       | Regional VNet       | Standard                                      | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| API Subnet (10.0.1.0/24)       | VNet Subnet      | Subnet              | `Microsoft.App/environments` delegation       | Inherited           | Inherited           | Inherited                                   |
+| Data Subnet (10.0.2.0/24)      | VNet Subnet      | Subnet              | `privateLinkServiceNetworkPolicies: Disabled` | Inherited           | Inherited           | Inherited                                   |
+| Workflows Subnet (10.0.3.0/24) | VNet Subnet      | Subnet              | `Microsoft.Web/serverFarms` delegation        | Inherited           | Inherited           | Inherited                                   |
+| Private Endpoint — blob        | Private Endpoint | Data Subnet         | groupId: blob                                 | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Private Endpoint — file        | Private Endpoint | Data Subnet         | groupId: file                                 | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Private Endpoint — table       | Private Endpoint | Data Subnet         | groupId: table                                | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Private Endpoint — queue       | Private Endpoint | Data Subnet         | groupId: queue                                | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Private Endpoint — sql         | Private Endpoint | Data Subnet         | groupId: sqlServer                            | Inherited           | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
 
 **Security Posture:**
 
@@ -470,10 +470,10 @@ flowchart TB
 
 ### 🐳 5.4 Container Platforms
 
-| Resource Name                    | Resource Type              | Deployment Model  | SKU / Profile | Region              | Availability SLA | Cost Tag                                    | Source                               |
-| -------------------------------- | -------------------------- | ----------------- | ------------- | ------------------- | ---------------- | ------------------------------------------- | ------------------------------------ |
-| Azure Container Registry (ACR)   | Container Registry         | PaaS / Managed    | Basic SKU     | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/workload/services/main.bicep` |
-| Container Apps Environment (CAE) | Managed Container Platform | PaaS / Serverless | Consumption   | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/workload/services/main.bicep` |
+| 🐳 Resource Name                 | 🏷️ Resource Type           | 🚀 Deployment Model | 📋 SKU / Profile | 🌍 Region           | 🕐 Availability SLA | 🏷️ Cost Tag                                 |
+| -------------------------------- | -------------------------- | ------------------- | ---------------- | ------------------- | ------------------- | ------------------------------------------- |
+| Azure Container Registry (ACR)   | Container Registry         | PaaS / Managed      | Basic SKU        | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Container Apps Environment (CAE) | Managed Container Platform | PaaS / Serverless   | Consumption      | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
 
 **Security Posture:**
 
@@ -501,11 +501,11 @@ flowchart TB
 
 ### ☁️ 5.5 Cloud Services (PaaS/SaaS)
 
-| Resource Name             | Resource Type        | Deployment Model      | SKU / Version                 | Region              | Availability SLA | Cost Tag                                    | Source                                 |
-| ------------------------- | -------------------- | --------------------- | ----------------------------- | ------------------- | ---------------- | ------------------------------------------- | -------------------------------------- |
-| Azure Logic Apps Standard | Logic App            | PaaS / App Service    | WorkflowStandard WS1          | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/workload/logic-app.bicep`       |
-| .NET Aspire 13.1.2        | Cloud Orchestration  | Development toolchain | Aspire.Hosting.AppHost 13.1.2 | N/A                 | N/A              | N/A                                         | `app.AppHost/app.AppHost.csproj`       |
-| Azure Developer CLI (azd) | Deployment Toolchain | CLI / Pipeline        | ≥ 1.11.0                      | N/A                 | N/A              | N/A                                         | `azure.yaml`, `hooks/preprovision.ps1` |
+| ☁️ Resource Name          | 🏷️ Resource Type     | 🚀 Deployment Model   | 📋 SKU / Version              | 🌍 Region           | 🕐 Availability SLA | 🏷️ Cost Tag                                 |
+| ------------------------- | -------------------- | --------------------- | ----------------------------- | ------------------- | ------------------- | ------------------------------------------- |
+| Azure Logic Apps Standard | Logic App            | PaaS / App Service    | WorkflowStandard WS1          | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| .NET Aspire 13.1.2        | Cloud Orchestration  | Development toolchain | Aspire.Hosting.AppHost 13.1.2 | N/A                 | N/A                 | N/A                                         |
+| Azure Developer CLI (azd) | Deployment Toolchain | CLI / Pipeline        | ≥ 1.11.0                      | N/A                 | N/A                 | N/A                                         |
 
 **Security Posture:**
 
