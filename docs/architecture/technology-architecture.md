@@ -1,16 +1,5 @@
 # 🏗️ Technology Architecture — Azure LogicApps Monitoring
 
-**Generated**: 2026-03-20T00:00:00Z
-**Session ID**: 7f3a9c1e-8b2d-4e5f-a6d0-9c3b2f1e4a8d
-**Infrastructure Components Found**: 43
-**Repository**: Evilazaro/Azure-LogicApps-Monitoring
-**Framework**: TOGAF 10 Technology Architecture
-**Target Layer**: Technology
-**Quality Level**: Comprehensive
-**Confidence Threshold**: 0.70 (High ≥ 0.90 | Medium 0.70–0.89)
-
----
-
 ## 📚 Quick Table of Contents
 
 | #                                         | Section                       | Subsections                                                                                                                                                            |
@@ -61,17 +50,6 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 | Passwordless Authentication              | 100% (Managed Identity across all services) |
 | Private Network Endpoints                | 5 (blob, file, table, queue, sql)           |
 | RBAC Role Assignments                    | 20                                          |
-
-### 📈 1.3 Maturity Assessment
-
-| 📐 Dimension            | 💡 Observation                                                                  |
-| ----------------------- | ------------------------------------------------------------------------------- |
-| **IaC Maturity**        | All infrastructure defined as parameterized Bicep modules with tag governance   |
-| **Zero-Trust Security** | No passwords at runtime; Managed Identity + RBAC across all 20 role assignments |
-| **Cloud-Native Design** | Container Apps, Logic Apps Standard, Service Bus — all PaaS, no IaaS VMs        |
-| **Observability**       | OpenTelemetry OTLP + Azure Monitor, custom metrics, distributed tracing         |
-| **Network Isolation**   | Private endpoints for all data services; VNet-integrated container workloads    |
-| **CI/CD Governance**    | GitHub Actions OIDC federated credentials; azd lifecycle hook scripts           |
 
 ---
 
