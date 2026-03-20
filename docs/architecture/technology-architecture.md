@@ -101,32 +101,32 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 
 ### 🌐 2.3 Network Infrastructure (9)
 
-| Component Name                 | Component Type   | Classification                        | Source File                       | Confidence |
-| ------------------------------ | ---------------- | ------------------------------------- | --------------------------------- | ---------- |
-| Virtual Network (10.0.0.0/16)  | Azure VNet       | Regional VNet                         | `infra/shared/network/main.bicep` | 0.91       |
-| API Subnet (10.0.1.0/24)       | VNet Subnet      | App/environments delegation           | `infra/shared/network/main.bicep` | 0.91       |
-| Data Subnet (10.0.2.0/24)      | VNet Subnet      | Private endpoints (policies disabled) | `infra/shared/network/main.bicep` | 0.91       |
-| Workflows Subnet (10.0.3.0/24) | VNet Subnet      | Web/serverFarms delegation            | `infra/shared/network/main.bicep` | 0.91       |
-| Private Endpoint — blob        | Private Endpoint | Storage blob subresource              | `infra/shared/data/main.bicep`    | 1.00       |
-| Private Endpoint — file        | Private Endpoint | Storage file subresource              | `infra/shared/data/main.bicep`    | 1.00       |
-| Private Endpoint — table       | Private Endpoint | Storage table subresource             | `infra/shared/data/main.bicep`    | 1.00       |
-| Private Endpoint — queue       | Private Endpoint | Storage queue subresource             | `infra/shared/data/main.bicep`    | 1.00       |
-| Private Endpoint — sql         | Private Endpoint | SQL Server subresource                | `infra/shared/data/main.bicep`    | 1.00       |
+| 🌐 Component Name              | 🏷️ Component Type | 🔖 Classification                     |
+| ------------------------------ | ----------------- | ------------------------------------- |
+| Virtual Network (10.0.0.0/16)  | Azure VNet        | Regional VNet                         |
+| API Subnet (10.0.1.0/24)       | VNet Subnet       | App/environments delegation           |
+| Data Subnet (10.0.2.0/24)      | VNet Subnet       | Private endpoints (policies disabled) |
+| Workflows Subnet (10.0.3.0/24) | VNet Subnet       | Web/serverFarms delegation            |
+| Private Endpoint — blob        | Private Endpoint  | Storage blob subresource              |
+| Private Endpoint — file        | Private Endpoint  | Storage file subresource              |
+| Private Endpoint — table       | Private Endpoint  | Storage table subresource             |
+| Private Endpoint — queue       | Private Endpoint  | Storage queue subresource             |
+| Private Endpoint — sql         | Private Endpoint  | SQL Server subresource                |
 
 ### 🐳 2.4 Container Platforms (2)
 
-| Component Name                   | Component Type             | Classification               | Source File                          | Confidence |
-| -------------------------------- | -------------------------- | ---------------------------- | ------------------------------------ | ---------- |
-| Azure Container Registry (Basic) | Container Registry         | OCI artifact store           | `infra/workload/services/main.bicep` | 0.91       |
-| Container Apps Environment (CAE) | Managed Container Platform | Consumption workload profile | `infra/workload/services/main.bicep` | 0.91       |
+| 🐳 Component Name                | 🏷️ Component Type          | 🔖 Classification            |
+| -------------------------------- | -------------------------- | ---------------------------- |
+| Azure Container Registry (Basic) | Container Registry         | OCI artifact store           |
+| Container Apps Environment (CAE) | Managed Container Platform | Consumption workload profile |
 
 ### ☁️ 2.5 Cloud Services (PaaS/SaaS) (3)
 
-| Component Name            | Component Type       | Classification                | Source File                            | Confidence |
-| ------------------------- | -------------------- | ----------------------------- | -------------------------------------- | ---------- |
-| Azure Logic Apps Standard | Logic App            | PaaS Workflow Platform        | `infra/workload/logic-app.bicep`       | 1.00       |
-| .NET Aspire 13.1.2        | Cloud Orchestration  | Dev-time + infra provisioning | `app.AppHost/app.AppHost.csproj`       | 0.73       |
-| Azure Developer CLI (azd) | Deployment Toolchain | IaC + lifecycle management    | `azure.yaml`, `hooks/preprovision.ps1` | 0.73       |
+| ☁️ Component Name          | 🏷️ Component Type    | 🔖 Classification              |
+| -------------------------- | -------------------- | ------------------------------ |
+| Azure Logic Apps Standard  | Logic App            | PaaS Workflow Platform         |
+| .NET Aspire 13.1.2         | Cloud Orchestration  | Dev-time + infra provisioning  |
+| Azure Developer CLI (azd)  | Deployment Toolchain | IaC + lifecycle management     |
 
 ### 🔒 2.6 Security Infrastructure (6)
 
