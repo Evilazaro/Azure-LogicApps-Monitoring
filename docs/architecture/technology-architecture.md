@@ -564,13 +564,13 @@ flowchart TB
 
 ### 📨 5.7 Messaging Infrastructure
 
-| Resource Name                                 | Resource Type            | Deployment Model  | SKU / Config                                                                  | Region              | Availability SLA | Cost Tag                                    | Source                                |
-| --------------------------------------------- | ------------------------ | ----------------- | ----------------------------------------------------------------------------- | ------------------- | ---------------- | ------------------------------------------- | ------------------------------------- |
-| Service Bus Namespace                         | Azure Service Bus        | PaaS / Standard   | Standard tier                                                                 | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/workload/messaging/main.bicep` |
-| Service Bus Topic — ordersplaced              | Service Bus Topic        | Topic / Pub-Sub   | Partitioning: not specified                                                   | Inherited           | Inherited        | Inherited                                   | `infra/workload/messaging/main.bicep` |
-| Service Bus Subscription — orderprocessingsub | Service Bus Subscription | Durable subscribe | maxDeliveryCount: 10, lockDuration: PT5M, TTL: P14D, deadLetterOnExpiry: true | Inherited           | Inherited        | Inherited                                   | `infra/workload/messaging/main.bicep` |
-| API Connection — servicebus (V2)              | Logic App API Conn.      | Managed (V2)      | parameterValueSet: managedIdentityAuth                                        | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/workload/logic-app.bicep`      |
-| API Connection — azureblob (V2)               | Logic App API Conn.      | Managed (V2)      | parameterValueSet: managedIdentityAuth                                        | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/workload/logic-app.bicep`      |
+| 📨 Resource Name                              | 🏷️ Resource Type         | 🚀 Deployment Model | 📋 SKU / Config                                                               | 🌍 Region           | 🕐 Availability SLA | 🏷️ Cost Tag                                 |
+| --------------------------------------------- | ------------------------ | ------------------- | ----------------------------------------------------------------------------- | ------------------- | ------------------- | ------------------------------------------- |
+| Service Bus Namespace                         | Azure Service Bus        | PaaS / Standard     | Standard tier                                                                 | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Service Bus Topic — ordersplaced              | Service Bus Topic        | Topic / Pub-Sub     | Partitioning: not specified                                                   | Inherited           | Inherited           | Inherited                                   |
+| Service Bus Subscription — orderprocessingsub | Service Bus Subscription | Durable subscribe   | maxDeliveryCount: 10, lockDuration: PT5M, TTL: P14D, deadLetterOnExpiry: true | Inherited           | Inherited           | Inherited                                   |
+| API Connection — servicebus (V2)              | Logic App API Conn.      | Managed (V2)        | parameterValueSet: managedIdentityAuth                                        | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| API Connection — azureblob (V2)               | Logic App API Conn.      | Managed (V2)        | parameterValueSet: managedIdentityAuth                                        | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
 
 **Security Posture:**
 
@@ -597,12 +597,12 @@ flowchart TB
 
 ### 📡 5.8 Monitoring & Observability
 
-| Resource Name                          | Resource Type        | Deployment Model | SKU / Config               | Region              | Availability SLA | Cost Tag                                    | Source                                           |
-| -------------------------------------- | -------------------- | ---------------- | -------------------------- | ------------------- | ---------------- | ------------------------------------------- | ------------------------------------------------ |
-| Log Analytics Workspace                | Log Analytics        | PaaS / Managed   | PerGB2018, 30d retention   | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/monitoring/main.bicep`             |
-| Application Insights (workspace-based) | Application Insights | PaaS / Managed   | kind: web, workspace-based | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/monitoring/main.bicep`             |
-| OpenTelemetry SDK                      | OTel Exporter        | SDK / In-process | OTLP + Azure Monitor       | N/A                 | N/A              | N/A                                         | `app.ServiceDefaults/app.ServiceDefaults.csproj` |
-| Aspire Dashboard                       | Observability UI     | dotNetComponent  | AspireDashboard type       | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/workload/services/main.bicep`             |
+| 📡 Resource Name                       | 🏷️ Resource Type     | 🚀 Deployment Model | 📋 SKU / Config            | 🌍 Region           | 🕐 Availability SLA | 🏷️ Cost Tag                                 |
+| -------------------------------------- | -------------------- | ------------------- | -------------------------- | ------------------- | ------------------- | ------------------------------------------- |
+| Log Analytics Workspace                | Log Analytics        | PaaS / Managed      | PerGB2018, 30d retention   | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Application Insights (workspace-based) | Application Insights | PaaS / Managed      | kind: web, workspace-based | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| OpenTelemetry SDK                      | OTel Exporter        | SDK / In-process    | OTLP + Azure Monitor       | N/A                 | N/A                 | N/A                                         |
+| Aspire Dashboard                       | Observability UI     | dotNetComponent     | AspireDashboard type       | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
 
 **Security Posture:**
 
