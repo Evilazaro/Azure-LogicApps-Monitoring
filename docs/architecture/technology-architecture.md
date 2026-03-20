@@ -626,10 +626,10 @@ flowchart TB
 
 ### 🔑 5.9 Identity & Access
 
-| Resource Name                  | Resource Type     | Deployment Model | SKU / Config    | Region              | Availability SLA | Cost Tag                                    | Source                             |
-| ------------------------------ | ----------------- | ---------------- | --------------- | ------------------- | ---------------- | ------------------------------------------- | ---------------------------------- |
-| Microsoft Entra ID             | Identity Provider | Tenant-managed   | Azure AD tenant | Global / tenant     | Azure platform   | N/A                                         | `infra/shared/data/main.bicep`     |
-| User-Assigned Managed Identity | Managed Identity  | PaaS / Managed   | Standard        | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/identity/main.bicep` |
+| 🔑 Resource Name               | 🏷️ Resource Type  | 🚀 Deployment Model | 📋 SKU / Config | 🌍 Region           | 🕐 Availability SLA | 🏷️ Cost Tag                                 |
+| ------------------------------ | ----------------- | ------------------- | --------------- | ------------------- | ------------------- | ------------------------------------------- |
+| Microsoft Entra ID             | Identity Provider | Tenant-managed      | Azure AD tenant | Global / tenant     | Azure platform      | N/A                                         |
+| User-Assigned Managed Identity | Managed Identity  | PaaS / Managed      | Standard        | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
 
 **Security Posture:**
 
