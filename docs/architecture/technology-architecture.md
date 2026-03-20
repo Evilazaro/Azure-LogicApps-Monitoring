@@ -1,4 +1,4 @@
-# Technology Architecture — Azure LogicApps Monitoring
+# 🏗️ Technology Architecture — Azure LogicApps Monitoring
 
 **Generated**: 2026-03-20T00:00:00Z
 **Session ID**: 7f3a9c1e-8b2d-4e5f-a6d0-9c3b2f1e4a8d
@@ -11,9 +11,22 @@
 
 ---
 
-## Section 1: Executive Summary
+## 📚 Quick Table of Contents
 
-### 1.1 Technology Portfolio Overview
+| #                                         | Section                       | Subsections                                                                                                                                                            |
+| ----------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [1](#section-1-executive-summary)         | 📋 Executive Summary          | Portfolio Overview · Catalog Statistics · Maturity Assessment                                                                                                          |
+| [2](#section-2-architecture-landscape)    | 🗺️ Architecture Landscape     | Compute · Storage · Network · Containers · Cloud Services · Security · Messaging · Monitoring · Identity · API · Caching                                               |
+| [3](#section-3-architecture-principles)   | 📐 Architecture Principles    | P-01 IaC · P-02 Identity · P-03 Network Isolation · P-04 Least Privilege · P-05 Serverless · P-06 Observability                                                        |
+| [4](#section-4-current-state-baseline)    | 🗺️ Current State Baseline     | Topology · Deployment Diagram · Deployment Models · Availability · Security Controls                                                                                   |
+| [5](#section-5-component-catalog)         | 📦 Component Catalog          | 5.1 Compute · 5.2 Storage · 5.3 Network · 5.4 Containers · 5.5 Cloud Services · 5.6 Security · 5.7 Messaging · 5.8 Monitoring · 5.9 Identity · 5.10 API · 5.11 Caching |
+| [8](#section-8-dependencies--integration) | 🔗 Dependencies & Integration | Dependency Graph · Network Map · Service Bindings · External Integrations · End-to-End Flow                                                                            |
+
+---
+
+## 📋 Section 1: Executive Summary
+
+### 🌐 1.1 Technology Portfolio Overview
 
 The Azure LogicApps Monitoring solution implements a fully cloud-native, infrastructure-as-code (IaC) architecture deployed on Microsoft Azure. The technology portfolio spans 11 infrastructure component categories, covering Container Apps hosting, Logic Apps Standard workflows, Azure SQL data persistence, Azure Service Bus messaging, and a multi-tier observability stack built on Azure Monitor and OpenTelemetry.
 
@@ -21,24 +34,24 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 
 **Infrastructure Component Counts by Type:**
 
-| Component Type             | Count  | Confidence Level        | Primary Source                                                                                          |
-| -------------------------- | ------ | ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| Compute Resources          | 5      | HIGH (1.00–0.98)        | `infra/workload/logic-app.bicep`, `infra/workload/services/main.bicep`, `app.AppHost/infra/*.tmpl.yaml` |
-| Storage Systems            | 7      | HIGH (1.00)             | `infra/shared/data/main.bicep`, `infra/shared/monitoring/main.bicep`                                    |
-| Network Infrastructure     | 9      | HIGH (0.91–1.00)        | `infra/shared/network/main.bicep`, `infra/shared/data/main.bicep`                                       |
-| Container Platforms        | 2      | HIGH (0.91)             | `infra/workload/services/main.bicep`                                                                    |
-| Cloud Services (PaaS/SaaS) | 3      | HIGH–MEDIUM (0.73–1.00) | `azure.yaml`, `app.AppHost/app.AppHost.csproj`, `infra/workload/logic-app.bicep`                        |
-| Security Infrastructure    | 6      | HIGH (0.93–1.00)        | `infra/shared/identity/main.bicep`, `infra/types.bicep`, `hooks/configure-federated-credential.ps1`     |
-| Messaging Infrastructure   | 5      | HIGH (0.91–1.00)        | `infra/workload/messaging/main.bicep`, `infra/workload/logic-app.bicep`                                 |
-| Monitoring & Observability | 4      | HIGH (0.73–1.00)        | `infra/shared/monitoring/main.bicep`, `app.ServiceDefaults/app.ServiceDefaults.csproj`                  |
-| Identity & Access          | 2      | HIGH (0.93–1.00)        | `infra/shared/identity/main.bicep`, `infra/shared/data/main.bicep`                                      |
-| API Management             | 1      | HIGH (0.98)             | `app.AppHost/infra/orders-api.tmpl.yaml`                                                                |
-| Caching Infrastructure     | 1      | MEDIUM (0.73)           | `src/eShop.Web.App/Program.cs`                                                                          |
-| **TOTAL**                  | **45** | —                       | —                                                                                                       |
+| 🏗️ Component Type          | 🔢 Count |
+| -------------------------- | -------- |
+| Compute Resources          | 5        |
+| Storage Systems            | 7        |
+| Network Infrastructure     | 9        |
+| Container Platforms        | 2        |
+| Cloud Services (PaaS/SaaS) | 3        |
+| Security Infrastructure    | 6        |
+| Messaging Infrastructure   | 5        |
+| Monitoring & Observability | 4        |
+| Identity & Access          | 2        |
+| API Management             | 1        |
+| Caching Infrastructure     | 1        |
+| **TOTAL**                  | **45**   |
 
-### 1.2 Infrastructure Catalog Statistics
+### 📊 1.2 Infrastructure Catalog Statistics
 
-| Metric                                   | Value                                       |
+| 📊 Metric                                | 📈 Value                                    |
 | ---------------------------------------- | ------------------------------------------- |
 | Total Technology Components              | 45                                          |
 | High-Confidence Components (≥0.90)       | 39                                          |
@@ -49,16 +62,16 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 | Private Network Endpoints                | 5 (blob, file, table, queue, sql)           |
 | RBAC Role Assignments                    | 20                                          |
 
-### 1.3 Maturity Assessment
+### 📈 1.3 Maturity Assessment
 
-| Dimension               | Observation                                                                     | Source Evidence                                                   |
-| ----------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **IaC Maturity**        | All infrastructure defined as parameterized Bicep modules with tag governance   | `infra/main.bicep`, `infra/types.bicep`                           |
-| **Zero-Trust Security** | No passwords at runtime; Managed Identity + RBAC across all 20 role assignments | `infra/shared/identity/main.bicep`                                |
-| **Cloud-Native Design** | Container Apps, Logic Apps Standard, Service Bus — all PaaS, no IaaS VMs        | `infra/workload/**`                                               |
-| **Observability**       | OpenTelemetry OTLP + Azure Monitor, custom metrics, distributed tracing         | `app.ServiceDefaults/Extensions.cs`                               |
-| **Network Isolation**   | Private endpoints for all data services; VNet-integrated container workloads    | `infra/shared/network/main.bicep`, `infra/shared/data/main.bicep` |
-| **CI/CD Governance**    | GitHub Actions OIDC federated credentials; azd lifecycle hook scripts           | `hooks/configure-federated-credential.ps1`, `azure.yaml`          |
+| 📐 Dimension            | 💡 Observation                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| **IaC Maturity**        | All infrastructure defined as parameterized Bicep modules with tag governance   |
+| **Zero-Trust Security** | No passwords at runtime; Managed Identity + RBAC across all 20 role assignments |
+| **Cloud-Native Design** | Container Apps, Logic Apps Standard, Service Bus — all PaaS, no IaaS VMs        |
+| **Observability**       | OpenTelemetry OTLP + Azure Monitor, custom metrics, distributed tracing         |
+| **Network Isolation**   | Private endpoints for all data services; VNet-integrated container workloads    |
+| **CI/CD Governance**    | GitHub Actions OIDC federated credentials; azd lifecycle hook scripts           |
 
 ---
 

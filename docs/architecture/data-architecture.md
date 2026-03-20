@@ -184,18 +184,18 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph DomainTier["🧩 Domain Model Tier"]
-        OM("🧩 Order\nImmutable C# record"):::core
-        OPM("🧩 OrderProduct\nImmutable C# record"):::core
+        OM("🧩 Order<br>Immutable C# record"):::core
+        OPM("🧩 OrderProduct<br>Immutable C# record"):::core
     end
 
     subgraph PersistenceTier["🔄 Persistence Tier"]
-        OMAP("🔄 OrderMapper\nBidirectional mapping"):::core
-        ODB("📐 OrderDbContext\nEF Core Fluent API"):::core
+        OMAP("🔄 OrderMapper<br>Bidirectional mapping"):::core
+        ODB("📐 OrderDbContext<br>EF Core Fluent API"):::core
     end
 
     subgraph InfrastructureTier["☁️ Infrastructure Tier"]
-        SQL[("🗄️ Azure SQL Database\nOrders + OrderProducts")]:::data
-        SB("📨 Service Bus\nordersplaced topic"):::external
+        SQL[("🗄️ Azure SQL Database<br>Orders + OrderProducts")]:::data
+        SB("📨 Service Bus<br>ordersplaced topic"):::external
         BS1("✅ Blob: ordersprocessedsuccessfully"):::success
         BS2("❌ Blob: ordersprocessedwitherrors"):::danger
         BC("🏁 Blob: ordersprocessedcompleted"):::neutral
@@ -279,22 +279,22 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph DomainDesign["🏗️ Domain Design"]
-        P1("🏗️ Bounded Context\nOwnership"):::core
-        P2("🔀 Domain–Persistence\nSeparation"):::core
+        P1("🏗️ Bounded Context<br>Ownership"):::core
+        P2("🔀 Domain–Persistence<br>Separation"):::core
     end
 
     subgraph SecuritySub["🛡️ Security"]
-        P3("🛡️ Security\nby Design"):::warning
+        P3("🛡️ Security<br>by Design"):::warning
     end
 
     subgraph SchemaSub["📋 Schema Governance"]
-        P4("📜 Schema\nVersioning"):::data
+        P4("📜 Schema<br>Versioning"):::data
     end
 
     subgraph OpsSub["⚙️ Operations"]
-        P5("🔄 Resilient\nData Access"):::core
-        P6("☁️ Outcome-Partitioned\nArchival"):::neutral
-        P7("📨 Async Data\nPropagation"):::external
+        P5("🔄 Resilient<br>Data Access"):::core
+        P6("☁️ Outcome-Partitioned<br>Archival"):::neutral
+        P7("📨 Async Data<br>Propagation"):::external
         P8("📊 Observability-First"):::core
     end
 
@@ -365,9 +365,9 @@ flowchart TB
     %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
     %% ═══════════════════════════════════════════════════════════════════════════
 
-    L2("🔓 L2 — Internal\nOrder IDs · Dates · Status"):::neutral
-    L3("💰 L3 — Financial\nOrder Total · Product Price"):::warning
-    L4("🔒 L4 — Confidential\nDeliveryAddress · CustomerId"):::danger
+    L2("🔓 L2 — Internal<br>Order IDs · Dates · Status"):::neutral
+    L3("💰 L3 — Financial<br>Order Total · Product Price"):::warning
+    L4("🔒 L4 — Confidential<br>DeliveryAddress · CustomerId"):::danger
 
     L2 --> L3
     L3 --> L4
@@ -433,24 +433,24 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph DomainLayer["🧩 Domain Layer"]
-        OM("🧩 Order\nC# immutable record"):::core
-        OPM("🧩 OrderProduct\nC# immutable record"):::core
+        OM("🧩 Order<br>C# immutable record"):::core
+        OPM("🧩 OrderProduct<br>C# immutable record"):::core
     end
 
     subgraph RepoLayer["🗄️ Repository Layer"]
-        OR("⚙️ OrderRepository\nEF Core + retry + tracing"):::core
-        ODB("📐 OrderDbContext\nFluent API config"):::core
+        OR("⚙️ OrderRepository<br>EF Core + retry + tracing"):::core
+        ODB("📐 OrderDbContext<br>Fluent API config"):::core
     end
 
     subgraph ServiceLayer["⚙️ Service Layer"]
-        OS("⚙️ OrderService\nOTel tracing + metrics"):::core
-        MH("📨 OrdersMessageHandler\nService Bus client"):::external
+        OS("⚙️ OrderService<br>OTel tracing + metrics"):::core
+        MH("📨 OrdersMessageHandler<br>Service Bus client"):::external
     end
 
     subgraph InfraLayer["☁️ Infrastructure Layer"]
-        SQL[("🗄️ Azure SQL Database\nOrders + OrderProducts")]:::data
-        SB("📨 Service Bus\nordersplaced topic"):::external
-        BLOBS("☁️ Blob Storage\nordersprocessed* containers"):::neutral
+        SQL[("🗄️ Azure SQL Database<br>Orders + OrderProducts")]:::data
+        SB("📨 Service Bus<br>ordersplaced topic"):::external
+        BLOBS("☁️ Blob Storage<br>ordersprocessed* containers"):::neutral
     end
 
     OM -->|"persisted via"| OR
@@ -907,13 +907,13 @@ flowchart TB
     end
 
     subgraph DataLayer["🗄️ Data Stores"]
-        SQL[("🗄️ Azure SQL Database\nOrders + OrderProducts")]
-        SB("📨 Service Bus\nordersplaced topic")
+        SQL[("🗄️ Azure SQL Database<br>Orders + OrderProducts")]
+        SB("📨 Service Bus<br>ordersplaced topic")
     end
 
     subgraph WorkflowLayer["🔄 Logic App Workflows"]
-        LP("🔄 OrdersPlacedProcess\nSB trigger → API → Blob")
-        LC("🔄 OrdersPlacedCompleteProcess\nRecurrence → Blob cleanup")
+        LP("🔄 OrdersPlacedProcess<br>SB trigger → API → Blob")
+        LC("🔄 OrdersPlacedCompleteProcess<br>Recurrence → Blob cleanup")
     end
 
     subgraph BlobLayer["☁️ Blob Storage"]
@@ -922,14 +922,14 @@ flowchart TB
         BC("🏁 ordersprocessedcompleted")
     end
 
-    WA -->|"POST /api/Orders\n(JSON)"| OS
+    WA -->|"POST /api/Orders<br>(JSON)"| OS
     OS --> OR
-    OR -->|"EF Core INSERT\n(Transaction)"| SQL
-    OS -->|"Publish message\n(AMQP)"| SB
-    SB -->|"Service Bus Trigger\n(ContentData)"| LP
-    LP -->|"POST /api/Orders/process\n(base64 decoded)"| OS
-    LP -->|"Write blob\n(HTTP 201)"| BS
-    LP -->|"Write blob\n(non-201)"| BE
+    OR -->|"EF Core INSERT<br>(Transaction)"| SQL
+    OS -->|"Publish message<br>(AMQP)"| SB
+    SB -->|"Service Bus Trigger<br>(ContentData)"| LP
+    LP -->|"POST /api/Orders/process<br>(base64 decoded)"| OS
+    LP -->|"Write blob<br>(HTTP 201)"| BS
+    LP -->|"Write blob<br>(non-201)"| BE
     LC -->|"List blobs"| BS
     LC -->|"Delete blob"| BC
 
@@ -1034,24 +1034,24 @@ flowchart LR
     end
 
     subgraph AuthLayer["🔒 Authentication Layer"]
-        CS("🔑 Connection String\n(Aspire injection)")
-        MSI("🪪 Managed Identity\n(User-Assigned)")
-        ENTRA("🛡️ Entra ID\n(SQL Auth)")
+        CS("🔑 Connection String<br>(Aspire injection)")
+        MSI("🪪 Managed Identity<br>(User-Assigned)")
+        ENTRA("🛡️ Entra ID<br>(SQL Auth)")
     end
 
     subgraph DataStores["🗄️ Data Stores"]
-        SQL[("🗄️ Azure SQL\n(Entra ID only)")]
+        SQL[("🗄️ Azure SQL<br>(Entra ID only)")]
         SBus("📨 Service Bus")
         Blob("☁️ Blob Storage")
     end
 
-    API -->|"OrderDb\nconn string"| CS
-    CS -->|"EF Core SqlServer\nProvider"| ENTRA
+    API -->|"OrderDb<br>conn string"| CS
+    CS -->|"EF Core SqlServer<br>Provider"| ENTRA
     ENTRA --> SQL
     API -->|"AMQP publish"| MSI
-    MSI -->|"audience:\nservicebus.azure.net"| SBus
-    LA -->|"MSI\nconnection"| MSI
-    MSI -->|"audience:\nstorage.azure.com"| Blob
+    MSI -->|"audience:<br>servicebus.azure.net"| SBus
+    LA -->|"MSI<br>connection"| MSI
+    MSI -->|"audience:<br>storage.azure.com"| Blob
 
     style Consumers fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
     style AuthLayer fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
