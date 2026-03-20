@@ -530,14 +530,14 @@ flowchart TB
 
 ### 🔒 5.6 Security Infrastructure
 
-| Resource Name                    | Resource Type        | Deployment Model | SKU / Config                    | Region              | Availability SLA | Cost Tag                                    | Source                                     |
-| -------------------------------- | -------------------- | ---------------- | ------------------------------- | ------------------- | ---------------- | ------------------------------------------- | ------------------------------------------ |
-| User-Assigned Managed Identity   | Managed Identity     | PaaS / Managed   | Standard                        | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/identity/main.bicep`         |
-| RBAC Role Assignments (20)       | Azure RBAC           | Subscription IAM | 20 role assignments             | Subscription scope  | N/A              | N/A                                         | `infra/shared/identity/main.bicep`         |
-| TLS 1.2 Minimum Policy           | Transport Security   | Storage policy   | minimumTlsVersion: TLS1_2       | All regions         | N/A              | N/A                                         | `infra/types.bicep`                        |
-| HTTPS-Only Traffic Policy        | Transport Security   | Storage policy   | supportsHttpsTrafficOnly: true  | All regions         | N/A              | N/A                                         | `infra/types.bicep`                        |
-| GitHub Actions OIDC Federation   | Federated Credential | App Registration | OIDC / token exchange           | Azure AD tenant     | Azure platform   | N/A                                         | `hooks/configure-federated-credential.ps1` |
-| Entra ID–Only SQL Authentication | Entra Auth Policy    | SQL Server level | azureADOnlyAuthentication: true | All regions         | N/A              | N/A                                         | `infra/shared/data/main.bicep`             |
+| 🔒 Resource Name                 | 🏷️ Resource Type     | 🚀 Deployment Model | 📋 SKU / Config                 | 🌍 Region           | 🕐 Availability SLA | 🏷️ Cost Tag                                 |
+| -------------------------------- | -------------------- | ------------------- | ------------------------------- | ------------------- | ------------------- | ------------------------------------------- |
+| User-Assigned Managed Identity   | Managed Identity     | PaaS / Managed      | Standard                        | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| RBAC Role Assignments (20)       | Azure RBAC           | Subscription IAM    | 20 role assignments             | Subscription scope  | N/A                 | N/A                                         |
+| TLS 1.2 Minimum Policy           | Transport Security   | Storage policy      | minimumTlsVersion: TLS1_2       | All regions         | N/A                 | N/A                                         |
+| HTTPS-Only Traffic Policy        | Transport Security   | Storage policy      | supportsHttpsTrafficOnly: true  | All regions         | N/A                 | N/A                                         |
+| GitHub Actions OIDC Federation   | Federated Credential | App Registration    | OIDC / token exchange           | Azure AD tenant     | Azure platform      | N/A                                         |
+| Entra ID–Only SQL Authentication | Entra Auth Policy    | SQL Server level    | azureADOnlyAuthentication: true | All regions         | N/A                 | N/A                                         |
 
 **Security Posture:**
 
