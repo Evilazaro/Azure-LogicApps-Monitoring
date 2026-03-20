@@ -335,40 +335,40 @@ flowchart TB
 
 ### ✅ 4.4 Availability Posture
 
-| Resource           | Redundancy Model            | Configuration Evidence                                                        |
-| ------------------ | --------------------------- | ----------------------------------------------------------------------------- |
-| Storage (Logs)     | LRS (single region)         | `sku: Standard_LRS` — `infra/shared/monitoring/main.bicep`                    |
-| Storage (Workflow) | LRS (single region)         | `sku: Standard_LRS` — `infra/shared/data/main.bicep`                          |
-| Azure SQL          | Geo-redundancy configurable | Named in `infra/shared/data/main.bicep`; HA tier not explicitly set in source |
-| Container Apps     | Elastic scaling             | `minReplicas: 10` (Orders API), 5 (Web App) — `app.AppHost/infra/*.tmpl.yaml` |
-| Logic App Standard | Elastic workers             | `maximumElasticWorkerCount: 20` — `infra/workload/logic-app.bicep`            |
-| Service Bus        | Standard tier               | No zone-redundancy declared — `infra/workload/messaging/main.bicep`           |
+| ✅ Resource        | 🔁 Redundancy Model         |
+| ------------------ | --------------------------- |
+| Storage (Logs)     | LRS (single region)         |
+| Storage (Workflow) | LRS (single region)         |
+| Azure SQL          | Geo-redundancy configurable |
+| Container Apps     | Elastic scaling             |
+| Logic App Standard | Elastic workers             |
+| Service Bus        | Standard tier               |
 
 ### 🔒 4.5 Security Configuration Status
 
-| Control                           | Status            | Configuration                                     | Source                                     |
-| --------------------------------- | ----------------- | ------------------------------------------------- | ------------------------------------------ |
-| Password-based auth (SQL)         | Disabled          | `azureADOnlyAuthentication: true`                 | `infra/shared/data/main.bicep`             |
-| Storage minimum TLS               | TLS 1.2           | `minimumTlsVersion: TLS1_2`                       | `infra/types.bicep`                        |
-| Storage HTTP traffic              | HTTPS only        | `supportsHttpsTrafficOnly: true`                  | `infra/types.bicep`                        |
-| Logic App API connections         | Managed Identity  | `parameterValueSet.name: managedIdentityAuth`     | `infra/workload/logic-app.bicep`           |
-| CI/CD authentication              | OIDC Federated    | GitHub Actions OIDC, no service principal secrets | `hooks/configure-federated-credential.ps1` |
-| Data network isolation            | Private Endpoints | 5 endpoints in Data Subnet                        | `infra/shared/data/main.bicep`             |
-| Session cookie security (Web App) | Hardened          | HttpOnly, Secure, SameSite=Strict, 30min idle     | `src/eShop.Web.App/Program.cs`             |
+| 🔒 Control                        | ✅ Status         | ⚙️ Configuration                                  |
+| --------------------------------- | ----------------- | ------------------------------------------------- |
+| Password-based auth (SQL)         | Disabled          | `azureADOnlyAuthentication: true`                 |
+| Storage minimum TLS               | TLS 1.2           | `minimumTlsVersion: TLS1_2`                       |
+| Storage HTTP traffic              | HTTPS only        | `supportsHttpsTrafficOnly: true`                  |
+| Logic App API connections         | Managed Identity  | `parameterValueSet.name: managedIdentityAuth`     |
+| CI/CD authentication              | OIDC Federated    | GitHub Actions OIDC, no service principal secrets |
+| Data network isolation            | Private Endpoints | 5 endpoints in Data Subnet                        |
+| Session cookie security (Web App) | Hardened          | HttpOnly, Secure, SameSite=Strict, 30min idle     |
 
 ---
 
-## Section 5: Component Catalog
+## 📦 Section 5: Component Catalog
 
-### 5.1 Compute Resources
+### ⚙️ 5.1 Compute Resources
 
-| Resource Name                     | Resource Type         | Deployment Model | SKU                    | Region              | Availability SLA | Cost Tag                                    | Source                                   |
-| --------------------------------- | --------------------- | ---------------- | ---------------------- | ------------------- | ---------------- | ------------------------------------------- | ---------------------------------------- |
-| Logic App Standard (App Svc Plan) | App Service Plan      | PaaS Elastic     | WS1 / WorkflowStandard | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/workload/logic-app.bicep`         |
-| Container Apps Environment        | Managed Container Env | PaaS Consumption | Consumption profile    | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/workload/services/main.bicep`     |
-| Orders API Container App          | Azure Container App   | PaaS Container   | Consumption            | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `app.AppHost/infra/orders-api.tmpl.yaml` |
-| Web App Container App             | Azure Container App   | PaaS Container   | Consumption            | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `app.AppHost/infra/web-app.tmpl.yaml`    |
-| Aspire Dashboard                  | dotNetComponent       | Managed / CAE    | AspireDashboard        | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/workload/services/main.bicep`     |
+| ⚙️ Resource Name                  | 🏷️ Resource Type      | 🚀 Deployment Model | 📋 SKU                 | 🌍 Region           | 🕐 Availability SLA | 🏷️ Cost Tag                                 |
+| --------------------------------- | --------------------- | ------------------- | ---------------------- | ------------------- | ------------------- | ------------------------------------------- |
+| Logic App Standard (App Svc Plan) | App Service Plan      | PaaS Elastic        | WS1 / WorkflowStandard | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Container Apps Environment        | Managed Container Env | PaaS Consumption    | Consumption profile    | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Orders API Container App          | Azure Container App   | PaaS Container      | Consumption            | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Web App Container App             | Azure Container App   | PaaS Container      | Consumption            | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Aspire Dashboard                  | dotNetComponent       | Managed / CAE       | AspireDashboard        | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
 
 **Security Posture:**
 
@@ -395,17 +395,17 @@ flowchart TB
 
 ---
 
-### 5.2 Storage Systems
+### 🗄️ 5.2 Storage Systems
 
-| Resource Name                                | Resource Type    | Deployment Model | SKU / Kind              | Region              | Availability SLA | Cost Tag                                    | Source                               |
-| -------------------------------------------- | ---------------- | ---------------- | ----------------------- | ------------------- | ---------------- | ------------------------------------------- | ------------------------------------ |
-| Storage Account — Diagnostic Logs            | Azure Storage    | PaaS StorageV2   | Standard_LRS / Hot      | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/monitoring/main.bicep` |
-| Storage Account — Workflow State             | Azure Storage    | PaaS StorageV2   | Standard_LRS / Hot      | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/data/main.bicep`       |
-| Blob Container — ordersprocessedsuccessfully | Blob Container   | Blob / Hot       | —                       | Inherited           | Inherited        | CostCenter:Engineering                      | `infra/shared/data/main.bicep`       |
-| Blob Container — ordersprocessedwitherrors   | Blob Container   | Blob / Hot       | —                       | Inherited           | Inherited        | CostCenter:Engineering                      | `infra/shared/data/main.bicep`       |
-| Blob Container — ordersprocessedcompleted    | Blob Container   | Blob / Hot       | —                       | Inherited           | Inherited        | CostCenter:Engineering                      | `infra/shared/data/main.bicep`       |
-| File Share — workflowstate                   | Azure File Share | SMB / 5 GB quota | Standard / Hot          | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/data/main.bicep`       |
-| Azure SQL Server + Database                  | Azure SQL        | PaaS Managed     | Not specified in source | `${AZURE_LOCATION}` | Azure platform   | CostCenter:Engineering; Owner:Platform-Team | `infra/shared/data/main.bicep`       |
+| 🗄️ Resource Name                             | 🏷️ Resource Type | 🚀 Deployment Model | 📋 SKU / Kind           | 🌍 Region           | 🕐 Availability SLA | 🏷️ Cost Tag                                 |
+| -------------------------------------------- | ---------------- | ------------------- | ----------------------- | ------------------- | ------------------- | ------------------------------------------- |
+| Storage Account — Diagnostic Logs            | Azure Storage    | PaaS StorageV2      | Standard_LRS / Hot      | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Storage Account — Workflow State             | Azure Storage    | PaaS StorageV2      | Standard_LRS / Hot      | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Blob Container — ordersprocessedsuccessfully | Blob Container   | Blob / Hot          | —                       | Inherited           | Inherited           | CostCenter:Engineering                      |
+| Blob Container — ordersprocessedwitherrors   | Blob Container   | Blob / Hot          | —                       | Inherited           | Inherited           | CostCenter:Engineering                      |
+| Blob Container — ordersprocessedcompleted    | Blob Container   | Blob / Hot          | —                       | Inherited           | Inherited           | CostCenter:Engineering                      |
+| File Share — workflowstate                   | Azure File Share | SMB / 5 GB quota    | Standard / Hot          | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
+| Azure SQL Server + Database                  | Azure SQL        | PaaS Managed        | Not specified in source | `${AZURE_LOCATION}` | Azure platform      | CostCenter:Engineering; Owner:Platform-Team |
 
 **Security Posture:**
 
@@ -431,7 +431,7 @@ flowchart TB
 
 ---
 
-### 5.3 Network Infrastructure
+### 🌐 5.3 Network Infrastructure
 
 | Resource Name                  | Resource Type    | Deployment Model | SKU / Config                                  | Region              | Availability SLA | Cost Tag                                    | Source                            |
 | ------------------------------ | ---------------- | ---------------- | --------------------------------------------- | ------------------- | ---------------- | ------------------------------------------- | --------------------------------- |
@@ -468,7 +468,7 @@ flowchart TB
 
 ---
 
-### 5.4 Container Platforms
+### 🐳 5.4 Container Platforms
 
 | Resource Name                    | Resource Type              | Deployment Model  | SKU / Profile | Region              | Availability SLA | Cost Tag                                    | Source                               |
 | -------------------------------- | -------------------------- | ----------------- | ------------- | ------------------- | ---------------- | ------------------------------------------- | ------------------------------------ |
@@ -499,7 +499,7 @@ flowchart TB
 
 ---
 
-### 5.5 Cloud Services (PaaS/SaaS)
+### ☁️ 5.5 Cloud Services (PaaS/SaaS)
 
 | Resource Name             | Resource Type        | Deployment Model      | SKU / Version                 | Region              | Availability SLA | Cost Tag                                    | Source                                 |
 | ------------------------- | -------------------- | --------------------- | ----------------------------- | ------------------- | ---------------- | ------------------------------------------- | -------------------------------------- |
@@ -528,7 +528,7 @@ flowchart TB
 
 ---
 
-### 5.6 Security Infrastructure
+### 🔒 5.6 Security Infrastructure
 
 | Resource Name                    | Resource Type        | Deployment Model | SKU / Config                    | Region              | Availability SLA | Cost Tag                                    | Source                                     |
 | -------------------------------- | -------------------- | ---------------- | ------------------------------- | ------------------- | ---------------- | ------------------------------------------- | ------------------------------------------ |
@@ -562,7 +562,7 @@ flowchart TB
 
 ---
 
-### 5.7 Messaging Infrastructure
+### 📨 5.7 Messaging Infrastructure
 
 | Resource Name                                 | Resource Type            | Deployment Model  | SKU / Config                                                                  | Region              | Availability SLA | Cost Tag                                    | Source                                |
 | --------------------------------------------- | ------------------------ | ----------------- | ----------------------------------------------------------------------------- | ------------------- | ---------------- | ------------------------------------------- | ------------------------------------- |
@@ -595,7 +595,7 @@ flowchart TB
 
 ---
 
-### 5.8 Monitoring & Observability
+### 📡 5.8 Monitoring & Observability
 
 | Resource Name                          | Resource Type        | Deployment Model | SKU / Config               | Region              | Availability SLA | Cost Tag                                    | Source                                           |
 | -------------------------------------- | -------------------- | ---------------- | -------------------------- | ------------------- | ---------------- | ------------------------------------------- | ------------------------------------------------ |
@@ -624,7 +624,7 @@ flowchart TB
 
 ---
 
-### 5.9 Identity & Access
+### 🔑 5.9 Identity & Access
 
 | Resource Name                  | Resource Type     | Deployment Model | SKU / Config    | Region              | Availability SLA | Cost Tag                                    | Source                             |
 | ------------------------------ | ----------------- | ---------------- | --------------- | ------------------- | ---------------- | ------------------------------------------- | ---------------------------------- |
@@ -647,7 +647,7 @@ flowchart TB
 
 ---
 
-### 5.10 API Management
+### 🔀 5.10 API Management
 
 | Resource Name                     | Resource Type   | Deployment Model | SKU / Config                                  | Region              | Availability SLA | Cost Tag                                    | Source                                   |
 | --------------------------------- | --------------- | ---------------- | --------------------------------------------- | ------------------- | ---------------- | ------------------------------------------- | ---------------------------------------- |
@@ -682,7 +682,7 @@ flowchart TB
 
 ---
 
-### 5.11 Caching Infrastructure
+### ⚡ 5.11 Caching Infrastructure
 
 | Resource Name            | Resource Type            | Deployment Model  | SKU / Config                                       | Region | Availability SLA | Cost Tag | Source                         |
 | ------------------------ | ------------------------ | ----------------- | -------------------------------------------------- | ------ | ---------------- | -------- | ------------------------------ |
