@@ -173,9 +173,9 @@ All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated
 
 ### ⚡ 2.11 Caching Infrastructure (1)
 
-| ⚡ Component Name          | 🏷️ Component Type        | 🔖 Classification      |
-| -------------------------- | ------------------------ | ---------------------- |
-| Distributed Memory Cache   | In-Process Session Cache | ASP.NET Core session   |
+| ⚡ Component Name        | 🏷️ Component Type        | 🔖 Classification    |
+| ------------------------ | ------------------------ | -------------------- |
+| Distributed Memory Cache | In-Process Session Cache | ASP.NET Core session |
 
 ---
 
