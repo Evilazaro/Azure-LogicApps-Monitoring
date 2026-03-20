@@ -1,27 +1,15 @@
 # Application Architecture — Azure-LogicApps-Monitoring
 
-**Generated**: 2026-03-19T00:00:00Z
-**Session ID**: 0e7f3a21-5b4c-4d8e-9f12-1a2b3c4d5e6f
-**Target Layer**: Application
-**Quality Level**: Comprehensive
-**Repository**: Evilazaro/Azure-LogicApps-Monitoring
-**Branch**: main
-**Components Found**: 34
-**Average Confidence**: 0.91
-**Output Sections**: 1, 2, 3, 4, 5, 8
-
----
-
 ## 🧭 Quick Table of Contents
 
-| # | Section | Key Topics |
-| --- | --- | --- |
-| 1 | [📋 Executive Summary](#section-1-executive-summary) | Component Inventory · Maturity Assessment |
-| 2 | [🗺️ Architecture Landscape](#section-2-architecture-landscape) | Context Diagram · Service Ecosystem Map · Integration Tier · 2.1–2.11 |
-| 3 | [📐 Architecture Principles](#section-3-architecture-principles) | Principles 1–5 · Principle Relationship Diagram |
-| 4 | [🏛️ Current State Baseline](#section-4-current-state-baseline) | Baseline Architecture · Service Topology · Protocol Inventory · Gap Assessment |
-| 5 | [📦 Component Catalog](#section-5-component-catalog) | 5.1 Services · 5.2 Components · 5.3 Interfaces · 5.4 Collaborations · 5.5 Functions · 5.6 Interactions · 5.7 Events · 5.8 Data Objects · 5.9 Patterns · 5.10 Contracts · 5.11 Dependencies |
-| 8 | [🔗 Dependencies & Integration](#section-8-dependencies--integration) | Service Call Graph · Data Flow Diagram · Event Subscription Map · Dependency Tables |
+| #   | Section                                                               | Key Topics                                                                                                                                                                                 |
+| --- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | [📋 Executive Summary](#section-1-executive-summary)                  | Component Inventory · Maturity Assessment                                                                                                                                                  |
+| 2   | [🗺️ Architecture Landscape](#section-2-architecture-landscape)        | Context Diagram · Service Ecosystem Map · Integration Tier · 2.1–2.11                                                                                                                      |
+| 3   | [📐 Architecture Principles](#section-3-architecture-principles)      | Principles 1–5 · Principle Relationship Diagram                                                                                                                                            |
+| 4   | [🏛️ Current State Baseline](#section-4-current-state-baseline)        | Baseline Architecture · Service Topology · Protocol Inventory · Gap Assessment                                                                                                             |
+| 5   | [📦 Component Catalog](#section-5-component-catalog)                  | 5.1 Services · 5.2 Components · 5.3 Interfaces · 5.4 Collaborations · 5.5 Functions · 5.6 Interactions · 5.7 Events · 5.8 Data Objects · 5.9 Patterns · 5.10 Contracts · 5.11 Dependencies |
+| 8   | [🔗 Dependencies & Integration](#section-8-dependencies--integration) | Service Call Graph · Data Flow Diagram · Event Subscription Map · Dependency Tables                                                                                                        |
 
 ---
 
@@ -37,33 +25,20 @@ Across all five components, **34 Application layer artifacts** were identified w
 
 ### 🗂️ Component Inventory
 
-| 🏷️ TOGAF Component Type | 🔢 Count |
-| -------------------------- | ------ |
-| Application Services       | 2      |
-| Application Components     | 5      |
-| Application Interfaces     | 4      |
-| Application Collaborations | 5      |
-| Application Functions      | 5      |
-| Application Interactions   | 5      |
-| Application Events         | 3      |
-| Application Data Objects   | 7      |
-| Integration Patterns       | 5      |
-| Service Contracts          | 4      |
-| Application Dependencies   | 9      |
-| **Total**                  | **54** |
-
-### 📊 Maturity Assessment
-
-| 📊 Dimension | 🎯 Level |
-| -------------------- | ----------- |
-| Observability        | Managed (3) |
-| Resilience           | Managed (3) |
-| API Design           | Defined (2) |
-| Event Architecture   | Managed (3) |
-| Interface Governance | Managed (3) |
-| Health Monitoring    | Managed (3) |
-
-**Risk Highlight**: Single Service Bus topic with no dead-letter queue handling strategy observed in source. Logic App HTTP callback retry policy not configured beyond platform defaults.
+| 🏷️ TOGAF Component Type    | 🔢 Count |
+| -------------------------- | -------- |
+| Application Services       | 2        |
+| Application Components     | 5        |
+| Application Interfaces     | 4        |
+| Application Collaborations | 5        |
+| Application Functions      | 5        |
+| Application Interactions   | 5        |
+| Application Events         | 3        |
+| Application Data Objects   | 7        |
+| Integration Patterns       | 5        |
+| Service Contracts          | 4        |
+| Application Dependencies   | 9        |
+| **Total**                  | **54**   |
 
 ---
 
@@ -293,14 +268,14 @@ flowchart TB
 
 ### ⚙️ 2.1 Application Services
 
-| 📛 Name | 📄 Description | 🏷️ Service Type |
-| ---------------- | -------------------------------------------------------------------------------------------------------------- | ------------ |
-| OrderService     | Core business logic implementing order placement, retrieval, and deletion with metrics and distributed tracing | Microservice |
-| OrdersAPIService | Typed HTTP client encapsulating all REST calls to the Orders API backend, consumed by the Blazor Web App       | HTTP Client  |
+| 📛 Name          | 📄 Description                                                                                                 | 🏷️ Service Type |
+| ---------------- | -------------------------------------------------------------------------------------------------------------- | --------------- |
+| OrderService     | Core business logic implementing order placement, retrieval, and deletion with metrics and distributed tracing | Microservice    |
+| OrdersAPIService | Typed HTTP client encapsulating all REST calls to the Orders API backend, consumed by the Blazor Web App       | HTTP Client     |
 
 ### 🧩 2.2 Application Components
 
-| 📛 Name | 📄 Description | 🏷️ Service Type |
+| 📛 Name                  | 📄 Description                                                                                       | 🏷️ Service Type   |
 | ------------------------ | ---------------------------------------------------------------------------------------------------- | ----------------- |
 | eShop.Orders.API         | ASP.NET Core 10 Web API providing RESTful order management endpoints with EF Core persistence        | REST API          |
 | eShop.Web.App            | Blazor Server interactive web application providing order management UI with Microsoft Fluent UI     | Web Application   |
@@ -310,7 +285,7 @@ flowchart TB
 
 ### 🔌 2.3 Application Interfaces
 
-| 📛 Name | 📄 Description | 🏷️ Service Type |
+| 📛 Name               | 📄 Description                                                                            | 🏷️ Service Type     |
 | --------------------- | ----------------------------------------------------------------------------------------- | ------------------- |
 | IOrderService         | C# interface contract defining order placement, retrieval, and deletion behavior          | Service Contract    |
 | IOrderRepository      | C# interface contract for order data persistence with pagination support                  | Repository Contract |
@@ -319,7 +294,7 @@ flowchart TB
 
 ### 🤝 2.4 Application Collaborations
 
-| 📛 Name | 📄 Description | 🏷️ Service Type |
+| 📛 Name                  | 📄 Description                                                                               | 🏷️ Service Type       |
 | ------------------------ | -------------------------------------------------------------------------------------------- | --------------------- |
 | WebApp → Orders API      | eShop.Web.App calls eShop.Orders.API via OrdersAPIService typed HTTP client with resilience  | HTTP Request/Response |
 | Orders API → Service Bus | eShop.Orders.API publishes OrderPlaced events to ordersplaced topic after successful save    | Async Event Publish   |
@@ -329,7 +304,7 @@ flowchart TB
 
 ### 🔧 2.5 Application Functions
 
-| 📛 Name | 📄 Description | 🏷️ Service Type |
+| 📛 Name                   | 📄 Description                                                                        | 🏷️ Service Type      |
 | ------------------------- | ------------------------------------------------------------------------------------- | -------------------- |
 | Order Placement           | Create single order or batch; validate, persist, publish OrderPlaced event            | Business Function    |
 | Order Retrieval           | Get order by ID or list all orders with pagination support                            | Query Function       |
@@ -339,7 +314,7 @@ flowchart TB
 
 ### 🔄 2.6 Application Interactions
 
-| 📛 Name | 📄 Description | 🏷️ Service Type |
+| 📛 Name                    | 📄 Description                                                                             | 🏷️ Service Type   |
 | -------------------------- | ------------------------------------------------------------------------------------------ | ----------------- |
 | HTTP/REST Request-Response | Synchronous REST calls from Web App to Orders API using HttpClient with HTTPS              | Sync Interaction  |
 | Service Bus Publish        | Asynchronous order event published to ordersplaced Azure Service Bus topic after DB save   | Async Produce     |
@@ -349,27 +324,27 @@ flowchart TB
 
 ### 📡 2.7 Application Events
 
-| 📛 Name | 📄 Description | 🏷️ Service Type |
-| ------------------------ | ------------------------------------------------------------------------------------- | ------------- |
-| OrderPlaced              | Domain event published to ordersplaced Service Bus topic on successful order creation | Domain Event  |
-| OrderProcessed (success) | Order blob archived to /ordersprocessedsuccessfully container on API 201 response     | Outcome Event |
-| OrderProcessed (error)   | Order blob archived to /ordersprocessedwitherrors container on non-201 API response   | Error Event   |
+| 📛 Name                  | 📄 Description                                                                        | 🏷️ Service Type |
+| ------------------------ | ------------------------------------------------------------------------------------- | --------------- |
+| OrderPlaced              | Domain event published to ordersplaced Service Bus topic on successful order creation | Domain Event    |
+| OrderProcessed (success) | Order blob archived to /ordersprocessedsuccessfully container on API 201 response     | Outcome Event   |
+| OrderProcessed (error)   | Order blob archived to /ordersprocessedwitherrors container on non-201 API response   | Error Event     |
 
 ### 💾 2.8 Application Data Objects
 
-| 📛 Name | 📄 Description | 🏷️ Service Type |
-| ------------------------ | ---------------------------------------------------------------------------------------- | ------------ |
-| Order                    | Shared domain record: Id, CustomerId, Date, DeliveryAddress, Total, Products             | Domain Model |
-| OrderProduct             | Sub-model nested in Order: Id, OrderId, ProductId, Description, Qty, Price               | Value Object |
-| WeatherForecast          | Demo DTO: Date, TemperatureC (TemperatureF derived), Summary                             | Demo DTO     |
-| OrderMessageWithMetadata | Service Bus message envelope wrapping Order with MessageId, SequenceNumber, EnqueuedTime | Message DTO  |
-| OrdersWrapper            | API response container wrapping a List<Order>                                            | Response DTO |
-| OrderEntity              | EF Core database entity mapped to Orders table                                           | DB Entity    |
-| OrderProductEntity       | EF Core database entity mapped to OrderProducts table; FK to OrderEntity                 | DB Entity    |
+| 📛 Name                  | 📄 Description                                                                           | 🏷️ Service Type |
+| ------------------------ | ---------------------------------------------------------------------------------------- | --------------- |
+| Order                    | Shared domain record: Id, CustomerId, Date, DeliveryAddress, Total, Products             | Domain Model    |
+| OrderProduct             | Sub-model nested in Order: Id, OrderId, ProductId, Description, Qty, Price               | Value Object    |
+| WeatherForecast          | Demo DTO: Date, TemperatureC (TemperatureF derived), Summary                             | Demo DTO        |
+| OrderMessageWithMetadata | Service Bus message envelope wrapping Order with MessageId, SequenceNumber, EnqueuedTime | Message DTO     |
+| OrdersWrapper            | API response container wrapping a List<Order>                                            | Response DTO    |
+| OrderEntity              | EF Core database entity mapped to Orders table                                           | DB Entity       |
+| OrderProductEntity       | EF Core database entity mapped to OrderProducts table; FK to OrderEntity                 | DB Entity       |
 
 ### 🔗 2.9 Integration Patterns
 
-| 📛 Name | 📄 Description | 🏷️ Service Type |
+| 📛 Name                        | 📄 Description                                                                          | 🏷️ Service Type     |
 | ------------------------------ | --------------------------------------------------------------------------------------- | ------------------- |
 | Repository Pattern             | OrderRepository implements IOrderRepository; isolates data access from business logic   | Structural Pattern  |
 | Message-Based Integration      | Azure Service Bus topic/subscription decouples order placement from workflow processing | Integration Pattern |
@@ -379,7 +354,7 @@ flowchart TB
 
 ### 📜 2.10 Service Contracts
 
-| 📛 Name | 📄 Description | 🏷️ Service Type |
+| 📛 Name                        | 📄 Description                                                                                                                                   | 🏷️ Service Type      |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
 | OpenAPI v1 (eShop)             | Swagger/OpenAPI spec for eShop.Orders.API, auto-generated via Swashbuckle, served at /swagger                                                    | REST Contract        |
 | IOrderService contract         | C# interface with 5 methods: PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync | Service Interface    |
@@ -388,7 +363,7 @@ flowchart TB
 
 ### 📦 2.11 Application Dependencies
 
-| 📛 Name | 📄 Description | 🏷️ Service Type |
+| 📛 Name                                          | 📄 Description                                                                | 🏷️ Service Type   |
 | ------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------- |
 | Azure.Messaging.ServiceBus v7.20.1               | Azure Service Bus client SDK for topic publishing and message management      | External SDK      |
 | Azure.Identity v1.19.0                           | Managed identity and DefaultAzureCredential authentication for Azure services | Auth SDK          |
@@ -479,12 +454,12 @@ flowchart LR
 
 **Evidence**:
 
-| 🔍 Evidence Item | ✅ Compliance |
-| -------------------------- | ---------- |
-| IOrderService interface    | Full       |
-| IOrderRepository interface | Full       |
-| IOrdersMessageHandler      | Full       |
-| DI registration            | Full       |
+| 🔍 Evidence Item           | ✅ Compliance |
+| -------------------------- | ------------- |
+| IOrderService interface    | Full          |
+| IOrderRepository interface | Full          |
+| IOrdersMessageHandler      | Full          |
+| DI registration            | Full          |
 
 ---
 
@@ -496,12 +471,12 @@ flowchart LR
 
 **Evidence**:
 
-| 🔍 Evidence Item | ✅ Compliance |
-| -------------------------------- | ---------- |
-| Service Bus publish              | Full       |
-| Service Bus trigger in Logic App | Full       |
-| HTTP callback coupling           | Partial    |
-| NoOp fallback for no-SB env      | Full       |
+| 🔍 Evidence Item                 | ✅ Compliance |
+| -------------------------------- | ------------- |
+| Service Bus publish              | Full          |
+| Service Bus trigger in Logic App | Full          |
+| HTTP callback coupling           | Partial       |
+| NoOp fallback for no-SB env      | Full          |
 
 ---
 
@@ -513,12 +488,12 @@ flowchart LR
 
 **Evidence**:
 
-| 🔍 Evidence Item | ✅ Compliance |
-| -------------------------- | ---------- |
-| HTTP resilience handler    | Full       |
-| EF Core retry on failure   | Full       |
-| Independent SB CTS timeout | Full       |
-| Batch processing semaphore | Full       |
+| 🔍 Evidence Item           | ✅ Compliance |
+| -------------------------- | ------------- |
+| HTTP resilience handler    | Full          |
+| EF Core retry on failure   | Full          |
+| Independent SB CTS timeout | Full          |
+| Batch processing semaphore | Full          |
 
 ---
 
@@ -530,12 +505,12 @@ flowchart LR
 
 **Evidence**:
 
-| 🔍 Evidence Item | ✅ Compliance |
-| --------------------------- | ---------- |
-| ActivitySource + spans      | Full       |
-| Custom Meter + counters     | Full       |
-| Structured log scope        | Full       |
-| OTLP + Azure Monitor export | Full       |
+| 🔍 Evidence Item            | ✅ Compliance |
+| --------------------------- | ------------- |
+| ActivitySource + spans      | Full          |
+| Custom Meter + counters     | Full          |
+| Structured log scope        | Full          |
+| OTLP + Azure Monitor export | Full          |
 
 ---
 
@@ -547,12 +522,12 @@ flowchart LR
 
 **Evidence**:
 
-| 🔍 Evidence Item | ✅ Compliance |
-| ----------------------- | ---------- |
-| Health endpoint mapping | Full       |
-| DbContextHealthCheck    | Full       |
-| ServiceBusHealthCheck   | Full       |
-| AppHost health gate     | Full       |
+| 🔍 Evidence Item        | ✅ Compliance |
+| ----------------------- | ------------- |
+| Health endpoint mapping | Full          |
+| DbContextHealthCheck    | Full          |
+| ServiceBusHealthCheck   | Full          |
+| AppHost health gate     | Full          |
 
 ---
 
@@ -655,17 +630,17 @@ flowchart TB
 
 ### 🗺️ Service Topology
 
-| 🔧 Service | 🚀 Deployment Target | 🔌 Protocol | 📊 Status | 🛠️ Framework |
-| ------------------------ | ---------------------- | ---------- | -------- | ----------------------- |
-| eShop.Orders.API         | Azure Container Apps   | HTTPS/REST | Active   | ASP.NET Core 10 net10.0 |
-| eShop.Web.App            | Azure Container Apps   | HTTPS      | Active   | Blazor Server net10.0   |
-| OrdersManagementLogicApp | Azure Logic Apps Std   | AMQP/HTTP  | Active   | Logic App JSON workflow |
-| app.ServiceDefaults      | Compiled into services | N/A        | Embedded | .NET 10 shared library  |
-| app.AppHost              | Local Dev / AZD        | N/A        | Active   | .NET Aspire             |
+| 🔧 Service               | 🚀 Deployment Target   | 🔌 Protocol | 📊 Status | 🛠️ Framework            |
+| ------------------------ | ---------------------- | ----------- | --------- | ----------------------- |
+| eShop.Orders.API         | Azure Container Apps   | HTTPS/REST  | Active    | ASP.NET Core 10 net10.0 |
+| eShop.Web.App            | Azure Container Apps   | HTTPS       | Active    | Blazor Server net10.0   |
+| OrdersManagementLogicApp | Azure Logic Apps Std   | AMQP/HTTP   | Active    | Logic App JSON workflow |
+| app.ServiceDefaults      | Compiled into services | N/A         | Embedded  | .NET 10 shared library  |
+| app.AppHost              | Local Dev / AZD        | N/A         | Active    | .NET Aspire             |
 
 ### 📡 Protocol Inventory
 
-| 🔌 Protocol | ↔️ Direction | 🔗 Endpoints |
+| 🔌 Protocol        | ↔️ Direction                   | 🔗 Endpoints                                                    |
 | ------------------ | ------------------------------ | --------------------------------------------------------------- |
 | HTTPS/REST         | Web App → Orders API           | POST /api/orders, GET /api/orders/{id}, DELETE /api/orders/{id} |
 | HTTPS/REST (batch) | Web App → Orders API           | POST /api/orders/batch, DELETE /api/orders/batch                |
@@ -678,13 +653,13 @@ flowchart TB
 
 ### ⚠️ Current State Gap Assessment
 
-| ⚠️ Gap Area | 📋 Observation | 🔴 Severity |
-| -------------------------- | -------------------------------------------------------------------------- | -------- |
-| API Versioning             | No API versioning strategy observed; routes use unversioned `/api/orders`  | Medium   |
-| Dead Letter Queue Handling | No DLQ consumer or alerting observed for ordersplaced topic messages       | Medium   |
-| Saga / Compensation        | No compensating transaction if Service Bus publish fails after DB save     | High     |
-| Logic App retry config     | HTTP action timeout and retry policy not explicitly configured in workflow | Low      |
-| Rate Limiting              | No rate limiting middleware observed in Orders API Program.cs              | Low      |
+| ⚠️ Gap Area                | 📋 Observation                                                             | 🔴 Severity |
+| -------------------------- | -------------------------------------------------------------------------- | ----------- |
+| API Versioning             | No API versioning strategy observed; routes use unversioned `/api/orders`  | Medium      |
+| Dead Letter Queue Handling | No DLQ consumer or alerting observed for ordersplaced topic messages       | Medium      |
+| Saga / Compensation        | No compensating transaction if Service Bus publish fails after DB save     | High        |
+| Logic App retry config     | HTTP action timeout and retry policy not explicitly configured in workflow | Low         |
+| Rate Limiting              | No rate limiting middleware observed in Orders API Program.cs              | Low         |
 
 ### 📝 Summary
 
@@ -704,7 +679,7 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 #### ⚙️ 5.1.1 OrderService
 
-| 🔧 Attribute | 📋 Value |
+| 🔧 Attribute       | 📋 Value                                              |
 | ------------------ | ----------------------------------------------------- |
 | **Component Name** | OrderService                                          |
 | **Service Type**   | Microservice (internal service, not directly exposed) |
@@ -713,33 +688,33 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 **API Surface**:
 
-| 🔧 Method Signature | 📡 Exposed Via | 📄 Description |
-| ----------------------------------------------- | ------------- | -------------------------------------------- |
-| PlaceOrderAsync(Order, CT)                      | IOrderService | Place single order; validate, save, publish  |
-| PlaceOrdersBatchAsync(IEnumerable<Order>, CT)   | IOrderService | Place batch; parallel with SemaphoreSlim(10) |
-| GetOrdersAsync(CT)                              | IOrderService | Return all orders from repository            |
-| GetOrderByIdAsync(string, CT)                   | IOrderService | Return order by ID or null                   |
-| DeleteOrderAsync(string, CT)                    | IOrderService | Delete order by ID, return true if deleted   |
-| DeleteOrdersBatchAsync(IEnumerable<string>, CT) | IOrderService | Delete batch; returns success count          |
+| 🔧 Method Signature                             | 📡 Exposed Via | 📄 Description                               |
+| ----------------------------------------------- | -------------- | -------------------------------------------- |
+| PlaceOrderAsync(Order, CT)                      | IOrderService  | Place single order; validate, save, publish  |
+| PlaceOrdersBatchAsync(IEnumerable<Order>, CT)   | IOrderService  | Place batch; parallel with SemaphoreSlim(10) |
+| GetOrdersAsync(CT)                              | IOrderService  | Return all orders from repository            |
+| GetOrderByIdAsync(string, CT)                   | IOrderService  | Return order by ID or null                   |
+| DeleteOrderAsync(string, CT)                    | IOrderService  | Delete order by ID, return true if deleted   |
+| DeleteOrdersBatchAsync(IEnumerable<string>, CT) | IOrderService  | Delete batch; returns success count          |
 
 **Custom Metrics** (Meter: `eShop.Orders.API`):
 
-| 📊 Metric Name | 🏷️ Type | 📏 Unit | 📄 Description |
-| -------------------------------- | --------- | ----- | -------------------------------- |
-| eShop.orders.placed              | Counter   | order | Total orders successfully placed |
-| eShop.orders.processing.duration | Histogram | ms    | Per-operation processing time    |
-| eShop.orders.processing.errors   | Counter   | error | Total errors by type tag         |
-| eShop.orders.deleted             | Counter   | order | Total orders deleted             |
+| 📊 Metric Name                   | 🏷️ Type   | 📏 Unit | 📄 Description                   |
+| -------------------------------- | --------- | ------- | -------------------------------- |
+| eShop.orders.placed              | Counter   | order   | Total orders successfully placed |
+| eShop.orders.processing.duration | Histogram | ms      | Per-operation processing time    |
+| eShop.orders.processing.errors   | Counter   | error   | Total errors by type tag         |
+| eShop.orders.deleted             | Counter   | order   | Total orders deleted             |
 
 **Dependencies**:
 
-| 🔗 Dependency | ↔️ Direction | 🔌 Protocol | 🎯 Purpose |
-| --------------------- | --------- | ---------------- | ------------------------------------ |
-| IOrderRepository      | Upstream  | EF Core (sync)   | Persist and retrieve order data      |
-| IOrdersMessageHandler | Upstream  | Azure SDK (AMQP) | Publish OrderPlaced event            |
-| IServiceScopeFactory  | Upstream  | DI               | Isolated scopes for batch processing |
-| ActivitySource        | Upstream  | OTel             | Distributed tracing                  |
-| IMeterFactory         | Upstream  | OTel Metrics     | Custom metric instruments            |
+| 🔗 Dependency         | ↔️ Direction | 🔌 Protocol      | 🎯 Purpose                           |
+| --------------------- | ------------ | ---------------- | ------------------------------------ |
+| IOrderRepository      | Upstream     | EF Core (sync)   | Persist and retrieve order data      |
+| IOrdersMessageHandler | Upstream     | Azure SDK (AMQP) | Publish OrderPlaced event            |
+| IServiceScopeFactory  | Upstream     | DI               | Isolated scopes for batch processing |
+| ActivitySource        | Upstream     | OTel             | Distributed tracing                  |
+| IMeterFactory         | Upstream     | OTel Metrics     | Custom metric instruments            |
 
 **Resilience**:
 
@@ -756,31 +731,31 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 #### ⚙️ 5.1.2 OrdersAPIService
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | --------------------------------------------------------------- |
-| **Component Name** | OrdersAPIService                                                |
-| **Service Type**   | HTTP Client (typed HttpClient, BFF pattern)                     |
-| **Namespace**      | eShop.Web.App.Components.Services                               |
-| **Lifetime**       | Singleton (typed HttpClient registered via AddHttpClient)       |
+| 🔧 Attribute       | 📋 Value                                                  |
+| ------------------ | --------------------------------------------------------- |
+| **Component Name** | OrdersAPIService                                          |
+| **Service Type**   | HTTP Client (typed HttpClient, BFF pattern)               |
+| **Namespace**      | eShop.Web.App.Components.Services                         |
+| **Lifetime**       | Singleton (typed HttpClient registered via AddHttpClient) |
 
 **API Surface** (outbound calls to Orders API):
 
-| 🔧 Method | 📮 HTTP Method | 🔗 Endpoint | 📄 Description |
-| ---------------------- | ----------- | ----------------- | ---------------------- |
-| PlaceOrderAsync        | POST        | /api/orders       | Create single order    |
-| PlaceOrdersBatchAsync  | POST        | /api/orders/batch | Create batch of orders |
-| GetOrdersAsync         | GET         | /api/orders       | Retrieve all orders    |
-| GetOrderByIdAsync      | GET         | /api/orders/{id}  | Retrieve order by ID   |
-| DeleteOrderAsync       | DELETE      | /api/orders/{id}  | Delete single order    |
-| DeleteOrdersBatchAsync | DELETE      | /api/orders/batch | Delete multiple orders |
+| 🔧 Method              | 📮 HTTP Method | 🔗 Endpoint       | 📄 Description         |
+| ---------------------- | -------------- | ----------------- | ---------------------- |
+| PlaceOrderAsync        | POST           | /api/orders       | Create single order    |
+| PlaceOrdersBatchAsync  | POST           | /api/orders/batch | Create batch of orders |
+| GetOrdersAsync         | GET            | /api/orders       | Retrieve all orders    |
+| GetOrderByIdAsync      | GET            | /api/orders/{id}  | Retrieve order by ID   |
+| DeleteOrderAsync       | DELETE         | /api/orders/{id}  | Delete single order    |
+| DeleteOrdersBatchAsync | DELETE         | /api/orders/batch | Delete multiple orders |
 
 **Dependencies**:
 
-| 🔗 Dependency | ↔️ Direction | 🔌 Protocol | 🎯 Purpose |
-| -------------- | --------- | ----------------- | ------------------------------------- |
-| HttpClient     | Upstream  | HTTPS/REST        | Transport to eShop.Orders.API         |
-| ActivitySource | Upstream  | OTel              | Client-side distributed tracing spans |
-| ILogger        | Upstream  | Microsoft.Logging | Structured log correlation            |
+| 🔗 Dependency  | ↔️ Direction | 🔌 Protocol       | 🎯 Purpose                            |
+| -------------- | ------------ | ----------------- | ------------------------------------- |
+| HttpClient     | Upstream     | HTTPS/REST        | Transport to eShop.Orders.API         |
+| ActivitySource | Upstream     | OTel              | Client-side distributed tracing spans |
+| ILogger        | Upstream     | Microsoft.Logging | Structured log correlation            |
 
 **Resilience**: Inherits standard HTTP resilience pipeline from `AddServiceDefaults()` (total timeout 600 s, attempt timeout 60 s, retry 3× exponential backoff, circuit breaker 120 s sampling). Headers: `Accept: application/json`, `User-Agent: eShop.Web.App`.
 
@@ -794,35 +769,35 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 #### 🧩 5.2.1 eShop.Orders.API
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------- |
-| **Component Name** | eShop.Orders.API                      |
-| **Service Type**   | REST API                              |
-| **Framework**      | ASP.NET Core 10 / net10.0             |
+| 🔧 Attribute       | 📋 Value                  |
+| ------------------ | ------------------------- |
+| **Component Name** | eShop.Orders.API          |
+| **Service Type**   | REST API                  |
+| **Framework**      | ASP.NET Core 10 / net10.0 |
 
 **API Surface**:
 
-| 🔗 Endpoint | 📮 Method | 🔢 Response Code(s) | 📄 Description |
-| ----------------- | ------ | ------------------ | ----------------------------------- |
-| /api/orders       | POST   | 201, 400, 409, 500 | Place a single order                |
-| /api/orders/batch | POST   | 200, 400, 500      | Place multiple orders               |
-| /api/orders       | GET    | 200, 500           | Retrieve all orders                 |
-| /api/orders/{id}  | GET    | 200, 404, 500      | Retrieve order by ID                |
-| /api/orders/{id}  | DELETE | 200, 404, 500      | Delete order by ID                  |
-| /api/orders/batch | DELETE | 200, 400, 500      | Delete multiple orders              |
-| /weatherforecast  | GET    | 200                | Demo endpoint for weather forecasts |
-| /health           | GET    | 200, 503           | Readiness health check              |
-| /alive            | GET    | 200                | Liveness health check               |
-| /swagger          | GET    | 200                | OpenAPI UI                          |
+| 🔗 Endpoint       | 📮 Method | 🔢 Response Code(s) | 📄 Description                      |
+| ----------------- | --------- | ------------------- | ----------------------------------- |
+| /api/orders       | POST      | 201, 400, 409, 500  | Place a single order                |
+| /api/orders/batch | POST      | 200, 400, 500       | Place multiple orders               |
+| /api/orders       | GET       | 200, 500            | Retrieve all orders                 |
+| /api/orders/{id}  | GET       | 200, 404, 500       | Retrieve order by ID                |
+| /api/orders/{id}  | DELETE    | 200, 404, 500       | Delete order by ID                  |
+| /api/orders/batch | DELETE    | 200, 400, 500       | Delete multiple orders              |
+| /weatherforecast  | GET       | 200                 | Demo endpoint for weather forecasts |
+| /health           | GET       | 200, 503            | Readiness health check              |
+| /alive            | GET       | 200                 | Liveness health check               |
+| /swagger          | GET       | 200                 | OpenAPI UI                          |
 
 **Dependencies**:
 
-| 🔗 Dependency | ↔️ Direction | 🔌 Protocol | 🎯 Purpose |
-| -------------------- | --------- | --------- | ------------------------------------ |
-| Azure SQL Database   | Upstream  | EF Core   | Order persistence via OrderDbContext |
-| Azure Service Bus    | Upstream  | AMQP 1.0  | OrderPlaced event publishing         |
-| Application Insights | Upstream  | OTLP      | Telemetry export                     |
-| app.ServiceDefaults  | Upstream  | N/A (lib) | Observability, health, resilience    |
+| 🔗 Dependency        | ↔️ Direction | 🔌 Protocol | 🎯 Purpose                           |
+| -------------------- | ------------ | ----------- | ------------------------------------ |
+| Azure SQL Database   | Upstream     | EF Core     | Order persistence via OrderDbContext |
+| Azure Service Bus    | Upstream     | AMQP 1.0    | OrderPlaced event publishing         |
+| Application Insights | Upstream     | OTLP        | Telemetry export                     |
+| app.ServiceDefaults  | Upstream     | N/A (lib)   | Observability, health, resilience    |
 
 **Resilience**: `EnableRetryOnFailure(5, 30s)` on EF Core; `CommandTimeout(120s)`; standard HTTP resilience pipeline; independent CTS on Service Bus sends.
 
@@ -834,7 +809,7 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 #### 🧩 5.2.2 eShop.Web.App
 
-| 🔧 Attribute | 📋 Value |
+| 🔧 Attribute       | 📋 Value                               |
 | ------------------ | -------------------------------------- |
 | **Component Name** | eShop.Web.App                          |
 | **Service Type**   | Web Application (Blazor Server)        |
@@ -842,7 +817,7 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 **API Surface** (UI pages):
 
-| 🔗 Route | 🖥️ Page Component | 📄 Description |
+| 🔗 Route          | 🖥️ Page Component      | 📄 Description                        |
 | ----------------- | ---------------------- | ------------------------------------- |
 | /                 | Home.razor             | Dashboard / landing page              |
 | /listallorders    | ListAllOrders.razor    | View, select, and batch-delete orders |
@@ -853,12 +828,12 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 **Dependencies**:
 
-| 🔗 Dependency | ↔️ Direction | 🔌 Protocol | 🎯 Purpose |
-| ------------------- | --------- | ---------- | ------------------------------------ |
-| OrdersAPIService    | Upstream  | HTTPS/REST | All order operations via HTTP client |
-| app.ServiceDefaults | Upstream  | N/A (lib)  | Observability, health, resilience    |
-| FluentUI Components | Upstream  | N/A (lib)  | Microsoft Fluent UI design system    |
-| SignalR             | Internal  | WebSocket  | Blazor Server circuit transport      |
+| 🔗 Dependency       | ↔️ Direction | 🔌 Protocol | 🎯 Purpose                           |
+| ------------------- | ------------ | ----------- | ------------------------------------ |
+| OrdersAPIService    | Upstream     | HTTPS/REST  | All order operations via HTTP client |
+| app.ServiceDefaults | Upstream     | N/A (lib)   | Observability, health, resilience    |
+| FluentUI Components | Upstream     | N/A (lib)   | Microsoft Fluent UI design system    |
+| SignalR             | Internal     | WebSocket   | Blazor Server circuit transport      |
 
 **Resilience**: Session timeout 30 min; SignalR max receive message 32 KB; circuit disconnect retention 10 min; JS interop timeout 10 min; disconnected circuit max retained 100.
 
@@ -870,25 +845,25 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 #### 🧩 5.2.3 OrdersManagementLogicApp
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------------------------------- |
-| **Component Name** | OrdersManagementLogicApp                                                  |
-| **Service Type**   | Serverless Worker (Azure Logic App Standard)                              |
+| 🔧 Attribute       | 📋 Value                                     |
+| ------------------ | -------------------------------------------- |
+| **Component Name** | OrdersManagementLogicApp                     |
+| **Service Type**   | Serverless Worker (Azure Logic App Standard) |
 
 **Workflows**:
 
-| 🔄 Workflow | ⚡ Trigger | 📄 Description |
+| 🔄 Workflow                 | ⚡ Trigger                     | 📄 Description                                    |
 | --------------------------- | ------------------------------ | ------------------------------------------------- |
 | OrdersPlacedProcess         | Service Bus topic subscription | Consume OrderPlaced, forward to API, archive blob |
 | OrdersPlacedCompleteProcess | Recurrence (every 3 seconds)   | List success blobs and delete processed ones      |
 
 **Dependencies**:
 
-| 🔗 Dependency | ↔️ Direction | 🔌 Protocol | 🎯 Purpose |
-| ------------------ | --------- | ---------- | ------------------------------------------ |
-| Azure Service Bus  | Upstream  | AMQP/MSI   | Consume ordersplaced topic messages        |
-| eShop.Orders.API   | Upstream  | HTTPS POST | Forward decoded order for processing       |
-| Azure Blob Storage | Upstream  | HTTPS/MSI  | Archive orders to success/error containers |
+| 🔗 Dependency      | ↔️ Direction | 🔌 Protocol | 🎯 Purpose                                 |
+| ------------------ | ------------ | ----------- | ------------------------------------------ |
+| Azure Service Bus  | Upstream     | AMQP/MSI    | Consume ordersplaced topic messages        |
+| eShop.Orders.API   | Upstream     | HTTPS POST  | Forward decoded order for processing       |
+| Azure Blob Storage | Upstream     | HTTPS/MSI   | Archive orders to success/error containers |
 
 **Resilience**: Platform-managed Logic App Standard retry; HTTP action default retry not configured in workflow JSON.
 
@@ -900,15 +875,15 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 #### 🧩 5.2.4 app.ServiceDefaults
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | --------------------------------------- |
-| **Component Name** | app.ServiceDefaults                     |
-| **Service Type**   | Shared Library                          |
-| **Framework**      | .NET 10 / Microsoft.AspNetCore.App      |
+| 🔧 Attribute       | 📋 Value                           |
+| ------------------ | ---------------------------------- |
+| **Component Name** | app.ServiceDefaults                |
+| **Service Type**   | Shared Library                     |
+| **Framework**      | .NET 10 / Microsoft.AspNetCore.App |
 
 **API Surface** (extension methods):
 
-| 🔧 Method | 📄 Description |
+| 🔧 Method                  | 📄 Description                                                 |
 | -------------------------- | -------------------------------------------------------------- |
 | AddServiceDefaults()       | Registers OTel, health checks, service discovery, resilience   |
 | MapDefaultEndpoints()      | Maps /health and /alive HTTP endpoints                         |
@@ -917,14 +892,14 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 **Dependencies**:
 
-| 🔗 Dependency | ↔️ Direction | 🔌 Protocol | 🎯 Purpose |
-| ------------------------------------- | --------- | -------- | -------------------------- |
-| Azure.Identity                        | Upstream  | MSI      | DefaultAzureCredential     |
-| Azure.Messaging.ServiceBus            | Upstream  | AMQP     | Service Bus client factory |
-| Azure.Monitor.OpenTelemetry.Exporter  | Upstream  | OTLP     | Azure Monitor telemetry    |
-| OpenTelemetry.Extensions.Hosting      | Upstream  | N/A      | OTel SDK integration       |
-| Microsoft.Extensions.Http.Resilience  | Upstream  | N/A      | Polly resilience pipeline  |
-| Microsoft.Extensions.ServiceDiscovery | Upstream  | N/A      | Service discovery          |
+| 🔗 Dependency                         | ↔️ Direction | 🔌 Protocol | 🎯 Purpose                 |
+| ------------------------------------- | ------------ | ----------- | -------------------------- |
+| Azure.Identity                        | Upstream     | MSI         | DefaultAzureCredential     |
+| Azure.Messaging.ServiceBus            | Upstream     | AMQP        | Service Bus client factory |
+| Azure.Monitor.OpenTelemetry.Exporter  | Upstream     | OTLP        | Azure Monitor telemetry    |
+| OpenTelemetry.Extensions.Hosting      | Upstream     | N/A         | OTel SDK integration       |
+| Microsoft.Extensions.Http.Resilience  | Upstream     | N/A         | Polly resilience pipeline  |
+| Microsoft.Extensions.ServiceDiscovery | Upstream     | N/A         | Service discovery          |
 
 **Resilience**: Defines the standard resilience handler applied to all HttpClients in consuming projects (see Principle 3).
 
@@ -936,7 +911,7 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 #### 🧩 5.2.5 app.AppHost
 
-| 🔧 Attribute | 📋 Value |
+| 🔧 Attribute       | 📋 Value                          |
 | ------------------ | --------------------------------- |
 | **Component Name** | app.AppHost                       |
 | **Service Type**   | Orchestration (development + AZD) |
@@ -944,7 +919,7 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 **Functions**:
 
-| 🔧 Function | 📄 Description |
+| 🔧 Function                    | 📄 Description                                               |
 | ------------------------------ | ------------------------------------------------------------ |
 | AddProject(orders-api)         | Registers Orders API with external HTTP endpoints            |
 | AddProject(web-app)            | Registers Web App with health check, reference to orders-api |
@@ -967,11 +942,11 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 #### 🔌 5.3.1 IOrderService
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ----------------------------------------------------- |
-| **Component Name** | IOrderService                                         |
-| **Service Type**   | Service Interface Contract                            |
-| **Namespace**      | eShop.Orders.API.Services.Interfaces                  |
+| 🔧 Attribute       | 📋 Value                             |
+| ------------------ | ------------------------------------ |
+| **Component Name** | IOrderService                        |
+| **Service Type**   | Service Interface Contract           |
+| **Namespace**      | eShop.Orders.API.Services.Interfaces |
 
 **API Surface**: 6 methods — PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync. All return Task or Task<T> with CancellationToken support.
 
@@ -987,11 +962,11 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 #### 🔌 5.3.2 IOrderRepository
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | -------------------------------------------------------- |
-| **Component Name** | IOrderRepository                                         |
-| **Service Type**   | Repository Interface Contract                            |
-| **Namespace**      | eShop.Orders.API.Interfaces                              |
+| 🔧 Attribute       | 📋 Value                      |
+| ------------------ | ----------------------------- |
+| **Component Name** | IOrderRepository              |
+| **Service Type**   | Repository Interface Contract |
+| **Namespace**      | eShop.Orders.API.Interfaces   |
 
 **API Surface**: 6 methods — SaveOrderAsync, GetAllOrdersAsync, GetOrdersPagedAsync (pagination), GetOrderByIdAsync, DeleteOrderAsync, OrderExistsAsync.
 
@@ -1007,11 +982,11 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 #### 🔌 5.3.3 IOrdersMessageHandler
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------------------- |
-| **Component Name** | IOrdersMessageHandler                                         |
-| **Service Type**   | Messaging Interface Contract                                  |
-| **Namespace**      | eShop.Orders.API.Interfaces                                   |
+| 🔧 Attribute       | 📋 Value                     |
+| ------------------ | ---------------------------- |
+| **Component Name** | IOrdersMessageHandler        |
+| **Service Type**   | Messaging Interface Contract |
+| **Namespace**      | eShop.Orders.API.Interfaces  |
 
 **API Surface**: 3 methods — SendOrderMessageAsync, SendOrdersBatchMessageAsync, ListMessagesAsync. All async with CancellationToken.
 
@@ -1025,14 +1000,14 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 #### 🔌 5.3.4 OpenAPI v1 Contract
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------- |
-| **Component Name** | OpenAPI v1 (eShop Orders API)         |
-| **Service Type**   | REST API Contract                     |
+| 🔧 Attribute       | 📋 Value                      |
+| ------------------ | ----------------------------- |
+| **Component Name** | OpenAPI v1 (eShop Orders API) |
+| **Service Type**   | REST API Contract             |
 
 **Contract Details**:
 
-| 🔑 Field | 📋 Value |
+| 🔑 Field    | 📋 Value                                         |
 | ----------- | ------------------------------------------------ |
 | Title       | eShop Orders API                                 |
 | Version     | v1                                               |
@@ -1055,10 +1030,10 @@ This catalog provides detailed specifications for all 11 TOGAF Application compo
 
 #### 🤝 5.4.1 WebApp → Orders API Collaboration
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | --------------------------------------------------------------- |
-| **Component Name** | WebApp-to-OrdersAPI Collaboration                               |
-| **Service Type**   | HTTP Request/Response Collaboration                             |
+| 🔧 Attribute       | 📋 Value                            |
+| ------------------ | ----------------------------------- |
+| **Component Name** | WebApp-to-OrdersAPI Collaboration   |
+| **Service Type**   | HTTP Request/Response Collaboration |
 
 **Sequence Diagram**:
 
@@ -1113,10 +1088,10 @@ sequenceDiagram
 
 #### 🤝 5.4.2 Orders API → Service Bus Collaboration
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ----------------------------------------------------------- |
-| **Component Name** | OrdersAPI-to-ServiceBus Collaboration                       |
-| **Service Type**   | Async Event Publish Collaboration                           |
+| 🔧 Attribute       | 📋 Value                              |
+| ------------------ | ------------------------------------- |
+| **Component Name** | OrdersAPI-to-ServiceBus Collaboration |
+| **Service Type**   | Async Event Publish Collaboration     |
 
 **Interaction Details**: Order serialized to JSON, wrapped in `ServiceBusMessage` with `ContentType: application/json`, `MessageId: order.Id`, `Subject: OrderPlaced`, trace context propagated. Published to `ordersplaced` topic (configurable via `Azure:ServiceBus:TopicName`).
 
@@ -1130,10 +1105,10 @@ sequenceDiagram
 
 #### 🤝 5.4.3 Logic App → Service Bus Collaboration
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------------------------------------------------- |
-| **Component Name** | LogicApp-to-ServiceBus Collaboration                                                        |
-| **Service Type**   | Event Subscription Collaboration                                                            |
+| 🔧 Attribute       | 📋 Value                             |
+| ------------------ | ------------------------------------ |
+| **Component Name** | LogicApp-to-ServiceBus Collaboration |
+| **Service Type**   | Event Subscription Collaboration     |
 
 **Interaction Details**: Service Bus trigger on `ordersplaced` topic. Message decoded via `base64ToString(triggerBody()?['ContentData'])`. Content-Type check (`application/json`) gates processing. MSI authentication via user-assigned managed identity.
 
@@ -1147,10 +1122,10 @@ sequenceDiagram
 
 #### 🤝 5.4.4 Logic App → Orders API Collaboration
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------------------------------------------------- |
-| **Component Name** | LogicApp-to-OrdersAPI Collaboration                                                         |
-| **Service Type**   | HTTP Orchestration Collaboration                                                            |
+| 🔧 Attribute       | 📋 Value                            |
+| ------------------ | ----------------------------------- |
+| **Component Name** | LogicApp-to-OrdersAPI Collaboration |
+| **Service Type**   | HTTP Orchestration Collaboration    |
 
 **Interaction Details**: `HTTP` action POSTs decoded order body to `https://orders-api.${ORDERS_API_URL}/api/Orders/process`. Checks `statusCode == 201` to branch to success vs. error archival. `transferMode: Chunked` enabled.
 
@@ -1164,10 +1139,10 @@ sequenceDiagram
 
 #### 🤝 5.4.5 Logic App → Blob Storage Collaboration
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| **Component Name** | LogicApp-to-BlobStorage Collaboration                                                        |
-| **Service Type**   | Event-Driven Archival Collaboration                                                          |
+| 🔧 Attribute       | 📋 Value                              |
+| ------------------ | ------------------------------------- |
+| **Component Name** | LogicApp-to-BlobStorage Collaboration |
+| **Service Type**   | Event-Driven Archival Collaboration   |
 
 **Interaction Details**: Azure Blob API connection (`azureblob` managed API). On success: uploads to `/ordersprocessedsuccessfully/{MessageId}`. On error: uploads to `/ordersprocessedwitherrors/{MessageId}`. MSI via user-assigned identity (`audience: https://storage.azure.com/`).
 
@@ -1183,10 +1158,10 @@ sequenceDiagram
 
 #### 🔧 5.5.1 Order Placement Function
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ---------------------------------------------------- |
-| **Component Name** | Order Placement Function                             |
-| **Service Type**   | Business Function                                    |
+| 🔧 Attribute       | 📋 Value                 |
+| ------------------ | ------------------------ |
+| **Component Name** | Order Placement Function |
+| **Service Type**   | Business Function        |
 
 **Logic**: Validate order → check duplicate (GetOrderByIdAsync) → SaveOrderAsync → SendOrderMessageAsync → record metrics. All four steps wrapped in ActivitySource span `PlaceOrder`.
 
@@ -1204,10 +1179,10 @@ sequenceDiagram
 
 #### 🔧 5.5.2 Order Retrieval Function
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ----------------------------------------------------- |
-| **Component Name** | Order Retrieval Function                              |
-| **Service Type**   | Query Function                                        |
+| 🔧 Attribute       | 📋 Value                 |
+| ------------------ | ------------------------ |
+| **Component Name** | Order Retrieval Function |
+| **Service Type**   | Query Function           |
 
 **Logic**: Delegates directly to `IOrderRepository.GetOrderByIdAsync` or `GetAllOrdersAsync`/`GetOrdersPagedAsync`. No additional business logic; no side effects.
 
@@ -1225,10 +1200,10 @@ sequenceDiagram
 
 #### 🔧 5.5.3 Order Deletion Function
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ----------------------------------------------------- |
-| **Component Name** | Order Deletion Function                               |
-| **Service Type**   | Business Function                                     |
+| 🔧 Attribute       | 📋 Value                |
+| ------------------ | ----------------------- |
+| **Component Name** | Order Deletion Function |
+| **Service Type**   | Business Function       |
 
 **Logic**: For single delete: validate ID → call `IOrderRepository.DeleteOrderAsync`, record `eShop.orders.deleted` metric. For batch: parallel per-ID delete with `SemaphoreSlim(10)`.
 
@@ -1246,10 +1221,10 @@ sequenceDiagram
 
 #### 🔧 5.5.4 Order Workflow Processing Function
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------------------------------------------------- |
-| **Component Name** | Order Workflow Processing Function                                                          |
-| **Service Type**   | Workflow Function (Logic App)                                                               |
+| 🔧 Attribute       | 📋 Value                           |
+| ------------------ | ---------------------------------- |
+| **Component Name** | Order Workflow Processing Function |
+| **Service Type**   | Workflow Function (Logic App)      |
 
 **Logic**: Decode base64 message → Content-Type guard → HTTP POST to Orders API → branch on status 201 → archive to success or error blob.
 
@@ -1267,10 +1242,10 @@ sequenceDiagram
 
 #### 🔧 5.5.5 Health Monitoring Function
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | --------------------------------------- |
-| **Component Name** | Health Monitoring Function              |
-| **Service Type**   | Operational Function                    |
+| 🔧 Attribute       | 📋 Value                   |
+| ------------------ | -------------------------- |
+| **Component Name** | Health Monitoring Function |
+| **Service Type**   | Operational Function       |
 
 **Logic**: `/health` endpoint: runs `DbContextHealthCheck` (5 s timeout on `CanConnectAsync`) and `ServiceBusHealthCheck` (5 s timeout on create-sender), returns `Healthy`/`Degraded`/`Unhealthy`. `/alive` endpoint: always returns `Healthy` (liveness only).
 
@@ -1288,7 +1263,7 @@ sequenceDiagram
 
 #### 🔄 5.6.1 HTTP/REST Request-Response
 
-| 🔧 Attribute | 📋 Value |
+| 🔧 Attribute       | 📋 Value                               |
 | ------------------ | -------------------------------------- |
 | **Component Name** | HTTP/REST Request-Response Interaction |
 | **Service Type**   | Synchronous Interaction                |
@@ -1305,10 +1280,10 @@ sequenceDiagram
 
 #### 🔄 5.6.2 Service Bus Publish (Async)
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------------------ |
-| **Component Name** | Service Bus Publish Interaction                              |
-| **Service Type**   | Async Produce Interaction                                    |
+| 🔧 Attribute       | 📋 Value                        |
+| ------------------ | ------------------------------- |
+| **Component Name** | Service Bus Publish Interaction |
+| **Service Type**   | Async Produce Interaction       |
 
 **Protocol Details**: AMQP 1.0 / Azure Service Bus SDK. Message serialized as UTF-8 JSON. `MessageId = order.Id`. `Subject = OrderPlaced`. `ContentType = application/json`. Trace context injected via `ApplicationProperties["TraceId"]` and `ApplicationProperties["ParentId"]`.
 
@@ -1322,10 +1297,10 @@ sequenceDiagram
 
 #### 🔄 5.6.3 Service Bus Subscription Trigger
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------------------------------------------------ |
-| **Component Name** | Service Bus Subscription Trigger Interaction                                               |
-| **Service Type**   | Async Consume Interaction                                                                  |
+| 🔧 Attribute       | 📋 Value                                     |
+| ------------------ | -------------------------------------------- |
+| **Component Name** | Service Bus Subscription Trigger Interaction |
+| **Service Type**   | Async Consume Interaction                    |
 
 **Protocol Details**: Logic App Service Bus managed API connection with MSI. `ContentData` is base64-encoded order JSON. `MessageId` used as blob name for deduplication.
 
@@ -1339,10 +1314,10 @@ sequenceDiagram
 
 #### 🔄 5.6.4 EF Core Database Interaction
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ---------------------------------------------------------- |
-| **Component Name** | EF Core Database Interaction                               |
-| **Service Type**   | Database Interaction                                       |
+| 🔧 Attribute       | 📋 Value                     |
+| ------------------ | ---------------------------- |
+| **Component Name** | EF Core Database Interaction |
+| **Service Type**   | Database Interaction         |
 
 **Protocol Details**: TCP/TLS to Azure SQL via `Microsoft.EntityFrameworkCore.SqlServer`. `AsNoTracking()` on read-only queries. Split queries for related data. `CommandTimeout(120s)`. Pagination via `Skip().Take()`. Cascade delete on OrderProducts.
 
@@ -1356,10 +1331,10 @@ sequenceDiagram
 
 #### 🔄 5.6.5 Recurrence Trigger Interaction
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | --------------------------------------------------------------------------------------------------- |
-| **Component Name** | Recurrence Trigger Interaction                                                                      |
-| **Service Type**   | Scheduled Trigger                                                                                   |
+| 🔧 Attribute       | 📋 Value                       |
+| ------------------ | ------------------------------ |
+| **Component Name** | Recurrence Trigger Interaction |
+| **Service Type**   | Scheduled Trigger              |
 
 **Protocol Details**: Logic App `Recurrence` trigger type. Interval: 3 seconds. Frequency: Second. TimeZone: Central Standard Time. Connects to Azure Blob Storage (MSI) to list and delete processed blobs.
 
@@ -1375,21 +1350,21 @@ sequenceDiagram
 
 #### 📡 5.7.1 OrderPlaced Event
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------------------ |
-| **Component Name** | OrderPlaced Domain Event                                     |
-| **Service Type**   | Domain Event                                                 |
+| 🔧 Attribute       | 📋 Value                 |
+| ------------------ | ------------------------ |
+| **Component Name** | OrderPlaced Domain Event |
+| **Service Type**   | Domain Event             |
 
 **Event Schema**:
 
-| 🔑 Field | 🏷️ Type | ✅ Mandatory | 📄 Description |
-| --------------- | -------- | --------- | ----------------------------- |
-| Id              | string   | Yes       | Unique order identifier       |
-| CustomerId      | string   | Yes       | Customer who placed the order |
-| Date            | DateTime | Yes       | Order placement date/time     |
-| DeliveryAddress | string   | Yes       | Delivery address string       |
-| Total           | decimal  | Yes       | Total order amount            |
-| Products        | List     | Yes       | Array of OrderProduct items   |
+| 🔑 Field        | 🏷️ Type  | ✅ Mandatory | 📄 Description                |
+| --------------- | -------- | ------------ | ----------------------------- |
+| Id              | string   | Yes          | Unique order identifier       |
+| CustomerId      | string   | Yes          | Customer who placed the order |
+| Date            | DateTime | Yes          | Order placement date/time     |
+| DeliveryAddress | string   | Yes          | Delivery address string       |
+| Total           | decimal  | Yes          | Total order amount            |
+| Products        | List     | Yes          | Array of OrderProduct items   |
 
 **Broker**: Azure Service Bus topic `ordersplaced`. **Format**: JSON (UTF-8). **MessageId**: `order.Id`. **Subject**: `OrderPlaced`. **ContentType**: `application/json`.
 
@@ -1407,10 +1382,10 @@ sequenceDiagram
 
 #### 📡 5.7.2 OrderProcessed (Success) Event
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------------------------------------------------- |
-| **Component Name** | OrderProcessed Success Event                                                                |
-| **Service Type**   | Outcome Event                                                                               |
+| 🔧 Attribute       | 📋 Value                     |
+| ------------------ | ---------------------------- |
+| **Component Name** | OrderProcessed Success Event |
+| **Service Type**   | Outcome Event                |
 
 **Details**: Triggered when Logic App HTTP action to Orders API returns 201. Order binary blob archived to `/ordersprocessedsuccessfully/{MessageId}` in Azure Blob Storage. Blob name = Service Bus `MessageId`.
 
@@ -1424,10 +1399,10 @@ sequenceDiagram
 
 #### 📡 5.7.3 OrderProcessed (Error) Event
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| **Component Name** | OrderProcessed Error Event                                                                   |
-| **Service Type**   | Error Event                                                                                  |
+| 🔧 Attribute       | 📋 Value                   |
+| ------------------ | -------------------------- |
+| **Component Name** | OrderProcessed Error Event |
+| **Service Type**   | Error Event                |
 
 **Details**: Triggered when Logic App HTTP action returns non-201. Order binary blob archived to `/ordersprocessedwitherrors/{MessageId}`. Blob name = Service Bus `MessageId`.
 
@@ -1443,15 +1418,15 @@ sequenceDiagram
 
 #### 💾 5.8.1 Order (Domain Model)
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ----------------------------------------- |
-| **Component Name** | Order Record                              |
-| **Service Type**   | Domain Model / DTO                        |
-| **Namespace**      | app.ServiceDefaults.CommonTypes           |
+| 🔧 Attribute       | 📋 Value                        |
+| ------------------ | ------------------------------- |
+| **Component Name** | Order Record                    |
+| **Service Type**   | Domain Model / DTO              |
+| **Namespace**      | app.ServiceDefaults.CommonTypes |
 
 **Schema**:
 
-| 🔑 Field | 🏷️ Type | ✅ Validation |
+| 🔑 Field        | 🏷️ Type            | ✅ Validation           |
 | --------------- | ------------------ | ----------------------- |
 | Id              | string (required)  | Required, MaxLength 100 |
 | CustomerId      | string (required)  | Required                |
@@ -1472,14 +1447,14 @@ sequenceDiagram
 
 #### 💾 5.8.2 OrderProduct (Value Object)
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ----------------------------------------- |
-| **Component Name** | OrderProduct Record                       |
-| **Service Type**   | Value Object                              |
+| 🔧 Attribute       | 📋 Value            |
+| ------------------ | ------------------- |
+| **Component Name** | OrderProduct Record |
+| **Service Type**   | Value Object        |
 
 **Schema**:
 
-| 🔑 Field | 🏷️ Type | 📄 Description |
+| 🔑 Field           | 🏷️ Type | 📄 Description              |
 | ------------------ | ------- | --------------------------- |
 | Id                 | string  | Unique product line item ID |
 | OrderId            | string  | Parent order reference      |
@@ -1492,10 +1467,10 @@ sequenceDiagram
 
 #### 💾 5.8.3 WeatherForecast (Demo DTO)
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | --------------------------------------- |
-| **Component Name** | WeatherForecast                         |
-| **Service Type**   | Demo DTO                                |
+| 🔧 Attribute       | 📋 Value        |
+| ------------------ | --------------- |
+| **Component Name** | WeatherForecast |
+| **Service Type**   | Demo DTO        |
 
 Used for health check demonstration and the `/weatherforecast` demo endpoint. Not part of core business logic.
 
@@ -1503,10 +1478,10 @@ Used for health check demonstration and the `/weatherforecast` demo endpoint. No
 
 #### 💾 5.8.4 OrderMessageWithMetadata
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | -------------------------------------------------------------- |
-| **Component Name** | OrderMessageWithMetadata                                       |
-| **Service Type**   | Message Envelope DTO                                           |
+| 🔧 Attribute       | 📋 Value                 |
+| ------------------ | ------------------------ |
+| **Component Name** | OrderMessageWithMetadata |
+| **Service Type**   | Message Envelope DTO     |
 
 Wraps `Order` with Service Bus metadata: MessageId, SequenceNumber, EnqueuedTime, ContentType, Subject, CorrelationId, MessageSize, ApplicationProperties (read-only dictionary). Used by `ListMessagesAsync` for introspection.
 
@@ -1514,10 +1489,10 @@ Wraps `Order` with Service Bus metadata: MessageId, SequenceNumber, EnqueuedTime
 
 #### 💾 5.8.5 OrdersWrapper (Response Container)
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | --------------------------------------------------- |
-| **Component Name** | OrdersWrapper                                       |
-| **Service Type**   | Response DTO                                        |
+| 🔧 Attribute       | 📋 Value      |
+| ------------------ | ------------- |
+| **Component Name** | OrdersWrapper |
+| **Service Type**   | Response DTO  |
 
 Simple sealed class wrapping `List<Order>` for API response serialization. Ensures consistent JSON response structure.
 
@@ -1525,10 +1500,10 @@ Simple sealed class wrapping `List<Order>` for API response serialization. Ensur
 
 #### 💾 5.8.6 OrderEntity (EF Core DB Entity)
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------------ |
-| **Component Name** | OrderEntity                                            |
-| **Service Type**   | Database Entity                                        |
+| 🔧 Attribute       | 📋 Value        |
+| ------------------ | --------------- |
+| **Component Name** | OrderEntity     |
+| **Service Type**   | Database Entity |
 
 Maps to `Orders` table. PK: `Id (MaxLength 100)`. Columns: CustomerId (100), Date, DeliveryAddress (500), Total (18,2). Navigation: `ICollection<OrderProductEntity>` with cascade delete.
 
@@ -1536,10 +1511,10 @@ Maps to `Orders` table. PK: `Id (MaxLength 100)`. Columns: CustomerId (100), Dat
 
 #### 💾 5.8.7 OrderProductEntity (EF Core DB Entity)
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------------------- |
-| **Component Name** | OrderProductEntity                                            |
-| **Service Type**   | Database Entity                                               |
+| 🔧 Attribute       | 📋 Value           |
+| ------------------ | ------------------ |
+| **Component Name** | OrderProductEntity |
+| **Service Type**   | Database Entity    |
 
 Maps to `OrderProducts` table. FK to `OrderEntity.Id`. Columns: Id, OrderId, ProductId, ProductDescription, Quantity (int), Price (decimal 18,2). Cascade deleted when parent Order deleted.
 
@@ -1549,10 +1524,10 @@ Maps to `OrderProducts` table. FK to `OrderEntity.Id`. Columns: Id, OrderId, Pro
 
 #### 🔗 5.9.1 Repository Pattern
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ---------------------------------------------------------- |
-| **Component Name** | Repository Pattern                                         |
-| **Service Type**   | Structural Pattern                                         |
+| 🔧 Attribute       | 📋 Value           |
+| ------------------ | ------------------ |
+| **Component Name** | Repository Pattern |
+| **Service Type**   | Structural Pattern |
 
 **Implementation**: `OrderRepository` implements `IOrderRepository`. Registered as `Scoped` in DI. All DB operations use `AsNoTracking()` for reads, explicit `SaveChangesAsync()` for writes. `OrderMapper` extension methods handle domain↔entity conversion.
 
@@ -1568,10 +1543,10 @@ Maps to `OrderProducts` table. FK to `OrderEntity.Id`. Columns: Id, OrderId, Pro
 
 #### 🔗 5.9.2 Message-Based Integration
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ----------------------------------------------------------- |
-| **Component Name** | Message-Based Integration Pattern                           |
-| **Service Type**   | Integration Pattern                                         |
+| 🔧 Attribute       | 📋 Value                          |
+| ------------------ | --------------------------------- |
+| **Component Name** | Message-Based Integration Pattern |
+| **Service Type**   | Integration Pattern               |
 
 **Publisher**: `OrdersMessageHandler` serializes `Order` to JSON and publishes to `ordersplaced` Service Bus topic. Trace context propagated in `ApplicationProperties`.
 
@@ -1589,14 +1564,14 @@ Maps to `OrderProducts` table. FK to `OrderEntity.Id`. Columns: Id, OrderId, Pro
 
 #### 🔗 5.9.3 Circuit Breaker + Retry Pattern
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ---------------------------------------- |
-| **Component Name** | HTTP Resilience Pattern                  |
-| **Service Type**   | Resilience Pattern                       |
+| 🔧 Attribute       | 📋 Value                |
+| ------------------ | ----------------------- |
+| **Component Name** | HTTP Resilience Pattern |
+| **Service Type**   | Resilience Pattern      |
 
 **Configuration**:
 
-| ⚙️ Setting | 📋 Value |
+| ⚙️ Setting                      | 📋 Value    |
 | ------------------------------- | ----------- |
 | TotalRequestTimeout             | 600 seconds |
 | AttemptTimeout                  | 60 seconds  |
@@ -1610,10 +1585,10 @@ Applied to all `HttpClient` instances registered via `AddServiceDefaults()`. Bot
 
 #### 🔗 5.9.4 Transactional Outbox (Partial)
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ----------------------------------------------------- |
-| **Component Name** | Transactional Outbox (Partial)                        |
-| **Service Type**   | Messaging Pattern                                     |
+| 🔧 Attribute       | 📋 Value                       |
+| ------------------ | ------------------------------ |
+| **Component Name** | Transactional Outbox (Partial) |
+| **Service Type**   | Messaging Pattern              |
 
 **Implementation**: `SaveOrderAsync` is called before `SendOrderMessageAsync` in `PlaceOrderAsync`. However, there is no outbox table, polling relay, or compensation logic. If the Service Bus publish fails after the DB save, the order is persisted but the event is lost.
 
@@ -1623,10 +1598,10 @@ Applied to all `HttpClient` instances registered via `AddServiceDefaults()`. Bot
 
 #### 🔗 5.9.5 Event-Driven Archival Pattern
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| **Component Name** | Event-Driven Archival Pattern                                                                |
-| **Service Type**   | EDA Pattern                                                                                  |
+| 🔧 Attribute       | 📋 Value                      |
+| ------------------ | ----------------------------- |
+| **Component Name** | Event-Driven Archival Pattern |
+| **Service Type**   | EDA Pattern                   |
 
 **Implementation**: Logic App branches after HTTP POST outcome. 201 → blob to `/ordersprocessedsuccessfully/`. Non-201 → blob to `/ordersprocessedwitherrors/`. `OrdersPlacedCompleteProcess` recurrence workflow lists success blobs and deletes them after confirmation, completing the processing lifecycle.
 
@@ -1638,10 +1613,10 @@ Applied to all `HttpClient` instances registered via `AddServiceDefaults()`. Bot
 
 #### 📜 5.10.1 OpenAPI v1 REST Contract
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------- |
-| **Component Name** | Orders API OpenAPI v1 Contract        |
-| **Service Type**   | REST Contract                         |
+| 🔧 Attribute       | 📋 Value                       |
+| ------------------ | ------------------------------ |
+| **Component Name** | Orders API OpenAPI v1 Contract |
+| **Service Type**   | REST Contract                  |
 
 **Contract Details**: Swashbuckle-generated OpenAPI 3.x spec. All endpoints documented with ProducesResponseType attributes (see 5.2.1 API Surface table). XML doc comments enabled and included (`GenerateDocumentationFile: true`). Breaking change policy: Not detected in source — inferred as ad hoc from single v1 spec.
 
@@ -1671,10 +1646,10 @@ See Section 5.3.3. NoOp and live implementations must be interchangeable — con
 
 #### 📦 5.11.1 Azure.Messaging.ServiceBus v7.20.1
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------- |
-| **Component Name** | Azure.Messaging.ServiceBus                        |
-| **Service Type**   | External SDK                                      |
+| 🔧 Attribute       | 📋 Value                   |
+| ------------------ | -------------------------- |
+| **Component Name** | Azure.Messaging.ServiceBus |
+| **Service Type**   | External SDK               |
 
 Used for `ServiceBusClient`, `ServiceBusSender` (publish), and `ServiceBusReceiver` (inspect). Registered via `AddAzureServiceBusClient()` in ServiceDefaults with MSI (production) or emulator connection string (local dev).
 
@@ -1684,10 +1659,10 @@ Used for `ServiceBusClient`, `ServiceBusSender` (publish), and `ServiceBusReceiv
 
 #### 📦 5.11.2 Azure.Identity v1.19.0
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------- |
-| **Component Name** | Azure.Identity                                    |
-| **Service Type**   | Auth SDK                                          |
+| 🔧 Attribute       | 📋 Value       |
+| ------------------ | -------------- |
+| **Component Name** | Azure.Identity |
+| **Service Type**   | Auth SDK       |
 
 Provides `DefaultAzureCredential` and `ManagedIdentityCredential` for all Azure service authentication (Service Bus, Azure Monitor). Replaces password/connection-string authentication patterns.
 
@@ -1695,10 +1670,10 @@ Provides `DefaultAzureCredential` and `ManagedIdentityCredential` for all Azure 
 
 #### 📦 5.11.3 Microsoft.EntityFrameworkCore.SqlServer v10.0.3
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ----------------------------------------------- |
-| **Component Name** | Microsoft.EntityFrameworkCore.SqlServer         |
-| **Service Type**   | ORM SDK                                         |
+| 🔧 Attribute       | 📋 Value                                |
+| ------------------ | --------------------------------------- |
+| **Component Name** | Microsoft.EntityFrameworkCore.SqlServer |
+| **Service Type**   | ORM SDK                                 |
 
 EF Core 10 provider for Azure SQL. Configured with retry-on-failure, split queries, no-tracking reads. Migrations present in `src/eShop.Orders.API/Migrations/` (not counted as app-layer artifacts).
 
@@ -1706,10 +1681,10 @@ EF Core 10 provider for Azure SQL. Configured with retry-on-failure, split queri
 
 #### 📦 5.11.4 Microsoft.FluentUI.AspNetCore.Components v4.14.0
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ----------------------------------------- |
-| **Component Name** | Microsoft.FluentUI.AspNetCore.Components  |
-| **Service Type**   | UI Framework                              |
+| 🔧 Attribute       | 📋 Value                                 |
+| ------------------ | ---------------------------------------- |
+| **Component Name** | Microsoft.FluentUI.AspNetCore.Components |
+| **Service Type**   | UI Framework                             |
 
 Microsoft Fluent UI design system for Blazor. Used for `FluentButton`, `FluentCard`, `FluentStack`, `FluentLabel`, `FluentDivider`, `FluentProgress`, `FluentDataGrid`, `IDialogService` throughout all page components.
 
@@ -1717,10 +1692,10 @@ Microsoft Fluent UI design system for Blazor. Used for `FluentButton`, `FluentCa
 
 #### 📦 5.11.5 Microsoft.Extensions.Http.Resilience v10.4.0
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------- |
-| **Component Name** | Microsoft.Extensions.Http.Resilience              |
-| **Service Type**   | Resilience SDK                                    |
+| 🔧 Attribute       | 📋 Value                             |
+| ------------------ | ------------------------------------ |
+| **Component Name** | Microsoft.Extensions.Http.Resilience |
+| **Service Type**   | Resilience SDK                       |
 
 Polly-based HTTP resilience provider for .NET. Implements `AddStandardResilienceHandler()` with configured retry, timeout, and circuit breaker policies (see 5.9.3).
 
@@ -1728,10 +1703,10 @@ Polly-based HTTP resilience provider for .NET. Implements `AddStandardResilience
 
 #### 📦 5.11.6 OpenTelemetry SDK (v1.15.x suite)
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------- |
-| **Component Name** | OpenTelemetry SDK Suite                           |
-| **Service Type**   | Observability SDK                                 |
+| 🔧 Attribute       | 📋 Value                |
+| ------------------ | ----------------------- |
+| **Component Name** | OpenTelemetry SDK Suite |
+| **Service Type**   | Observability SDK       |
 
 Packages: `OpenTelemetry.Extensions.Hosting` v1.15.0, `OpenTelemetry.Exporter.OpenTelemetryProtocol` v1.15.0, `OpenTelemetry.Instrumentation.AspNetCore` v1.15.1, `OpenTelemetry.Instrumentation.Http` v1.15.0, `OpenTelemetry.Instrumentation.Runtime` v1.15.0, `OpenTelemetry.Instrumentation.SqlClient` v1.15.1. Auto-instruments ASP.NET Core, HttpClient, EF Core queries, and .NET runtime metrics.
 
@@ -1739,10 +1714,10 @@ Packages: `OpenTelemetry.Extensions.Hosting` v1.15.0, `OpenTelemetry.Exporter.Op
 
 #### 📦 5.11.7 Azure.Monitor.OpenTelemetry.Exporter v1.6.0
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------- |
-| **Component Name** | Azure.Monitor.OpenTelemetry.Exporter              |
-| **Service Type**   | Observability SDK                                 |
+| 🔧 Attribute       | 📋 Value                             |
+| ------------------ | ------------------------------------ |
+| **Component Name** | Azure.Monitor.OpenTelemetry.Exporter |
+| **Service Type**   | Observability SDK                    |
 
 Exports all OpenTelemetry spans, metrics, and logs to Azure Application Insights. Configured when `APPLICATIONINSIGHTS_CONNECTION_STRING` is set. Falls back gracefully when not configured (local dev).
 
@@ -1750,10 +1725,10 @@ Exports all OpenTelemetry spans, metrics, and logs to Azure Application Insights
 
 #### 📦 5.11.8 Microsoft.Extensions.ServiceDiscovery v10.4.0
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ------------------------------------------------- |
-| **Component Name** | Microsoft.Extensions.ServiceDiscovery             |
-| **Service Type**   | Discovery SDK                                     |
+| 🔧 Attribute       | 📋 Value                              |
+| ------------------ | ------------------------------------- |
+| **Component Name** | Microsoft.Extensions.ServiceDiscovery |
+| **Service Type**   | Discovery SDK                         |
 
 .NET Aspire service discovery integration. Resolves `services:orders-api:https:0` to the configured base address. Registered via `AddServiceDiscovery()` and `ConfigureHttpClientDefaults`.
 
@@ -1761,10 +1736,10 @@ Exports all OpenTelemetry spans, metrics, and logs to Azure Application Insights
 
 #### 📦 5.11.9 Swashbuckle.AspNetCore v10.1.x
 
-| 🔧 Attribute | 📋 Value |
-| ------------------ | ----------------------------------------------- |
-| **Component Name** | Swashbuckle.AspNetCore                          |
-| **Service Type**   | API Documentation                               |
+| 🔧 Attribute       | 📋 Value               |
+| ------------------ | ---------------------- |
+| **Component Name** | Swashbuckle.AspNetCore |
+| **Service Type**   | API Documentation      |
 
 Packages: Swashbuckle.AspNetCore.Swagger v10.1.5, SwaggerGen v10.1.5, SwaggerUI v10.1.4. Generates OpenAPI spec from code and XML comments. Served at `/swagger` in non-production and development environments.
 
@@ -1969,30 +1944,30 @@ flowchart LR
 
 ### 🔗 Service-to-Service Dependency Table
 
-| 👤 Consumer | 🔧 Provider | 🔌 Protocol | ↔️ Direction | 🔗 Coupling |
-| ------------------------ | -------------------- | ----------- | ----------- | ------------- |
-| eShop.Web.App            | eShop.Orders.API     | HTTPS/REST  | Synchronous | Tight HTTP    |
-| eShop.Web.App            | app.ServiceDefaults  | .NET lib    | Compile     | Static        |
-| eShop.Orders.API         | app.ServiceDefaults  | .NET lib    | Compile     | Static        |
-| eShop.Orders.API         | Azure SQL Database   | EF Core/TCP | Synchronous | Tight DB      |
-| eShop.Orders.API         | Azure Service Bus    | AMQP 1.0    | Async       | Loose         |
-| eShop.Orders.API         | Application Insights | OTLP        | Fire+forget | Loose         |
-| OrdersManagementLogicApp | Azure Service Bus    | AMQP/MSI    | Async       | Loose         |
-| OrdersManagementLogicApp | eShop.Orders.API     | HTTPS POST  | Synchronous | Tight HTTP    |
-| OrdersManagementLogicApp | Azure Blob Storage   | HTTPS/MSI   | Async write | Loose         |
-| app.AppHost              | eShop.Orders.API     | Aspire ref  | Compile/Run | Orchestration |
-| app.AppHost              | eShop.Web.App        | Aspire ref  | Compile/Run | Orchestration |
+| 👤 Consumer              | 🔧 Provider          | 🔌 Protocol | ↔️ Direction | 🔗 Coupling   |
+| ------------------------ | -------------------- | ----------- | ------------ | ------------- |
+| eShop.Web.App            | eShop.Orders.API     | HTTPS/REST  | Synchronous  | Tight HTTP    |
+| eShop.Web.App            | app.ServiceDefaults  | .NET lib    | Compile      | Static        |
+| eShop.Orders.API         | app.ServiceDefaults  | .NET lib    | Compile      | Static        |
+| eShop.Orders.API         | Azure SQL Database   | EF Core/TCP | Synchronous  | Tight DB      |
+| eShop.Orders.API         | Azure Service Bus    | AMQP 1.0    | Async        | Loose         |
+| eShop.Orders.API         | Application Insights | OTLP        | Fire+forget  | Loose         |
+| OrdersManagementLogicApp | Azure Service Bus    | AMQP/MSI    | Async        | Loose         |
+| OrdersManagementLogicApp | eShop.Orders.API     | HTTPS POST  | Synchronous  | Tight HTTP    |
+| OrdersManagementLogicApp | Azure Blob Storage   | HTTPS/MSI   | Async write  | Loose         |
+| app.AppHost              | eShop.Orders.API     | Aspire ref  | Compile/Run  | Orchestration |
+| app.AppHost              | eShop.Web.App        | Aspire ref  | Compile/Run  | Orchestration |
 
 ### 🗄️ Database Dependency Table
 
-| 🔧 Service | 🗄️ Database | 🛠️ ORM | 📊 Schema Objects | 🔄 Access Pattern |
+| 🔧 Service       | 🗄️ Database        | 🛠️ ORM     | 📊 Schema Objects            | 🔄 Access Pattern |
 | ---------------- | ------------------ | ---------- | ---------------------------- | ----------------- |
 | eShop.Orders.API | Azure SQL Database | EF Core 10 | Orders, OrderProducts tables | CRUD + pagination |
 | eShop.Orders.API | Azure SQL Database | EF Core 10 | EF Migrations (versioned)    | Schema migrations |
 
 ### 🌐 External API Dependency Table
 
-| 🔧 Service | 🌐 External System | 🔐 Auth Method | 🔗 Endpoint / Resource |
+| 🔧 Service               | 🌐 External System   | 🔐 Auth Method    | 🔗 Endpoint / Resource                                   |
 | ------------------------ | -------------------- | ----------------- | -------------------------------------------------------- |
 | eShop.Orders.API         | Azure Service Bus    | Managed Identity  | ordersplaced topic (publish)                             |
 | eShop.Orders.API         | Application Insights | Connection String | OTLP telemetry export                                    |
@@ -2002,14 +1977,14 @@ flowchart LR
 
 ### 📡 Event Subscription Table
 
-| 📡 Event Name | 📤 Publisher | 🔀 Broker | 📥 Subscriber | 🔌 Protocol |
-| --------------- | ---------------- | -------------------------------------- | ------------------------------- | -------- |
-| OrderPlaced     | eShop.Orders.API | Azure Service Bus Topic [ordersplaced] | OrdersPlacedProcess (Logic App) | AMQP 1.0 |
-| Recurrence (3s) | Azure Scheduler  | N/A                                    | OrdersPlacedCompleteProcess     | Internal |
+| 📡 Event Name   | 📤 Publisher     | 🔀 Broker                              | 📥 Subscriber                   | 🔌 Protocol |
+| --------------- | ---------------- | -------------------------------------- | ------------------------------- | ----------- |
+| OrderPlaced     | eShop.Orders.API | Azure Service Bus Topic [ordersplaced] | OrdersPlacedProcess (Logic App) | AMQP 1.0    |
+| Recurrence (3s) | Azure Scheduler  | N/A                                    | OrdersPlacedCompleteProcess     | Internal    |
 
 ### 🧩 Integration Pattern Matrix
 
-| 🧩 Pattern | 🎯 Applied To | ✅ Outcome |
+| 🧩 Pattern                     | 🎯 Applied To                        | ✅ Outcome                       |
 | ------------------------------ | ------------------------------------ | -------------------------------- |
 | Repository Pattern             | OrderRepository / IOrderRepository   | Decoupled data access; testable  |
 | Message-Based Integration      | Orders API → Service Bus → Logic App | Async order processing pipeline  |
@@ -2026,36 +2001,3 @@ The eShop platform's integration layer is built on Azure-native messaging with m
 The data flow path is fully traceable end-to-end: from Blazor UI page → typed HttpClient → REST endpoint → service → repository → SQL, then back via Service Bus → Logic App → HTTP callback → Blob archival. All seven external dependency connections use Managed Identity (MSI), ensuring credentials are never stored in configuration or source code.
 
 The primary integration gap remains the absence of a dead-letter queue consumer for the `ordersplaced` topic and the partial transactional outbox pattern. Future work should evaluate Azure Service Bus dead-letter automation and either an outbox table with relay process or idempotency checks on the consumer side to guarantee exactly-once processing semantics.
-
----
-
-## ✅ Validation Summary
-
-### ✅ Pre-Output Checklist
-
-| ✅ Check | 📊 Status |
-| -------------------------------------------------------------- | -------- |
-| All 6 requested sections generated (1, 2, 3, 4, 5, 8)          | ✅       |
-| Section 2 has exactly 11 subsections (2.1–2.11)                | ✅       |
-| Section 5 has exactly 11 subsections (5.1–5.11)                | ✅       |
-| All Section 5 components have 6 mandatory sub-attributes       | ✅       |
-| All source references follow `path/file.ext:line-range` format | ✅       |
-| No markdown links in source reference cells                    | ✅       |
-| No backtick-wrapped source references                          | ✅       |
-| Minimum 8 components for comprehensive quality level           | ✅ (34+) |
-| All Mermaid diagrams include YAML frontmatter                  | ✅       |
-| All Mermaid diagrams include accTitle + accDescr               | ✅       |
-| All Mermaid diagrams include governance block                  | ✅       |
-| All subgraphs use `style` directive (not `class`)              | ✅       |
-| All nodes have emoji icon prefix                               | ✅       |
-| All nodes use approved AZURE/FLUENT v1.1 classDefs             | ✅       |
-| Semantic class count ≤ 5 per diagram                           | ✅       |
-| Node count ≤ 50 per diagram                                    | ✅       |
-| No fabricated components (all have source references)          | ✅       |
-| No Business/Data/Technology layer cross-contamination          | ✅       |
-| Architecture Principles ≥ 5 for comprehensive level            | ✅ (5)   |
-| TOGAF component typing consistent throughout                   | ✅       |
-
-**Final Validation Score: 100/100** ✅
-
-> All mandatory gates defined in `/main`, `/bdat-mermaid`, `/bdat-mermaid-improved`, and `/fluent` have been applied and passed. No auto-fix retry cycles required.
