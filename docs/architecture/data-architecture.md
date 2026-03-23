@@ -143,10 +143,6 @@ config:
   layout: dagre
   themeVariables:
     fontSize: '16px'
-    primaryColor: '#0078D4'
-    primaryBorderColor: '#106EBE'
-    primaryTextColor: '#FFFFFF'
-    lineColor: '#0078D4'
   flowchart:
     htmlLabels: true
     curve: cardinal
@@ -238,10 +234,6 @@ config:
   layout: dagre
   themeVariables:
     fontSize: '16px'
-    primaryColor: '#0078D4'
-    primaryBorderColor: '#106EBE'
-    primaryTextColor: '#FFFFFF'
-    lineColor: '#0078D4'
   flowchart:
     htmlLabels: true
     curve: cardinal
@@ -271,13 +263,13 @@ flowchart LR
     end
 
     subgraph SchemaSub["📋 Schema Governance"]
-        P4("📜 Schema<br>Versioning"):::data
+        P4("📜 Schema<br>Versioning"):::neutral
     end
 
     subgraph OpsSub["⚙️ Operations"]
         P5("🔄 Resilient<br>Data Access"):::core
         P6("☁️ Outcome-Partitioned<br>Archival"):::neutral
-        P7("📨 Async Data<br>Propagation"):::external
+        P7("📨 Async Data<br>Propagation"):::core
         P8("📊 Observability-First"):::core
     end
 
@@ -288,8 +280,6 @@ flowchart LR
 
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
 ```
 
@@ -325,10 +315,6 @@ config:
   layout: dagre
   themeVariables:
     fontSize: '16px'
-    primaryColor: '#0078D4'
-    primaryBorderColor: '#106EBE'
-    primaryTextColor: '#FFFFFF'
-    lineColor: '#0078D4'
   flowchart:
     htmlLabels: true
     curve: cardinal
@@ -392,10 +378,6 @@ config:
   layout: dagre
   themeVariables:
     fontSize: '16px'
-    primaryColor: '#0078D4'
-    primaryBorderColor: '#106EBE'
-    primaryTextColor: '#FFFFFF'
-    lineColor: '#0078D4'
   flowchart:
     htmlLabels: true
     curve: cardinal
@@ -427,7 +409,7 @@ flowchart TB
 
     subgraph ServiceLayer["⚙️ Service Layer"]
         OS("⚙️ OrderService<br>OTel tracing + metrics"):::core
-        MH("📨 OrdersMessageHandler<br>Service Bus client"):::external
+        MH("📨 OrdersMessageHandler<br>Service Bus client"):::core
     end
 
     subgraph InfraLayer["☁️ Infrastructure Layer"]
@@ -452,8 +434,6 @@ flowchart TB
 
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Diagrams: 1 | Violations: 0
