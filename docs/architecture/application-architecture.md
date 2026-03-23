@@ -587,9 +587,9 @@ flowchart TB
     end
 
     subgraph DATA_LAYER["🗄️ Data Layer"]
-        DB("🗄️ Azure SQL<br>Orders table"):::data
-        SB("📨 Service Bus<br>ordersplaced topic"):::data
-        BLOB("💾 Blob Storage<br>Order archives"):::data
+        DB("🗄️ Azure SQL<br>Orders table"):::neutral
+        SB("📨 Service Bus<br>ordersplaced topic"):::neutral
+        BLOB("💾 Blob Storage<br>Order archives"):::neutral
     end
 
     subgraph WF_LAYER["🔄 Workflow Layer"]
@@ -626,7 +626,6 @@ flowchart TB
     %% Centralized classDefs
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 ```
 
@@ -1811,9 +1810,9 @@ flowchart LR
     OMSG("📨 OrdersMessageHandler"):::core
     LA("🔄 OrdersManagementLogicApp"):::neutral
     SD("🔧 app.ServiceDefaults"):::neutral
-    DB("🗄️ Azure SQL DB"):::data
-    SB("📨 Azure Service Bus"):::data
-    BLOB("💾 Azure Blob Storage"):::data
+    DB("🗄️ Azure SQL DB"):::neutral
+    SB("📨 Azure Service Bus"):::neutral
+    BLOB("💾 Azure Blob Storage"):::neutral
     AI("📊 Azure App Insights"):::success
 
     WEB -->|"REST HTTPS"| API
@@ -1834,7 +1833,6 @@ flowchart LR
     %% Centralized classDefs
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 ```
 
@@ -1876,9 +1874,9 @@ flowchart TD
     D("🔌 OrdersController<br>Validate + dispatch"):::core
     E("⚙️ OrderService<br>Business logic"):::success
     F("🗃️ OrderRepository<br>SaveOrderAsync"):::core
-    G("🗄️ Azure SQL<br>Orders table insert"):::data
+    G("🗄️ Azure SQL<br>Orders table insert"):::neutral
     H("📨 OrdersMessageHandler<br>Serialize + publish"):::core
-    I("📨 Service Bus<br>ordersplaced topic"):::data
+    I("📨 Service Bus<br>ordersplaced topic"):::neutral
     J("🔄 OrdersPlacedProcess<br>Decode + forward"):::core
     K("🔌 Orders API<br>POST callback"):::core
     L{"✅ 201 OK?"}:::warning
@@ -1893,7 +1891,6 @@ flowchart TD
     %% Centralized classDefs
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
     classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
@@ -1936,8 +1933,8 @@ flowchart LR
     end
 
     subgraph BROKER["📡 Azure Service Bus"]
-        TOPIC("📋 ordersplaced<br>Topic"):::data
-        SUB("📥 Subscription<br>OrdersPlacedProcess"):::data
+        TOPIC("📋 ordersplaced<br>Topic"):::core
+        SUB("📥 Subscription<br>OrdersPlacedProcess"):::core
     end
 
     subgraph SUB_CONSUMERS["📥 Consumers"]
@@ -1962,7 +1959,6 @@ flowchart LR
     %% Centralized classDefs
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Violations: 0
