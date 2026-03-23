@@ -86,9 +86,9 @@ flowchart TB
             API("🔌 eShop.Orders.API<br>ASP.NET Core 10"):::core
         end
         subgraph DATA["🗄️ Data & Messaging"]
-            DB("🗄️ Azure SQL Database"):::data
-            SB("📨 Azure Service Bus<br>ordersplaced topic"):::data
-            BLOB("💾 Azure Blob Storage<br>Order Archives"):::data
+            DB("🗄️ Azure SQL Database"):::neutral
+            SB("📨 Azure Service Bus<br>ordersplaced topic"):::neutral
+            BLOB("💾 Azure Blob Storage<br>Order Archives"):::neutral
         end
         subgraph WORKFLOW["⚙️ Workflow"]
             LA("🔄 Logic App Standard<br>OrdersManagement"):::core
@@ -114,7 +114,6 @@ flowchart TB
     %% Centralized classDefs
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 ```
 
@@ -231,7 +230,7 @@ flowchart TB
     end
 
     subgraph BROKER["📡 Message Broker"]
-        TOPIC("📋 ordersplaced<br>Service Bus Topic"):::data
+        TOPIC("📋 ordersplaced<br>Service Bus Topic"):::core
     end
 
     subgraph CONSUMER["📥 Event Consumer"]
@@ -261,7 +260,6 @@ flowchart TB
     %% Centralized classDefs
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
 ```
@@ -445,7 +443,6 @@ flowchart LR
     %% Centralized classDefs
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
-    classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Violations: 0
