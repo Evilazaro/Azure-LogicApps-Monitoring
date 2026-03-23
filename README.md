@@ -128,9 +128,9 @@ flowchart TB
     end
 
     subgraph datalayer["🗄️ Data Layer"]
-        sql[("🗄️ Azure SQL Database")]:::data
+        sql[("🗄️ Azure SQL Database")]:::neutral
         sbus("📨 Service Bus<br/>ordersplaced"):::core
-        blob("📦 Blob Storage<br/>Orders"):::data
+        blob("📦 Blob Storage<br/>Orders"):::neutral
     end
 
     subgraph logic["⚡ Logic Apps Standard"]
@@ -163,7 +163,6 @@ flowchart TB
 
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
 ```
