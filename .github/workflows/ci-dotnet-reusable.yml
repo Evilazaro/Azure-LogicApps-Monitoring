@@ -374,7 +374,7 @@ jobs:
       # path-replace-backslashes handles Windows path separators.
       # ------------------------------------------------------------------
       - name: 📋 Publish test results
-        uses: dorny/test-reporter@3d76b34a4535afbd0600d347b09a6ee5deb3ed7f # v2.6.0
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
         if: always()
         with:
           name: "Test Results (${{ matrix.os }})" # Unique name per OS to avoid check run conflicts
@@ -598,7 +598,7 @@ jobs:
       # javascript-typescript, python, ruby, swift
       # ------------------------------------------------------------------
       - name: 🛡️ Initialize CodeQL
-        uses: github/codeql-action/init@0d579ffd059c29b07949a3cce3983f0780820c98 # v3.28.0
+        uses: github/codeql-action/init@38697555549f1db7851b81482ff19f1fa5c4fedc # v3.28.0
         with:
           languages: csharp
           # Query suites: security-extended adds more security queries
@@ -613,11 +613,11 @@ jobs:
               - '**/*.Tests.cs'
 
       - name: 🔨 Autobuild for CodeQL
-        uses: github/codeql-action/autobuild@0d579ffd059c29b07949a3cce3983f0780820c98 # v3.28.0
+        uses: github/codeql-action/autobuild@38697555549f1db7851b81482ff19f1fa5c4fedc # v3.28.0
 
       - name: 🛡️ Perform CodeQL analysis
         id: codeql-analyze
-        uses: github/codeql-action/analyze@0d579ffd059c29b07949a3cce3983f0780820c98 # v3.28.0
+        uses: github/codeql-action/analyze@38697555549f1db7851b81482ff19f1fa5c4fedc # v3.28.0
         with:
           category: "/language:csharp"
           output: codeql-results
