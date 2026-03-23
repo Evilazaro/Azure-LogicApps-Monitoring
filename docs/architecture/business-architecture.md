@@ -98,8 +98,6 @@ flowchart TB
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
     classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Diagrams: 1 | Violations: 0
@@ -151,7 +149,7 @@ flowchart LR
     subgraph governance["📐 Governance Layer"]
         g1("📏 Business Rules ×6"):::danger
         g2("⚡ Business Events ×5"):::neutral
-        g3("📦 Domain Objects ×4"):::data
+        g3("📦 Domain Objects ×4"):::neutral
         g4("📈 KPIs & Metrics ×4"):::success
     end
 
@@ -167,8 +165,6 @@ flowchart LR
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
     classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Diagrams: 2 | Violations: 0
@@ -367,14 +363,14 @@ flowchart LR
     subgraph vs1["🌊 Value Stream 1: Order Placement"]
         stepA("👤 Customer Submits Order"):::neutral
         stepB("✅ Validate Order Data"):::warning
-        stepC("🗄️ Persist to SQL DB"):::data
+        stepC("🗄️ Persist to SQL DB"):::neutral
         stepD("📨 Publish to Service Bus"):::core
     end
 
     subgraph vs2["🌊 Value Stream 2: Order Fulfillment"]
         stepE("📥 Logic App Polls Topic"):::warning
         stepF("⚙️ Call Orders API Process"):::core
-        stepG("📦 Write Result Blob"):::data
+        stepG("📦 Write Result Blob"):::neutral
         stepH("🧹 Cleanup Processed Blobs"):::success
     end
 
@@ -393,9 +389,6 @@ flowchart LR
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
-    classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Diagrams: 3 | Violations: 0
@@ -433,9 +426,9 @@ flowchart TB
 
     subgraph services["🛠️ Business Services"]
         svcOM("⚙️ Order Mgmt Service"):::core
-        svcRepo("🗄️ Order Repository"):::data
+        svcRepo("🗄️ Order Repository"):::neutral
         svcMsg("📨 Order Messaging"):::core
-        svcWeb("🌐 Orders Web Client"):::external
+        svcWeb("🌐 Orders Web Client"):::core
     end
 
     subgraph processes["🔄 Business Processes"]
@@ -446,10 +439,10 @@ flowchart TB
     end
 
     subgraph objects["📋 Domain Objects"]
-        objOrder("📄 Order"):::data
-        objProd("🏷️ OrderProduct"):::data
-        objMsg("📨 OrderMessage"):::data
-        objResult("✅ ProcessingResult"):::data
+        objOrder("📄 Order"):::neutral
+        objProd("🏷️ OrderProduct"):::neutral
+        objMsg("📨 OrderMessage"):::neutral
+        objResult("✅ ProcessingResult"):::neutral
     end
 
     svcOM --> procSingle
@@ -476,9 +469,6 @@ flowchart TB
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
-    classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Diagrams: 4 | Violations: 0
