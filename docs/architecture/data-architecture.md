@@ -173,8 +173,8 @@ flowchart TB
     end
 
     subgraph InfrastructureTier["☁️ Infrastructure Tier"]
-        SQL[("🗄️ Azure SQL Database<br>Orders + OrderProducts")]:::data
-        SB("📨 Service Bus<br>ordersplaced topic"):::external
+        SQL[("🗄️ Azure SQL Database<br>Orders + OrderProducts")]:::neutral
+        SB("📨 Service Bus<br>ordersplaced topic"):::core
         BS1("✅ Blob: ordersprocessedsuccessfully"):::success
         BS2("❌ Blob: ordersprocessedwitherrors"):::danger
         BC("🏁 Blob: ordersprocessedcompleted"):::neutral
@@ -413,8 +413,8 @@ flowchart TB
     end
 
     subgraph InfraLayer["☁️ Infrastructure Layer"]
-        SQL[("🗄️ Azure SQL Database<br>Orders + OrderProducts")]:::data
-        SB("📨 Service Bus<br>ordersplaced topic"):::external
+        SQL[("🗄️ Azure SQL Database<br>Orders + OrderProducts")]:::neutral
+        SB("📨 Service Bus<br>ordersplaced topic"):::core
         BLOBS("☁️ Blob Storage<br>ordersprocessed* containers"):::neutral
     end
 
@@ -837,10 +837,6 @@ config:
   layout: dagre
   themeVariables:
     fontSize: '16px'
-    primaryColor: '#0078D4'
-    primaryBorderColor: '#106EBE'
-    primaryTextColor: '#FFFFFF'
-    lineColor: '#0078D4'
   flowchart:
     htmlLabels: true
     curve: cardinal
@@ -906,18 +902,16 @@ flowchart TB
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
-    WA:::external
+    WA:::core
     OS:::core
     OR:::core
-    SQL:::data
-    SB:::data
+    SQL:::neutral
+    SB:::core
     LP:::core
     LC:::core
     BS:::success
     BE:::danger
-    BC:::data
+    BC:::neutral
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Diagrams: 1 | Violations: 0
@@ -968,10 +962,6 @@ config:
   layout: dagre
   themeVariables:
     fontSize: '16px'
-    primaryColor: '#0078D4'
-    primaryBorderColor: '#106EBE'
-    primaryTextColor: '#FFFFFF'
-    lineColor: '#0078D4'
   flowchart:
     htmlLabels: true
     curve: cardinal
@@ -1020,8 +1010,8 @@ flowchart LR
     style AuthLayer fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
     style DataStores fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
+    classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
     classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
 
@@ -1030,9 +1020,9 @@ flowchart LR
     CS:::warning
     MSI:::core
     ENTRA:::core
-    SQL:::data
-    SBus:::data
-    Blob:::data
+    SQL:::neutral
+    SBus:::core
+    Blob:::neutral
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Diagrams: 1 | Violations: 0
