@@ -208,7 +208,7 @@ flowchart TB
     %% PHASE 5 - STANDARD: Governance block present, classDefs centralized
     %% ═══════════════════════════════════════════════════════════════════════════
 
-    Internet(["🌍 Internet"]):::external
+    Internet(["🌍 Internet"]):::neutral
 
     subgraph RG["☁️ Resource Group — rg-orders-{env}"]
         subgraph VNet["🔗 Virtual Network (10.0.0.0/16)"]
@@ -223,9 +223,9 @@ flowchart TB
             end
             subgraph DataSubnet["🗄️ Data Subnet (10.0.2.0/24)"]
                 PrivEP(["🔒 Private Endpoints<br/>(blob/file/table/queue/sql)"]):::neutral
-                SQL[("🗄️ Azure SQL Database")]:::data
-                BlobWF[("💾 Blob Storage<br/>(Workflow State)")]:::data
-                FileShare[("📁 File Share<br/>(workflowstate)")]:::data
+                SQL[("🗄️ Azure SQL Database")]:::neutral
+                BlobWF[("💾 Blob Storage<br/>(Workflow State)")]:::neutral
+                FileShare[("📁 File Share<br/>(workflowstate)")]:::neutral
             end
         end
         subgraph Shared["🏗️ Shared Services"]
@@ -258,8 +258,6 @@ flowchart TB
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
 
     %% Subgraph style directives (AZURE/FLUENT v1.1 — style directive only)
     style RG fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
@@ -699,7 +697,7 @@ flowchart LR
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph Client["👤 Client Tier"]
-        Browser(["🌍 Browser / Client"]):::external
+        Browser(["🌍 Browser / Client"]):::neutral
     end
 
     subgraph AppTier["⚙️ Application Tier"]
@@ -715,8 +713,8 @@ flowchart LR
 
     subgraph DataTier["🗄️ Data & Messaging"]
         SvcBus("📨 Service Bus<br/>ordersplaced topic"):::core
-        SQL[("🗄️ Azure SQL<br/>Orders Database")]:::data
-        Blob[("💾 Blob Storage<br/>ordersprocessed*")]:::data
+        SQL[("🗄️ Azure SQL<br/>Orders Database")]:::neutral
+        Blob[("💾 Blob Storage<br/>ordersprocessed*")]:::neutral
     end
 
     subgraph ObsTier["📊 Observability"]
@@ -743,8 +741,6 @@ flowchart LR
     classDef neutral fill:#FAFAFA,stroke:#8A8886,stroke-width:2px,color:#323130
     classDef core fill:#EFF6FC,stroke:#0078D4,stroke-width:2px,color:#323130
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
 
     %% Subgraph style directives (AZURE/FLUENT v1.1 — style directive only)
     style Client fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130

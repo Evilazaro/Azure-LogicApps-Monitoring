@@ -1048,8 +1048,6 @@ flowchart TB
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
     classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Diagrams: 5 | Violations: 0
@@ -1111,14 +1109,14 @@ flowchart TB
     end
 
     subgraph applayer["🖥️ Application Layer"]
-        ctrl("🌐 Orders Controller"):::external
-        webSvc("🎨 Blazor Web App"):::external
+        ctrl("🌐 Orders Controller"):::core
+        webSvc("🎨 Blazor Web App"):::core
     end
 
     subgraph datalayer2["🗄️ Data Layer"]
-        sqlDB("🗄️ Azure SQL Database"):::data
-        sbus("📨 Service Bus Topic"):::data
-        blob("📦 Blob Storage"):::data
+        sqlDB("🗄️ Azure SQL Database"):::neutral
+        sbus("📨 Service Bus Topic"):::neutral
+        blob("📦 Blob Storage"):::neutral
     end
 
     subgraph obslayer["📊 Observability Layer"]
@@ -1148,8 +1146,6 @@ flowchart TB
     classDef success fill:#DFF6DD,stroke:#107C10,stroke-width:2px,color:#323130
     classDef warning fill:#FFF4CE,stroke:#FFB900,stroke-width:2px,color:#323130
     classDef danger fill:#FDE7E9,stroke:#D13438,stroke-width:2px,color:#323130
-    classDef data fill:#F0E6FA,stroke:#8764B8,stroke-width:2px,color:#323130
-    classDef external fill:#E0F7F7,stroke:#038387,stroke-width:2px,color:#323130
 ```
 
 ✅ Mermaid Verification: 5/5 | Score: 100/100 | Diagrams: 6 | Violations: 0
