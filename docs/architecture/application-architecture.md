@@ -23,23 +23,6 @@ The architecture follows an **event-driven microservices** model. The `eShop.Ord
 
 Across all five components, **34 Application layer artifacts** were identified with an average confidence score of **0.91**. Cross-cutting concerns — OpenTelemetry tracing, metrics, structured logging, health checks, service discovery, and HTTP resilience — are centralized in the `app.ServiceDefaults` shared library and applied uniformly. The platform targets **Azure Container Apps** for the API and Web App, with the Logic App hosted on **Azure Logic Apps Standard**. Maturity assessment places the platform at **Level 3 — Managed**, with consistent observability, structured interfaces, and automated health monitoring, with opportunities to add comprehensive API versioning and distributed saga patterns.
 
-### 🗂️ Component Inventory
-
-| 🏷️ TOGAF Component Type    | 🔢 Count |
-| -------------------------- | -------- |
-| Application Services       | 2        |
-| Application Components     | 5        |
-| Application Interfaces     | 4        |
-| Application Collaborations | 5        |
-| Application Functions      | 5        |
-| Application Interactions   | 5        |
-| Application Events         | 3        |
-| Application Data Objects   | 7        |
-| Integration Patterns       | 5        |
-| Service Contracts          | 4        |
-| Application Dependencies   | 9        |
-| **Total**                  | **54**   |
-
 ---
 
 ## 🗺️ Section 2: Architecture Landscape

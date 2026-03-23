@@ -21,36 +21,6 @@ The Azure LogicApps Monitoring solution implements a fully cloud-native, infrast
 
 All infrastructure is defined as Bicep IaC (`infra/**/*.bicep`) and orchestrated through Azure Developer CLI (`azure.yaml`). Zero passwords or connection strings are used at runtime — all service authentication relies on User-Assigned Managed Identity with RBAC role assignments.
 
-**Infrastructure Component Counts by Type:**
-
-| 🏗️ Component Type          | 🔢 Count |
-| -------------------------- | -------- |
-| Compute Resources          | 5        |
-| Storage Systems            | 7        |
-| Network Infrastructure     | 9        |
-| Container Platforms        | 2        |
-| Cloud Services (PaaS/SaaS) | 3        |
-| Security Infrastructure    | 6        |
-| Messaging Infrastructure   | 5        |
-| Monitoring & Observability | 4        |
-| Identity & Access          | 2        |
-| API Management             | 1        |
-| Caching Infrastructure     | 1        |
-| **TOTAL**                  | **45**   |
-
-### 📊 1.2 Infrastructure Catalog Statistics
-
-| 📊 Metric                                | 📈 Value                                    |
-| ---------------------------------------- | ------------------------------------------- |
-| Total Technology Components              | 45                                          |
-| High-Confidence Components (≥0.90)       | 39                                          |
-| Medium-Confidence Components (0.70–0.89) | 6                                           |
-| Average Confidence Score                 | 0.93                                        |
-| IaC Coverage                             | 100% (all infrastructure defined in Bicep)  |
-| Passwordless Authentication              | 100% (Managed Identity across all services) |
-| Private Network Endpoints                | 5 (blob, file, table, queue, sql)           |
-| RBAC Role Assignments                    | 20                                          |
-
 ---
 
 ## 🗺️ Section 2: Architecture Landscape

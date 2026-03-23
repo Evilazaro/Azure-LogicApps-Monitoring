@@ -28,23 +28,6 @@ The architecture follows a clear separation between the domain model, the EF Cor
 
 Data movement is orchestrated through two channels: synchronous REST API calls from the web front-end to the Orders API, and asynchronous messaging via Azure Service Bus. Logic App Standard workflows consume Service Bus messages, invoke the API, and persist processing outcomes to Blob Storage containers partitioned by result state. All data access to external services is secured via User-Assigned Managed Identity, eliminating credential management risks.
 
-### 🔍 Key Findings
-
-| Metric                              | Value       | Assessment                                                           |
-| ----------------------------------- | ----------- | -------------------------------------------------------------------- |
-| 🔢 Total Data Components Identified | 38          | Comprehensive                                                        |
-| 🧩 Data Entities                    | 4           | Complete — Order, OrderProduct (domain + persistence)                |
-| 🗄️ Data Stores                      | 5           | SQL Database, 3 Blob containers, 1 File share                        |
-| 🌊 Data Flow Patterns               | 4           | Sync REST, async Service Bus, blob write, blob delete                |
-| 📊 Average Confidence Score         | 0.91        | High — all components backed by source evidence                      |
-| 🔒 Security Controls                | 5           | MSI auth, TLS 1.2, private endpoints, Entra ID-only SQL              |
-| 🏛️ Governance Coverage              | Partial     | Logging and auth covered; no formal data catalog or retention policy |
-| 🗃️ Schema Migrations                | 1 versioned | `OrderDbV1` migration — baseline schema established                  |
-
-### 📊 Coverage Summary
-
-The data domain is well-defined and fully traced to source files with a confidence score of 0.91. The architecture demonstrates strong security discipline (Managed Identity everywhere, Entra ID-only SQL authentication, TLS 1.2 minimum) and solid relational modelling with proper indexing and referential integrity. Key governance gaps include the absence of a formal data classification catalog, explicit data retention policies, and data lineage tooling. Master data management is not applicable to this domain — all data is transactional order data rather than reference or master data.
-
 ---
 
 ## 🗺️ Section 2: Architecture Landscape
