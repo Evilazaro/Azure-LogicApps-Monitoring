@@ -598,7 +598,7 @@ jobs:
       # javascript-typescript, python, ruby, swift
       # ------------------------------------------------------------------
       - name: 🛡️ Initialize CodeQL
-        uses: github/codeql-action/init@38697555549f1db7851b81482ff19f1fa5c4fedc # v3.28.0
+        uses: github/codeql-action/init@c10b8064de6f491fea524254123dbe5e09572f13 # v3.28.0
         with:
           languages: csharp
           # Query suites: security-extended adds more security queries
@@ -613,11 +613,11 @@ jobs:
               - '**/*.Tests.cs'
 
       - name: 🔨 Autobuild for CodeQL
-        uses: github/codeql-action/autobuild@38697555549f1db7851b81482ff19f1fa5c4fedc # v3.28.0
+        uses: github/codeql-action/autobuild@c10b8064de6f491fea524254123dbe5e09572f13 # v3.28.0
 
       - name: 🛡️ Perform CodeQL analysis
         id: codeql-analyze
-        uses: github/codeql-action/analyze@38697555549f1db7851b81482ff19f1fa5c4fedc # v3.28.0
+        uses: github/codeql-action/analyze@c10b8064de6f491fea524254123dbe5e09572f13 # v3.28.0
         with:
           category: "/language:csharp"
           output: codeql-results
