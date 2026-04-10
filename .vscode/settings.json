@@ -26,5 +26,6 @@
   // JSON Schema Validation
   "json.schemas": [],
   // Editor Behavior
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "chat.agent.maxRequests": 200
 }
