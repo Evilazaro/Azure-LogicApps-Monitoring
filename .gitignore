@@ -23,6 +23,7 @@ orders.json
 mono_crash.*
 # Prompts
 [Pp]rompts/
+!.github/prompts/
 
 # Build results
 [Dd]ebug/
