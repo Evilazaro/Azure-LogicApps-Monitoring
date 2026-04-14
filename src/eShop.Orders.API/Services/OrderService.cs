@@ -425,18 +425,20 @@ public sealed class OrderService : IOrderService, IDisposable
             throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
         }
 
+        var safeOrderIdForLog = orderId.Replace("\r", string.Empty).Replace("\n", string.Empty);
+
         using var activity = _activitySource.StartActivity("DeleteOrder", ActivityKind.Internal);
         activity?.SetTag("order.id", orderId);
 
         try
         {
-            _logger.LogInformation("Deleting order with ID: {OrderId}", orderId);
+            _logger.LogInformation("Deleting order with ID: {OrderId}", safeOrderIdForLog);
 
             // First verify the order exists
             var order = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken);
             if (order == null)
             {
-                _logger.LogWarning("Order with ID {OrderId} not found for deletion", orderId);
+                _logger.LogWarning("Order with ID {OrderId} not found for deletion", safeOrderIdForLog);
                 return false;
             }
 
@@ -446,13 +448,13 @@ public sealed class OrderService : IOrderService, IDisposable
             if (deleted)
             {
                 activity?.SetStatus(ActivityStatusCode.Ok);
-                _logger.LogInformation("Order {OrderId} deleted successfully", orderId);
+                _logger.LogInformation("Order {OrderId} deleted successfully", safeOrderIdForLog);
                 _ordersDeletedCounter.Add(1, new TagList { { "order.status", "success" } });
             }
             else
             {
                 activity?.SetStatus(ActivityStatusCode.Error, "Failed to delete order");
-                _logger.LogWarning("Failed to delete order {OrderId}", orderId);
+                _logger.LogWarning("Failed to delete order {OrderId}", safeOrderIdForLog);
             }
 
             return deleted;
@@ -467,7 +469,7 @@ public sealed class OrderService : IOrderService, IDisposable
                 { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
                 { "order.id", orderId }
             }));
-            _logger.LogError(ex, "Failed to delete order {OrderId}", orderId);
+            _logger.LogError(ex, "Failed to delete order {OrderId}", safeOrderIdForLog);
             throw;
         }
     }
