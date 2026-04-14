@@ -1,0 +1,312 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+# ==============================================================================
+# AZURE DEVELOPER CLI (azd) CONFIGURATION
+# ==============================================================================
+#
+# Project:      Azure Logic Apps Monitoring Solution
+# Description:  Infrastructure-as-Code deployment configuration for the Azure
+#               Logic Apps Monitoring solution using .NET Aspire orchestration.
+#               This file defines services, infrastructure, and lifecycle hooks.
+#
+# Architecture: .NET Aspire AppHost → Azure Container Apps
+#               ├── eShop.Orders.API (REST API)
+#               └── eShop.Web.App (Frontend)
+#
+# Prerequisites:
+#   - Azure CLI >= 2.60.0
+#   - Azure Developer CLI (azd) >= 1.11.0
+#   - .NET SDK 10.0
+#   - Docker (for local development)
+#
+# Quick Start:
+#   1. azd auth login           # Authenticate with Azure
+#   2. azd env new <env-name>   # Create new environment
+#   3. azd up                   # Provision and deploy
+#
+# Documentation:
+#   - AZD Docs: https://learn.microsoft.com/azure/developer/azure-developer-cli/
+#   - Schema:   https://learn.microsoft.com/azure/developer/azure-developer-cli/azd-schema
+#
+# Version History:
+#   - 1.0.0 (2026-01-13): Initial release with .NET Aspire AppHost
+#
+# Author:       Evilazaro
+# Repository:   https://github.com/Evilazaro/Azure-LogicApps-Monitoring
+# License:      See LICENSE file in repository root
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# PROJECT METADATA
+# ------------------------------------------------------------------------------
+# Unique project identifier used for Azure resource naming conventions.
+# Must be alphanumeric with hyphens only (no underscores or special characters).
+# This name is used as a prefix for all deployed Azure resources.
+name: azure-logicapps-monitoring
+
+# Template metadata for azd template gallery and discoverability.
+# Required fields for publishing to Azure Developer CLI template gallery.
+metadata:
+  # Semantic version following format: <template-name>@<major>.<minor>.<patch>
+  template: azure-logicapps-monitoring@1.0.0
+  # Brief description displayed in template gallery searches
+  description: "Azure Logic Apps Monitoring solution with .NET Aspire orchestration"
+  # Template maintainer/owner
+  author: "Evilazaro"
+  # Source code repository URL
+  repository: "https://github.com/Evilazaro/Azure-LogicApps-Monitoring"
+
+# Minimum version constraints to ensure compatibility.
+# Prevents deployment issues caused by outdated CLI versions.
+requiredVersions:
+  azd: ">= 1.11.0"
+
+# ------------------------------------------------------------------------------
+# INFRASTRUCTURE CONFIGURATION
+# ------------------------------------------------------------------------------
+# Defines the Infrastructure-as-Code (IaC) provider and entry point.
+# Bicep templates provision all Azure resources declaratively.
+#
+# Infrastructure Organization:
+#   infra/
+#   ├── main.bicep              # Entry point (orchestrator)
+#   ├── main.parameters.json    # Environment-specific parameters
+#   ├── types.bicep             # Shared type definitions
+#   ├── shared/                 # Cross-cutting resources (networking, identity)
+#   └── workload/               # Application-specific resources
+#
+# Security Note: Infrastructure uses Managed Identity for all service-to-service
+# authentication. No secrets or connection strings are stored in code.
+infra:
+  # IaC provider: 'bicep' (recommended) or 'terraform'
+  provider: bicep
+  # Relative path to infrastructure templates directory
+  path: infra
+  # Entry point module name (resolves to infra/main.bicep)
+  module: main
+
+# ------------------------------------------------------------------------------
+# LIFECYCLE HOOKS
+# ------------------------------------------------------------------------------
+# Scripts executed at specific points in the azd workflow to automate
+# environment validation, configuration, and deployment tasks.
+#
+# Hook Execution Order:
+#   azd provision: preprovision → [bicep deploy] → postprovision
+#   azd deploy:    predeploy → [app deploy] → postdeploy
+#   azd down:      [resource deletion] → postinfradelete
+#   azd up:        All of the above in sequence
+#
+# Hook Guidelines:
+#   - Use 'continueOnError: false' for critical validation hooks
+#   - Use 'interactive: true' when user input may be required
+#   - Keep hooks idempotent (safe to run multiple times)
+#   - Log meaningful progress messages for troubleshooting
+#
+# Cross-Platform Support:
+#   All hooks have both POSIX (sh) and Windows (pwsh) implementations
+#   to ensure consistent behavior across development environments.
+
+hooks:
+  # ============================================================================
+  # PREPROVISION HOOK
+  # ============================================================================
+  # Purpose: Validate environment prerequisites and build solution before
+  #          provisioning Azure infrastructure. Prevents wasted Azure costs
+  #          from failed deployments due to build errors.
+  #
+  # Actions:
+  #   1. Clean previous build artifacts
+  #   2. Restore NuGet dependencies
+  #   3. Build solution in Release configuration
+  #   4. Execute unit tests to ensure code quality
+  #   5. Run workstation validation checks
+  #
+  # Exit Behavior: Fails provisioning if any step fails (continueOnError: false)
+  preprovision:
+    posix:
+      shell: sh
+      run: |
+        if [ "${DEPLOYER_PRINCIPAL_TYPE}" = "User" ]; then
+            dotnet clean
+            dotnet restore --verbosity minimal
+            dotnet build --configuration Debug --verbosity minimal
+            dotnet test \
+                  --configuration Debug \
+                  --no-build \
+                  --results-directory ./src/tests/AzdTestResults \
+                  --diagnostic-output-directory ./src/tests/AzdDiagnosticResults \
+                  --diagnostic \
+                  --diagnostic-file-prefix '[log]_' \
+                  --report-trx \
+                  --report-trx-filename 'appreport.trx' \
+                  --coverage \
+                  --coverage-output-format cobertura \
+                  --coverage-output coverage.cobertura.xml \
+                  --verbosity minimal
+        fi
+        ./hooks/preprovision.sh --force --verbose
+      continueOnError: false
+      interactive: true
+    windows:
+      shell: pwsh
+      run: |
+        dotnet clean
+        dotnet restore --verbosity minimal
+        dotnet build --configuration Debug --verbosity minimal
+        dotnet test `
+               --configuration Debug `
+               --no-build `
+               --results-directory ./src/tests/AzdTestResults `
+               --diagnostic-output-directory ./src/tests/AzdDiagnosticResults `
+               --diagnostic `
+               --diagnostic-file-prefix "[log]_" `
+               --report-trx `
+               --report-trx-filename 'appreport.trx' `
+               --coverage `
+               --coverage-output-format cobertura `
+               --coverage-output coverage.cobertura.xml `
+               --verbosity minimal
+        ./hooks/preprovision.ps1 -Force -Verbose
+      continueOnError: false
+      interactive: true
+
+  # ============================================================================
+  # POSTPROVISION HOOK
+  # ============================================================================
+  # Purpose: Configure local development environment after infrastructure
+  #          provisioning completes. Sets up secrets and generates test data.
+  #
+  # Actions:
+  #   1. Configure local development secrets from Azure Key Vault
+  #   2. Generate sample order data for testing
+  #
+  # Security Note: Secrets are retrieved from Azure Key Vault using Managed
+  # Identity and stored in local user secrets (not committed to source control).
+  postprovision:
+    posix:
+      shell: sh
+      run: |
+        if [ "${DEPLOYER_PRINCIPAL_TYPE}" = "ServicePrincipal" ]; then
+          echo "Deployer is a Service Principal - Azure CLI already authenticated via GitHub Actions OIDC"
+        else
+          ./hooks/Generate-Orders.sh --force --verbose
+        fi
+        ./hooks/postprovision.sh --force --verbose
+      continueOnError: false
+      interactive: true
+    windows:
+      shell: pwsh
+      run: |
+        if ($env:DEPLOYER_PRINCIPAL_TYPE -eq "ServicePrincipal") {
+          Write-Host "Deployer is a Service Principal - Azure CLI already authenticated via GitHub Actions OIDC"
+        }
+        else {
+          ./hooks/Generate-Orders.ps1 -Force -Verbose
+        }
+        ./hooks/postprovision.ps1 -Force -Verbose
+      continueOnError: false
+      interactive: true
+
+  # ============================================================================
+  # PREDEPLOY HOOK
+  # ============================================================================
+  # Purpose: Configure Logic Apps connections and deploy workflow definitions
+  #          before deploying application code.
+  #
+  # Actions:
+  #   1. Update Logic Apps connection configurations
+  #   2. Deploy workflow definitions to Logic Apps
+  #   3. Validate connection authentications
+  #
+  # Dependencies: Requires infrastructure to be provisioned (Logic App must exist)
+  predeploy:
+    posix:
+      shell: sh
+      run: |
+        ./hooks/deploy-workflow.sh --force --verbose
+      continueOnError: false
+      interactive: true
+    windows:
+      shell: pwsh
+      run: |
+        ./hooks/deploy-workflow.ps1 -Force -Verbose
+      continueOnError: false
+      interactive: true
+
+# ------------------------------------------------------------------------------
+# APPLICATION SERVICES
+# ------------------------------------------------------------------------------
+# Defines the application components to be deployed to Azure.
+#
+# Architecture Overview:
+# This solution uses .NET Aspire AppHost as the orchestration layer, which
+# automatically discovers, configures, and manages all dependent services.
+#
+# Service Topology:
+#   app.AppHost (Aspire Orchestrator)
+#   ├── eShop.Orders.API    → REST API for order management
+#   ├── eShop.Web.App       → Blazor frontend application
+#   ├── Azure SQL Database  → Order data persistence
+#   ├── Azure Service Bus   → Async messaging
+#   ├── Azure Storage       → Blob/Queue storage
+#   └── Application Insights → Telemetry & monitoring
+#
+# Deployment Target: Azure Container Apps (managed Kubernetes)
+# Benefits:
+#   - Automatic scaling based on HTTP traffic or queue depth
+#   - Built-in ingress with TLS termination
+#   - Integrated revision management for zero-downtime deployments
+#   - Native .NET Aspire integration
+
+services:
+  # ==========================================================================
+  # .NET Aspire AppHost
+  # ==========================================================================
+  # The AppHost is the central orchestrator that:
+  #   - Discovers and references all application projects
+  #   - Configures service discovery between components
+  #   - Manages Azure resource connections (SQL, Service Bus, etc.)
+  #   - Generates container configurations for deployment
+  #
+  # Note: All child services (Orders.API, Web.App) are automatically
+  # deployed as part of the AppHost deployment. Do not define them
+  # separately as individual services.
+  app:
+    # Runtime/language for the service
+    language: dotnet
+    # Relative path to the .csproj file (from repository root)
+    project: ./app.AppHost/app.AppHost.csproj
+    # Azure hosting platform: containerapp | appservice | function | staticwebapp
+    host: containerapp
+
+# ------------------------------------------------------------------------------
+# CI/CD PIPELINE CONFIGURATION
+# ------------------------------------------------------------------------------
+# Configuration for automated pipeline generation via 'azd pipeline config'.
+#
+# Supported Providers:
+#   - github: GitHub Actions (recommended for GitHub repositories)
+#   - azdo:   Azure DevOps Pipelines
+#
+# Generated Workflow Features:
+#   - Automated builds on push/PR
+#   - Environment-based deployments (dev, staging, prod)
+#   - Secret management via GitHub Secrets / Azure Key Vault
+#   - Infrastructure drift detection
+#
+# Usage:
+#   azd pipeline config                    # Interactive setup
+#   azd pipeline config --provider github  # Non-interactive
+
+pipeline:
+  # CI/CD provider: 'github' or 'azdo'
+  provider: github
+# ==============================================================================
+# END OF CONFIGURATION
+# ==============================================================================
+# For troubleshooting and additional configuration options, see:
+#   - azd docs: https://learn.microsoft.com/azure/developer/azure-developer-cli/
+#   - Schema reference: https://aka.ms/azure-dev/schema
+#   - Project issues: https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues
+# ==============================================================================

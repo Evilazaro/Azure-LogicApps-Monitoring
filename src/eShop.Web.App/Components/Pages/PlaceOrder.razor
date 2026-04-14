@@ -1,0 +1,269 @@
+@page "/placeorder"
+@using eShop.Web.App.Components.Services;
+@using app.ServiceDefaults.CommonTypes;
+@using Microsoft.FluentUI.AspNetCore.Components;
+@rendermode InteractiveServer
+@inject OrdersAPIService ordersService
+
+<PageTitle>Place Order</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16"
+    Style="padding: 20px; max-width: 1000px; margin: 0 auto;">
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="6">
+        <FluentLabel Typo="Typography.H4">Place New Order</FluentLabel>
+        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; color: var(--neutral-foreground-hint);">
+            Create a new order with customer and product details.
+        </FluentLabel>
+    </FluentStack>
+
+    @if (successMessage != null)
+    {
+        <FluentMessageBar Intent="MessageIntent.Success" Title="Success">
+            @successMessage
+        </FluentMessageBar>
+    }
+
+    @if (errorMessage != null)
+    {
+        <FluentMessageBar Intent="MessageIntent.Error" Title="Error">
+            @errorMessage
+        </FluentMessageBar>
+    }
+
+    <!-- Order Form -->
+    <FluentCard Style="width: 100%; padding: 24px;">
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="20">
+            <!-- Order Information Section -->
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 15px;">Order Information
+                </FluentLabel>
+
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="16" Wrap="true">
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="6" Style="flex: 1; min-width: 200px;">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 13px;">Order ID <span
+                                style="color: var(--error);">*</span></FluentLabel>
+                        <FluentTextField @bind-Value="newOrder.Id" Placeholder="Enter unique Order ID"
+                            Style="width: 100%;" />
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="6" Style="flex: 1; min-width: 200px;">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 13px;">Customer ID <span
+                                style="color: var(--error);">*</span></FluentLabel>
+                        <FluentTextField @bind-Value="newOrder.CustomerId" Placeholder="Enter Customer ID"
+                            Style="width: 100%;" />
+                    </FluentStack>
+                </FluentStack>
+
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="6">
+                    <FluentLabel Typo="Typography.Body" Style="font-size: 13px;">Delivery Address <span
+                            style="color: var(--error);">*</span></FluentLabel>
+                    <FluentTextField @bind-Value="newOrder.DeliveryAddress" Placeholder="Enter full delivery address"
+                        Style="width: 100%;" />
+                </FluentStack>
+            </FluentStack>
+
+            <FluentDivider Style="width: 100%;" />
+
+            <!-- Products Section -->
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                    VerticalAlignment="VerticalAlignment.Center">
+                    <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 15px;">Products
+                    </FluentLabel>
+                    <FluentButton Appearance="Appearance.Outline" OnClick="AddProduct" Style="width: fit-content;">
+                        + Add Product
+                    </FluentButton>
+                </FluentStack>
+
+                @if (!newOrder.Products.Any())
+                {
+                    <FluentMessageBar Intent="MessageIntent.Info">
+                        No products added yet. Click "Add Product" to begin.
+                    </FluentMessageBar>
+                }
+                else
+                {
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                        @foreach (var (product, index) in newOrder.Products.Select((p, i) => (p, i)))
+                        {
+                            <FluentCard Style="padding: 16px; background-color: var(--neutral-layer-2);">
+                                <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                                    <FluentStack Orientation="Orientation.Horizontal"
+                                        HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                                        VerticalAlignment="VerticalAlignment.Center">
+                                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 13px;">Product
+                                            @(index + 1)</FluentLabel>
+                                        <FluentButton Appearance="Appearance.Lightweight" OnClick="() => RemoveProduct(index)"
+                                            Style="color: var(--error);">
+                                            Remove
+                                        </FluentButton>
+                                    </FluentStack>
+
+                                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12" Wrap="true">
+                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="6"
+                                            Style="flex: 1; min-width: 150px;">
+                                            <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Product ID
+                                            </FluentLabel>
+                                            <FluentTextField @bind-Value="product.ProductId" Placeholder="Product ID"
+                                                Style="width: 100%;" />
+                                        </FluentStack>
+
+                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="6"
+                                            Style="flex: 2; min-width: 200px;">
+                                            <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Description
+                                            </FluentLabel>
+                                            <FluentTextField @bind-Value="product.ProductDescription"
+                                                Placeholder="Product description" Style="width: 100%;" />
+                                        </FluentStack>
+
+                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="6" Style="width: 100px;">
+                                            <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Quantity</FluentLabel>
+                                            <FluentNumberField @bind-Value="product.Quantity" Min="1" Style="width: 100%;" />
+                                        </FluentStack>
+
+                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="6" Style="width: 120px;">
+                                            <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Price</FluentLabel>
+                                            <FluentNumberField @bind-Value="product.Price" Min="0" Step="0.01"
+                                                Style="width: 100%;" />
+                                        </FluentStack>
+
+                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="6" Style="width: 120px;">
+                                            <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Subtotal</FluentLabel>
+                                            <FluentLabel Typo="Typography.Body"
+                                                Style="font-size: 14px; font-weight: 600; padding-top: 8px;">
+                                                @((product.Quantity * product.Price).ToString("C2"))
+                                            </FluentLabel>
+                                        </FluentStack>
+                                    </FluentStack>
+                                </FluentStack>
+                            </FluentCard>
+                        }
+                    </FluentStack>
+
+                    <FluentDivider Style="width: 100%;" />
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.End"
+                        HorizontalGap="12">
+                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 16px;">
+                            Order Total:
+                        </FluentLabel>
+                        <FluentLabel Typo="Typography.Body"
+                            Style="font-weight: 700; font-size: 18px; color: var(--accent-fill-rest);">
+                            @CalculateTotal().ToString("C2")
+                        </FluentLabel>
+                    </FluentStack>
+                }
+            </FluentStack>
+
+            <FluentDivider Style="width: 100%;" />
+
+            <!-- Action Buttons -->
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12"
+                HorizontalAlignment="HorizontalAlignment.End">
+                <FluentButton Appearance="Appearance.Neutral" OnClick="ResetForm" Style="width: fit-content;">
+                    Reset Form
+                </FluentButton>
+                <FluentButton Appearance="Appearance.Accent" OnClick="PlaceOrderAsync" Loading="@isLoading"
+                    Disabled="@(!IsFormValid())" Style="width: fit-content;">
+                    Place Order
+                </FluentButton>
+            </FluentStack>
+        </FluentStack>
+    </FluentCard>
+</FluentStack>
+
+@code {
+    private bool isLoading = false;
+    private string? errorMessage;
+    private string? successMessage;
+    private OrderFormModel newOrder = new();
+
+    private class OrderFormModel
+    {
+        public string Id { get; set; } = string.Empty;
+        public string CustomerId { get; set; } = string.Empty;
+        public string DeliveryAddress { get; set; } = string.Empty;
+        public List<OrderProductFormModel> Products { get; set; } = new();
+    }
+
+    private class OrderProductFormModel
+    {
+        public string ProductId { get; set; } = string.Empty;
+        public string ProductDescription { get; set; } = string.Empty;
+        public int Quantity { get; set; } = 1;
+        public decimal Price { get; set; } = 0;
+    }
+
+    private void AddProduct()
+    {
+        newOrder.Products.Add(new OrderProductFormModel());
+    }
+
+    private void RemoveProduct(int index)
+    {
+        newOrder.Products.RemoveAt(index);
+    }
+
+    private decimal CalculateTotal()
+    {
+        return newOrder.Products.Sum(p => p.Quantity * p.Price);
+    }
+
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(newOrder.Id) &&
+        !string.IsNullOrWhiteSpace(newOrder.CustomerId) &&
+        !string.IsNullOrWhiteSpace(newOrder.DeliveryAddress) &&
+        newOrder.Products.Any() &&
+        newOrder.Products.All(p =>
+        !string.IsNullOrWhiteSpace(p.ProductId) &&
+        !string.IsNullOrWhiteSpace(p.ProductDescription) &&
+        p.Quantity > 0 &&
+        p.Price > 0);
+    }
+
+    private async Task PlaceOrderAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var order = new Order
+            {
+                Id = newOrder.Id,
+                CustomerId = newOrder.CustomerId,
+                Date = DateTime.UtcNow,
+                DeliveryAddress = newOrder.DeliveryAddress,
+                Total = CalculateTotal(),
+                Products = newOrder.Products.Select(p => new OrderProduct
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    OrderId = newOrder.Id,
+                    ProductId = p.ProductId,
+                    ProductDescription = p.ProductDescription,
+                    Quantity = p.Quantity,
+                    Price = p.Price
+                }).ToList()
+            };
+
+            await ordersService.PlaceOrderAsync(order);
+            successMessage = $"Order {order.Id} has been placed successfully!";
+            ResetForm();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        newOrder = new OrderFormModel();
+    }
+}

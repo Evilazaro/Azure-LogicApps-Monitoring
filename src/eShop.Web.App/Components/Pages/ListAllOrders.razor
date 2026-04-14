@@ -1,0 +1,423 @@
+@page "/listallorders"
+@using eShop.Web.App.Components.Services;
+@using app.ServiceDefaults.CommonTypes;
+@using Microsoft.FluentUI.AspNetCore.Components;
+@rendermode InteractiveServer
+@inject OrdersAPIService ordersService
+@inject IDialogService DialogService
+
+<PageTitle>List All Orders</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16"
+    Style="padding: 20px; max-width: 1400px; margin: 0 auto;">
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="6">
+        <FluentLabel Typo="Typography.H4">List All Orders</FluentLabel>
+        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; color: var(--neutral-foreground-hint);">
+            View List All Orders and their associated products. Select orders to delete them individually or in batch.
+        </FluentLabel>
+    </FluentStack>
+
+    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12" Wrap="true">
+        <FluentButton Appearance="Appearance.Accent" OnClick="LoadOrdersAsync" Loading="@isLoading"
+            Style="width: fit-content;">
+            Load Orders
+        </FluentButton>
+
+        @if (orders != null && orders.Any())
+        {
+            <FluentButton Appearance="Appearance.Neutral" OnClick="ToggleSelectAll" 
+                Disabled="@isDeleting"
+                Style="width: fit-content;">
+                @(selectedOrderIds.Values.Count(v => v) == orders.Count() ? "Deselect All" : "Select All")
+            </FluentButton>
+
+            <FluentButton Appearance="Appearance.Accent" OnClick="DeleteSelectedOrdersAsync" 
+                Loading="@isDeleting"
+                Disabled="@(!selectedOrderIds.Values.Any(v => v) || isLoading)"
+                Style="width: fit-content; background-color: var(--error); border-color: var(--error);">
+                Delete Selected (@selectedOrderIds.Values.Count(v => v))
+            </FluentButton>
+        }
+    </FluentStack>
+
+    @if (isDeleting)
+    {
+        <FluentCard Style="padding: 24px;">
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+                <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 15px;">
+                    Deleting Orders...
+                </FluentLabel>
+                <FluentProgress Style="width: 100%;" />
+                <FluentLabel Typo="Typography.Body" Style="font-size: 13px; color: var(--neutral-foreground-hint);">
+                    @if (deletionProgress.TotalToDelete > 0)
+                    {
+                        @:Deleting @deletionProgress.DeletedCount of @deletionProgress.TotalToDelete order@(deletionProgress.TotalToDelete > 1 ? "s" : "")...
+                    }
+                    else
+                    {
+                        @:Please wait while your selected orders are being deleted.
+                    }
+                </FluentLabel>
+            </FluentStack>
+        </FluentCard>
+    }
+
+    @if (deletionStatus != null)
+    {
+        <FluentCard Style="padding: 24px; border-left: 4px solid var(--success);">
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalGap="12">
+                    <FluentLabel Typo="Typography.H5" Style="color: var(--success);">
+                        ✓ Deletion Complete
+                    </FluentLabel>
+                </FluentStack>
+
+                <FluentDivider Style="width: 100%;" />
+
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Transaction ID:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600;">
+                            @deletionStatus.TransactionId
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Timestamp:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600;">
+                            @deletionStatus.Timestamp.ToString("yyyy-MM-dd HH:mm:ss UTC")
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Total Orders Deleted:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600; color: var(--accent-fill-rest);">
+                            @deletionStatus.TotalDeleted
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Status:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600; color: var(--success);">
+                            @deletionStatus.Status
+                        </FluentLabel>
+                    </FluentStack>
+                </FluentStack>
+
+                @if (deletionStatus.DeletedOrderIds.Any())
+                {
+                    <FluentDivider Style="width: 100%;" />
+                    
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600;">
+                            Deleted Order IDs:
+                        </FluentLabel>
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" Wrap="true">
+                            @foreach (var orderId in deletionStatus.DeletedOrderIds)
+                            {
+                                <FluentBadge Appearance="Appearance.Accent" Style="font-size: 12px; padding: 4px 8px;">
+                                    @orderId
+                                </FluentBadge>
+                            }
+                        </FluentStack>
+                    </FluentStack>
+                }
+
+                <FluentMessageBar Intent="MessageIntent.Success" Style="margin-top: 12px;">
+                    Your selected orders have been successfully deleted from the system.
+                </FluentMessageBar>
+
+                <FluentButton Appearance="Appearance.Lightweight" OnClick="ClearDeletionStatus" 
+                    Style="width: fit-content; align-self: flex-end;">
+                    Dismiss
+                </FluentButton>
+            </FluentStack>
+        </FluentCard>
+    }
+
+    @if (errorMessage != null)
+    {
+        <FluentMessageBar Intent="MessageIntent.Error" Title="Error">
+            @errorMessage
+        </FluentMessageBar>
+    }
+
+    @if (orders != null)
+    {
+        @if (!orders.Any())
+        {
+            <FluentMessageBar Intent="MessageIntent.Info" Title="No Data">
+                No orders found in the system.
+            </FluentMessageBar>
+        }
+        else
+        {
+            <FluentLabel Typo="Typography.Body" Style="font-size: 13px; color: var(--neutral-foreground-hint);">
+                @orders.Count() order@(orders.Count() == 1 ? "" : "s") found
+            </FluentLabel>
+
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="width: 100%;">
+                @foreach (var order in orders.OrderByDescending(o => o.Date))
+                {
+                    <FluentCard Style="width: 100%; padding: 0;">
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="0" Style="width: 100%">
+                            <!-- Order Header -->
+                            <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center"
+                                Style="padding: 12px 16px; background-color: var(--neutral-layer-1); border-bottom: 1px solid var(--neutral-stroke-rest);">
+                                
+                                <FluentCheckbox Value="@selectedOrderIds[order.Id]" 
+                                    ValueChanged="@(value => selectedOrderIds[order.Id] = value)"
+                                    Style="margin-right: 16px;"
+                                    Disabled="@isDeleting" />
+
+                                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center"
+                                    HorizontalGap="16" Style="flex: 1; cursor: pointer;"
+                                    @onclick="() => ToggleOrder(order.Id)">
+                                    <FluentLabel Style="font-size: 14px; min-width: 20px;">
+                                        @(expandedOrders.Contains(order.Id) ? "▼" : "▶")
+                                    </FluentLabel>
+
+                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="2" Style="width: 90px;">
+                                        <FluentLabel Typo="Typography.Body"
+                                            Style="color: var(--neutral-foreground-hint); font-size: 11px;">Order ID</FluentLabel>
+                                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 13px;">@order.Id
+                                        </FluentLabel>
+                                    </FluentStack>
+
+                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="2" Style="width: 110px;">
+                                        <FluentLabel Typo="Typography.Body"
+                                            Style="color: var(--neutral-foreground-hint); font-size: 11px;">Customer</FluentLabel>
+                                        <FluentLabel Typo="Typography.Body" Style="font-size: 13px;">@order.CustomerId</FluentLabel>
+                                    </FluentStack>
+
+                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="2" Style="width: 150px;">
+                                        <FluentLabel Typo="Typography.Body"
+                                            Style="color: var(--neutral-foreground-hint); font-size: 11px;">Order Date</FluentLabel>
+                                        <FluentLabel Typo="Typography.Body" Style="font-size: 13px;">
+                                            @order.Date.ToString("yyyy-MM-dd HH:mm")</FluentLabel>
+                                    </FluentStack>
+
+                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="2"
+                                        Style="flex: 1; min-width: 300px;">
+                                        <FluentLabel Typo="Typography.Body"
+                                            Style="color: var(--neutral-foreground-hint); font-size: 11px;">Delivery Address
+                                        </FluentLabel>
+                                        <FluentLabel Typo="Typography.Body"
+                                            Style="font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            @order.DeliveryAddress</FluentLabel>
+                                    </FluentStack>
+
+                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="2"
+                                        Style="width: 100px; align-items: flex-end;">
+                                        <FluentLabel Typo="Typography.Body"
+                                            Style="color: var(--neutral-foreground-hint); font-size: 11px;">Total</FluentLabel>
+                                        <FluentLabel Typo="Typography.Body"
+                                            Style="font-weight: 700; font-size: 14px; color: var(--accent-fill-rest);">
+                                            @order.Total.ToString("C2")</FluentLabel>
+                                    </FluentStack>
+
+                                    <FluentBadge Appearance="Appearance.Neutral" Circular="true" Style="min-width: 32px;">
+                                        @order.Products.Count()
+                                    </FluentBadge>
+                                </FluentStack>
+                            </FluentStack>
+
+                            <!-- Expandable Products Section -->
+                            @if (expandedOrders.Contains(order.Id))
+                            {
+                                <FluentStack Orientation="Orientation.Vertical" VerticalGap="12"
+                                    Style="padding: 16px 20px; background-color: var(--neutral-layer-2);">
+                                    <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 13px;">Products
+                                        (@order.Products.Count())</FluentLabel>
+
+                                    @if (order.Products.Any())
+                                    {
+                                        <FluentDataGrid Items="@order.Products.AsQueryable()"
+                                            GridTemplateColumns="100px 1fr 80px 120px 120px"
+                                            Style="width: 100%; background-color: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); font-size: 13px;">
+                                            <PropertyColumn Property="@(p => p.ProductId)" Title="Product ID" Align="Align.Start" />
+                                            <PropertyColumn Property="@(p => p.ProductDescription)" Title="Description" Align="Align.Start"
+                                                Class="description-column" />
+                                            <PropertyColumn Property="@(p => p.Quantity)" Title="Qty" Align="Align.Center" />
+                                            <PropertyColumn Property="@(p => p.Price)" Title="Unit Price" Format="C2" Align="Align.End" />
+                                            <TemplateColumn Title="Subtotal" Align="Align.End" Context="product">
+                                                <strong>@((product.Quantity * product.Price).ToString("C2"))</strong>
+                                            </TemplateColumn>
+                                        </FluentDataGrid>
+
+                                        <FluentDivider Style="width: 100%; margin: 4px 0;" />
+
+                                        <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.End"
+                                            HorizontalGap="10" Style="padding-right: 4px;">
+                                            <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 14px;">
+                                                Order Total:
+                                            </FluentLabel>
+                                            <FluentLabel Typo="Typography.Body"
+                                                Style="font-weight: 700; font-size: 16px; color: var(--accent-fill-rest);">
+                                                @order.Total.ToString("C2")
+                                            </FluentLabel>
+                                        </FluentStack>
+                                    }
+                                    else
+                                    {
+                                        <FluentMessageBar Intent="MessageIntent.Warning">
+                                            No products in this order.
+                                        </FluentMessageBar>
+                                    }
+                                </FluentStack>
+                            }
+                        </FluentStack>
+                    </FluentCard>
+                }
+            </FluentStack>
+        }
+    }
+</FluentStack>
+
+<style>
+    fluent-data-grid-row {
+        min-height: 40px;
+    }
+
+    fluent-data-grid-cell {
+        padding: 10px 12px !important;
+    }
+
+    .description-column {
+        max-width: 350px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
+
+@code {
+    private bool isLoading = false;
+    private bool isDeleting = false;
+    private string? errorMessage;
+    private IEnumerable<Order>? orders;
+    private HashSet<string> expandedOrders = new();
+    private Dictionary<string, bool> selectedOrderIds = new();
+    private DeletionProgress deletionProgress = new();
+    private DeletionStatus? deletionStatus;
+
+    private class DeletionProgress
+    {
+        public int DeletedCount { get; set; }
+        public int TotalToDelete { get; set; }
+    }
+
+    private class DeletionStatus
+    {
+        public string TransactionId { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+        public int TotalDeleted { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public List<string> DeletedOrderIds { get; set; } = new();
+    }
+
+    private async Task LoadOrdersAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        orders = null;
+        expandedOrders.Clear();
+        selectedOrderIds.Clear();
+        deletionStatus = null;
+
+        try
+        {
+            orders = await ordersService.GetOrdersAsync();
+            // Initialize checkbox states
+            if (orders != null)
+            {
+                selectedOrderIds = orders.ToDictionary(o => o.Id, o => false);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ToggleOrder(string orderId)
+    {
+        if (expandedOrders.Contains(orderId))
+        {
+            expandedOrders.Remove(orderId);
+        }
+        else
+        {
+            expandedOrders.Add(orderId);
+        }
+    }
+
+    private void ToggleSelectAll()
+    {
+        if (orders == null)
+            return;
+
+        var allSelected = selectedOrderIds.Values.All(v => v);
+        foreach (var orderId in selectedOrderIds.Keys.ToList())
+        {
+            selectedOrderIds[orderId] = !allSelected;
+        }
+    }
+
+    private async Task DeleteSelectedOrdersAsync()
+    {
+        if (orders == null)
+            return;
+
+        var ordersToDelete = selectedOrderIds.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
+        
+        if (!ordersToDelete.Any())
+            return;
+
+        isDeleting = true;
+        errorMessage = null;
+        deletionStatus = null;
+        deletionProgress = new DeletionProgress 
+        { 
+            DeletedCount = 0, 
+            TotalToDelete = ordersToDelete.Count 
+        };
+
+        try
+        {
+            // Use the new batch delete method for parallel processing
+            var deletedCount = await ordersService.DeleteOrdersBatchAsync(ordersToDelete);
+
+            // Create deletion status
+            deletionStatus = new DeletionStatus
+            {
+                TransactionId = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
+                Timestamp = DateTime.UtcNow,
+                TotalDeleted = deletedCount,
+                Status = "Successfully Completed",
+                DeletedOrderIds = ordersToDelete
+            };
+
+            // Reload orders after successful deletion
+            await LoadOrdersAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to delete selected orders: {ex.Message}";
+        }
+        finally
+        {
+            isDeleting = false;
+            deletionProgress = new DeletionProgress();
+        }
+    }
+
+    private void ClearDeletionStatus()
+    {
+        deletionStatus = null;
+    }
+}

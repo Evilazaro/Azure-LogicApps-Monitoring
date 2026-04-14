@@ -1,0 +1,686 @@
+@page "/placeordersbatch"
+@using eShop.Web.App.Components.Services;
+@using app.ServiceDefaults.CommonTypes;
+@using Microsoft.FluentUI.AspNetCore.Components;
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
+@rendermode InteractiveServer
+@inject OrdersAPIService ordersService
+
+<PageTitle>Place Orders in Batch</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16"
+    Style="padding: 20px; max-width: 1400px; margin: 0 auto;">
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="6">
+        <FluentLabel Typo="Typography.H4">Place Orders in Batch</FluentLabel>
+        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; color: var(--neutral-foreground-hint);">
+            Upload multiple orders at once using a JSON file or add them manually.
+        </FluentLabel>
+    </FluentStack>
+
+    @if (isProcessing)
+    {
+        <FluentCard Style="padding: 24px;">
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+                <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 15px;">
+                    Processing Orders...
+                </FluentLabel>
+                <FluentProgress Style="width: 100%;" />
+                <FluentLabel Typo="Typography.Body" Style="font-size: 13px; color: var(--neutral-foreground-hint);">
+                    Please wait while your @ordersBeingProcessed order@(ordersBeingProcessed > 1 ? "s are" : " is") being submitted.
+                </FluentLabel>
+            </FluentStack>
+        </FluentCard>
+    }
+
+    @if (batchTransactionStatus != null)
+    {
+        <FluentCard Style="padding: 24px; border-left: 4px solid var(--success);">
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalGap="12">
+                    <FluentLabel Typo="Typography.H5" Style="color: var(--success);">
+                        ✓ Batch Transaction Complete
+                    </FluentLabel>
+                </FluentStack>
+
+                <FluentDivider Style="width: 100%;" />
+
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Transaction ID:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600;">
+                            @batchTransactionStatus.TransactionId
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Timestamp:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600;">
+                            @batchTransactionStatus.Timestamp.ToString("yyyy-MM-dd HH:mm:ss UTC")
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Total Orders Submitted:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600; color: var(--accent-fill-rest);">
+                            @batchTransactionStatus.TotalOrders
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Total Products:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600;">
+                            @batchTransactionStatus.TotalProducts
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Grand Total Amount:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 16px; font-weight: 700; color: var(--success);">
+                            @batchTransactionStatus.TotalAmount.ToString("C2")
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Status:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600; color: var(--success);">
+                            @batchTransactionStatus.Status
+                        </FluentLabel>
+                    </FluentStack>
+                </FluentStack>
+
+                @if (batchTransactionStatus.OrderIds.Any())
+                {
+                    <FluentDivider Style="width: 100%;" />
+                    
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600;">
+                            Submitted Order IDs:
+                        </FluentLabel>
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" Wrap="true">
+                            @foreach (var orderId in batchTransactionStatus.OrderIds)
+                            {
+                                <FluentBadge Appearance="Appearance.Accent" Style="font-size: 12px; padding: 4px 8px;">
+                                    @orderId
+                                </FluentBadge>
+                            }
+                        </FluentStack>
+                    </FluentStack>
+                }
+
+                <FluentMessageBar Intent="MessageIntent.Success" Style="margin-top: 12px;">
+                    Your orders have been successfully placed and are now being processed by the system.
+                </FluentMessageBar>
+
+                <FluentButton Appearance="Appearance.Lightweight" OnClick="ClearTransactionStatus" 
+                    Style="width: fit-content; align-self: flex-end;">
+                    Dismiss
+                </FluentButton>
+            </FluentStack>
+        </FluentCard>
+    }
+
+    @if (errorMessage != null)
+    {
+        <FluentMessageBar Intent="MessageIntent.Error" Title="Error">
+            @errorMessage
+        </FluentMessageBar>
+    }
+
+    <!-- Input Method Tabs -->
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12">
+            <FluentButton Appearance="@(inputMethod == InputMethod.Manual ? Appearance.Accent : Appearance.Outline)"
+                OnClick="() => inputMethod = InputMethod.Manual" Style="width: fit-content;">
+                Manual Entry
+            </FluentButton>
+            <FluentButton Appearance="@(inputMethod == InputMethod.FileUpload ? Appearance.Accent : Appearance.Outline)"
+                OnClick="() => inputMethod = InputMethod.FileUpload" Style="width: fit-content;">
+                Upload JSON File
+            </FluentButton>
+        </FluentStack>
+
+        @if (inputMethod == InputMethod.FileUpload)
+        {
+            <!-- File Upload Method -->
+            <FluentCard Style="width: 100%; padding: 24px;">
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 14px;">Upload JSON File
+                        </FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 13px; color: var(--neutral-foreground-hint);">
+                            Select a JSON file containing an array of orders. Supports both PascalCase and camelCase property names.
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                        <InputFile OnChange="@LoadFileAsync" accept=".json" 
+                            Style="padding: 12px; border: 2px dashed var(--neutral-stroke-accessible); border-radius: 4px; cursor: pointer;" />
+                        
+                        @if (!string.IsNullOrEmpty(uploadedFileName))
+                        {
+                            <FluentMessageBar Intent="MessageIntent.Info">
+                                <strong>File loaded:</strong> @uploadedFileName (@uploadedFileSize KB)
+                            </FluentMessageBar>
+                        }
+
+                        @if (loadedOrders.Any())
+                        {
+                            <FluentMessageBar Intent="MessageIntent.Success">
+                                <strong>@loadedOrders.Count orders</strong> loaded from file and ready to submit.
+                            </FluentMessageBar>
+                        }
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 13px;">
+                            Expected JSON Format:
+                        </FluentLabel>
+                        <FluentTextArea Value="@jsonExample" ReadOnly="true" Rows="12"
+                            Style="width: 100%; font-family: 'Courier New', monospace; font-size: 11px; background-color: var(--neutral-layer-2);" />
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12"
+                        HorizontalAlignment="HorizontalAlignment.End">
+                        <FluentButton Appearance="Appearance.Neutral" OnClick="ClearJson" Style="width: fit-content;">
+                            Clear
+                        </FluentButton>
+                        <FluentButton Appearance="Appearance.Accent" OnClick="ParseJsonAndSubmit" Loading="@isLoading"
+                            Disabled="@(string.IsNullOrWhiteSpace(jsonInput) || isProcessing)"
+                            Style="width: fit-content;">
+                            Parse & Submit Orders
+                        </FluentButton>
+                    </FluentStack>
+                </FluentStack>
+            </FluentCard>
+        }
+        else
+        {
+            <!-- Manual Input Method -->
+            <FluentCard Style="width: 100%; padding: 24px;">
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="20">
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                        VerticalAlignment="VerticalAlignment.Center">
+                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 15px;">Orders
+                            (@batchOrders.Count)</FluentLabel>
+                        <FluentButton Appearance="Appearance.Outline" OnClick="AddOrderToBatch" Style="width: fit-content;">
+                            + Add Order
+                        </FluentButton>
+                    </FluentStack>
+
+                    @if (!batchOrders.Any())
+                    {
+                        <FluentMessageBar Intent="MessageIntent.Info">
+                            No orders added yet. Click "Add Order" to begin creating your batch.
+                        </FluentMessageBar>
+                    }
+                    else
+                    {
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                            @foreach (var (order, orderIndex) in batchOrders.Select((o, i) => (o, i)))
+                            {
+                                <FluentCard Style="padding: 20px; background-color: var(--neutral-layer-2);">
+                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+                                        <!-- Order Header -->
+                                        <FluentStack Orientation="Orientation.Horizontal"
+                                            HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                                            VerticalAlignment="VerticalAlignment.Center">
+                                            <FluentLabel Typo="Typography.Body"
+                                                Style="font-weight: 600; font-size: 14px; color: var(--accent-fill-rest);">Order
+                                                @(orderIndex + 1)</FluentLabel>
+                                            <FluentButton Appearance="Appearance.Lightweight"
+                                                OnClick="() => RemoveOrderFromBatch(orderIndex)" Style="color: var(--error);">
+                                                Remove Order
+                                            </FluentButton>
+                                        </FluentStack>
+
+                                        <!-- Order Fields -->
+                                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12" Wrap="true">
+                                            <FluentStack Orientation="Orientation.Vertical" VerticalGap="6"
+                                                Style="flex: 1; min-width: 150px;">
+                                                <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Order ID</FluentLabel>
+                                                <FluentTextField @bind-Value="order.Id" Placeholder="Order ID"
+                                                    Style="width: 100%;" />
+                                            </FluentStack>
+
+                                            <FluentStack Orientation="Orientation.Vertical" VerticalGap="6"
+                                                Style="flex: 1; min-width: 150px;">
+                                                <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Customer ID
+                                                </FluentLabel>
+                                                <FluentTextField @bind-Value="order.CustomerId" Placeholder="Customer ID"
+                                                    Style="width: 100%;" />
+                                            </FluentStack>
+
+                                            <FluentStack Orientation="Orientation.Vertical" VerticalGap="6"
+                                                Style="flex: 2; min-width: 250px;">
+                                                <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Delivery Address
+                                                </FluentLabel>
+                                                <FluentTextField @bind-Value="order.DeliveryAddress" Placeholder="Delivery Address"
+                                                    Style="width: 100%;" />
+                                            </FluentStack>
+                                        </FluentStack>
+
+                                        <!-- Products -->
+                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                                            <FluentStack Orientation="Orientation.Horizontal"
+                                                HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                                                VerticalAlignment="VerticalAlignment.Center">
+                                                <FluentLabel Typo="Typography.Body" Style="font-size: 13px; font-weight: 600;">
+                                                    Products</FluentLabel>
+                                                <FluentButton Appearance="Appearance.Lightweight"
+                                                    OnClick="() => AddProductToOrder(orderIndex)"
+                                                    Style="width: fit-content; font-size: 12px;">
+                                                    + Add Product
+                                                </FluentButton>
+                                            </FluentStack>
+
+                                            @if (!order.Products.Any())
+                                            {
+                                                <FluentLabel Typo="Typography.Body"
+                                                    Style="font-size: 12px; color: var(--neutral-foreground-hint);">
+                                                    No products added
+                                                </FluentLabel>
+                                            }
+                                            else
+                                            {
+                                                @foreach (var (product, productIndex) in order.Products.Select((p, i) => (p, i)))
+                                                {
+                                                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8"
+                                                        VerticalAlignment="VerticalAlignment.Bottom" Wrap="true">
+                                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4"
+                                                            Style="width: 100px;">
+                                                            <FluentLabel Typo="Typography.Body" Style="font-size: 11px;">Product ID
+                                                            </FluentLabel>
+                                                            <FluentTextField @bind-Value="product.ProductId"
+                                                                Style="width: 100%; font-size: 12px;" />
+                                                        </FluentStack>
+
+                                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4"
+                                                            Style="flex: 1; min-width: 150px;">
+                                                            <FluentLabel Typo="Typography.Body" Style="font-size: 11px;">Description
+                                                            </FluentLabel>
+                                                            <FluentTextField @bind-Value="product.ProductDescription"
+                                                                Style="width: 100%; font-size: 12px;" />
+                                                        </FluentStack>
+
+                                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4"
+                                                            Style="width: 70px;">
+                                                            <FluentLabel Typo="Typography.Body" Style="font-size: 11px;">Qty</FluentLabel>
+                                                            <FluentNumberField @bind-Value="product.Quantity" Min="1"
+                                                                Style="width: 100%; font-size: 12px;" />
+                                                        </FluentStack>
+
+                                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4"
+                                                            Style="width: 100px;">
+                                                            <FluentLabel Typo="Typography.Body" Style="font-size: 11px;">Price</FluentLabel>
+                                                            <FluentNumberField @bind-Value="product.Price" Min="0" Step="0.01"
+                                                                Style="width: 100%; font-size: 12px;" />
+                                                        </FluentStack>
+
+                                                        <FluentButton Appearance="Appearance.Lightweight"
+                                                            OnClick="() => RemoveProductFromOrder(orderIndex, productIndex)"
+                                                            Style="color: var(--error); font-size: 12px; padding: 4px 8px;">
+                                                            Remove
+                                                        </FluentButton>
+                                                    </FluentStack>
+                                                }
+
+                                                <FluentLabel Typo="Typography.Body"
+                                                    Style="font-size: 13px; font-weight: 600; text-align: right;">
+                                                    Order Total: @CalculateOrderTotal(order).ToString("C2")
+                                                </FluentLabel>
+                                            }
+                                        </FluentStack>
+                                    </FluentStack>
+                                </FluentCard>
+                            }
+                        </FluentStack>
+
+                        <FluentDivider Style="width: 100%;" />
+
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                            VerticalAlignment="VerticalAlignment.Center">
+                            <FluentLabel Typo="Typography.Body" Style="font-weight: 700; font-size: 16px;">
+                                Total Orders: @batchOrders.Count | Grand Total: @CalculateGrandTotal().ToString("C2")
+                            </FluentLabel>
+
+                            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12">
+                                <FluentButton Appearance="Appearance.Neutral" OnClick="ClearBatch" Style="width: fit-content;">
+                                    Clear All
+                                </FluentButton>
+                                <FluentButton Appearance="Appearance.Accent" OnClick="SubmitBatchAsync" Loading="@isLoading"
+                                    Disabled="@(!IsBatchValid() || isProcessing)" Style="width: fit-content;">
+                                    Submit Batch
+                                </FluentButton>
+                            </FluentStack>
+                        </FluentStack>
+                    }
+                </FluentStack>
+            </FluentCard>
+        }
+    </FluentStack>
+</FluentStack>
+
+@code {
+    private enum InputMethod { Manual, FileUpload }
+
+    private bool isLoading = false;
+    private bool isProcessing = false;
+    private int ordersBeingProcessed = 0;
+    private string? errorMessage;
+    private InputMethod inputMethod = InputMethod.Manual;
+    private List<OrderFormModel> batchOrders = new();
+    private string jsonInput = string.Empty;
+    private BatchTransactionStatus? batchTransactionStatus;
+
+    private string jsonPlaceholder = @"[
+  {
+    ""id"": ""ORD-0001"",
+    ""customerId"": ""CUST-1288"",
+    ""deliveryAddress"": ""221B Baker Street, London, UK"",
+    ""products"": [
+      {
+        ""productId"": ""PROD-8001"",
+        ""productDescription"": ""USB Microphone"",
+        ""quantity"": 3,
+        ""price"": 108.15
+      }
+    ]
+  }
+]";
+
+    private class BatchTransactionStatus
+    {
+        public string TransactionId { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+        public int TotalOrders { get; set; }
+        public int TotalProducts { get; set; }
+        public decimal TotalAmount { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public List<string> OrderIds { get; set; } = new();
+    }
+
+    private class OrderFormModel
+    {
+        public string Id { get; set; } = string.Empty;
+        public string CustomerId { get; set; } = string.Empty;
+        public string DeliveryAddress { get; set; } = string.Empty;
+        public List<OrderProductFormModel> Products { get; set; } = new();
+    }
+
+    private class OrderProductFormModel
+    {
+        public string ProductId { get; set; } = string.Empty;
+        public string ProductDescription { get; set; } = string.Empty;
+        public int Quantity { get; set; } = 1;
+        public decimal Price { get; set; } = 0;
+    }
+
+    private void AddOrderToBatch()
+    {
+        batchOrders.Add(new OrderFormModel());
+        ClearMessages();
+    }
+
+    private void RemoveOrderFromBatch(int index)
+    {
+        batchOrders.RemoveAt(index);
+        ClearMessages();
+    }
+
+    private void AddProductToOrder(int orderIndex)
+    {
+        batchOrders[orderIndex].Products.Add(new OrderProductFormModel());
+        ClearMessages();
+    }
+
+    private void RemoveProductFromOrder(int orderIndex, int productIndex)
+    {
+        batchOrders[orderIndex].Products.RemoveAt(productIndex);
+        ClearMessages();
+    }
+
+    private decimal CalculateOrderTotal(OrderFormModel order)
+    {
+        return order.Products.Sum(p => p.Quantity * p.Price);
+    }
+
+    private decimal CalculateGrandTotal()
+    {
+        return batchOrders.Sum(o => CalculateOrderTotal(o));
+    }
+
+    private bool IsBatchValid()
+    {
+        return batchOrders.Any() && batchOrders.All(o =>
+            !string.IsNullOrWhiteSpace(o.Id) &&
+            !string.IsNullOrWhiteSpace(o.CustomerId) &&
+            !string.IsNullOrWhiteSpace(o.DeliveryAddress) &&
+            o.Products.Any() &&
+            o.Products.All(p =>
+                !string.IsNullOrWhiteSpace(p.ProductId) &&
+                !string.IsNullOrWhiteSpace(p.ProductDescription) &&
+                p.Quantity > 0 &&
+                p.Price > 0));
+    }
+
+    private void ClearMessages()
+    {
+        errorMessage = null;
+        batchTransactionStatus = null;
+    }
+
+    private void ClearTransactionStatus()
+    {
+        batchTransactionStatus = null;
+    }
+
+    private void ClearBatch()
+    {
+        batchOrders.Clear();
+        errorMessage = null;
+    }
+
+    private void ClearJson()
+    {
+        jsonInput = string.Empty;
+        loadedOrders.Clear();
+        uploadedFileName = null;
+        uploadedFileSize = 0;
+        errorMessage = null;
+    }
+
+    private async Task ParseJsonAndSubmit()
+    {
+        ClearMessages();
+        
+        if (string.IsNullOrWhiteSpace(jsonInput))
+        {
+            errorMessage = "Please provide JSON input";
+            return;
+        }
+
+        isLoading = true;
+
+        try
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true,
+                ReadCommentHandling = JsonCommentHandling.Skip
+            };
+
+            var parsedOrders = JsonSerializer.Deserialize<List<OrderFormModel>>(jsonInput, options);
+
+            if (parsedOrders == null || !parsedOrders.Any())
+            {
+                errorMessage = "No valid orders found in JSON. Please check your JSON format.";
+                return;
+            }
+
+            // Validate parsed orders
+            var invalidOrders = parsedOrders 
+                .Select((order, index) => new { Order = order, Index = index })
+                .Where(x => string.IsNullOrWhiteSpace(x.Order.Id) ||
+                           string.IsNullOrWhiteSpace(x.Order.CustomerId) ||
+                           string.IsNullOrWhiteSpace(x.Order.DeliveryAddress) ||
+                           !x.Order.Products.Any())
+                .ToList();
+
+            if (invalidOrders.Any())
+            {
+                errorMessage = $"Invalid orders found at positions: {string.Join(", ", invalidOrders.Select(x => x.Index + 1))}. Please ensure all required fields are provided.";
+                return;
+            }
+
+            batchOrders = parsedOrders;
+            await SubmitBatchAsync();
+        }
+        catch (JsonException ex)
+        {
+            errorMessage = $"JSON parsing error: {ex.Message}. Please verify your JSON format matches the example.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SubmitBatchAsync()
+    {
+        if (!IsBatchValid())
+        {
+            errorMessage = "Please ensure all orders have complete information (ID, Customer ID, Delivery Address, and at least one valid product).";
+            return;
+        }
+
+        isLoading = true;
+        isProcessing = true;
+        ordersBeingProcessed = batchOrders.Count;
+        errorMessage = null;
+
+        // Store the current orders data before clearing
+        var ordersToSubmit = batchOrders.ToList();
+
+        try
+        {
+            var orders = ordersToSubmit.Select(o => new Order
+            {
+                Id = o.Id,
+                CustomerId = o.CustomerId,
+                Date = DateTime.UtcNow,
+                DeliveryAddress = o.DeliveryAddress,
+                Total = CalculateOrderTotal(o),
+                Products = o.Products.Select(p => new OrderProduct
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    OrderId = o.Id,
+                    ProductId = p.ProductId,
+                    ProductDescription = p.ProductDescription,
+                    Quantity = p.Quantity,
+                    Price = p.Price
+                }).ToList()
+            }).ToList();
+
+            await ordersService.PlaceOrdersBatchAsync(orders);
+            
+            var totalAmount = ordersToSubmit.Sum(o => CalculateOrderTotal(o));
+            var totalProducts = ordersToSubmit.Sum(o => o.Products.Count);
+            
+            // Create detailed transaction status
+            batchTransactionStatus = new BatchTransactionStatus
+            {
+                TransactionId = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
+                Timestamp = DateTime.UtcNow,
+                TotalOrders = orders.Count,
+                TotalProducts = totalProducts,
+                TotalAmount = totalAmount,
+                Status = "Successfully Completed",
+                OrderIds = orders.Select(o => o.Id).ToList()
+            };
+            
+            // Clear the form data but NOT the transaction status
+            batchOrders.Clear();
+            jsonInput = string.Empty;
+            loadedOrders.Clear();
+            uploadedFileName = null;
+            uploadedFileSize = 0;
+        }
+        catch (HttpRequestException ex)
+        {
+            errorMessage = $"Network error while submitting orders: {ex.Message}. Please check your connection and try again.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to submit orders: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            isProcessing = false;
+            ordersBeingProcessed = 0;
+        }
+    }
+
+    private string? uploadedFileName;
+    private long uploadedFileSize;
+    private List<OrderFormModel> loadedOrders = new();
+
+    private async Task LoadFileAsync(InputFileChangeEventArgs e)
+    {
+        ClearMessages();
+        loadedOrders.Clear();
+        uploadedFileName = null;
+        uploadedFileSize = 0;
+        jsonInput = string.Empty;
+
+        var file = e.File;
+        if (file == null)
+        {
+            errorMessage = "No file selected.";
+            return;
+        }
+
+        uploadedFileName = file.Name;
+        uploadedFileSize = file.Size / 1024;
+
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 2); // 2MB limit
+            using var reader = new StreamReader(stream);
+            jsonInput = await reader.ReadToEndAsync();
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true,
+                ReadCommentHandling = JsonCommentHandling.Skip
+            };
+
+            var parsedOrders = JsonSerializer.Deserialize<List<OrderFormModel>>(jsonInput, options);
+            if (parsedOrders != null && parsedOrders.Any())
+            {
+                loadedOrders = parsedOrders;
+            }
+            else
+            {
+                errorMessage = "No valid orders found in the uploaded file.";
+            }
+        }
+        catch (JsonException ex)
+        {
+            errorMessage = $"JSON parsing error: {ex.Message}.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load file: {ex.Message}";
+        }
+    }
+
+    private string jsonExample => jsonPlaceholder;
+}
