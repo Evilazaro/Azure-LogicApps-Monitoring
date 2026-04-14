@@ -71,19 +71,23 @@ flowchart TB
     %% ═══════════════════════════════════════════════════════════════════════════
 
     subgraph presentation["🌐 Presentation Tier"]
+        direction TB
         WebApp("🖥️ eShop.Web.App<br/>Blazor Server"):::core
     end
 
     subgraph api["⚙️ API Tier"]
+        direction TB
         OrdersAPI("🔧 eShop.Orders.API<br/>ASP.NET Core REST"):::core
         ServiceDefaults("📦 app.ServiceDefaults<br/>OTel + Health + Discovery"):::neutral
     end
 
     subgraph workflow["⚡ Workflow Tier"]
+        direction TB
         LogicApp("🤖 OrdersManagementLogicApp<br/>Logic App Standard"):::success
     end
 
     subgraph infra["☁️ Azure Infrastructure"]
+        direction TB
         SQL[("🗃️ Azure SQL Database")]:::info
         SB("📤 Azure Service Bus<br/>ordersplaced topic"):::info
         Blob[("📦 Azure Blob Storage<br/>order results")]:::info
