@@ -44,17 +44,6 @@ Strategic alignment is strong: the data layer embodies a cloud-native, security-
 | Master data (product catalogue, customer identity) not within solution boundary       | Gap      | Incomplete data landscape for downstream analytics |
 
 ```mermaid
----
-title: eShop Data Architecture — Executive Overview
-config:
-  theme: base
-  look: classic
-  layout: dagre
-  themeVariables:
-    fontSize: '16px'
-  flowchart:
-    htmlLabels: true
----
 flowchart TB
     accTitle: eShop Data Architecture Executive Overview
     accDescr: High-level view of the three data domains — Transactional, Event and Workflow, and Observability — showing data flow from order placement through processing and archival.
@@ -153,17 +142,6 @@ Source: `src/eShop.Orders.API/data/OrderMapper.cs:1-100`, `src/eShop.Orders.API/
 Source: `infra/shared/data/main.bicep:1-120`, `infra/shared/monitoring/log-analytics-workspace.bicep:1-80`, `src/eShop.Orders.API/Program.cs:25-60`
 
 ```mermaid
----
-title: eShop Data Stores Overview
-config:
-  theme: base
-  look: classic
-  layout: dagre
-  themeVariables:
-    fontSize: '16px'
-  flowchart:
-    htmlLabels: true
----
 flowchart LR
     accTitle: eShop Data Stores Overview
     accDescr: Four data stores in the solution — Azure SQL Database, Azure Blob Storage, Log Analytics Workspace, and Application Insights — with their classification and purpose.
@@ -294,17 +272,6 @@ Source: `src/eShop.Orders.API/Interfaces/IOrderRepository.cs:1-65`, `src/eShop.O
 Source: `infra/shared/data/main.bicep:80-120`, `workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:1-60`, `src/eShop.Orders.API/Program.cs:35-55`
 
 ```mermaid
----
-title: eShop Data Landscape Overview
-config:
-  theme: base
-  look: classic
-  layout: dagre
-  themeVariables:
-    fontSize: '16px'
-  flowchart:
-    htmlLabels: true
----
 flowchart TB
     accTitle: eShop Data Landscape Overview
     accDescr: Full data landscape showing all eleven data component types — entities, models, stores, flows, services, governance, quality rules, transformations, contracts, and security — grouped by domain.
@@ -443,17 +410,6 @@ The following principles are organised in priority order — foundational princi
 - **Source Evidence:** `workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:55-75` — distinct blob paths for success (`/ordersprocessedsuccessfully`) and failure (`/ordersprocessedfailed`).
 
 ```mermaid
----
-title: Data Architecture Principles Hierarchy
-config:
-  theme: base
-  look: classic
-  layout: dagre
-  themeVariables:
-    fontSize: '16px'
-  flowchart:
-    htmlLabels: true
----
 flowchart TB
     accTitle: Data Architecture Principles Hierarchy
     accDescr: Seven architecture principles organised into three tiers — foundational security and quality, structural separation and events, and operational observability and immutability.
@@ -551,17 +507,6 @@ The following assessment covers the existing data stores, entity model coverage,
 | G-007  | Quality         | No automated data quality dashboard or SLA reporting on order processing latency        | Medium — operational visibility limited to raw telemetry   | Medium   |
 
 ```mermaid
----
-title: eShop Data Architecture — Current State & Gap Analysis
-config:
-  theme: base
-  look: classic
-  layout: dagre
-  themeVariables:
-    fontSize: '16px'
-  flowchart:
-    htmlLabels: true
----
 flowchart LR
     accTitle: eShop Data Architecture Current State and Gap Analysis
     accDescr: Current state baseline showing implemented components in blue and green, and identified gaps in orange and red. SQL, Service Bus, and Blob Storage are operational; lineage, schema registry, and master data are gaps.
@@ -655,17 +600,6 @@ Section 5 adds value over Section 2 by providing: storage engine details, retent
 | WeatherForecast    | Demo health-check entity; Date, TemperatureC, TemperatureF (calculated), Summary                                     | Internal       | None (in-memory only)                                 | Framework/Demo  | session                   | on-demand     | WeatherForecastController   | Health checks, demo clients                   | app.ServiceDefaults/CommonTypes.cs:25-68                      |
 
 ```mermaid
----
-title: Order Entity Relationship Model
-config:
-  theme: base
-  look: classic
-  layout: dagre
-  themeVariables:
-    fontSize: '16px'
-  flowchart:
-    htmlLabels: true
----
 flowchart TB
     accTitle: Order Entity Relationship Model
     accDescr: Entity relationship showing Order containing one or more OrderProducts, with domain models mapped to EF Core entities via OrderMapper.
@@ -734,17 +668,6 @@ flowchart TB
 | Telemetry Flow        | Orders API ActivitySource → OpenTelemetry SDK → Application Insights; spans for PlaceOrder, SaveOrder, SendOrderMessage, GetOrder, DeleteOrder                                                          | Internal       | Application Insights | SRE Team                  | 90 days                     | near-real-time                      | Orders API                             | SRE, performance dashboards               | src/eShop.Orders.API/Repositories/OrderRepository.cs:85-110                                                        |
 
 ```mermaid
----
-title: eShop Order Data Flow — End-to-End
-config:
-  theme: base
-  look: classic
-  layout: dagre
-  themeVariables:
-    fontSize: '16px'
-  flowchart:
-    htmlLabels: true
----
 flowchart LR
     accTitle: eShop Order Data Flow End-to-End
     accDescr: End-to-end data flow from order placement through SQL persistence, Service Bus publishing, Logic App processing, and Blob Storage archival, with telemetry flowing to Application Insights and Log Analytics.
@@ -952,17 +875,6 @@ The following sections provide dependency matrices, data flow integration specif
 6. Service Bus message acknowledged; dead-letter after 10 failed deliveries
 
 ```mermaid
----
-title: eShop Data Dependencies & Integration Map
-config:
-  theme: base
-  look: classic
-  layout: dagre
-  themeVariables:
-    fontSize: '16px'
-  flowchart:
-    htmlLabels: true
----
 flowchart TB
     accTitle: eShop Data Dependencies and Integration Map
     accDescr: Full integration map showing all data dependencies between the Orders API, SQL Database, Service Bus, Logic App, Blob Storage, Application Insights, and Log Analytics, with authentication type and direction for each connection.
