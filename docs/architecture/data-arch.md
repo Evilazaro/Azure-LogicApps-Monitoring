@@ -1,15 +1,5 @@
 # Data Architecture — eShop Azure Logic Apps Monitoring Solution
 
-**TOGAF Layer:** Data
-**Framework:** TOGAF 10 ADM
-**Quality Level:** Comprehensive
-**Version:** 1.0.0
-**Date:** 2026-04-14
-**Author:** Data Architect (BDAT Master Coordinator)
-**Source Repository:** `azure.yaml:1`
-
----
-
 ## Table of Contents
 
 1. [Executive Summary](#section-1-executive-summary)
