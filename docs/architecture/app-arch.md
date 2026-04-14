@@ -6,7 +6,7 @@
 **Version:** 1.0.0  
 **Date:** 2026-04-14  
 **Author:** Application Architect (BDAT Master Coordinator)  
-**Source Repository:** azure.yaml:*
+**Source Repository:** azure.yaml:\*
 
 ---
 
@@ -138,7 +138,7 @@ The following eleven subsections catalogue every Application component type disc
 | OrdersManagementLogicApp | Azure Logic App Standard hosting two workflows for asynchronous order processing and archival                      | Serverless   |
 | app.ServiceDefaults      | Shared .NET library providing OpenTelemetry, health checks, service discovery, and Azure Service Bus configuration | Library      |
 
-Source: app.AppHost/AppHost.cs:*, src/eShop.Orders.API/eShop.Orders.API.csproj:*, src/eShop.Web.App/eShop.Web.App.csproj:*, workflows/OrdersManagement/OrdersManagementLogicApp/host.json:*
+Source: app.AppHost/AppHost.cs:_, src/eShop.Orders.API/eShop.Orders.API.csproj:_, src/eShop.Web.App/eShop.Web.App.csproj:_, workflows/OrdersManagement/OrdersManagementLogicApp/host.json:_
 
 ### 2.2 Application Components
 
@@ -156,7 +156,7 @@ Source: app.AppHost/AppHost.cs:*, src/eShop.Orders.API/eShop.Orders.API.csproj:*
 | OrdersPlacedCompleteProcess | Logic App workflow tracking and completing processed orders                                             | Serverless   |
 | Extensions                  | Service defaults extension methods configuring OTel, health checks, discovery, and Service Bus          | Library      |
 
-Source: src/eShop.Orders.API/Controllers/OrdersController.cs:*, src/eShop.Orders.API/Services/OrderService.cs:*, src/eShop.Orders.API/Repositories/OrderRepository.cs:*, src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:*, src/eShop.Web.App/Components/Services/OrdersAPIService.cs:*, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:*, app.ServiceDefaults/Extensions.cs:*
+Source: src/eShop.Orders.API/Controllers/OrdersController.cs:_, src/eShop.Orders.API/Services/OrderService.cs:_, src/eShop.Orders.API/Repositories/OrderRepository.cs:_, src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:_, src/eShop.Web.App/Components/Services/OrdersAPIService.cs:_, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:_, app.ServiceDefaults/Extensions.cs:\*
 
 ### 2.3 Application Interfaces
 
@@ -166,7 +166,7 @@ Source: src/eShop.Orders.API/Controllers/OrdersController.cs:*, src/eShop.Orders
 | IOrderRepository      | Contract defining order persistence operations (save, get all, get paged, get by ID, delete, exists) | Microservice |
 | IOrdersMessageHandler | Contract defining Service Bus message publishing and listing operations                              | Microservice |
 
-Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:*, src/eShop.Orders.API/Interfaces/IOrderRepository.cs:*, src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:*
+Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:_, src/eShop.Orders.API/Interfaces/IOrderRepository.cs:_, src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:\*
 
 ### 2.4 Application Collaborations
 
@@ -179,7 +179,7 @@ Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:*, src/eShop.Orders.API
 | Logic App to Azure Blob Storage | Storage collaboration; workflow archives processed orders to ordersprocessedsuccessfully and failed orders to errorcontainer       | Serverless   |
 | AppHost to All Services         | .NET Aspire orchestration; AppHost configures resource dependencies, health checks, and environment injection                      | Library      |
 
-Source: app.AppHost/AppHost.cs:*, src/eShop.Web.App/Program.cs:*, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:*
+Source: app.AppHost/AppHost.cs:_, src/eShop.Web.App/Program.cs:_, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:\*
 
 ```mermaid
 ---
@@ -254,7 +254,7 @@ flowchart LR
 | RenderOrderPlacement   | Blazor Server component for single order placement UI                   | Microservice |
 | RenderBatchPlacement   | Blazor Server component for batch order placement UI                    | Microservice |
 
-Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:*, src/eShop.Web.App/Components/Pages/ListAllOrders.razor:*, src/eShop.Web.App/Components/Pages/PlaceOrder.razor:*, src/eShop.Web.App/Components/Pages/PlaceOrdersBatch.razor:*, src/eShop.Web.App/Components/Pages/ViewOrder.razor:*
+Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:_, src/eShop.Web.App/Components/Pages/ListAllOrders.razor:_, src/eShop.Web.App/Components/Pages/PlaceOrder.razor:_, src/eShop.Web.App/Components/Pages/PlaceOrdersBatch.razor:_, src/eShop.Web.App/Components/Pages/ViewOrder.razor:\*
 
 ### 2.6 Application Interactions
 
@@ -270,7 +270,7 @@ Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:*, src/eShop.Web.App/Co
 | GET /api/orders/messages | List Service Bus messages for debugging                              | Microservice |
 | Blazor SignalR Circuit   | Persistent WebSocket circuit for Blazor Server interactive rendering | Microservice |
 
-Source: src/eShop.Orders.API/Controllers/OrdersController.cs:*, src/eShop.Orders.API/eShop.Orders.API.http:*, src/eShop.Web.App/Program.cs:40-70
+Source: src/eShop.Orders.API/Controllers/OrdersController.cs:_, src/eShop.Orders.API/eShop.Orders.API.http:_, src/eShop.Web.App/Program.cs:40-70
 
 ### 2.7 Application Events
 
@@ -284,7 +284,7 @@ Source: src/eShop.Orders.API/Controllers/OrdersController.cs:*, src/eShop.Orders
 | eShop.orders.placed metric              | OpenTelemetry counter incremented per successful order placement                                                    | Microservice |
 | eShop.orders.processing.duration metric | OpenTelemetry histogram recording order processing duration in milliseconds                                         | Microservice |
 
-Source: src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:*, src/eShop.Orders.API/Services/OrderService.cs:25-35, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:*
+Source: src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:_, src/eShop.Orders.API/Services/OrderService.cs:25-35, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:_
 
 ### 2.8 Application Data Objects
 
@@ -296,7 +296,7 @@ Source: src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:*, src/eShop.Order
 | OrdersWrapper            | Collection wrapper for batch order operations with count and items                                         | Microservice |
 | WeatherForecast          | Demo DTO: Date, TemperatureC, Summary — used for health validation endpoint                                | Microservice |
 
-Source: app.ServiceDefaults/CommonTypes.cs:*, src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:*, src/eShop.Orders.API/Services/OrdersWrapper.cs:*
+Source: app.ServiceDefaults/CommonTypes.cs:_, src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:_, src/eShop.Orders.API/Services/OrdersWrapper.cs:\*
 
 ### 2.9 Integration Patterns
 
@@ -310,7 +310,7 @@ Source: app.ServiceDefaults/CommonTypes.cs:*, src/eShop.Orders.API/Handlers/Orde
 | .NET Aspire Orchestration | AppHost coordinates service resources, environment injection, and startup dependencies      | Library      |
 | No-Op Stub Pattern        | NoOpOrdersMessageHandler allows API to function without Service Bus in development          | Microservice |
 
-Source: src/eShop.Orders.API/Repositories/OrderRepository.cs:*, app.ServiceDefaults/Extensions.cs:*, app.AppHost/AppHost.cs:*, src/eShop.Orders.API/Program.cs:80-110
+Source: src/eShop.Orders.API/Repositories/OrderRepository.cs:_, app.ServiceDefaults/Extensions.cs:_, app.AppHost/AppHost.cs:\*, src/eShop.Orders.API/Program.cs:80-110
 
 ### 2.10 Service Contracts
 
@@ -321,7 +321,7 @@ Source: src/eShop.Orders.API/Repositories/OrderRepository.cs:*, app.ServiceDefau
 | IOrdersMessageHandler | Messaging contract: send single, send batch, list messages from topics         | Microservice |
 | OpenAPI v1 (Swagger)  | Auto-generated REST API contract at /swagger — eShop Orders API v1             | Microservice |
 
-Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:*, src/eShop.Orders.API/Interfaces/IOrderRepository.cs:*, src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:*, src/eShop.Orders.API/Program.cs:65-75
+Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:_, src/eShop.Orders.API/Interfaces/IOrderRepository.cs:_, src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:\*, src/eShop.Orders.API/Program.cs:65-75
 
 ### 2.11 Application Dependencies
 
@@ -336,7 +336,7 @@ Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:*, src/eShop.Orders.API
 | OrdersManagementLogicApp to Azure Blob Storage | Storage dependency via API Connection                                          | Serverless   |
 | OrdersManagementLogicApp to Azure Service Bus  | Trigger dependency via Service Bus subscription                                | Serverless   |
 
-Source: app.AppHost/AppHost.cs:*, workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:*, src/eShop.Orders.API/Program.cs:*
+Source: app.AppHost/AppHost.cs:_, workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:_, src/eShop.Orders.API/Program.cs:\*
 
 ### Summary
 
@@ -367,28 +367,28 @@ The eight principles below are organized into three categories — Structural, I
 
 - **Statement**: All inter-service communication is mediated by explicit REST API contracts. No direct database sharing between services.
 - **Rationale**: Ensures interoperability, testability, and independent schema evolution.
-- **Evidence**: src/eShop.Web.App/Components/Services/OrdersAPIService.cs:* — Web App communicates exclusively via HTTP client; src/eShop.Orders.API/Interfaces/IOrderService.cs:* — service behaviour defined through interface contracts.
+- **Evidence**: src/eShop.Web.App/Components/Services/OrdersAPIService.cs:_ — Web App communicates exclusively via HTTP client; src/eShop.Orders.API/Interfaces/IOrderService.cs:_ — service behaviour defined through interface contracts.
 - **Implication**: Future services must consume the Orders API contract, not access SQL directly.
 
 **P3 — Repository Pattern for Data Isolation**
 
 - **Statement**: All data access in the Orders API is mediated through the IOrderRepository interface. No direct EF Core DbContext usage outside OrderRepository.
 - **Rationale**: Isolates persistence technology from business logic, enabling unit testing with mock repositories.
-- **Evidence**: src/eShop.Orders.API/Interfaces/IOrderRepository.cs:*, src/eShop.Orders.API/Repositories/OrderRepository.cs:*, src/eShop.Orders.API/Program.cs:55 — AddScoped of IOrderRepository.
+- **Evidence**: src/eShop.Orders.API/Interfaces/IOrderRepository.cs:_, src/eShop.Orders.API/Repositories/OrderRepository.cs:_, src/eShop.Orders.API/Program.cs:55 — AddScoped of IOrderRepository.
 - **Implication**: Adding a secondary data store (e.g., Redis cache) is additive to OrderRepository without touching OrderService.
 
 **P4 — Event-Driven Decoupling**
 
 - **Statement**: All downstream processing triggered by order placement is decoupled via Service Bus pub/sub. No synchronous call chain from order API to Logic App.
 - **Rationale**: Isolates workflow failures from order placement success; enables independent scalability of the processing tier.
-- **Evidence**: src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:* — async publish-only; workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:* — triggered by subscription.
+- **Evidence**: src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:_ — async publish-only; workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:_ — triggered by subscription.
 - **Implication**: Downstream processing failures do not degrade order placement SLA. Dead-letter queue monitoring is required.
 
 **P5 — Observability by Default**
 
 - **Statement**: Every application operation is instrumented with OpenTelemetry distributed tracing and structured logging from initial commit. Business-critical metrics emitted at every operation.
 - **Rationale**: Enables production diagnosis without code changes; aligns with Azure Monitor and Application Insights integration.
-- **Evidence**: src/eShop.Orders.API/Services/OrderService.cs:25-35 — Meter, Counter, Histogram instruments; ActivitySource in all services; app.ServiceDefaults/Extensions.cs:* — AddServiceDefaults() wires OTel.
+- **Evidence**: src/eShop.Orders.API/Services/OrderService.cs:25-35 — Meter, Counter, Histogram instruments; ActivitySource in all services; app.ServiceDefaults/Extensions.cs:\* — AddServiceDefaults() wires OTel.
 - **Implication**: All new code must include ActivitySource.StartActivity() and structured log scopes with trace IDs.
 
 **P6 — Resilience Patterns at Every Integration Boundary**
@@ -402,7 +402,7 @@ The eight principles below are organized into three categories — Structural, I
 
 - **Statement**: No service uses passwords, connection strings with credentials, or long-lived secrets in code or configuration. All Azure service authentication uses Managed Identity with DefaultAzureCredential.
 - **Rationale**: Eliminates credential rotation burden and credential leak attack surface.
-- **Evidence**: app.ServiceDefaults/Extensions.cs:* — ManagedIdentityCredential for Service Bus; app.AppHost/AppHost.cs:* — SQL uses Azure AD token auth; infra/workload/services/main.bicep — Container App identity assignment.
+- **Evidence**: app.ServiceDefaults/Extensions.cs:_ — ManagedIdentityCredential for Service Bus; app.AppHost/AppHost.cs:_ — SQL uses Azure AD token auth; infra/workload/services/main.bicep — Container App identity assignment.
 - **Implication**: All new Azure service integrations must be onboarded to Managed Identity; no secrets in appsettings.json.
 
 **P8 — Shared Library for Cross-Cutting Concerns**
@@ -488,19 +488,19 @@ This section presents the architectural topology at current state, identifies fo
 
 **Current State Maturity Assessment**
 
-| Capability Area                               | Maturity Level | Evidence                                                                                                       |
-| --------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------- |
-| Orders API — CRUD Endpoints                   | 4 — Managed    | src/eShop.Orders.API/Controllers/OrdersController.cs:*, src/eShop.Orders.API/Interfaces/IOrderService.cs:* |
-| Orders API — Service Bus Publishing           | 4 — Managed    | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:*, src/eShop.Orders.API/Program.cs:80-95              |
-| Orders API — OTel Tracing and Metrics         | 4 — Managed    | src/eShop.Orders.API/Services/OrderService.cs:25-35, app.ServiceDefaults/Extensions.cs:*                    |
-| Orders API — Resilience (Retry + Health)      | 4 — Managed    | src/eShop.Orders.API/Repositories/OrderRepository.cs:*, app.ServiceDefaults/Extensions.cs:*                |
-| Web App — Blazor Server UI (5 pages)          | 4 — Managed    | src/eShop.Web.App/Components/Pages/\*.razor                                                                    |
-| Web App — Typed HTTP Client with Discovery    | 4 — Managed    | src/eShop.Web.App/Components/Services/OrdersAPIService.cs:*, src/eShop.Web.App/Program.cs:65-80             |
-| Web App — Session State                       | 2 — Repeatable | src/eShop.Web.App/Program.cs:16-18 (AddDistributedMemoryCache — in-memory only)                                |
-| Logic App — Service Bus Triggered Processing  | 3 — Defined    | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:*                     |
-| Logic App — Blob Archival (success + failure) | 3 — Defined    | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:40-80                    |
-| API Governance — Versioning                   | 2 — Repeatable | src/eShop.Orders.API/Program.cs:67-75 (Swagger v1 only)                                                        |
-| Contract Testing — Consumer-Driven            | 1 — Initial    | Not detected in source files                                                                                   |
+| Capability Area                               | Maturity Level | Evidence                                                                                                   |
+| --------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------- |
+| Orders API — CRUD Endpoints                   | 4 — Managed    | src/eShop.Orders.API/Controllers/OrdersController.cs:_, src/eShop.Orders.API/Interfaces/IOrderService.cs:_ |
+| Orders API — Service Bus Publishing           | 4 — Managed    | src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:\*, src/eShop.Orders.API/Program.cs:80-95            |
+| Orders API — OTel Tracing and Metrics         | 4 — Managed    | src/eShop.Orders.API/Services/OrderService.cs:25-35, app.ServiceDefaults/Extensions.cs:\*                  |
+| Orders API — Resilience (Retry + Health)      | 4 — Managed    | src/eShop.Orders.API/Repositories/OrderRepository.cs:_, app.ServiceDefaults/Extensions.cs:_                |
+| Web App — Blazor Server UI (5 pages)          | 4 — Managed    | src/eShop.Web.App/Components/Pages/\*.razor                                                                |
+| Web App — Typed HTTP Client with Discovery    | 4 — Managed    | src/eShop.Web.App/Components/Services/OrdersAPIService.cs:\*, src/eShop.Web.App/Program.cs:65-80           |
+| Web App — Session State                       | 2 — Repeatable | src/eShop.Web.App/Program.cs:16-18 (AddDistributedMemoryCache — in-memory only)                            |
+| Logic App — Service Bus Triggered Processing  | 3 — Defined    | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:\*                   |
+| Logic App — Blob Archival (success + failure) | 3 — Defined    | workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:40-80                |
+| API Governance — Versioning                   | 2 — Repeatable | src/eShop.Orders.API/Program.cs:67-75 (Swagger v1 only)                                                    |
+| Contract Testing — Consumer-Driven            | 1 — Initial    | Not detected in source files                                                                               |
 
 **Gap Analysis**
 
@@ -614,10 +614,10 @@ This catalog is distinct from the inventory in Section 2: Section 2 provides wha
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------------------------------------------------------ | ------------------------ | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------- | ---------------- |
 | eShop.Orders.API         | ASP.NET Core REST API for order management; containerized and deployed to Azure Container Apps via Aspire; OpenAPI v1 at /swagger                   | Microservice | .NET 9 / ASP.NET Core / EF Core 9                      | 1.0.0                    | Azure SQL, Azure Service Bus, app.ServiceDefaults                            | /api/orders, /api/orders/{id}, /api/orders/batch, /api/Orders/process, /health, /alive | 99.9% (Azure Container Apps SLA) | Platform Team    |
 | eShop.Web.App            | Blazor Server application for order management UI; containerized and deployed to Azure Container Apps; references Orders API via service discovery  | Microservice | .NET 9 / Blazor Server / Microsoft.FluentUI.AspNetCore | 1.0.0                    | eShop.Orders.API, app.ServiceDefaults                                        | / (Home), /ListAllOrders, /PlaceOrder, /PlaceOrdersBatch, /ViewOrder, /health          | 99.9% (Azure Container Apps SLA) | Frontend Team    |
-| OrdersManagementLogicApp | Azure Logic App Standard hosting two stateless workflows triggered by Service Bus; archives results to Blob Storage                                 | Serverless   | Azure Logic Apps Standard                              | 1.0.0.0 (contentVersion) | Azure Service Bus (trigger), eShop.Orders.API (callback), Azure Blob Storage | No public endpoints; event-driven via Service Bus | 99.9% (Logic App Standard SLA)   | Integration Team |
-| app.ServiceDefaults      | Shared .NET library providing AddServiceDefaults() and AddAzureServiceBusClient() extension methods; OTel + health + discovery + Service Bus config | Library      | .NET 9 / OpenTelemetry 1.x / Azure Monitor Exporter    | 1.0.0                    | Azure Monitor, Azure Service Bus (optional)                                  | No public endpoints | No runtime SLA | Platform Team    |
+| OrdersManagementLogicApp | Azure Logic App Standard hosting two stateless workflows triggered by Service Bus; archives results to Blob Storage                                 | Serverless   | Azure Logic Apps Standard                              | 1.0.0.0 (contentVersion) | Azure Service Bus (trigger), eShop.Orders.API (callback), Azure Blob Storage | No public endpoints; event-driven via Service Bus                                      | 99.9% (Logic App Standard SLA)   | Integration Team |
+| app.ServiceDefaults      | Shared .NET library providing AddServiceDefaults() and AddAzureServiceBusClient() extension methods; OTel + health + discovery + Service Bus config | Library      | .NET 9 / OpenTelemetry 1.x / Azure Monitor Exporter    | 1.0.0                    | Azure Monitor, Azure Service Bus (optional)                                  | No public endpoints                                                                    | No runtime SLA                   | Platform Team    |
 
-Source: src/eShop.Orders.API/eShop.Orders.API.csproj:*, src/eShop.Web.App/eShop.Web.App.csproj:*, workflows/OrdersManagement/OrdersManagementLogicApp/host.json:*, app.ServiceDefaults/app.ServiceDefaults.csproj:*
+Source: src/eShop.Orders.API/eShop.Orders.API.csproj:_, src/eShop.Web.App/eShop.Web.App.csproj:_, workflows/OrdersManagement/OrdersManagementLogicApp/host.json:_, app.ServiceDefaults/app.ServiceDefaults.csproj:_
 
 ```mermaid
 ---
@@ -680,28 +680,28 @@ flowchart LR
 | Component                    | Description                                                                                                                                                                | Type         | Technology                                    | Version | Dependencies                                                           | API Endpoints                                                                                                                                  | SLA                    | Owner            |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | --------------------------------------------- | ------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ---------------- |
 | OrdersController             | RESTful API controller handling 6+ HTTP action methods with OTel activity tracking and structured logging for all operations                                               | Microservice | ASP.NET Core MVC / .NET 9                     | 1.0.0   | IOrderService, ActivitySource, ILogger                                 | /api/orders (POST/GET), /api/orders/{id} (GET/DELETE), /api/orders/batch (POST/DELETE), /api/Orders/process (POST), /api/orders/messages (GET) | Inherited from service | Platform Team    |
-| OrderService                 | Business logic service implementing IOrderService; coordinates validation, persistence, metrics, and event publishing with full OTel instrumentation                       | Microservice | .NET 9                                        | 1.0.0   | IOrderRepository, IOrdersMessageHandler, ActivitySource, IMeterFactory | No public endpoints | Inherited              | Platform Team    |
-| OrderRepository              | EF Core-based SQL data access implementing IOrderRepository; supports paged queries, split queries, no-tracking reads, and EnableRetryOnFailure                            | Microservice | EF Core 9 / Azure SQL                         | 1.0.0   | OrderDbContext, ActivitySource, ILogger                                | No public endpoints | Inherited              | Platform Team    |
-| OrdersMessageHandler         | Azure Service Bus publisher with distributed tracing; serializes Order to JSON and sends to ordersplaced topic; independent 30s timeout                                    | Microservice | Azure.Messaging.ServiceBus 7.x                | 7.x     | ServiceBusClient, ActivitySource, IConfiguration                       | No public endpoints | Inherited              | Platform Team    |
-| NoOpOrdersMessageHandler     | Development-mode stub satisfying IOrdersMessageHandler without Service Bus connectivity                                                                                    | Microservice | .NET 9                                        | 1.0.0   | None                                                                   | No public endpoints | No runtime SLA | Platform Team    |
-| OrderDbContext               | EF Core DbContext mapping OrderEntity to Orders table and OrderProductEntity to OrderProducts table with Fluent API relationships                                          | Microservice | EF Core 9                                     | 1.0.0   | Azure SQL Database                                                     | No public endpoints | Inherited              | Platform Team    |
+| OrderService                 | Business logic service implementing IOrderService; coordinates validation, persistence, metrics, and event publishing with full OTel instrumentation                       | Microservice | .NET 9                                        | 1.0.0   | IOrderRepository, IOrdersMessageHandler, ActivitySource, IMeterFactory | No public endpoints                                                                                                                            | Inherited              | Platform Team    |
+| OrderRepository              | EF Core-based SQL data access implementing IOrderRepository; supports paged queries, split queries, no-tracking reads, and EnableRetryOnFailure                            | Microservice | EF Core 9 / Azure SQL                         | 1.0.0   | OrderDbContext, ActivitySource, ILogger                                | No public endpoints                                                                                                                            | Inherited              | Platform Team    |
+| OrdersMessageHandler         | Azure Service Bus publisher with distributed tracing; serializes Order to JSON and sends to ordersplaced topic; independent 30s timeout                                    | Microservice | Azure.Messaging.ServiceBus 7.x                | 7.x     | ServiceBusClient, ActivitySource, IConfiguration                       | No public endpoints                                                                                                                            | Inherited              | Platform Team    |
+| NoOpOrdersMessageHandler     | Development-mode stub satisfying IOrdersMessageHandler without Service Bus connectivity                                                                                    | Microservice | .NET 9                                        | 1.0.0   | None                                                                   | No public endpoints                                                                                                                            | No runtime SLA         | Platform Team    |
+| OrderDbContext               | EF Core DbContext mapping OrderEntity to Orders table and OrderProductEntity to OrderProducts table with Fluent API relationships                                          | Microservice | EF Core 9                                     | 1.0.0   | Azure SQL Database                                                     | No public endpoints                                                                                                                            | Inherited              | Platform Team    |
 | ServiceBusHealthCheck        | Liveness health check verifying actual Service Bus connectivity by attempting to create a message batch; returns Degraded on timeout                                       | Microservice | Azure.Messaging.ServiceBus 7.x                | 7.x     | ServiceBusClient, IConfiguration                                       | /health                                                                                                                                        | Degraded on timeout    | Platform Team    |
-| OrdersAPIService             | Typed HTTP client in eShop.Web.App; wraps all Orders API calls with distributed tracing; configured with service discovery and 10min timeout for batch operations          | Microservice | .NET HttpClient + OTel / .NET 9               | 1.0.0   | HttpClient, ActivitySource, ILogger                                    | No public endpoints | Inherited from API     | Frontend Team    |
-| OrdersPlacedProcess          | Stateless Logic App workflow: checks Content-Type application/json → POSTs to Orders API → branches on 201 → archives success or failure blob                              | Serverless   | Azure Logic Apps Standard (2016-06-01 schema) | 1.0.0.0 | Azure Service Bus, eShop.Orders.API, Azure Blob Storage                | No public endpoints | 99.9% (Logic App SLA)  | Integration Team |
-| OrdersPlacedCompleteProcess  | Logic App workflow tracking and completing the order processing lifecycle; archives completion state to Blob Storage                                                       | Serverless   | Azure Logic Apps Standard (2016-06-01 schema) | 1.0.0.0 | Azure Service Bus, Azure Blob Storage                                  | No public endpoints | 99.9% (Logic App SLA)  | Integration Team |
-| Extensions (ServiceDefaults) | AddServiceDefaults() and AddAzureServiceBusClient() extension methods configuring OTel tracing/metrics/logging, health checks, service discovery, and Azure SDK resilience | Library      | OpenTelemetry .NET SDK + Azure SDK            | 1.0.0   | OpenTelemetry, Azure Monitor, Azure.Messaging.ServiceBus               | No public endpoints | No runtime SLA | Platform Team    |
+| OrdersAPIService             | Typed HTTP client in eShop.Web.App; wraps all Orders API calls with distributed tracing; configured with service discovery and 10min timeout for batch operations          | Microservice | .NET HttpClient + OTel / .NET 9               | 1.0.0   | HttpClient, ActivitySource, ILogger                                    | No public endpoints                                                                                                                            | Inherited from API     | Frontend Team    |
+| OrdersPlacedProcess          | Stateless Logic App workflow: checks Content-Type application/json → POSTs to Orders API → branches on 201 → archives success or failure blob                              | Serverless   | Azure Logic Apps Standard (2016-06-01 schema) | 1.0.0.0 | Azure Service Bus, eShop.Orders.API, Azure Blob Storage                | No public endpoints                                                                                                                            | 99.9% (Logic App SLA)  | Integration Team |
+| OrdersPlacedCompleteProcess  | Logic App workflow tracking and completing the order processing lifecycle; archives completion state to Blob Storage                                                       | Serverless   | Azure Logic Apps Standard (2016-06-01 schema) | 1.0.0.0 | Azure Service Bus, Azure Blob Storage                                  | No public endpoints                                                                                                                            | 99.9% (Logic App SLA)  | Integration Team |
+| Extensions (ServiceDefaults) | AddServiceDefaults() and AddAzureServiceBusClient() extension methods configuring OTel tracing/metrics/logging, health checks, service discovery, and Azure SDK resilience | Library      | OpenTelemetry .NET SDK + Azure SDK            | 1.0.0   | OpenTelemetry, Azure Monitor, Azure.Messaging.ServiceBus               | No public endpoints                                                                                                                            | No runtime SLA         | Platform Team    |
 
-Source: src/eShop.Orders.API/Controllers/OrdersController.cs:*, src/eShop.Orders.API/Services/OrderService.cs:*, src/eShop.Orders.API/Repositories/OrderRepository.cs:*, src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:*, src/eShop.Orders.API/Handlers/NoOpOrdersMessageHandler.cs:*, src/eShop.Orders.API/data/OrderDbContext.cs:*, src/eShop.Orders.API/HealthChecks/ServiceBusHealthCheck.cs:*, src/eShop.Web.App/Components/Services/OrdersAPIService.cs:*, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:*, app.ServiceDefaults/Extensions.cs:*
+Source: src/eShop.Orders.API/Controllers/OrdersController.cs:_, src/eShop.Orders.API/Services/OrderService.cs:_, src/eShop.Orders.API/Repositories/OrderRepository.cs:_, src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:_, src/eShop.Orders.API/Handlers/NoOpOrdersMessageHandler.cs:_, src/eShop.Orders.API/data/OrderDbContext.cs:_, src/eShop.Orders.API/HealthChecks/ServiceBusHealthCheck.cs:_, src/eShop.Web.App/Components/Services/OrdersAPIService.cs:_, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:_, app.ServiceDefaults/Extensions.cs:_
 
 ### 5.3 Application Interfaces
 
-| Component             | Description                                                                                                                                                                                                           | Type         | Technology       | Version | Dependencies                            | API Endpoints | SLA | Owner         |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------------- | ------- | --------------------------------------- | ------------- | --- | ------------- |
+| Component             | Description                                                                                                                                                                                                           | Type         | Technology       | Version | Dependencies                            | API Endpoints       | SLA            | Owner         |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------------- | ------- | --------------------------------------- | ------------------- | -------------- | ------------- |
 | IOrderService         | Service layer contract; 7 async methods: PlaceOrderAsync, PlaceOrdersBatchAsync, GetOrdersAsync, GetOrderByIdAsync, DeleteOrderAsync, DeleteOrdersBatchAsync, ListMessagesFromTopicsAsync; all with CancellationToken | Microservice | .NET 9 Interface | 1.0.0   | app.ServiceDefaults.CommonTypes (Order) | No public endpoints | No runtime SLA | Platform Team |
 | IOrderRepository      | Repository contract; 6 async methods: SaveOrderAsync, GetAllOrdersAsync, GetOrdersPagedAsync (page/pageSize/total), GetOrderByIdAsync, DeleteOrderAsync, OrderExistsAsync                                             | Microservice | .NET 9 Interface | 1.0.0   | app.ServiceDefaults.CommonTypes (Order) | No public endpoints | No runtime SLA | Platform Team |
 | IOrdersMessageHandler | Messaging contract; 3 async methods: SendOrderMessageAsync, SendOrderMessagesBatchAsync, ListMessagesFromTopicsAsync; all return Task with CancellationToken                                                          | Microservice | .NET 9 Interface | 1.0.0   | app.ServiceDefaults.CommonTypes (Order) | No public endpoints | No runtime SLA | Platform Team |
 
-Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:*, src/eShop.Orders.API/Interfaces/IOrderRepository.cs:*, src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:*
+Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:_, src/eShop.Orders.API/Interfaces/IOrderRepository.cs:_, src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:\*
 
 ### 5.4 Application Collaborations
 
@@ -714,7 +714,7 @@ Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:*, src/eShop.Orders.API
 | Logic App to Blob Storage | ApiConnection azureblob action writing binary Message content to named containers; chunked transfer; success path to ordersprocessedsuccessfully, failure path to errorcontainer | Serverless   | Azure Logic Apps API Connection (azureblob) | 2016-06-01 | Azure Blob Storage, azureblob connection               | No public endpoints | 99.9% (Blob Storage SLA) | Integration Team |
 | AppHost to All Services   | .NET Aspire resource orchestration; injects service references, health check wait, connection strings, and environment variables; development and publish modes                  | Library      | .NET Aspire 9                               | 9.x        | All project resources                                  | No public endpoints | Development-only         | Platform Team    |
 
-Source: app.AppHost/AppHost.cs:*, src/eShop.Web.App/Program.cs:65-80, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:*, workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:*
+Source: app.AppHost/AppHost.cs:_, src/eShop.Web.App/Program.cs:65-80, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:_, workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:\*
 
 ### 5.5 Application Functions
 
@@ -729,23 +729,23 @@ Source: app.AppHost/AppHost.cs:*, src/eShop.Web.App/Program.cs:65-80, workflows/
 | ListMessagesFromTopicsAsync | Peeks messages from Service Bus subscription; development and debugging utility — not for production monitoring                                           | Microservice | .NET 9     | 1.0.0   | IOrdersMessageHandler                   | GET /api/orders/messages | Best effort                   | Platform Team |
 | ProcessOrder (callback)     | Receives Logic App HTTP POST with base64-decoded Order body; persists via PlaceOrderAsync; returns 201 to trigger success blob archival                   | Microservice | .NET 9     | 1.0.0   | OrderService (PlaceOrderAsync)          | POST /api/Orders/process | Less than 5s (Logic App wait) | Platform Team |
 
-Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:*, src/eShop.Orders.API/Services/OrderService.cs:*
+Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:_, src/eShop.Orders.API/Services/OrderService.cs:_
 
 ### 5.6 Application Interactions
 
-| Component                | Description                                                                                                                                                    | Type         | Technology                       | Version | Dependencies         | API Endpoints            | SLA                   | Owner         |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------------------------------- | ------- | -------------------- | ------------------------ | --------------------- | ------------- |
-| POST /api/orders         | Creates single order; validates body and ModelState; returns 201 Created with Location header pointing to GET by ID                                            | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | POST /api/orders         | 201 / 400 / 409 / 500 | Platform Team |
-| GET /api/orders          | Returns paginated order list; delegates to GetOrdersAsync; returns 200 with collection                                                                         | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | GET /api/orders          | 200 / 500             | Platform Team |
-| GET /api/orders/{id}     | Returns single order by string ID; returns 404 if not found                                                                                                    | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | GET /api/orders/{id}     | 200 / 404 / 500       | Platform Team |
-| DELETE /api/orders/{id}  | Deletes order by ID; returns 204 on success, 404 if not found                                                                                                  | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | DELETE /api/orders/{id}  | 204 / 404 / 500       | Platform Team |
-| POST /api/orders/batch   | Places batch of orders; returns collection of created orders with 200 on full/partial success                                                                  | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | POST /api/orders/batch   | 200 / 400             | Platform Team |
-| POST /api/Orders/process | Logic App callback; processes order from decoded message body; returns 201 to trigger blob archival success path                                               | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | POST /api/Orders/process | 201 / 400 / 500       | Platform Team |
-| DELETE /api/orders/batch | Batch deletion; returns count of successfully deleted orders                                                                                                   | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | DELETE /api/orders/batch | 200 / 400             | Platform Team |
-| GET /api/orders/messages | Lists peeked Service Bus messages; debugging utility endpoint                                                                                                  | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | GET /api/orders/messages | 200                   | Platform Team |
+| Component                | Description                                                                                                                                                    | Type         | Technology                       | Version | Dependencies         | API Endpoints                                   | SLA                   | Owner         |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------------------------------- | ------- | -------------------- | ----------------------------------------------- | --------------------- | ------------- |
+| POST /api/orders         | Creates single order; validates body and ModelState; returns 201 Created with Location header pointing to GET by ID                                            | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | POST /api/orders                                | 201 / 400 / 409 / 500 | Platform Team |
+| GET /api/orders          | Returns paginated order list; delegates to GetOrdersAsync; returns 200 with collection                                                                         | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | GET /api/orders                                 | 200 / 500             | Platform Team |
+| GET /api/orders/{id}     | Returns single order by string ID; returns 404 if not found                                                                                                    | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | GET /api/orders/{id}                            | 200 / 404 / 500       | Platform Team |
+| DELETE /api/orders/{id}  | Deletes order by ID; returns 204 on success, 404 if not found                                                                                                  | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | DELETE /api/orders/{id}                         | 204 / 404 / 500       | Platform Team |
+| POST /api/orders/batch   | Places batch of orders; returns collection of created orders with 200 on full/partial success                                                                  | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | POST /api/orders/batch                          | 200 / 400             | Platform Team |
+| POST /api/Orders/process | Logic App callback; processes order from decoded message body; returns 201 to trigger blob archival success path                                               | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | POST /api/Orders/process                        | 201 / 400 / 500       | Platform Team |
+| DELETE /api/orders/batch | Batch deletion; returns count of successfully deleted orders                                                                                                   | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | DELETE /api/orders/batch                        | 200 / 400             | Platform Team |
+| GET /api/orders/messages | Lists peeked Service Bus messages; debugging utility endpoint                                                                                                  | Microservice | ASP.NET Core MVC / .NET 9        | 1.0.0   | OrderService         | GET /api/orders/messages                        | 200                   | Platform Team |
 | Blazor SignalR Circuit   | Persistent WebSocket circuit supporting interactive Blazor Server rendering; 30-min idle timeout; 100 disconnected circuits retained; 10-min JSInterop timeout | Microservice | Blazor Server / SignalR / .NET 9 | .NET 9  | eShop.Web.App server | No external endpoints; internal SignalR circuit | 99.9% (ACA SLA)       | Frontend Team |
 
-Source: src/eShop.Orders.API/Controllers/OrdersController.cs:*, src/eShop.Web.App/Program.cs:40-70, src/eShop.Orders.API/eShop.Orders.API.http:*
+Source: src/eShop.Orders.API/Controllers/OrdersController.cs:_, src/eShop.Web.App/Program.cs:40-70, src/eShop.Orders.API/eShop.Orders.API.http:_
 
 ```mermaid
 ---
@@ -816,8 +816,8 @@ flowchart LR
 
 ### 5.7 Application Events
 
-| Component                               | Description                                                                                                                                                                   | Type         | Technology                          | Version    | Dependencies                            | API Endpoints | SLA                           | Owner            |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------------------------------- | ---------- | --------------------------------------- | ------------- | ----------------------------- | ---------------- |
+| Component                               | Description                                                                                                                                                                   | Type         | Technology                          | Version    | Dependencies                            | API Endpoints       | SLA                           | Owner            |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------------------------------- | ---------- | --------------------------------------- | ------------------- | ----------------------------- | ---------------- |
 | OrderPlaced                             | JSON-serialized Order published to Service Bus ordersplaced topic per successful order creation; MessageId set to Order.Id; at-least-once delivery semantics                  | Microservice | Azure.Messaging.ServiceBus 7.x      | 7.x        | OrdersMessageHandler, Azure Service Bus | No public endpoints | At-least-once delivery        | Platform Team    |
 | OrderProcessed                          | Implicit event: Logic App receives 201 from /api/Orders/process; triggers blob archival success path in workflow condition                                                    | Serverless   | Logic App If condition (2016-06-01) | 2016-06-01 | eShop.Orders.API, LogicApp workflow     | No public endpoints | Conditional (workflow branch) | Integration Team |
 | OrderArchived                           | Blob written to ordersprocessedsuccessfully container; MessageId used as blob name; chunked binary transfer                                                                   | Serverless   | Logic App ApiConnection azureblob   | 2016-06-01 | Azure Blob Storage                      | No public endpoints | Best-effort                   | Integration Team |
@@ -826,59 +826,59 @@ flowchart LR
 | eShop.orders.placed metric              | Counter incremented per successful order placement; unit: order; Azure Monitor metric                                                                                         | Microservice | System.Diagnostics.Metrics / .NET 9 | .NET 9     | IMeterFactory, Application Insights     | No public endpoints | Emitted synchronously         | Platform Team    |
 | eShop.orders.processing.duration metric | Histogram recording order processing duration in milliseconds per operation; unit: ms                                                                                         | Microservice | System.Diagnostics.Metrics / .NET 9 | .NET 9     | IMeterFactory, Application Insights     | No public endpoints | Emitted per placement         | Platform Team    |
 
-Source: src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:*, src/eShop.Orders.API/Services/OrderService.cs:25-35, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:*
+Source: src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:_, src/eShop.Orders.API/Services/OrderService.cs:25-35, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:_
 
 ### 5.8 Application Data Objects
 
-| Component                | Description                                                                                                                                                                                                                         | Type         | Technology                       | Version | Dependencies                          | API Endpoints | SLA | Owner         |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------------------------------- | ------- | ------------------------------------- | ------------- | --- | ------------- |
+| Component                | Description                                                                                                                                                                                                                         | Type         | Technology                       | Version | Dependencies                          | API Endpoints       | SLA            | Owner         |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------------------------------- | ------- | ------------------------------------- | ------------------- | -------------- | ------------- |
 | Order                    | Primary domain DTO: Id (string, required), CustomerId (string, required), Date (DateTime), DeliveryAddress (string, required), Products (List of OrderProduct, required), Total (decimal); data annotations enforce required fields | Microservice | .NET 9 POCO with DataAnnotations | 1.0.0   | System.ComponentModel.DataAnnotations | No public endpoints | No runtime SLA | Platform Team |
 | OrderProduct             | Line-item DTO nested in Order.Products: ProductId (string), Description (string), Quantity (int), Price (decimal)                                                                                                                   | Microservice | .NET 9 POCO                      | 1.0.0   | None                                  | No public endpoints | No runtime SLA | Platform Team |
 | OrderMessageWithMetadata | Service Bus envelope: Order (Order), MessageId (string), SequenceNumber (long), EnqueuedTime (DateTimeOffset), ApplicationProperties (IReadOnlyDictionary)                                                                          | Microservice | .NET 9 POCO                      | 1.0.0   | app.ServiceDefaults.CommonTypes       | No public endpoints | No runtime SLA | Platform Team |
 | OrdersWrapper            | Batch collection wrapper used in eShop.Web.App: Items (IEnumerable of Order), Count (int); used for batch order submissions                                                                                                         | Microservice | .NET 9 POCO                      | 1.0.0   | Order                                 | No public endpoints | No runtime SLA | Frontend Team |
 | WeatherForecast          | Demo health-check DTO: Date (DateOnly), TemperatureC (int), Summary (string), TemperatureF (calculated from C); used by WeatherForecastController for health demonstration                                                          | Microservice | .NET 9 POCO                      | 1.0.0   | None                                  | No public endpoints | No runtime SLA | Platform Team |
 
-Source: app.ServiceDefaults/CommonTypes.cs:*, src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:*, src/eShop.Orders.API/Services/OrdersWrapper.cs:*
+Source: app.ServiceDefaults/CommonTypes.cs:_, src/eShop.Orders.API/Handlers/OrderMessageWithMetadata.cs:_, src/eShop.Orders.API/Services/OrdersWrapper.cs:\*
 
 ### 5.9 Integration Patterns
 
-| Component                 | Description                                                                                                                                                                          | Type         | Technology                                             | Version | Dependencies                                              | API Endpoints   | SLA                         | Owner         |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ------------------------------------------------------ | ------- | --------------------------------------------------------- | --------------- | --------------------------- | ------------- |
-| Repository Pattern        | IOrderRepository / OrderRepository provide a technology-agnostic data access abstraction hiding EF Core from OrderService; supports unit testing with mock implementations           | Microservice | EF Core 9                                              | 1.0.0   | IOrderRepository, OrderDbContext, Azure SQL               | No public endpoints | No runtime SLA | Platform Team |
+| Component                 | Description                                                                                                                                                                          | Type         | Technology                                             | Version | Dependencies                                              | API Endpoints       | SLA                         | Owner         |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ------------------------------------------------------ | ------- | --------------------------------------------------------- | ------------------- | --------------------------- | ------------- |
+| Repository Pattern        | IOrderRepository / OrderRepository provide a technology-agnostic data access abstraction hiding EF Core from OrderService; supports unit testing with mock implementations           | Microservice | EF Core 9                                              | 1.0.0   | IOrderRepository, OrderDbContext, Azure SQL               | No public endpoints | No runtime SLA              | Platform Team |
 | Publish/Subscribe         | Service Bus ordersplaced topic with subscription orderprocessingsub; producer (Orders API) and consumer (Logic App) are fully decoupled and independently deployable                 | Microservice | Azure Service Bus Standard/Premium                     | 7.x     | Azure Service Bus namespace                               | No public endpoints | At-least-once               | Platform Team |
 | Typed HTTP Client         | OrdersAPIService encapsulates all HTTP calls with service discovery, resilience pipeline, distributed tracing, and 10-minute batch timeout                                           | Microservice | .NET HttpClient + .NET Aspire service discovery        | .NET 9  | eShop.Orders.API, service discovery                       | No public endpoints | Inherits API SLA            | Frontend Team |
 | Retry Pattern             | EF Core: EnableRetryOnFailure(maxRetryCount:5, maxRetryDelay:30s, errorNumbersToAdd:null); HTTP: standard resilience pipeline from AddServiceDefaults() with retry + circuit breaker | Microservice | EF Core 9 + Microsoft.Extensions.Http.Resilience       | .NET 9  | Azure SQL, Orders API                                     | No public endpoints | Transient fault tolerance   | Platform Team |
-| Health Check Pattern      | /health endpoint (readiness — all checks pass including ServiceBusHealthCheck) and /alive endpoint (liveness — process alive); Azure Container Apps uses these probes                | Microservice | Microsoft.AspNetCore.Diagnostics.HealthChecks / .NET 9 | .NET 9  | ServiceBusHealthCheck (conditional), Azure Container Apps | /health, /alive | Platform liveness guarantee | Platform Team |
+| Health Check Pattern      | /health endpoint (readiness — all checks pass including ServiceBusHealthCheck) and /alive endpoint (liveness — process alive); Azure Container Apps uses these probes                | Microservice | Microsoft.AspNetCore.Diagnostics.HealthChecks / .NET 9 | .NET 9  | ServiceBusHealthCheck (conditional), Azure Container Apps | /health, /alive     | Platform liveness guarantee | Platform Team |
 | .NET Aspire Orchestration | AppHost registers project resources, injects WithReference(), WithHttpHealthCheck(), and WaitFor() dependencies; configures Azure SDK clients for local and publish modes            | Library      | .NET Aspire 9                                          | 9.x     | All service projects                                      | No public endpoints | Development orchestration   | Platform Team |
-| No-Op Stub Pattern        | NoOpOrdersMessageHandler registered when Service Bus HostName is unconfigured or equals localhost without connection string; allows Orders API to function standalone                | Microservice | .NET 9                                                 | 1.0.0   | None                                                      | No public endpoints | No runtime SLA | Platform Team |
+| No-Op Stub Pattern        | NoOpOrdersMessageHandler registered when Service Bus HostName is unconfigured or equals localhost without connection string; allows Orders API to function standalone                | Microservice | .NET 9                                                 | 1.0.0   | None                                                      | No public endpoints | No runtime SLA              | Platform Team |
 
-Source: src/eShop.Orders.API/Repositories/OrderRepository.cs:*, app.ServiceDefaults/Extensions.cs:*, app.AppHost/AppHost.cs:*, src/eShop.Orders.API/Program.cs:76-110
+Source: src/eShop.Orders.API/Repositories/OrderRepository.cs:_, app.ServiceDefaults/Extensions.cs:_, app.AppHost/AppHost.cs:\*, src/eShop.Orders.API/Program.cs:76-110
 
 ### 5.10 Service Contracts
 
-| Component             | Description                                                                                                                                                                         | Type         | Technology                 | Version | Dependencies                                                  | API Endpoints                      | SLA | Owner         |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------------------------- | ------- | ------------------------------------------------------------- | ---------------------------------- | --- | ------------- |
-| IOrderService         | 7-method service contract; all methods return Task with CancellationToken; version tightly coupled to app.ServiceDefaults.CommonTypes.Order                                         | Microservice | .NET 9 Interface           | 1.0.0   | CommonTypes.Order, CancellationToken                          | No public endpoints | No runtime SLA | Platform Team |
-| IOrderRepository      | 6-method persistence contract; includes GetOrdersPagedAsync with (int pageNumber, int pageSize, CancellationToken) signature returning (IEnumerable of Order, int TotalCount) tuple | Microservice | .NET 9 Interface           | 1.0.0   | CommonTypes.Order, CancellationToken                          | No public endpoints | No runtime SLA | Platform Team |
-| IOrdersMessageHandler | 3-method messaging contract: SendOrderMessageAsync, SendOrderMessagesBatchAsync, ListMessagesFromTopicsAsync; all async with CancellationToken support                              | Microservice | .NET 9 Interface           | 1.0.0   | CommonTypes.Order, CancellationToken                          | No public endpoints | No runtime SLA | Platform Team |
+| Component             | Description                                                                                                                                                                         | Type         | Technology                 | Version | Dependencies                                                  | API Endpoints                      | SLA                 | Owner         |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------------------------- | ------- | ------------------------------------------------------------- | ---------------------------------- | ------------------- | ------------- |
+| IOrderService         | 7-method service contract; all methods return Task with CancellationToken; version tightly coupled to app.ServiceDefaults.CommonTypes.Order                                         | Microservice | .NET 9 Interface           | 1.0.0   | CommonTypes.Order, CancellationToken                          | No public endpoints                | No runtime SLA      | Platform Team |
+| IOrderRepository      | 6-method persistence contract; includes GetOrdersPagedAsync with (int pageNumber, int pageSize, CancellationToken) signature returning (IEnumerable of Order, int TotalCount) tuple | Microservice | .NET 9 Interface           | 1.0.0   | CommonTypes.Order, CancellationToken                          | No public endpoints                | No runtime SLA      | Platform Team |
+| IOrdersMessageHandler | 3-method messaging contract: SendOrderMessageAsync, SendOrderMessagesBatchAsync, ListMessagesFromTopicsAsync; all async with CancellationToken support                              | Microservice | .NET 9 Interface           | 1.0.0   | CommonTypes.Order, CancellationToken                          | No public endpoints                | No runtime SLA      | Platform Team |
 | OpenAPI v1 (Swagger)  | Auto-generated REST contract at /swagger; title eShop Orders API v1; documents all Order endpoints with request/response schemas including ProducesResponseType attributes          | Microservice | Swashbuckle.AspNetCore 6.x | 6.x     | ASP.NET Core MVC controllers, ProducesResponseType attributes | /swagger, /swagger/v1/swagger.json | No public endpoints | Platform Team |
 
-Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:*, src/eShop.Orders.API/Interfaces/IOrderRepository.cs:*, src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:*, src/eShop.Orders.API/Program.cs:65-75
+Source: src/eShop.Orders.API/Interfaces/IOrderService.cs:_, src/eShop.Orders.API/Interfaces/IOrderRepository.cs:_, src/eShop.Orders.API/Interfaces/IOrdersMessageHandler.cs:\*, src/eShop.Orders.API/Program.cs:65-75
 
 ### 5.11 Application Dependencies
 
 | Component                                      | Description                                                                                                                                                           | Type         | Technology                      | Version    | Dependencies                                            | API Endpoints       | SLA                                    | Owner            |
 | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------------------------------- | ---------- | ------------------------------------------------------- | ------------------- | -------------------------------------- | ---------------- |
 | eShop.Web.App to eShop.Orders.API              | Synchronous HTTPS blocking dependency; Web App is fully degraded if Orders API is unavailable; no offline mode or circuit breaker fallback UI                         | Microservice | .NET HttpClient / HTTPS         | .NET 9     | Orders API external HTTPS endpoint                      | No public endpoints | Orders API SLA drives Web App SLA      | Frontend Team    |
-| eShop.Orders.API to app.ServiceDefaults        | Compile-time and runtime dependency; AddServiceDefaults() called as first statement in Program.cs; failure to build ServiceDefaults prevents Orders API from starting | Library      | .NET 9 project reference        | 1.0.0      | ServiceDefaults library build artifact                  | No public endpoints | No runtime SLA | Platform Team    |
-| eShop.Web.App to app.ServiceDefaults           | Compile-time and runtime dependency; AddServiceDefaults() called as first statement in Web App Program.cs                                                             | Library      | .NET 9 project reference        | 1.0.0      | ServiceDefaults library build artifact                  | No public endpoints | No runtime SLA | Platform Team    |
+| eShop.Orders.API to app.ServiceDefaults        | Compile-time and runtime dependency; AddServiceDefaults() called as first statement in Program.cs; failure to build ServiceDefaults prevents Orders API from starting | Library      | .NET 9 project reference        | 1.0.0      | ServiceDefaults library build artifact                  | No public endpoints | No runtime SLA                         | Platform Team    |
+| eShop.Web.App to app.ServiceDefaults           | Compile-time and runtime dependency; AddServiceDefaults() called as first statement in Web App Program.cs                                                             | Library      | .NET 9 project reference        | 1.0.0      | ServiceDefaults library build artifact                  | No public endpoints | No runtime SLA                         | Platform Team    |
 | eShop.Orders.API to Azure SQL Database         | Runtime critical dependency; all order persistence operations fail without SQL; EnableRetryOnFailure mitigates transient errors up to 5 attempts                      | Microservice | EF Core 9 + Azure.Identity      | .NET 9     | Azure SQL PaaS (General Purpose Gen5 2 vCores)          | No public endpoints | 99.99% (Azure SQL SLA)                 | Platform Team    |
 | eShop.Orders.API to Azure Service Bus          | Conditional runtime dependency; NoOpOrdersMessageHandler used if unconfigured; Service Bus publish failure degrades event flow but does not fail order placement      | Microservice | Azure.Messaging.ServiceBus 7.x  | 7.x        | Azure Service Bus PaaS (Standard/Premium)               | No public endpoints | 99.9% (Service Bus SLA)                | Platform Team    |
 | OrdersManagementLogicApp to eShop.Orders.API   | HTTP callback dependency at workflow runtime; workflow condition branches on 201 response; archive path determined by Orders API response code                        | Serverless   | HTTP action (Logic App)         | 2016-06-01 | Orders API /api/Orders/process endpoint                 | /api/Orders/process | Workflow retry dependent on Orders API | Integration Team |
 | OrdersManagementLogicApp to Azure Blob Storage | Storage write dependency via azureblob API connection; workflow archives binary message content; no retry policy detected on storage action                           | Serverless   | ApiConnection azureblob         | 2016-06-01 | Azure Blob Storage PaaS (StorageV2)                     | No public endpoints | 99.9% (Blob Storage SLA)               | Integration Team |
 | OrdersManagementLogicApp to Azure Service Bus  | Trigger dependency; workflow cannot execute without Service Bus activation; dead-letter queue path not defined in current workflow                                    | Serverless   | Service Bus trigger (Logic App) | 2016-06-01 | Azure Service Bus PaaS, orderprocessingsub subscription | No public endpoints | 99.9% (Service Bus SLA)                | Integration Team |
 
-Source: app.AppHost/AppHost.cs:*, workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:*, src/eShop.Orders.API/Program.cs:*
+Source: app.AppHost/AppHost.cs:_, workflows/OrdersManagement/OrdersManagementLogicApp/connections.json:_, src/eShop.Orders.API/Program.cs:\*
 
 ### Summary
 
@@ -908,8 +908,8 @@ The integration dependency matrix and data flow diagrams in this section serve a
 | Azure Service Bus        | OrdersManagementLogicApp | AMQP trigger          | Asynchronous                  | JSON (base64-encoded)         | Workflow not triggered; messages queue             | Service Bus 99.9% SLA        |
 | OrdersManagementLogicApp | eShop.Orders.API         | HTTPS REST            | Synchronous (within workflow) | JSON (Order body decoded)     | Workflow takes failure branch; error blob archived | Orders API SLA               |
 | OrdersManagementLogicApp | Azure Blob Storage       | HTTPS (ApiConnection) | Synchronous (within workflow) | Binary blob (message content) | Archival fails; order state unarchived             | Blob 99.9% SLA               |
-| app.ServiceDefaults      | eShop.Orders.API         | In-process (.NET)     | Compile-time reference        | No public endpoints | Orders API fails to build and start                | No public endpoints |
-| app.ServiceDefaults      | eShop.Web.App            | In-process (.NET)     | Compile-time reference        | No public endpoints | Web App fails to build and start                   | No public endpoints |
+| app.ServiceDefaults      | eShop.Orders.API         | In-process (.NET)     | Compile-time reference        | No public endpoints           | Orders API fails to build and start                | No public endpoints          |
+| app.ServiceDefaults      | eShop.Web.App            | In-process (.NET)     | Compile-time reference        | No public endpoints           | Web App fails to build and start                   | No public endpoints          |
 
 **Integration Failure Modes**
 
@@ -1070,14 +1070,14 @@ Three integration health risks are identified for near-term remediation: (1) the
 
 ### Section Schema Validation
 
-| Section                               | Present | Starts with ### Overview | Ends with ### Summary | 11 Subsections |
-| ------------------------------------- | ------- | ------------------------ | --------------------- | -------------- |
-| Section 1: Executive Summary          | YES     | YES                      | N/A (not required)    | No public endpoints |
-| Section 2: Architecture Landscape     | YES     | YES                      | YES                   | YES (2.1-2.11) |
-| Section 3: Architecture Principles    | YES     | YES                      | N/A (not required)    | No public endpoints |
-| Section 4: Current State Baseline     | YES     | YES                      | YES                   | No public endpoints |
-| Section 5: Component Catalog          | YES     | YES                      | YES                   | YES (5.1-5.11) |
-| Section 8: Dependencies & Integration | YES     | YES                      | YES                   | No public endpoints |
+| Section                               | Present | Starts with ### Overview | Ends with ### Summary         | 11 Subsections                |
+| ------------------------------------- | ------- | ------------------------ | ----------------------------- | ----------------------------- |
+| Section 1: Executive Summary          | YES     | YES                      | Not required for section type | Not required for section type |
+| Section 2: Architecture Landscape     | YES     | YES                      | YES                           | YES (2.1-2.11)                |
+| Section 3: Architecture Principles    | YES     | YES                      | Not required for section type | Not required for section type |
+| Section 4: Current State Baseline     | YES     | YES                      | YES                           | Not required for section type |
+| Section 5: Component Catalog          | YES     | YES                      | YES                           | YES (5.1-5.11)                |
+| Section 8: Dependencies & Integration | YES     | YES                      | YES                           | Not required for section type |
 
 ### Mermaid Diagram Compliance
 
