@@ -1,0 +1,238 @@
+/*
+  Azure Container Services Bicep Module
+
+  This module deploys the following container services:
+  - Azure Container Registry (ACR) for storing container images
+  - Azure Container Apps Environment for hosting containerized applications
+  - .NET Aspire Dashboard for application observability and distributed tracing
+
+  The module configures diagnostic settings to send logs and metrics to a specified
+  Log Analytics workspace and storage account. It also integrates with Application Insights
+  for enhanced monitoring capabilities.
+
+  Parameters:
+  - name: Base name for the container services
+  - location: Azure region for deployment
+  - userAssignedIdentityId: Resource ID of the User Assigned Identity
+  - envName: Environment name to differentiate deployments (dev, test, prod, staging)
+  - workspaceId: Resource ID of the Log Analytics workspace
+  - workspaceCustomerId: Log Analytics Workspace Customer ID
+  - workspacePrimaryKey: Primary Key for Log Analytics workspace
+  - apiSubnetId: Resource ID of the API subnet for Container Apps infrastructure
+  - storageAccountId: Storage Account ID for diagnostic logs and metrics
+  - logsSettings: Logs settings for the Log Analytics workspace
+  - metricsSettings: Metrics settings for the Log Analytics workspace
+  - appInsightsConnectionString: Connection string for Application Insights instance
+  - tags: Resource tags applied to container services
+
+  Outputs:
+  - AZURE_CONTAINER_REGISTRY_ENDPOINT: Container Registry login server endpoint
+  - AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID: Managed identity resource ID for Container Registry
+  - AZURE_CONTAINER_REGISTRY_NAME: Name of the Azure Container Registry
+  - AZURE_CONTAINER_APPS_ENVIRONMENT_NAME: Name of the Container Apps Environment
+  - AZURE_CONTAINER_APPS_ENVIRONMENT_ID: Resource ID of the Container Apps Environment
+  - AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN: Default domain for the Container Apps Environment
+  - ASPIRE_DASHBOARD_ID: Resource ID of the Aspire Dashboard
+  - ASPIRE_DASHBOARD_NAME: Name of the Aspire Dashboard component
+*/
+
+metadata name = 'Container Services'
+metadata description = 'Deploys Azure Container Registry, Container Apps Environment, and Aspire Dashboard'
+
+// ========== Type Definitions ==========
+
+import { tagsType } from '../../types.bicep'
+
+// ========== Parameters ==========
+
+@description('Base name for the container services')
+@minLength(3)
+@maxLength(20)
+param name string
+
+@description('Azure region for container services deployment')
+@minLength(3)
+@maxLength(50)
+param location string
+
+@description('Resource ID of the User Assigned Identity used by Container Registry and Container Apps Environment')
+@minLength(50)
+param userAssignedIdentityId string
+
+@description('Environment name to differentiate deployments.')
+@maxLength(10)
+@allowed([
+  'dev'
+  'test'
+  'prod'
+  'staging'
+])
+param envName string
+
+@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics')
+@minLength(50)
+param workspaceId string
+
+@description('Log Analytics Workspace Customer ID')
+param workspaceCustomerId string
+
+@description('Primary Key for Log Analytics workspace')
+param workspacePrimaryKey string
+
+@description('Resource ID of the API subnet for Container Apps infrastructure')
+@minLength(50)
+param apiSubnetId string
+
+@description('Storage Account ID for diagnostic logs and metrics')
+@minLength(50)
+param storageAccountId string
+
+@description('Logs settings for the Log Analytics workspace')
+param logsSettings object[]
+
+@description('Metrics settings for the Log Analytics workspace')
+param metricsSettings object[]
+
+@description('Connection string for Application Insights instance')
+param appInsightsConnectionString string
+
+@description('Resource tags applied to container services')
+param tags tagsType
+
+// ========== Variables ==========
+
+// Generate unique name for Container Apps Environment
+// Uses subscription and resource group for uniqueness across deployments
+@description('Container Apps Environment name with unique suffix')
+var appEnvName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
+
+// ========== Resources ==========
+
+@description('Azure Container Registry for storing container images')
+resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
+  name: toLower('${name}acr${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
+  }
+  tags: tags
+  // Basic SKU provides:
+  // - Standard container registry features
+  // - Suitable for development and testing workloads
+  // - 10 GB storage included
+  // - Upgrade to Premium for geo-replication, enhanced throughput, and private link support
+  sku: {
+    name: 'Basic'
+  }
+}
+
+// ========== Outputs ==========
+
+// Container Registry Outputs
+@description('Container Registry login server endpoint')
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
+
+@description('Managed identity resource ID for Container Registry')
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = userAssignedIdentityId
+
+@description('Name of the Azure Container Registry')
+output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
+
+// Diagnostic Settings for Container Registry
+@description('Diagnostic settings for Container Registry')
+resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${registry.name}-diag'
+  scope: registry
+  properties: {
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logs: logsSettings
+    metrics: metricsSettings
+  }
+}
+
+@description('Container Apps managed environment for hosting containerized applications')
+resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
+  name: appEnvName
+  location: location
+  tags: tags
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
+  }
+  properties: {
+    vnetConfiguration: {
+      infrastructureSubnetId: apiSubnetId
+    }
+    publicNetworkAccess: 'Enabled' // Enable public access, use private endpoints only
+    // Consumption workload profile provides:
+    // - Serverless, pay-per-use pricing model (only pay for actual resource usage)
+    // - Automatic scaling from 0 to meet demand
+    // - No minimum instance charges when scaled to zero
+    // - Suitable for event-driven and variable workloads
+    workloadProfiles: [
+      {
+        workloadProfileType: 'Consumption'
+        name: 'Consumption'
+      }
+    ]
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: workspaceCustomerId
+        // This repo passes the workspace shared key through module parameters.
+        // Per repo constraints we do not mark it as secure; silence the linter rule for this line only.
+        #disable-next-line use-secure-value-for-secure-inputs
+        sharedKey: workspacePrimaryKey
+      }
+    }
+    appInsightsConfiguration: {
+      // This repo passes the App Insights connection string through module parameters.
+      // Per repo constraints we do not mark it as secure; silence the linter rule for this line only.
+      #disable-next-line use-secure-value-for-secure-inputs
+      connectionString: appInsightsConnectionString
+    }
+  }
+}
+
+// Container Apps Environment Outputs
+@description('Name of the Container Apps Environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = appEnv.name
+
+@description('Resource ID of the Container Apps Environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
+
+@description('Default domain for the Container Apps Environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
+
+// .NET Aspire Dashboard for Application Observability
+@description('.NET Aspire dashboard component for application observability and distributed tracing')
+resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2024-10-02-preview' = {
+  parent: appEnv
+  name: 'aspire-dashboard'
+  properties: {
+    componentType: 'AspireDashboard'
+    configurations: [
+      {
+        propertyName: 'ASPNETCORE_ENVIRONMENT'
+        value: envName == 'prod' ? 'Production' : 'Development'
+      }
+      {
+        propertyName: 'ASPIRE_ALLOW_UNSECURED_TRANSPORT'
+        value: envName != 'prod' ? 'true' : 'false'
+      }
+    ]
+  }
+}
+
+// Dashboard Outputs
+@description('Resource ID of the Aspire Dashboard')
+output ASPIRE_DASHBOARD_ID string = dashboard.id
+
+@description('Name of the Aspire Dashboard component')
+output ASPIRE_DASHBOARD_NAME string = dashboard.name

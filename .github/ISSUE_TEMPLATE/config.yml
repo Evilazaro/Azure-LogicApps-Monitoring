@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussion Forum
+    url: https://github.com/Evilazaro/Azure-LogicApps-Monitoring/discussions
+    about: Please use discussions for questions, ideas, and general conversations
+  - name: 📚 Documentation
+    url: https://github.com/Evilazaro/Azure-LogicApps-Monitoring
+    about: Check the project documentation for guides and reference material
+  - name: 🐛 Security Vulnerabilities
+    url: https://github.com/Evilazaro/Azure-LogicApps-Monitoring/security/advisories/new
+    about: Please report security vulnerabilities privately through GitHub Security Advisories
