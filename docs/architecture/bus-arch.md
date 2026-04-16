@@ -67,7 +67,7 @@ config:
   flowchart:
     htmlLabels: true
 ---
-flowchart TB
+flowchart LR
     accTitle: Azure Logic Apps Monitoring Business Context Diagram
     accDescr: Business context diagram showing the three primary business actors, the solution system boundary containing the Web App, Orders API, and Logic Apps workflows, and external Azure platform services including Service Bus, SQL Database, Blob Storage, and Application Insights.
 
@@ -539,7 +539,7 @@ config:
   flowchart:
     htmlLabels: true
 ---
-flowchart TB
+flowchart LR
     accTitle: Order Lifecycle Current State Business Process Flow
     accDescr: End-to-end business process flow showing the complete order lifecycle from customer order submission through API validation, SQL persistence, Service Bus publishing, Logic Apps workflow processing, blob archival, and order completion cleanup.
 
@@ -1004,7 +1004,7 @@ config:
   flowchart:
     htmlLabels: true
 ---
-flowchart TB
+flowchart LR
     accTitle: Business Integration Architecture Diagram for Azure Logic Apps Monitoring Solution
     accDescr: Integration architecture diagram showing all business components and their integration relationships including synchronous REST calls, asynchronous Service Bus messaging, blob storage archival, and telemetry channels. Three integration zones are depicted: Customer Zone with the Web App, Integration Core with the Orders API, and Automation Zone with Logic Apps workflows and Azure platform services.
 
