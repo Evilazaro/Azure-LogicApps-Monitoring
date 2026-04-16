@@ -81,6 +81,7 @@ flowchart LR
     OpsTeam(["🔧 Operations Team\n(Workflow Monitor)"]):::actorSupport
 
     subgraph SYS["🏢  Solution System Boundary — Azure Logic Apps Monitoring"]
+        direction TB
         style SYS fill:#EFF6FC,stroke:#0078D4,stroke-width:3px,color:#004578
 
         WebApp("🖥️ eShop Web App\n(Blazor Server UI)"):::appNode
@@ -89,6 +90,7 @@ flowchart LR
     end
 
     subgraph AZURE["☁️  Azure Platform Services"]
+        direction TB
         style AZURE fill:#F3F2F1,stroke:#8A8886,stroke-width:2px,color:#323130
 
         ServiceBus("📨 Azure Service Bus\n(ordersplaced topic)"):::platformNode
