@@ -210,30 +210,32 @@ Source: src/eShop.Orders.API/Controllers/OrdersController.cs:1-_, src/eShop.Web.
 
 ### 2.4 Business Processes
 
-| Name                                   | Description                                                                                                                                                          |
-| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Place Single Order                     | Customer provides order details (ID, Customer ID, delivery address, products, total) via web form; API validates and persists to SQL; event published to Service Bus |
-| Place Batch Orders                     | Operator submits multiple orders in single API call; each order validated and persisted; events published for each order                                             |
-| View Order by ID                       | User queries specific order; API retrieves from SQL via repository pattern and returns Order DTO                                                                     |
-| List All Orders                        | User lists all orders in the system; paginated retrieval from SQL via repository                                                                                     |
-| Delete Order                           | User removes an order by ID; API deletes from persistence layer                                                                                                      |
-| Automated Order Processing (Logic App) | Service Bus triggers Logic App; workflow calls Orders API process endpoint; on success archives to Blob; on failure archives to error Blob                           |
-| Database Initialisation                | On API startup, EF Core migrations applied automatically with retry logic                                                                                            |
+| Name                                         | Description                                                                                                                                                          |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Place Single Order                           | Customer provides order details (ID, Customer ID, delivery address, products, total) via web form; API validates and persists to SQL; event published to Service Bus |
+| Place Batch Orders                           | Operator submits multiple orders in single API call; each order validated and persisted; events published for each order                                             |
+| View Order by ID                             | User queries specific order; API retrieves from SQL via repository pattern and returns Order DTO                                                                     |
+| List All Orders                              | User lists all orders in the system; paginated retrieval from SQL via repository                                                                                     |
+| Delete Order                                 | User removes an order by ID; API deletes from persistence layer                                                                                                      |
+| Automated Order Processing (Logic App)       | Service Bus triggers Logic App; workflow calls Orders API process endpoint; on success archives to Blob; on failure archives to error Blob                           |
+| Completed Order Archival Cleanup (Logic App) | Recurrence-triggered workflow (every 3 s) lists blobs in `/ordersprocessedsuccessfully`, reads metadata for each, and deletes the blob (concurrency: 20 parallel)    |
+| Database Initialisation                      | On API startup, EF Core migrations applied automatically with retry logic                                                                                            |
 
-Source: src/eShop.Orders.API/Controllers/OrdersController.cs:1-_, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-_, src/eShop.Orders.API/Program.cs:120-160
+Source: src/eShop.Orders.API/Controllers/OrdersController.cs:1-_, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-_, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-\_, src/eShop.Orders.API/Program.cs:120-160
 
 ### 2.5 Business Services
 
-| Name                      | Description                                                                                                 |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Orders REST API           | HTTP/S RESTful service exposing CRUD + batch operations at `/api/orders` and `/api/orders/batch`            |
-| Orders Web Application    | Blazor Server interactive UI hosted on Azure Container Apps providing order placement, listing, and viewing |
-| Order Message Service     | Azure Service Bus topic (`ordersplaced`) publishing order events for downstream consumption                 |
-| Order Processing Workflow | Logic Apps Standard workflow consuming Service Bus messages and orchestrating order processing steps        |
-| Order Archival Service    | Azure Blob Storage archival service writing processed and failed orders to dedicated containers             |
-| Health Check Service      | `/health/live` and `/health/ready` endpoints reporting database and Service Bus availability                |
+| Name                            | Description                                                                                                                                                      |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Orders REST API                 | HTTP/S RESTful service exposing CRUD + batch operations at `/api/orders` and `/api/orders/batch`                                                                 |
+| Orders Web Application          | Blazor Server interactive UI hosted on Azure Container Apps providing order placement, listing, and viewing                                                      |
+| Order Message Service           | Azure Service Bus topic (`ordersplaced`) publishing order events for downstream consumption                                                                      |
+| Order Processing Workflow       | Logic Apps Standard workflow consuming Service Bus messages and orchestrating order processing steps                                                             |
+| Order Archival Service          | Azure Blob Storage archival service writing processed and failed orders to dedicated containers                                                                  |
+| Order Archival Cleanup Workflow | Logic Apps Standard recurrence workflow deleting blobs from `/ordersprocessedsuccessfully` after final processing; triggered every 3 seconds with concurrency 20 |
+| Health Check Service            | `/health/live` and `/health/ready` endpoints reporting database and Service Bus availability                                                                     |
 
-Source: src/eShop.Orders.API/Program.cs:1-_, src/eShop.Web.App/Program.cs:1-_, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-_, infra/workload/messaging/main.bicep:1-_
+Source: src/eShop.Orders.API/Program.cs:1-_, src/eShop.Web.App/Program.cs:1-_, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-_, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-_, infra/workload/messaging/main.bicep:1-\_
 
 ### 2.6 Business Functions
 
@@ -269,7 +271,7 @@ Source: app.AppHost/AppHost.cs:1-_, infra/shared/identity:1-_, azure.yaml:1-\*
 | --------------------------------- | --------------------------------------------------------------------------------------------------- |
 | Order ID Required                 | Each order must have a non-empty string ID of 1–100 characters                                      |
 | Customer ID Required              | Each order must reference a valid customer ID of 1–100 characters                                   |
-| Delivery Address Required         | Each order must include a non-empty delivery address up to 500 characters                           |
+| Delivery Address Required         | Each order must include a delivery address between 5 and 500 characters                             |
 | Products Required                 | Orders must include at least one product                                                            |
 | Order Uniqueness                  | Duplicate order IDs are rejected with HTTP 409 Conflict                                             |
 | Service Bus Conditional           | Service Bus client only initialised when `Azure:ServiceBus:HostName` is non-localhost and non-empty |
@@ -281,28 +283,29 @@ Source: app.ServiceDefaults/CommonTypes.cs:80-120, src/eShop.Orders.API/Controll
 
 ### 2.9 Business Events
 
-| Name                     | Description                                                                                         |
-| ------------------------ | --------------------------------------------------------------------------------------------------- |
-| OrderPlaced              | Raised when a single order is successfully persisted; published to Service Bus topic `ordersplaced` |
-| OrderBatchPlaced         | Raised for each order in a successful batch placement operation                                     |
-| OrderDeleted             | Internal event when an order is removed from the persistence layer                                  |
-| OrderProcessingStarted   | Triggered when Logic App receives Service Bus message and begins workflow execution                 |
-| OrderProcessingSucceeded | Raised when HTTP 201 returned by process endpoint; triggers successful archive action               |
-| OrderProcessingFailed    | Raised when process endpoint returns non-201; triggers error archive action                         |
-| ApplicationStarted       | ASP.NET Core lifetime event triggering database initialisation on API startup                       |
-| HealthCheckCompleted     | Periodic health probe result published for liveness and readiness endpoints                         |
+| Name                          | Description                                                                                                            |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| OrderPlaced                   | Raised when a single order is successfully persisted; published to Service Bus topic `ordersplaced`                    |
+| OrderBatchPlaced              | Raised for each order in a successful batch placement operation                                                        |
+| OrderDeleted                  | Internal event when an order is removed from the persistence layer                                                     |
+| OrderProcessingStarted        | Triggered when Logic App receives Service Bus message and begins workflow execution                                    |
+| OrderProcessingSucceeded      | Raised when HTTP 201 returned by process endpoint; triggers successful archive action                                  |
+| OrderProcessingFailed         | Raised when process endpoint returns non-201; triggers error archive action                                            |
+| ApplicationStarted            | ASP.NET Core lifetime event triggering database initialisation on API startup                                          |
+| HealthCheckCompleted          | Periodic health probe result published for liveness and readiness endpoints                                            |
+| OrderArchivalCleanupCompleted | Raised when OrdersPlacedCompleteProcess deletes a blob from `/ordersprocessedsuccessfully` after successful processing |
 
-Source: src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-_, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-_, src/eShop.Orders.API/Program.cs:110-140
+Source: src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs:1-_, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json:1-_, workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json:1-\_, src/eShop.Orders.API/Program.cs:110-140
 
 ### 2.10 Business Objects/Entities
 
-| Name               | Description                                                                                                        |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| Order              | Core business entity representing a customer order with ID, CustomerId, Date, DeliveryAddress, Total, and Products |
-| OrderProduct       | Line item entity within an order containing product identifier and quantity                                        |
-| OrderEntity        | Persistence-layer representation of Order, mapped to `Orders` table in Azure SQL                                   |
-| OrderProductEntity | Persistence-layer representation of OrderProduct, mapped to `OrderProducts` table                                  |
-| WeatherForecast    | Demonstration/health-check entity included in shared service defaults                                              |
+| Name               | Description                                                                                                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Order              | Core business entity representing a customer order with ID, CustomerId, Date, DeliveryAddress, Total, and Products                                                     |
+| OrderProduct       | Line item entity with fields: Id (required), OrderId (FK), ProductId (required), ProductDescription (1–500 chars required), Quantity (int ≥ 1), Price (decimal > 0.01) |
+| OrderEntity        | Persistence-layer representation of Order, mapped to `Orders` table in Azure SQL                                                                                       |
+| OrderProductEntity | Persistence-layer representation of OrderProduct, mapped to `OrderProducts` table                                                                                      |
+| WeatherForecast    | Demonstration/health-check entity included in shared service defaults                                                                                                  |
 
 Source: app.ServiceDefaults/CommonTypes.cs:70-_, src/eShop.Orders.API/data/Entities/OrderEntity.cs:1-_, src/eShop.Orders.API/data/Entities/OrderProductEntity.cs:1-\*
 
@@ -709,17 +712,18 @@ flowchart LR
 
 ### 5.4 Business Processes
 
-**Overview:** Seven business processes are identified with full lifecycle detail from trigger to outcome. All processes are evidenced in source code or workflow definitions.
+**Overview:** Eight business processes are identified with full lifecycle detail from trigger to outcome. All processes are evidenced in source code or workflow definitions.
 
-| Component                  | Description                                                                        | Owner         | Stakeholders    | Trigger                               | Outcome                                | Business Rules                          | Dependencies                        |
-| -------------------------- | ---------------------------------------------------------------------------------- | ------------- | --------------- | ------------------------------------- | -------------------------------------- | --------------------------------------- | ----------------------------------- |
-| Place Single Order         | HTTP POST to /api/orders; validate; persist; publish event                         | Orders Team   | Customer        | POST request                          | 201 Created + ServiceBus message       | Order ID required; unique; fields valid | OrderService, OrderRepository       |
-| Place Batch Orders         | HTTP POST to /api/orders/batch; iterate; validate each; persist each; publish each | Orders Team   | Operator        | POST batch request                    | 200 OK with placed orders list         | Each order independently validated      | OrderService, OrderRepository       |
-| View Order by ID           | HTTP GET /api/orders/{id}; repository lookup; return DTO                           | Orders Team   | Customer, Ops   | GET request with ID                   | 200 OK with Order or 404 Not Found     | Order must exist                        | OrderRepository                     |
-| List All Orders            | HTTP GET /api/orders; repository list-all; return collection                       | Orders Team   | Customer, Ops   | GET request                           | 200 OK with Order collection           | None                                    | OrderRepository                     |
-| Delete Order               | HTTP DELETE /api/orders/{id}; repository delete                                    | Orders Team   | Ops             | DELETE request with ID                | 204 No Content or 404 Not Found        | Order must exist                        | OrderRepository                     |
-| Automated Order Processing | Service Bus → Logic App → HTTP POST to process endpoint → archive                  | Workflow Team | Ops, Compliance | Service Bus message on `ordersplaced` | Order archived (success or error path) | HTTP 201 = success; else error          | Logic App, Orders API, Blob Storage |
-| Database Initialisation    | App startup → EF Core MigrateAsync with 10-attempt retry                           | Platform Team | Dev Team, Ops   | ApplicationStarted event              | Schema up-to-date in Azure SQL         | maxRetries=10; retryDelay=5s            | OrderDbContext, Azure SQL           |
+| Component                  | Description                                                                                                                     | Owner         | Stakeholders    | Trigger                               | Outcome                                | Business Rules                          | Dependencies                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------- | --------------- | ------------------------------------- | -------------------------------------- | --------------------------------------- | ----------------------------------------- |
+| Place Single Order         | HTTP POST to /api/orders; validate; persist; publish event                                                                      | Orders Team   | Customer        | POST request                          | 201 Created + ServiceBus message       | Order ID required; unique; fields valid | OrderService, OrderRepository             |
+| Place Batch Orders         | HTTP POST to /api/orders/batch; iterate; validate each; persist each; publish each                                              | Orders Team   | Operator        | POST batch request                    | 200 OK with placed orders list         | Each order independently validated      | OrderService, OrderRepository             |
+| View Order by ID           | HTTP GET /api/orders/{id}; repository lookup; return DTO                                                                        | Orders Team   | Customer, Ops   | GET request with ID                   | 200 OK with Order or 404 Not Found     | Order must exist                        | OrderRepository                           |
+| List All Orders            | HTTP GET /api/orders; repository list-all; return collection                                                                    | Orders Team   | Customer, Ops   | GET request                           | 200 OK with Order collection           | None                                    | OrderRepository                           |
+| Delete Order               | HTTP DELETE /api/orders/{id}; repository delete                                                                                 | Orders Team   | Ops             | DELETE request with ID                | 204 No Content or 404 Not Found        | Order must exist                        | OrderRepository                           |
+| Automated Order Processing | Service Bus → Logic App → HTTP POST to process endpoint → archive                                                               | Workflow Team | Ops, Compliance | Service Bus message on `ordersplaced` | Order archived (success or error path) | HTTP 201 = success; else error          | Logic App, Orders API, Blob Storage       |
+| Completed Order Cleanup    | Recurrence trigger (every 3 s) → list blobs in `/ordersprocessedsuccessfully` → get metadata each → delete blob; concurrency 20 | Workflow Team | Compliance, Ops | Recurrence (3-second interval)        | Successfully processed blobs deleted   | Concurrency: 20; trigger: Recurrence    | OrdersPlacedCompleteProcess, Blob Storage |
+| Database Initialisation    | App startup → EF Core MigrateAsync with 10-attempt retry                                                                        | Platform Team | Dev Team, Ops   | ApplicationStarted event              | Schema up-to-date in Azure SQL         | maxRetries=10; retryDelay=5s            | OrderDbContext, Azure SQL                 |
 
 **Order Processing Flow:**
 
@@ -787,16 +791,17 @@ flowchart TD
 
 ### 5.5 Business Services
 
-**Overview:** Six business services are identified, mapping to distinct technical service endpoints or managed Azure services within the solution boundary.
+**Overview:** Seven business services are identified, mapping to distinct technical service endpoints or managed Azure services within the solution boundary.
 
-| Component                 | Description                                                             | Owner         | Stakeholders       | Trigger                  | Outcome                                     | Business Rules                          | Dependencies                                |
-| ------------------------- | ----------------------------------------------------------------------- | ------------- | ------------------ | ------------------------ | ------------------------------------------- | --------------------------------------- | ------------------------------------------- |
-| Orders REST API           | ASP.NET Core Web API at /api/orders; exposes CRUD + batch endpoints     | Orders Team   | Customer, Operator | HTTP request             | JSON response per endpoint contract         | OpenAPI documented; versioned           | Azure Container Apps, Azure SQL             |
-| Orders Web Application    | Blazor Server UI for order management; served from Azure Container Apps | Web Team      | Customer           | Browser navigation       | Interactive order management UI             | HTTPS only; secure session cookie       | Orders REST API, FluentUI                   |
-| Order Message Service     | Azure Service Bus topic `ordersplaced` with subscription                | Platform Team | Workflow Team      | Order placed event       | Message available for Logic App consumption | Topic must exist; managed identity auth | Service Bus namespace                       |
-| Order Processing Workflow | Logic Apps Standard workflow consuming ordersplaced subscription        | Workflow Team | Compliance, Ops    | Service Bus trigger      | Order processed and archived                | HTTP 201 = success path                 | Logic Apps, Orders API                      |
-| Order Archival Service    | Azure Blob Storage containers for processed and failed orders           | Platform Team | Compliance Team    | Logic App archive action | Blob file created                           | Content-type: application/json          | Azure Blob Storage, azureblob connection    |
-| Health Check Service      | ASP.NET Core health endpoints /health/live and /health/ready            | Platform Team | Ops Team           | ACA health probe         | 200 OK or 503 Unhealthy                     | Database and Service Bus checks         | DbContextHealthCheck, ServiceBusHealthCheck |
+| Component                      | Description                                                                                                                       | Owner         | Stakeholders       | Trigger                  | Outcome                                        | Business Rules                          | Dependencies                                         |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------ | ------------------------ | ---------------------------------------------- | --------------------------------------- | ---------------------------------------------------- |
+| Orders REST API                | ASP.NET Core Web API at /api/orders; exposes CRUD + batch endpoints                                                               | Orders Team   | Customer, Operator | HTTP request             | JSON response per endpoint contract            | OpenAPI documented; versioned           | Azure Container Apps, Azure SQL                      |
+| Orders Web Application         | Blazor Server UI for order management; served from Azure Container Apps                                                           | Web Team      | Customer           | Browser navigation       | Interactive order management UI                | HTTPS only; secure session cookie       | Orders REST API, FluentUI                            |
+| Order Message Service          | Azure Service Bus topic `ordersplaced` with subscription                                                                          | Platform Team | Workflow Team      | Order placed event       | Message available for Logic App consumption    | Topic must exist; managed identity auth | Service Bus namespace                                |
+| Order Processing Workflow      | Logic Apps Standard workflow consuming ordersplaced subscription                                                                  | Workflow Team | Compliance, Ops    | Service Bus trigger      | Order processed and archived                   | HTTP 201 = success path                 | Logic Apps, Orders API                               |
+| Order Archival Service         | Azure Blob Storage containers for processed and failed orders                                                                     | Platform Team | Compliance Team    | Logic App archive action | Blob file created                              | Content-type: application/json          | Azure Blob Storage, azureblob connection             |
+| Order Archival Cleanup Service | Logic Apps Standard recurrence workflow (OrdersPlacedCompleteProcess) deleting processed blobs; 3-second interval, concurrency 20 | Workflow Team | Compliance, Ops    | Recurrence trigger       | Processed blobs deleted from success container | Concurrency: 20; stateful workflow      | Logic Apps, Azure Blob Storage, azureblob connection |
+| Health Check Service           | ASP.NET Core health endpoints /health/live and /health/ready                                                                      | Platform Team | Ops Team           | ACA health probe         | 200 OK or 503 Unhealthy                        | Database and Service Bus checks         | DbContextHealthCheck, ServiceBusHealthCheck          |
 
 ### 5.6 Business Functions
 
@@ -830,17 +835,17 @@ flowchart TD
 
 **Overview:** Nine business rules are identified, all directly sourced from application code, workflow definitions, or configuration files. No rules engine is used; all rules are embedded in service or workflow code.
 
-| Component                         | Description                                                                             | Owner         | Stakeholders    | Trigger                        | Outcome                                  | Business Rules                                 | Dependencies                            |
-| --------------------------------- | --------------------------------------------------------------------------------------- | ------------- | --------------- | ------------------------------ | ---------------------------------------- | ---------------------------------------------- | --------------------------------------- |
-| Order ID Required                 | Order.Id must be non-empty string 1–100 chars; validated by [Required] + [StringLength] | Orders Team   | Dev Team        | Order placement                | 400 if violated                          | DataAnnotations; ASP.NET ModelState            | CommonTypes.cs                          |
-| Customer ID Required              | Order.CustomerId must be non-empty string 1–100 chars                                   | Orders Team   | Dev Team        | Order placement                | 400 if violated                          | DataAnnotations                                | CommonTypes.cs                          |
-| Delivery Address Required         | Order.DeliveryAddress must be non-empty string up to 500 chars                          | Orders Team   | Dev Team        | Order placement                | 400 if violated                          | DataAnnotations                                | CommonTypes.cs                          |
-| Order Uniqueness                  | Duplicate order IDs rejected with InvalidOperationException mapped to HTTP 409          | Orders Team   | Dev Team        | Order placement                | 409 Conflict if duplicate                | Checked in OrderService or repository          | OrderRepository, SQL unique constraint  |
-| Service Bus Conditional           | Service Bus client only active when HostName is non-localhost and non-empty             | Platform Team | Dev Team        | Application startup            | NoOpMessageHandler if inactive           | Configuration-driven                           | AppHost configuration, IConfiguration   |
-| Session Idle Timeout              | Web App sessions expire after 30 minutes of inactivity                                  | Web Team      | Customer        | Session inactivity             | Session cleared; user must re-enter data | options.IdleTimeout = 30 min                   | ASP.NET Core Session                    |
-| Processing Success = Success Blob | Logic App routes to /ordersprocessedsuccessfully container on HTTP 201                  | Workflow Team | Compliance Team | HTTP 201 from process endpoint | Order blob in success container          | Condition: statusCode equals 201               | Logic Apps If condition                 |
-| Processing Failure = Error Blob   | Logic App routes to error blob on non-201 response                                      | Workflow Team | Compliance Team | Non-201 from process endpoint  | Order blob in error container            | Else branch of If condition                    | Logic Apps If condition                 |
-| Content-Type Validation           | Logic App checks ContentType == application/json before processing                      | Workflow Team | Dev Team        | Service Bus message received   | Skips non-JSON messages                  | Condition: ContentType equals application/json | Logic Apps Check_Order_Placed condition |
+| Component                         | Description                                                                                      | Owner         | Stakeholders    | Trigger                        | Outcome                                  | Business Rules                                 | Dependencies                            |
+| --------------------------------- | ------------------------------------------------------------------------------------------------ | ------------- | --------------- | ------------------------------ | ---------------------------------------- | ---------------------------------------------- | --------------------------------------- |
+| Order ID Required                 | Order.Id must be non-empty string 1–100 chars; validated by [Required] + [StringLength]          | Orders Team   | Dev Team        | Order placement                | 400 if violated                          | DataAnnotations; ASP.NET ModelState            | CommonTypes.cs                          |
+| Customer ID Required              | Order.CustomerId must be non-empty string 1–100 chars                                            | Orders Team   | Dev Team        | Order placement                | 400 if violated                          | DataAnnotations                                | CommonTypes.cs                          |
+| Delivery Address Required         | Order.DeliveryAddress must be string between 5 and 500 chars (StringLength 500, MinimumLength 5) | Orders Team   | Dev Team        | Order placement                | 400 if violated                          | DataAnnotations                                | CommonTypes.cs                          |
+| Order Uniqueness                  | Duplicate order IDs rejected with InvalidOperationException mapped to HTTP 409                   | Orders Team   | Dev Team        | Order placement                | 409 Conflict if duplicate                | Checked in OrderService or repository          | OrderRepository, SQL unique constraint  |
+| Service Bus Conditional           | Service Bus client only active when HostName is non-localhost and non-empty                      | Platform Team | Dev Team        | Application startup            | NoOpMessageHandler if inactive           | Configuration-driven                           | AppHost configuration, IConfiguration   |
+| Session Idle Timeout              | Web App sessions expire after 30 minutes of inactivity                                           | Web Team      | Customer        | Session inactivity             | Session cleared; user must re-enter data | options.IdleTimeout = 30 min                   | ASP.NET Core Session                    |
+| Processing Success = Success Blob | Logic App routes to /ordersprocessedsuccessfully container on HTTP 201                           | Workflow Team | Compliance Team | HTTP 201 from process endpoint | Order blob in success container          | Condition: statusCode equals 201               | Logic Apps If condition                 |
+| Processing Failure = Error Blob   | Logic App routes to error blob on non-201 response                                               | Workflow Team | Compliance Team | Non-201 from process endpoint  | Order blob in error container            | Else branch of If condition                    | Logic Apps If condition                 |
+| Content-Type Validation           | Logic App checks ContentType == application/json before processing                               | Workflow Team | Dev Team        | Service Bus message received   | Skips non-JSON messages                  | Condition: ContentType equals application/json | Logic Apps Check_Order_Placed condition |
 
 ### 5.9 Business Events
 
@@ -861,13 +866,13 @@ flowchart TD
 
 **Overview:** Five business objects/entities are defined, with the Order and OrderProduct forming the core domain model. All entities are directly evidenced in source files.
 
-| Component          | Description                                                                                      | Owner         | Stakeholders | Trigger               | Outcome                             | Business Rules                           | Dependencies                       |
-| ------------------ | ------------------------------------------------------------------------------------------------ | ------------- | ------------ | --------------------- | ----------------------------------- | ---------------------------------------- | ---------------------------------- |
-| Order              | Core business entity: Id, CustomerId, Date, DeliveryAddress, Total, Products                     | Orders Team   | All          | Any order operation   | Order state managed                 | Id: 1-100 chars required; Total: decimal | CommonTypes.cs, OrderEntity        |
-| OrderProduct       | Line item: ProductId, Quantity, UnitPrice (inferred); child of Order                             | Orders Team   | All          | Order creation        | Product lines recorded              | Must belong to a valid Order             | CommonTypes.cs, OrderProductEntity |
-| OrderEntity        | EF Core persistence entity: Id, CustomerId, Date, DeliveryAddress, Total + Products nav property | Orders Team   | Dev Team     | DB read/write         | Persisted to Azure SQL Orders table | Key: Id (MaxLength 100); Decimal Total   | OrderDbContext, Azure SQL          |
-| OrderProductEntity | EF Core persistence entity for order line items; FK relationship to OrderEntity                  | Orders Team   | Dev Team     | DB read/write         | Persisted to OrderProducts table    | FK to OrderEntity                        | OrderDbContext, Azure SQL          |
-| WeatherForecast    | Demo entity: Date, TemperatureC, TemperatureF (derived), Summary                                 | Platform Team | Dev Team     | Demo endpoint request | Demo data returned                  | TemperatureF = 32 + (C × 1.8)            | CommonTypes.cs                     |
+| Component          | Description                                                                                                                     | Owner         | Stakeholders | Trigger               | Outcome                             | Business Rules                                    | Dependencies                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------ | --------------------- | ----------------------------------- | ------------------------------------------------- | ---------------------------------- |
+| Order              | Core business entity: Id, CustomerId, Date, DeliveryAddress, Total, Products                                                    | Orders Team   | All          | Any order operation   | Order state managed                 | Id: 1-100 chars required; Total: decimal          | CommonTypes.cs, OrderEntity        |
+| OrderProduct       | Line item: Id, OrderId, ProductId, ProductDescription (1–500 chars), Quantity (int ≥ 1), Price (decimal > 0.01); child of Order | Orders Team   | All          | Order creation        | Product lines recorded              | Must belong to a valid Order; all fields required | CommonTypes.cs, OrderProductEntity |
+| OrderEntity        | EF Core persistence entity: Id, CustomerId, Date, DeliveryAddress, Total + Products nav property                                | Orders Team   | Dev Team     | DB read/write         | Persisted to Azure SQL Orders table | Key: Id (MaxLength 100); Decimal Total            | OrderDbContext, Azure SQL          |
+| OrderProductEntity | EF Core persistence entity for order line items; FK relationship to OrderEntity                                                 | Orders Team   | Dev Team     | DB read/write         | Persisted to OrderProducts table    | FK to OrderEntity                                 | OrderDbContext, Azure SQL          |
+| WeatherForecast    | Demo entity: Date, TemperatureC, TemperatureF (derived), Summary                                                                | Platform Team | Dev Team     | Demo endpoint request | Demo data returned                  | TemperatureF = 32 + (C × 1.8)                     | CommonTypes.cs                     |
 
 ### 5.11 KPIs & Metrics
 
