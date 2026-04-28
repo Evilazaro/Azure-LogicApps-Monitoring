@@ -44,8 +44,12 @@ The Azure Logic Apps Monitoring Solution is a cloud-native eShop order managemen
 ```mermaid
 ---
 config:
+  theme: base
   htmlLabels: true
   fontFamily: "Segoe UI, Verdana, sans-serif"
+  fontSize: 16px
+  align: center
+  description: "High-level architecture diagram showing actors, primary flows, and major components."
 ---
 flowchart TB
   %% ──────────────── External Actors ────────────────
