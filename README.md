@@ -46,10 +46,29 @@ The Azure Logic Apps Monitoring Solution is a cloud-native eShop order managemen
 config:
   theme: base
   htmlLabels: true
-  fontFamily: "Segoe UI, Verdana, sans-serif"
+  fontFamily: "'Segoe UI', Verdana, sans-serif"
   fontSize: 16px
   align: center
-  description: "High-level architecture diagram showing actors, primary flows, and major components."
+  primaryColor: "#0078D4"
+  primaryTextColor: "#FFFFFF"
+  primaryBorderColor: "#005A9E"
+  secondaryColor: "#EFF6FC"
+  secondaryTextColor: "#201F1E"
+  secondaryBorderColor: "#0078D4"
+  tertiaryColor: "#F3F2F1"
+  tertiaryTextColor: "#323130"
+  tertiaryBorderColor: "#8A8886"
+  noteBkgColor: "#FFF4CE"
+  noteTextColor: "#323130"
+  noteBorderColor: "#C8C6C4"
+  lineColor: "#605E5C"
+  background: "#FFFFFF"
+  edgeLabelBackground: "#FFFFFF"
+  clusterBkg: "#FAF9F8"
+  clusterBorder: "#C8C6C4"
+  titleColor: "#201F1E"
+  errorBkgColor: "#FDE7E9"
+  errorTextColor: "#A4262C"
 ---
 flowchart TB
   %% ──────────────── External Actors ────────────────
