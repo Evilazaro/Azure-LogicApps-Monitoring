@@ -64,6 +64,7 @@ config:
   errorTextColor: "#b10e1c"
   fontFamily: "Segoe UI, Verdana, sans-serif"
   fontSize: 16
+  theme: base
   align: center
   description: "High-level architecture diagram showing actors, primary flows, and major components."
 ---
