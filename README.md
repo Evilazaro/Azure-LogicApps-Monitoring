@@ -115,7 +115,25 @@ flowchart TB
   OrdersPlaced -.->|"Diagnostics — Telemetry"| AppInsights
   AppInsights -.->|"Log Ingestion"| LogAnalytics
 
+  %% ──────────────── Styles — colours drawn from config theme tokens ────────────────
+  %% primary:   fill=#0078D4  text=#FFFFFF  border=#005A9E
+  %% secondary: fill=#EFF6FC  text=#201F1E  border=#0078D4
+  %% tertiary:  fill=#F3F2F1  text=#323130  border=#8A8886
+  classDef actor fill:#0078D4,stroke:#005A9E,color:#FFFFFF
+  classDef frontend fill:#EFF6FC,stroke:#0078D4,color:#201F1E
+  classDef api fill:#0078D4,stroke:#005A9E,color:#FFFFFF
+  classDef datastore fill:#F3F2F1,stroke:#8A8886,color:#323130
+  classDef messaging fill:#EFF6FC,stroke:#0078D4,color:#201F1E
+  classDef workflow fill:#F3F2F1,stroke:#8A8886,color:#323130
+  classDef monitoring fill:#EFF6FC,stroke:#005A9E,color:#201F1E
 
+  class Customer actor
+  class WebApp frontend
+  class OrdersAPI api
+  class SqlDb datastore
+  class ServiceBus messaging
+  class OrdersPlaced,OrdersComplete workflow
+  class AppInsights,LogAnalytics monitoring
 ```
 
 ## Technologies Used
