@@ -46,12 +46,11 @@ The following diagram shows the high-level architecture of the Azure Logic Apps 
 ```mermaid
 ---
 config:
-  description: "High-level architecture diagram showing actors, primary flows, and major components."
-  theme: base
-  align: center
-  fontFamily: "Segoe UI, Verdana, sans-serif"
-  fontSize: 16
-  themeVariables:
+    description: "High-level architecture diagram showing actors, primary flows, and major components."
+    theme: base
+    align: center
+    fontFamily: "Segoe UI, Verdana, sans-serif"
+    fontSize: 16
     primaryColor: "#0f6cbd"           # colorBrandBackground (brandWeb[80])
     primaryTextColor: "#FFFFFF"       # colorNeutralForegroundOnBrand
     primaryBorderColor: "#0f548c"     # colorBrandBackground3Static (brandWeb[60])
