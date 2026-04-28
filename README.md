@@ -115,22 +115,7 @@ flowchart TB
   OrdersPlaced -.->|"Diagnostics — Telemetry"| AppInsights
   AppInsights -.->|"Log Ingestion"| LogAnalytics
 
-  %% ──────────────── Styles — Fluent UI v9 semantic tokens ────────────────
-  classDef actor fill:#EBF3FC,stroke:#0F6CBD,color:#242424
-  classDef frontend fill:#EBF3FC,stroke:#0F6CBD,color:#242424
-  classDef api fill:#DFF6DD,stroke:#107C10,color:#242424
-  classDef datastore fill:#F3F2F1,stroke:#605E5C,color:#242424
-  classDef messaging fill:#FFF4CE,stroke:#C19C00,color:#242424
-  classDef workflow fill:#F5F0FF,stroke:#8764B8,color:#242424
-  classDef monitoring fill:#EBF3FC,stroke:#1164A3,color:#242424
 
-  class Customer actor
-  class WebApp frontend
-  class OrdersAPI api
-  class SqlDb datastore
-  class ServiceBus messaging
-  class OrdersPlaced,OrdersComplete workflow
-  class AppInsights,LogAnalytics monitoring
 ```
 
 ## Technologies Used
