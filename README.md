@@ -42,31 +42,33 @@ Azure Logic Apps Monitoring is an event-driven order management platform. Custom
 ```mermaid
 ---
 config:
-  primaryColor: "#0f6cbd"
-  primaryTextColor: "#FFFFFF"
-  primaryBorderColor: "#0f548c"
-  secondaryColor: "#ebf3fc"
-  secondaryTextColor: "#242424"
-  secondaryBorderColor: "#0f6cbd"
-  tertiaryColor: "#f5f5f5"
-  tertiaryTextColor: "#424242"
-  tertiaryBorderColor: "#d1d1d1"
-  noteBkgColor: "#fefbf4"
-  noteTextColor: "#242424"
-  noteBorderColor: "#f9e2ae"
-  lineColor: "#616161"
-  background: "#FFFFFF"
-  edgeLabelBackground: "#FFFFFF"
-  clusterBkg: "#fafafa"
-  clusterBorder: "#e0e0e0"
-  titleColor: "#242424"
-  errorBkgColor: "#fdf3f4"
-  errorTextColor: "#b10e1c"
-  fontFamily: "Segoe UI, Verdana, sans-serif"
-  fontSize: 16
   theme: base
   align: center
   description: "High-level architecture diagram showing actors, primary flows, and major components."
+  themeVariables:
+    primaryColor: "#0f6cbd"
+    primaryTextColor: "#FFFFFF"
+    primaryBorderColor: "#0f548c"
+    secondaryColor: "#ebf3fc"
+    secondaryTextColor: "#242424"
+    secondaryBorderColor: "#0f6cbd"
+    tertiaryColor: "#f5f5f5"
+    tertiaryTextColor: "#424242"
+    tertiaryBorderColor: "#d1d1d1"
+    noteBkgColor: "#fefbf4"
+    noteTextColor: "#242424"
+    noteBorderColor: "#f9e2ae"
+    lineColor: "#616161"
+    background: "#FFFFFF"
+    edgeLabelBackground: "#FFFFFF"
+    clusterBkg: "#fafafa"
+    clusterBorder: "#e0e0e0"
+    titleColor: "#242424"
+    errorBkgColor: "#fdf3f4"
+    errorTextColor: "#b10e1c"
+    fontFamily: "Segoe UI, Verdana, sans-serif"
+    fontSize: 16
+
 ---
 flowchart TB
 
