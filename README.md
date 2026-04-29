@@ -59,18 +59,19 @@ config:
   description: "High-level architecture diagram showing actors, primary flows, and major components."
   theme: base
   align: center
-  fontFamily: "Segoe UI, Verdana, sans-serif"
-  fontSize: 16
-  textColor: "#242424"
-  primaryColor: "#f5f5f5"
-  primaryTextColor: "#FFFFFF"
-  primaryBorderColor: "#e0e0e0"
-  secondaryColor: "#dbdbdb"
-  secondaryTextColor: "#242424"
-  secondaryBorderColor: "#d6d6d6"
-  tertiaryColor: "#d1d1d1"
-  tertiaryTextColor: "#424242"
-  tertiaryBorderColor: "#b3b3b3"
+  themeVariables:
+    fontFamily: "Segoe UI, Verdana, sans-serif"
+    fontSize: 16
+    textColor: "#242424"
+    primaryColor: "#f5f5f5"
+    primaryTextColor: "#FFFFFF"
+    primaryBorderColor: "#e0e0e0"
+    secondaryColor: "#dbdbdb"
+    secondaryTextColor: "#242424"
+    secondaryBorderColor: "#d6d6d6"
+    tertiaryColor: "#d1d1d1"
+    tertiaryTextColor: "#424242"
+    tertiaryBorderColor: "#b3b3b3"
 ---
 flowchart TB
 
