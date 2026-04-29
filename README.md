@@ -124,28 +124,7 @@ flowchart TB
   WebApp -.->|"OpenTelemetry: traces and metrics"| AppInsights
   LogicApp -.->|"Diagnostics: workflow logs"| AppInsights
 
-  %% ── Subgraph Styles ─────────────────────────────────────────────────────
-  style ACA fill:#e8f4fd,stroke:#0f6cbd,color:#242424
-  style Messaging fill:#f3e8fd,stroke:#7719aa,color:#242424
-  style Workflows fill:#f3e8fd,stroke:#7719aa,color:#242424
-  style DataLayer fill:#e8f7e8,stroke:#107c10,color:#242424
-  style ObsLayer fill:#fffbe8,stroke:#b38600,color:#242424
 
-  %% ── Class Definitions ───────────────────────────────────────────────────
-  classDef actor fill:#cfe4fa,stroke:#0f6cbd,color:#242424
-  classDef service fill:#0f6cbd,stroke:#094580,color:#ffffff
-  classDef messaging fill:#7719aa,stroke:#4a0a75,color:#ffffff
-  classDef workflow fill:#e6d0f0,stroke:#7719aa,color:#242424
-  classDef datastore fill:#107c10,stroke:#054b05,color:#ffffff
-  classDef monitoring fill:#fde7a9,stroke:#b38600,color:#242424
-
-  %% ── Class Assignments ───────────────────────────────────────────────────
-  class Customer,GitHubActions actor
-  class WebApp,OrdersAPI service
-  class ServiceBus messaging
-  class LogicApp workflow
-  class SQLDb,BlobStorage datastore
-  class AppInsights monitoring
 ```
 
 **Architecture Gate Results**
