@@ -41,7 +41,7 @@ The primary technology stack includes **.NET 10**, ASP.NET Core, Blazor Server, 
 
 ## Architecture
 
-The Azure Logic Apps Monitoring solution is an event-driven order management platform. **Shoppers** place and track orders through the **eShop Web App** (Blazor Server), which calls the **eShop Orders API** (ASP.NET Core) to persist data in an **Azure SQL Database**. When an order is placed, the API publishes a message to the **Azure Service Bus** `ordersplaced` topic. The **OrdersPlacedProcess** Logic App Standard workflow subscribes to the topic, calls the Orders API to process each order, and writes the result to **Azure Blob Storage**. The **OrdersPlacedCompleteProcess** Logic App Standard workflow runs on a three-second recurrence, reads processed blobs, and sends completion acknowledgments back to the Service Bus. **Administrators and DevOps Engineers** observe the full system through **Application Insights** (OpenTelemetry telemetry from both .NET services) and a **Log Analytics Workspace** (diagnostic logs from Logic Apps and Service Bus). A **User-Assigned Managed Identity** secures all resource access, and workloads are isolated within an **Azure Virtual Network**. The entire platform is orchestrated by .NET Aspire and deployed via the Azure Developer CLI.
+The Azure Logic Apps Monitoring solution is an event-driven order management platform. **Shoppers** place and track orders through the **eShop Web App** (Blazor Server), which calls the **eShop Orders API** (ASP.NET Core) to persist data in an **Azure SQL Database**. When an order is placed, the API publishes a message to the **Azure Service Bus** `ordersplaced` topic. The **OrdersPlacedProcess** Logic App Standard workflow subscribes to the topic, calls the Orders API to process each order, and writes the result to **Azure Blob Storage**. The **OrdersPlacedCompleteProcess** Logic App Standard workflow reads processed results from Blob Storage and sends completion acknowledgments back to the Service Bus. **Administrators and DevOps Engineers** observe the full system through **Application Insights** (OpenTelemetry telemetry from both .NET services) and a **Log Analytics Workspace** (diagnostic logs from Logic Apps and Service Bus). A **User-Assigned Managed Identity** secures passwordless access to Service Bus, SQL Database, Blob Storage, and **Azure Container Registry** (from which container images are pulled at runtime). All workloads run in an **Azure Container Apps Environment** isolated within an **Azure Virtual Network**. The entire platform is orchestrated by .NET Aspire and deployed via the Azure Developer CLI.
 
 ```mermaid
 ---
@@ -119,6 +119,7 @@ flowchart TB
   %% ── Platform Layer ──────────────────────────────────────────────────────────
   subgraph PLATFORM["☁️ Platform Layer"]
     ACA_ENV("🐳 Container Apps Environment")
+    ACR("📦 Azure Container Registry")
     IDENTITY("🪪 Managed Identity")
     VNET("🕸️ Virtual Network")
   end
@@ -133,7 +134,7 @@ flowchart TB
   SERVICEBUS  -. "Trigger / New Message" .->      LA_PROCESS
   LA_PROCESS  -- "REST / Process Order"         --> ORDERSAPI
   LA_PROCESS  -- "Blob / Store Result"          --> BLOB
-  LA_COMPLETE -- "Recurrence / Every 3 s"       --> BLOB
+  LA_COMPLETE -- "Blob / Read Processed Results" --> BLOB
   LA_COMPLETE -. "AMQP / Complete Message" .->   SERVICEBUS
   WEBAPP      -. "OpenTelemetry / Traces" .->    APPINSIGHTS
   ORDERSAPI   -. "OpenTelemetry / Traces" .->    APPINSIGHTS
@@ -144,6 +145,9 @@ flowchart TB
   ORDERSAPI   -- "Runs On"                      --> ACA_ENV
   IDENTITY    -. "RBAC / Authenticate" .->       SERVICEBUS
   IDENTITY    -. "RBAC / Authenticate" .->       SQLDB
+  IDENTITY    -. "RBAC / Authenticate" .->       BLOB
+  IDENTITY    -. "RBAC / Pull Images"  .->       ACR
+  ACA_ENV     -. "Pull / Container Images" .->   ACR
   VNET        -- "Network Isolation"            --> ACA_ENV
 
   %% ── Class Assignments ────────────────────────────────────────────────────
@@ -153,7 +157,7 @@ flowchart TB
   class SQLDB datastore
   class BLOB storage
   class APPINSIGHTS,LOGANALYTICS monitor
-  class ACA_ENV containers
+  class ACA_ENV,ACR containers
   class IDENTITY identity
   class VNET networking
 ```
