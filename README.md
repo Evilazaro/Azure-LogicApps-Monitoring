@@ -50,22 +50,36 @@ config:
   theme: base
   flowchart:
     htmlLabels: true
+    nodeSpacing: 60
+    rankSpacing: 80
+    padding: 20
   themeVariables:
-    fontSize: 16px
+    fontSize: 14px
+    fontFamily: "Segoe UI, system-ui, sans-serif"
+    primaryColor: "#0078D4"
+    primaryTextColor: "#242424"
+    primaryBorderColor: "#005A9E"
+    secondaryColor: "#50E6FF"
+    tertiaryColor: "#F5F5F5"
+    lineColor: "#616161"
+    noteBkgColor: "#F5F5F5"
+    noteTextColor: "#242424"
 ---
 flowchart TB
     %% C4 Container Diagram — Azure Logic Apps Monitoring Solution
+    %% Styled per Microsoft Fluent UI Design Guidelines
+    %% Emoji references from Azure Emoji Icon Library
 
     %% ============================================================
     %% PERSONS / ACTORS
     %% ============================================================
-    Customer([<b>Customer</b><br>Person<br>Places and manages orders<br>through the web application])
-    Developer([<b>Developer</b><br>Person<br>Deploys, monitors, and<br>manages the solution])
+    Customer([<b>👤 Customer</b><br><i>Person</i><br>Places and manages orders<br>through the web application])
+    Developer([<b>👨‍💻 Developer</b><br><i>Person</i><br>Deploys, monitors, and<br>manages the solution])
 
     %% ============================================================
     %% EXTERNAL SYSTEMS
     %% ============================================================
-    AzureMonitor[\<b>Azure Monitor</b><br>External System<br>Collects telemetry, logs,<br>and metrics from all services\]
+    AzureMonitor[\<b>📊 Azure Monitor</b><br><i>External System</i><br>Collects telemetry, logs,<br>and metrics from all services\]
 
     %% ============================================================
     %% SYSTEM BOUNDARY
@@ -76,37 +90,37 @@ flowchart TB
         %% ========================================================
         %% PRESENTATION LAYER
         %% ========================================================
-        subgraph Presentation [<b>Presentation Layer</b>]
+        subgraph Presentation [<b>🌐 Presentation Layer</b>]
             direction LR
-            WebApp[<b>eShop Web App</b><br>Container: Blazor Server<br>Delivers order management UI<br>with Fluent UI components]
+            WebApp[<b>🌐 eShop Web App</b><br><i>Blazor Server · Container Apps</i><br>Delivers order management UI<br>with Fluent UI components]
         end
 
         %% ========================================================
         %% APPLICATION LAYER
         %% ========================================================
-        subgraph Application [<b>Application Layer</b>]
+        subgraph Application [<b>⚙️ Application Layer</b>]
             direction LR
-            OrdersAPI(<b>eShop Orders API</b><br>Container: ASP.NET Core<br>Manages order CRUD operations<br>and publishes events)
-            LogicApp(<b>Orders Management Logic App</b><br>Container: Logic Apps Standard<br>Automates order processing<br>and archival workflows)
+            OrdersAPI(<b>🔷 eShop Orders API</b><br><i>ASP.NET Core · Container Apps</i><br>Manages order CRUD operations<br>and publishes events)
+            LogicApp(<b>⚡ Orders Management</b><br><i>Logic Apps Standard</i><br>Automates order processing<br>and archival workflows)
         end
 
         %% ========================================================
         %% DATA LAYER
         %% ========================================================
-        subgraph Data [<b>Data Layer</b>]
+        subgraph Data [<b>🗄️ Data Layer</b>]
             direction LR
-            SqlDB[(<b>Azure SQL Database</b><br>Container: SQL Server<br>Persists order and<br>product data)]
-            BlobStorage[(<b>Azure Blob Storage</b><br>Container: Storage Account<br>Archives processed order<br>results and errors)]
+            SqlDB[(<b>🛢️ Azure SQL Database</b><br><i>SQL Server</i><br>Persists order and<br>product data)]
+            BlobStorage[(<b>📦 Azure Blob Storage</b><br><i>Storage Account</i><br>Archives processed order<br>results and errors)]
         end
 
         %% ========================================================
         %% CROSS-CUTTING CONCERNS
         %% ========================================================
-        subgraph CrossCutting [<b>Cross-Cutting Concerns</b>]
+        subgraph CrossCutting [<b>🔗 Cross-Cutting Concerns</b>]
             direction LR
-            ServiceBus(<b>Azure Service Bus</b><br>Container: Messaging<br>Routes order events between<br>services via topics)
-            AppInsights(<b>Application Insights</b><br>Container: Observability<br>Collects traces, metrics,<br>and logs via OpenTelemetry)
-            ManagedIdentity(<b>Managed Identity</b><br>Container: Security<br>Provides zero-secret<br>authentication for all services)
+            ServiceBus(<b>📨 Azure Service Bus</b><br><i>Messaging</i><br>Routes order events between<br>services via topics)
+            AppInsights(<b>📈 Application Insights</b><br><i>Observability</i><br>Collects traces, metrics,<br>and logs via OpenTelemetry)
+            ManagedIdentity(<b>🔐 Managed Identity</b><br><i>Security</i><br>Provides zero-secret<br>authentication for all services)
         end
     end
 
@@ -115,30 +129,72 @@ flowchart TB
     %% ============================================================
 
     %% Actor interactions
-    Customer -- "Places and views orders via" --> WebApp
+    Customer -- "Places and views orders" --> WebApp
     Developer -- "Deploys and monitors via azd" --> OrdersAPI
 
     %% Presentation to Application
-    WebApp -- "Sends HTTP requests to" --> OrdersAPI
+    WebApp -- "HTTP requests" --> OrdersAPI
 
     %% Application to Data
-    OrdersAPI -- "Reads/Writes order data to" --> SqlDB
-    LogicApp -- "Archives processed orders to" --> BlobStorage
+    OrdersAPI -- "Reads/Writes order data" --> SqlDB
+    LogicApp -- "Archives processed orders" --> BlobStorage
 
     %% Messaging interactions
-    OrdersAPI -- "Publishes order events to" --> ServiceBus
-    ServiceBus -- "Triggers order processing in" --> LogicApp
-    LogicApp -- "Calls process endpoint on" --> OrdersAPI
+    OrdersAPI -- "Publishes order events" --> ServiceBus
+    ServiceBus -- "Triggers processing" --> LogicApp
+    LogicApp -- "Calls process endpoint" --> OrdersAPI
 
     %% Observability
-    OrdersAPI -. "Exports telemetry to" .-> AppInsights
-    WebApp -. "Exports telemetry to" .-> AppInsights
-    LogicApp -. "Exports telemetry to" .-> AppInsights
-    AppInsights -. "Forwards metrics to" .-> AzureMonitor
+    OrdersAPI -. "Telemetry" .-> AppInsights
+    WebApp -. "Telemetry" .-> AppInsights
+    LogicApp -. "Telemetry" .-> AppInsights
+    AppInsights -. "Forwards metrics" .-> AzureMonitor
 
     %% Security
     OrdersAPI -. "Authenticates via" .-> ManagedIdentity
     LogicApp -. "Authenticates via" .-> ManagedIdentity
+
+    %% ============================================================
+    %% FLUENT UI STYLES
+    %% ============================================================
+    %% Category colors from Azure Emoji Icon Library:
+    %% App Services: fill #0078D4, stroke #005A9E
+    %% Integration: fill #7FBA00, stroke #005A9E
+    %% Databases: fill #0078D4, stroke #005A9E
+    %% Storage: fill #0078D4, stroke #005A9E
+    %% Identity: fill #FFB900, stroke #DA3B01
+    %% Management + Governance: fill #7FBA00, stroke #005A9E
+    %% Containers: fill #00B7C3, stroke #005A9E
+
+    %% Actors
+    style Customer fill:#F5F5F5,stroke:#616161,stroke-width:2px,color:#242424
+    style Developer fill:#F5F5F5,stroke:#616161,stroke-width:2px,color:#242424
+
+    %% External Systems
+    style AzureMonitor fill:#7FBA00,stroke:#005A9E,stroke-width:3px,color:#FFFFFF
+
+    %% Presentation Layer
+    style WebApp fill:#0078D4,stroke:#005A9E,stroke-width:3px,color:#FFFFFF
+
+    %% Application Layer
+    style OrdersAPI fill:#0078D4,stroke:#005A9E,stroke-width:3px,color:#FFFFFF
+    style LogicApp fill:#7FBA00,stroke:#005A9E,stroke-width:3px,color:#FFFFFF
+
+    %% Data Layer
+    style SqlDB fill:#0078D4,stroke:#005A9E,stroke-width:3px,color:#FFFFFF
+    style BlobStorage fill:#0078D4,stroke:#005A9E,stroke-width:3px,color:#FFFFFF
+
+    %% Cross-Cutting Concerns
+    style ServiceBus fill:#7FBA00,stroke:#005A9E,stroke-width:3px,color:#FFFFFF
+    style AppInsights fill:#00B7C3,stroke:#005A9E,stroke-width:3px,color:#FFFFFF
+    style ManagedIdentity fill:#FFB900,stroke:#DA3B01,stroke-width:3px,color:#242424
+
+    %% Subgraph Styles
+    style SystemBoundary fill:#FAFAFA,stroke:#0078D4,stroke-width:2px,color:#242424
+    style Presentation fill:#E8F4FD,stroke:#0078D4,stroke-width:1px,color:#242424
+    style Application fill:#E8F8E8,stroke:#7FBA00,stroke-width:1px,color:#242424
+    style Data fill:#E8F4FD,stroke:#0078D4,stroke-width:1px,color:#242424
+    style CrossCutting fill:#FFF8E1,stroke:#FFB900,stroke-width:1px,color:#242424
 ```
 
 ## Technologies Used
