@@ -86,8 +86,8 @@ flowchart TB
         %% ========================================================
         subgraph Application [<b>Application Layer</b>]
             direction LR
-            OrdersAPI[(<b>eShop Orders API</b><br>Container: ASP.NET Core<br>Manages order CRUD operations<br>and publishes events)]
-            LogicApp[(<b>Orders Management Logic App</b><br>Container: Logic Apps Standard<br>Automates order processing<br>and archival workflows)]
+            OrdersAPI(<b>eShop Orders API</b><br>Container: ASP.NET Core<br>Manages order CRUD operations<br>and publishes events)
+            LogicApp(<b>Orders Management Logic App</b><br>Container: Logic Apps Standard<br>Automates order processing<br>and archival workflows)
         end
 
         %% ========================================================
@@ -104,9 +104,9 @@ flowchart TB
         %% ========================================================
         subgraph CrossCutting [<b>Cross-Cutting Concerns</b>]
             direction LR
-            ServiceBus[<b>Azure Service Bus</b><br>Container: Messaging<br>Routes order events between<br>services via topics]
-            AppInsights[<b>Application Insights</b><br>Container: Observability<br>Collects traces, metrics,<br>and logs via OpenTelemetry]
-            ManagedIdentity[<b>Managed Identity</b><br>Container: Security<br>Provides zero-secret<br>authentication for all services]
+            ServiceBus(<b>Azure Service Bus</b><br>Container: Messaging<br>Routes order events between<br>services via topics)
+            AppInsights(<b>Application Insights</b><br>Container: Observability<br>Collects traces, metrics,<br>and logs via OpenTelemetry)
+            ManagedIdentity(<b>Managed Identity</b><br>Container: Security<br>Provides zero-secret<br>authentication for all services)
         end
     end
 
