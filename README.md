@@ -86,8 +86,8 @@ flowchart TB
         %% ========================================================
         subgraph Application [<b>Application Layer</b>]
             direction LR
-            OrdersAPI[<b>eShop Orders API</b><br>Container: ASP.NET Core<br>Manages order CRUD operations<br>and publishes events]
-            LogicApp[<b>Orders Management Logic App</b><br>Container: Logic Apps Standard<br>Automates order processing<br>and archival workflows]
+            OrdersAPI[(<b>eShop Orders API</b><br>Container: ASP.NET Core<br>Manages order CRUD operations<br>and publishes events)]
+            LogicApp[(<b>Orders Management Logic App</b><br>Container: Logic Apps Standard<br>Automates order processing<br>and archival workflows)]
         end
 
         %% ========================================================
