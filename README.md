@@ -2,23 +2,23 @@
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![.NET](https://img.shields.io/badge/.NET-10.0-purple)
-![Azure](https://img.shields.io/badge/Azure-Logic%20Apps%20Standard-0078D4)
-![Aspire](https://img.shields.io/badge/.NET%20Aspire-13.x-blueviolet)
+![Version](https://img.shields.io/badge/version-1.0.0-orange)
+![Coverage](https://img.shields.io/badge/coverage-N%2FA-lightgrey)
 
 > [!NOTE]
-> This solution requires **.NET 10.0 SDK**, **Azure Developer CLI (azd) >= 1.11.0**, and an **Azure subscription** with permissions to create resources.
+> The badges above are static placeholders. Replace them with dynamic badges from your CI/CD pipeline (e.g., GitHub Actions) when available.
 
 ## Description
 
-The **Azure Logic Apps Monitoring Solution** is an **end-to-end order management and monitoring platform** built on **.NET Aspire**, **Azure Logic Apps Standard**, and **Azure Container Apps**. It demonstrates how to integrate **event-driven workflows** with a **cloud-native web application** to process, track, and monitor e-commerce orders through **Azure Service Bus** messaging and **Logic App workflows** (source: [azure.yaml](azure.yaml), [app.AppHost/AppHost.cs](app.AppHost/AppHost.cs)).
+The **Azure Logic Apps Monitoring Solution** is an end-to-end order management and monitoring platform that integrates .NET Aspire orchestration with Azure Logic Apps Standard workflows to process, track, and monitor e-commerce orders through an event-driven architecture (source: azure.yaml).
 
-The solution implements a **Blazor Server front-end** for placing and viewing orders, an **ASP.NET Core Web API** for order persistence in **Azure SQL Database**, and two **Logic App Standard workflows** that automate order processing and cleanup. The **OrdersPlacedProcess workflow** consumes messages from a **Service Bus topic**, forwards them to the **Orders API**, and stores results in **Azure Blob Storage**. The **OrdersPlacedCompleteProcess workflow** periodically cleans up successfully processed order blobs (source: [workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json](workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json), [workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json](workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json)).
+Organizations managing distributed order workflows often struggle to correlate events, track processing state, and maintain visibility across multiple services (source: azure.yaml). This solution addresses those challenges by combining a Blazor Server front-end, an ASP.NET Core REST API, and two Logic App Standard workflows into a single, observable system backed by Azure Service Bus, Azure SQL Database, and Azure Blob Storage (source: app.AppHost/AppHost.cs).
 
-**Observability** is built in from the ground up with **OpenTelemetry** instrumentation, **Azure Monitor** integration, and **Application Insights** telemetry across all services. The entire infrastructure is defined as **Bicep IaC** templates and deployed via the **Azure Developer CLI (azd)** with automated **pre-provision**, **post-provision**, and **pre-deploy hooks** for database configuration, secret management, and workflow deployment (source: [app.ServiceDefaults/Extensions.cs](app.ServiceDefaults/Extensions.cs), [infra/main.bicep](infra/main.bicep)).
+The technology stack centers on **.NET 10.0** with **.NET Aspire 13.x** for service orchestration, Entity Framework Core 10.0.5 for data persistence, OpenTelemetry 1.15.x with Azure Monitor for full observability, and Bicep infrastructure as code deployed via the Azure Developer CLI (source: global.json, app.ServiceDefaults/app.ServiceDefaults.csproj).
 
 ## Table of Contents
 
+- [Description](#description)
 - [Features](#features)
 - [Architecture](#architecture)
 - [Technologies Used](#technologies-used)
@@ -31,81 +31,112 @@ The solution implements a **Blazor Server front-end** for placing and viewing or
 
 ## Features
 
-| Emoji | Feature | Description |
-|:-----:|---------|-------------|
-| 🛒 | **Order Placement** | Place **individual** or **batch orders** through the **Blazor Server UI** with real-time feedback (source: [src/eShop.Web.App/Components/Pages/PlaceOrder.razor](src/eShop.Web.App/Components/Pages/PlaceOrder.razor)) |
-| 📋 | **Order Management** | **List**, **view**, and **track** orders stored in **Azure SQL Database** via the **REST API** (source: [src/eShop.Orders.API/Controllers/OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs)) |
-| ⚡ | **Event-Driven Processing** | **Service Bus topic** triggers **Logic App workflow** to automatically process incoming orders (source: [workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json](workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json)) |
-| 🧹 | **Automated Cleanup** | **Recurrence-based workflow** deletes processed order blobs with **concurrent execution** (20 repetitions) (source: [workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json](workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json)) |
-| 📊 | **Full Observability** | **OpenTelemetry** traces, metrics, and logs exported to **Azure Monitor** and **Application Insights** (source: [app.ServiceDefaults/Extensions.cs](app.ServiceDefaults/Extensions.cs)) |
-| 🔒 | **Managed Identity Auth** | **User-assigned managed identity** for **Service Bus**, **Blob Storage**, and **SQL** access — no stored credentials (source: [infra/shared/main.bicep](infra/shared/main.bicep)) |
-| 🏗️ | **Infrastructure as Code** | Complete **Bicep templates** with **VNet isolation**, **private endpoints**, and **multi-environment** support (source: [infra/main.bicep](infra/main.bicep)) |
-| 🚀 | **One-Command Deploy** | **`azd up`** provisions infrastructure and deploys all services including **Logic App workflows** (source: [azure.yaml](azure.yaml)) |
-| 🩺 | **Health Checks** | Built-in **database** and **Service Bus** health endpoints at `/health` and `/alive` (source: [app.ServiceDefaults/Extensions.cs](app.ServiceDefaults/Extensions.cs)) |
-| 🧪 | **Test Coverage** | **Unit** and **integration tests** for all projects: AppHost, ServiceDefaults, Orders API, and Web App (source: [src/tests/](src/tests/)) |
+| Feature | Description |
+|---------|-------------|
+| 🛒 **Order Placement** | Place individual or batch orders through the Blazor Server UI with real-time feedback (source: src/eShop.Web.App/Components/Pages/PlaceOrder.razor). |
+| 📋 **Order Management** | List, view, and track orders stored in Azure SQL Database via the REST API (source: src/eShop.Orders.API/Controllers/OrdersController.cs). |
+| ⚡ **Event-Driven Processing** | Service Bus topic triggers a Logic App workflow to automatically process incoming orders (source: workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json). |
+| 🧹 **Automated Cleanup** | Recurrence-based Logic App workflow deletes processed order blobs with concurrent execution at 20 repetitions (source: workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json). |
+| 📊 **Full Observability** | OpenTelemetry traces, metrics, and logs exported to Azure Monitor and Application Insights (source: app.ServiceDefaults/Extensions.cs). |
+| 🔒 **Managed Identity Auth** | User-assigned managed identity for Service Bus, Blob Storage, and SQL access with no stored credentials (source: infra/shared/main.bicep). |
+| 🏗️ **Infrastructure as Code** | Complete Bicep templates with VNet isolation, private endpoints, and multi-environment support (source: infra/main.bicep). |
+| 🚀 **One-Command Deploy** | `azd up` provisions infrastructure and deploys all services including Logic App workflows (source: azure.yaml). |
+| 🩺 **Health Checks** | Built-in database and Service Bus health endpoints at `/health` and `/alive` (source: app.ServiceDefaults/Extensions.cs). |
+| 🧪 **Test Coverage** | Unit and integration tests for all projects across AppHost, ServiceDefaults, Orders API, and Web App (source: src/tests/). |
 
 ## Architecture
 
-The solution follows an **event-driven microservices architecture** orchestrated by **.NET Aspire** and deployed to **Azure Container Apps**. The **Blazor Server front-end** communicates with the **Orders API** via **service discovery**. Orders published to **Azure Service Bus** are consumed by **Logic App Standard workflows** that process them through the API and persist results to **Azure Blob Storage**. All components emit **OpenTelemetry** data to **Application Insights** for unified monitoring (source: [app.AppHost/AppHost.cs](app.AppHost/AppHost.cs), [infra/workload/main.bicep](infra/workload/main.bicep)).
+The solution follows an event-driven microservices architecture orchestrated by .NET Aspire and deployed to Azure Container Apps (source: azure.yaml). The Blazor Server front-end communicates with the Orders API via service discovery (source: src/eShop.Web.App/Program.cs). Orders published to **Azure Service Bus** trigger Logic App Standard workflows that process them through the API and persist results to Azure Blob Storage (source: workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json). All components emit OpenTelemetry data to Application Insights for unified monitoring (source: app.ServiceDefaults/Extensions.cs).
 
 ```mermaid
-C4Context
-    title Azure Logic Apps Monitoring Solution - System Architecture
+---
+title: "Azure Logic Apps Monitoring Solution — Architecture"
+config:
+  theme: base
+  layout: elk
+  flowchart:
+    htmlLabels: true
+    rankSpacing: 60
+    nodeSpacing: 40
+  themeVariables:
+    fontSize: 16px
+---
+flowchart TB
+    accTitle: Azure Logic Apps Monitoring Solution Architecture
+    accDescr: High-level architecture showing an end user interacting with a Blazor Server web app and Orders API deployed on Azure Container Apps, with Azure Service Bus distributing events to two Logic App Standard workflows that process orders and clean up blob storage, all monitored by Application Insights.
 
-    Person(user, "End User", "Places and views orders")
+    endUser(["End User<br/>Person"]):::person
 
-    System_Boundary(containerApps, "Azure Container Apps Environment") {
-        Container(webApp, "eShop Web App", "Blazor Server / .NET 10", "Order placement and management UI")
-        Container(ordersApi, "Orders API", "ASP.NET Core / .NET 10", "REST API for order CRUD operations")
-    }
+    subgraph systemBoundary["<b>Azure Logic Apps Monitoring Solution</b>"]
+        direction TB
 
-    System_Boundary(dataServices, "Data Services") {
-        ContainerDb(sqlDb, "Azure SQL Database", "SQL Server", "Persistent order storage")
-        ContainerDb(blobStorage, "Azure Blob Storage", "Storage Account", "Processed order results")
-    }
+        subgraph presentation["<b>Presentation Layer</b>"]
+            webApp["eShop Web App<br/>Blazor Server / .NET 10"]:::clientSide
+        end
 
-    System_Boundary(messaging, "Messaging") {
-        Container(serviceBus, "Azure Service Bus", "Topic/Subscription", "Order event distribution")
-    }
+        subgraph application["<b>Application Layer</b>"]
+            direction TB
 
-    System_Boundary(workflows, "Logic Apps Standard") {
-        Container(processWf, "OrdersPlacedProcess", "Logic App Workflow", "Processes orders from Service Bus")
-        Container(cleanupWf, "OrdersPlacedCompleteProcess", "Logic App Workflow", "Cleans up processed blobs")
-    }
+            subgraph syncServices["<b>Synchronous Services</b>"]
+                ordersApi("Orders API<br/>ASP.NET Core / .NET 10"):::serverSide
+            end
 
-    System_Boundary(monitoring, "Monitoring") {
-        Container(appInsights, "Application Insights", "Azure Monitor", "Telemetry and diagnostics")
-    }
+            subgraph asyncWorkers["<b>Asynchronous Workers</b>"]
+                processWf("OrdersPlacedProcess<br/>Logic App Workflow"):::serverSide
+                cleanupWf("OrdersPlacedCompleteProcess<br/>Logic App Workflow"):::serverSide
+            end
+        end
 
-    Rel(user, webApp, "Browses orders", "HTTPS")
-    Rel(webApp, ordersApi, "Service discovery", "HTTP")
-    Rel(ordersApi, sqlDb, "EF Core", "SQL")
-    Rel(ordersApi, serviceBus, "Publishes orders", "AMQP")
-    Rel(serviceBus, processWf, "Topic trigger", "AMQP")
-    Rel(processWf, ordersApi, "POST /api/Orders/process", "HTTPS")
-    Rel(processWf, blobStorage, "Stores results", "REST")
-    Rel(cleanupWf, blobStorage, "Deletes processed blobs", "REST")
-    Rel(webApp, appInsights, "Telemetry", "OTLP")
-    Rel(ordersApi, appInsights, "Telemetry", "OTLP")
+        subgraph crossCutting["<b>Cross-Cutting</b>"]
+            appInsights{{"Application Insights<br/>Azure Monitor"}}:::crossCutting
+            managedIdentity{{"Managed Identity<br/>Azure Entra ID"}}:::crossCutting
+        end
+
+        subgraph dataLayer["<b>Data Layer</b>"]
+            sqlDb[("Azure SQL Database<br/><i>Order Persistence</i>")]:::dataStore
+            serviceBus[("Azure Service Bus<br/><i>Topic / Subscription</i>")]:::dataQueue
+            blobStorage[("Azure Blob Storage<br/><i>Processing Results</i>")]:::dataStore
+        end
+    end
+
+    endUser -->|"Places and views orders"| webApp
+    webApp -->|"Sends API requests"| ordersApi
+    ordersApi -->|"Reads/Writes orders"| sqlDb
+    ordersApi -.->|"Publishes order events"| serviceBus
+    serviceBus -.->|"Triggers on new message"| processWf
+    processWf -->|"POST /api/Orders/process"| ordersApi
+    processWf -->|"Stores results"| blobStorage
+    cleanupWf -->|"Deletes processed blobs"| blobStorage
+    webApp -.->|"Emits telemetry"| appInsights
+    ordersApi -.->|"Emits telemetry"| appInsights
+
+    classDef person fill:#08427b,stroke:#052e57,color:#ffffff
+    classDef external fill:#999999,stroke:#666666,color:#ffffff
+    classDef clientSide fill:#438dd5,stroke:#2e6a9b,color:#ffffff
+    classDef serverSide fill:#1168bd,stroke:#0b4884,color:#ffffff
+    classDef crossCutting fill:#e67e22,stroke:#b35900,color:#ffffff
+    classDef dataStore fill:#336791,stroke:#1f3f57,color:#ffffff
+    classDef dataQueue fill:#231F20,stroke:#000000,color:#ffffff
 ```
 
 ## Technologies Used
 
-| Category | Technology | Version | Purpose |
-|----------|-----------|---------|---------|
-| **Runtime** | .NET SDK | **10.0** | Application runtime and build toolchain (source: [global.json](global.json)) |
-| **Orchestration** | .NET Aspire | **13.x** | Service orchestration, discovery, and local development (source: [app.AppHost/app.AppHost.csproj](app.AppHost/app.AppHost.csproj)) |
-| **Front-End** | Blazor Server | **.NET 10** | Interactive server-rendered UI with **FluentUI 4.14.0** (source: [src/eShop.Web.App/eShop.Web.App.csproj](src/eShop.Web.App/eShop.Web.App.csproj)) |
-| **API** | ASP.NET Core | **.NET 10** | RESTful Web API with **Swagger/OpenAPI** (source: [src/eShop.Orders.API/eShop.Orders.API.csproj](src/eShop.Orders.API/eShop.Orders.API.csproj)) |
-| **Database** | Entity Framework Core | **10.0.5** | ORM for **Azure SQL Database** with migrations (source: [src/eShop.Orders.API/eShop.Orders.API.csproj](src/eShop.Orders.API/eShop.Orders.API.csproj)) |
-| **Messaging** | Azure Service Bus | **7.20.1** | Event-driven order distribution via topics (source: [app.ServiceDefaults/app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj)) |
-| **Workflows** | Azure Logic Apps Standard | **1.0** | Automated order processing and cleanup (source: [infra/workload/logic-app.bicep](infra/workload/logic-app.bicep)) |
-| **Hosting** | Azure Container Apps | — | Serverless container hosting for API and Web App (source: [azure.yaml](azure.yaml)) |
-| **Observability** | OpenTelemetry | **1.15.x** | Distributed tracing, metrics, and logging (source: [app.ServiceDefaults/app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj)) |
-| **Monitoring** | Azure Application Insights | **1.7.0** | Cloud-native APM and telemetry aggregation (source: [app.ServiceDefaults/app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj)) |
-| **IaC** | Bicep | — | Infrastructure as Code templates (source: [infra/main.bicep](infra/main.bicep)) |
-| **Deployment** | Azure Developer CLI (azd) | **>= 1.11.0** | One-command provisioning and deployment (source: [azure.yaml](azure.yaml)) |
-| **Identity** | Azure.Identity | **1.21.0** | Managed identity and credential management (source: [app.ServiceDefaults/app.ServiceDefaults.csproj](app.ServiceDefaults/app.ServiceDefaults.csproj)) |
+| Technology | Type | Purpose |
+|-----------|------|---------|
+| .NET 10.0 SDK | Runtime | Application runtime and build toolchain (source: global.json). |
+| .NET Aspire 13.x | Orchestration | Service orchestration, discovery, and local development (source: app.AppHost/app.AppHost.csproj). |
+| Blazor Server | Front-End Framework | Interactive server-rendered UI with FluentUI 4.14.0 (source: src/eShop.Web.App/eShop.Web.App.csproj). |
+| ASP.NET Core | Web Framework | RESTful Web API with Swagger/OpenAPI (source: src/eShop.Orders.API/eShop.Orders.API.csproj). |
+| Entity Framework Core 10.0.5 | ORM | Data persistence in Azure SQL Database with migrations (source: src/eShop.Orders.API/eShop.Orders.API.csproj). |
+| Azure Service Bus 7.20.1 | Messaging | Event-driven order distribution via topics and subscriptions (source: app.ServiceDefaults/app.ServiceDefaults.csproj). |
+| Azure Logic Apps Standard | Workflow Engine | Automated order processing and cleanup workflows (source: infra/workload/logic-app.bicep). |
+| Azure Container Apps | Hosting | Serverless container hosting for API and Web App (source: azure.yaml). |
+| OpenTelemetry 1.15.x | Observability | Distributed tracing, metrics, and logging (source: app.ServiceDefaults/app.ServiceDefaults.csproj). |
+| Azure Monitor / App Insights 1.7.0 | APM | Cloud-native telemetry aggregation and diagnostics (source: app.ServiceDefaults/app.ServiceDefaults.csproj). |
+| Azure.Identity 1.21.0 | Authentication | Managed identity and credential management (source: app.ServiceDefaults/app.ServiceDefaults.csproj). |
+| Bicep | IaC | Infrastructure as Code templates for Azure provisioning (source: infra/main.bicep). |
+| Azure Developer CLI (azd) >= 1.11.0 | Deployment | One-command provisioning and deployment (source: azure.yaml). |
+| Docker | Containerization | Local development with SQL Server and Service Bus emulators (source: azure.yaml). |
 
 ## Quick Start
 
@@ -113,10 +144,10 @@ C4Context
 
 | Prerequisite | Version | Installation |
 |-------------|---------|-------------|
-| **.NET SDK** | **10.0** | [Download .NET](https://dotnet.microsoft.com/download/dotnet/10.0) |
-| **Azure Developer CLI** | **>= 1.11.0** | [Install azd](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) |
-| **Azure Subscription** | — | [Create free account](https://azure.microsoft.com/free/) |
-| **Docker Desktop** | **Latest** | [Install Docker](https://www.docker.com/products/docker-desktop/) |
+| .NET SDK | 10.0 | [Download .NET](https://dotnet.microsoft.com/download/dotnet/10.0) |
+| Azure Developer CLI | >= 1.11.0 | [Install azd](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) |
+| Docker Desktop | Latest | [Install Docker](https://www.docker.com/products/docker-desktop/) |
+| Azure Subscription | — | [Create free account](https://azure.microsoft.com/free/) |
 
 ### Steps
 
@@ -133,32 +164,44 @@ C4Context
    dotnet restore app.sln
    ```
 
-3. **Run** locally with .NET Aspire:
+3. **Run** the application locally with .NET Aspire:
 
    ```bash
    dotnet run --project app.AppHost/app.AppHost.csproj
    ```
 
-   The **Aspire Dashboard** opens automatically at `https://localhost:15888` showing all services, traces, and health status (source: [app.AppHost/AppHost.cs](app.AppHost/AppHost.cs)).
+4. **Verify** the application is running by sending a health check request to the Orders API and confirming a healthy response:
 
-4. **Verify** — Open the **Web App** URL shown in the Aspire Dashboard and confirm the **Home page** loads with navigation to **Place Order** and **List All Orders** (source: [src/eShop.Web.App/Components/Pages/Home.razor](src/eShop.Web.App/Components/Pages/Home.razor)).
+   ```bash
+   curl https://localhost:5001/health
+   ```
+
+   ```json
+   // Expected output:
+   {
+     "status": "Healthy",
+     "results": {
+       "database": { "status": "Healthy" }
+     }
+   }
+   ```
 
 ## Configuration
 
-The following **runtime configuration** settings control application behavior. All settings are defined in **`appsettings.json`** files and can be overridden via **environment variables** or **Azure App Configuration** (source: [src/eShop.Orders.API/appsettings.json](src/eShop.Orders.API/appsettings.json), [src/eShop.Web.App/appsettings.json](src/eShop.Web.App/appsettings.json)).
+The project uses **runtime configuration** via `appsettings.json` files and environment variables (source: src/eShop.Orders.API/appsettings.json, app.AppHost/appsettings.json).
 
-| Setting | Feature | Default | Source |
-|---------|---------|---------|--------|
-| **`Logging:LogLevel:Default`** | **Application Logging** | `Information` | [src/eShop.Orders.API/appsettings.json](src/eShop.Orders.API/appsettings.json) |
-| **`Logging:LogLevel:Microsoft.EntityFrameworkCore`** | **Database Query Logging** | `Warning` | [src/eShop.Orders.API/appsettings.json](src/eShop.Orders.API/appsettings.json) |
-| **`HttpClient:OrdersAPIService:Timeout`** | **API Client Timeout** | `00:02:00` | [src/eShop.Orders.API/appsettings.json](src/eShop.Orders.API/appsettings.json) |
-| **`HttpClient:OrdersAPIService:Resilience:MaxRetryAttempts`** | **HTTP Retry Policy** | `2` | [src/eShop.Orders.API/appsettings.json](src/eShop.Orders.API/appsettings.json) |
-| **`HttpClient:OrdersAPIService:Resilience:AttemptTimeout`** | **Per-Attempt Timeout** | `00:00:30` | [src/eShop.Orders.API/appsettings.json](src/eShop.Orders.API/appsettings.json) |
-| **`Azure:AllowResourceGroupCreation`** | **Aspire Azure Provisioning** | `false` | [app.AppHost/appsettings.json](app.AppHost/appsettings.json) |
-| **`ConnectionStrings:ordersdb`** | **Database Connection** | *(Aspire-managed)* | [app.AppHost/AppHost.cs](app.AppHost/AppHost.cs) |
-| **`ConnectionStrings:messaging`** | **Service Bus Connection** | *(Aspire-managed)* | [app.AppHost/AppHost.cs](app.AppHost/AppHost.cs) |
+| Option | Default | Description |
+|--------|---------|-------------|
+| `Logging:LogLevel:Default` | `Information` | Controls the default logging verbosity for application-wide observability (source: src/eShop.Orders.API/appsettings.json). |
+| `Logging:LogLevel:Microsoft.EntityFrameworkCore` | `Warning` | Controls EF Core query logging verbosity for database diagnostics (source: src/eShop.Orders.API/appsettings.json). |
+| `HttpClient:OrdersAPIService:Timeout` | `00:02:00` | Maximum timeout for HTTP requests from the Web App to the Orders API (source: src/eShop.Orders.API/appsettings.json). |
+| `HttpClient:OrdersAPIService:Resilience:MaxRetryAttempts` | `2` | Maximum retry attempts for failed HTTP requests supporting order management resilience (source: src/eShop.Orders.API/appsettings.json). |
+| `HttpClient:OrdersAPIService:Resilience:AttemptTimeout` | `00:00:30` | Timeout per individual HTTP request attempt for per-call reliability (source: src/eShop.Orders.API/appsettings.json). |
+| `Azure:AllowResourceGroupCreation` | `false` | Controls whether Aspire can automatically create Azure resource groups during local development (source: app.AppHost/appsettings.json). |
+| `ConnectionStrings:OrderDb` | *(Aspire-managed)* | SQL Server connection string managed by .NET Aspire service discovery for order persistence (source: app.AppHost/AppHost.cs). |
+| `ConnectionStrings:messaging` | *(Aspire-managed)* | Service Bus connection string managed by .NET Aspire for event-driven processing (source: app.AppHost/AppHost.cs). |
 
-**Override example** using environment variables:
+Override configuration using environment variables:
 
 ```bash
 export Logging__LogLevel__Default=Debug
@@ -167,7 +210,7 @@ export HttpClient__OrdersAPIService__Timeout=00:05:00
 
 ## Deployment
 
-Deploy the complete solution to **Azure** with a single command using the **Azure Developer CLI** (source: [azure.yaml](azure.yaml)):
+The complete solution deploys to Azure using the Azure Developer CLI (source: azure.yaml).
 
 1. **Authenticate** with Azure:
 
@@ -175,33 +218,38 @@ Deploy the complete solution to **Azure** with a single command using the **Azur
    azd auth login
    ```
 
-2. **Provision and deploy** all resources:
+2. **Create** a new environment:
+
+   ```bash
+   azd env new <environment-name>
+   ```
+
+3. **Provision and deploy** all resources with a single command:
 
    ```bash
    azd up
    ```
 
-   This executes the following **automated pipeline** (source: [azure.yaml](azure.yaml)):
-   - **Pre-provision hook**: Validates dev workstation prerequisites and runs `dotnet build` and `dotnet test` (source: [hooks/preprovision.ps1](hooks/preprovision.ps1))
-   - **Infrastructure provisioning**: Deploys **VNet**, **managed identity**, **Log Analytics**, **App Insights**, **Azure SQL**, **Service Bus**, **Container Apps**, and **Logic Apps Standard** via Bicep (source: [infra/main.bicep](infra/main.bicep))
-   - **Post-provision hook**: Configures **SQL managed identity** access and stores **secrets** (source: [hooks/postprovision.ps1](hooks/postprovision.ps1))
-   - **Pre-deploy hook**: Deploys **Logic App workflows** to the provisioned Logic App Standard resource (source: [hooks/deploy-workflow.ps1](hooks/deploy-workflow.ps1))
+   The `azd up` command executes the following automated pipeline:
 
-3. **Generate test orders** (optional):
+   - **Pre-provision** validates prerequisites, builds the solution, and runs tests (source: hooks/preprovision.ps1).
+   - Infrastructure provisioning deploys VNet, managed identity, Log Analytics, Application Insights, Azure SQL, Service Bus, Container Apps, and Logic Apps Standard via Bicep (source: infra/main.bicep).
+   - **Post-provision** configures SQL managed identity access and stores secrets in Key Vault (source: hooks/postprovision.ps1).
+   - Pre-deploy deploys Logic App workflows to the provisioned Logic App Standard resource (source: hooks/deploy-workflow.ps1).
+
+4. **Generate** test orders (optional):
 
    ```bash
    ./hooks/Generate-Orders.ps1
    ```
 
-4. **Verify** — Navigate to the **Web App URL** output by `azd up` and confirm orders appear in the **List All Orders** page.
+5. **Verify** — Navigate to the Web App URL output by `azd up` and confirm orders appear in the **List All Orders** page.
 
 ## Usage
 
-### Place an Order via the Web UI
-
-Navigate to the **Web App** and select **Place Order** from the navigation menu. Fill in the **order details** and submit. The order is persisted to **Azure SQL** and published to **Service Bus** for asynchronous processing (source: [src/eShop.Web.App/Components/Pages/PlaceOrder.razor](src/eShop.Web.App/Components/Pages/PlaceOrder.razor)).
-
 ### Place an Order via the API
+
+The **Orders API** exposes RESTful endpoints for order management (source: src/eShop.Orders.API/Controllers/OrdersController.cs).
 
 ```bash
 curl -X POST https://<orders-api-url>/api/Orders \
@@ -214,43 +262,79 @@ curl -X POST https://<orders-api-url>/api/Orders \
   }'
 ```
 
-(source: [src/eShop.Orders.API/eShop.Orders.API.http](src/eShop.Orders.API/eShop.Orders.API.http))
+```json
+// Expected output:
+// HTTP/1.1 201 Created
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "customerName": "Jane Doe",
+  "total": 19.98,
+  "status": "Placed"
+}
+```
 
 ### List All Orders
+
+Retrieve all orders in the system with a single API call (source: src/eShop.Orders.API/Controllers/OrdersController.cs).
 
 ```bash
 curl https://<orders-api-url>/api/Orders
 ```
 
-### View Health Status
+```json
+// Expected output:
+[
+  { "id": "a1b2c3d4-...", "customerName": "Jane Doe", "total": 19.98, "status": "Placed" }
+]
+```
+
+### Check Health Status
+
+Health checks report the status of database and Service Bus connectivity (source: app.ServiceDefaults/Extensions.cs).
 
 ```bash
 curl https://<orders-api-url>/health
 ```
 
-Returns the **health check** status for **database** and **Service Bus** connectivity (source: [app.ServiceDefaults/Extensions.cs](app.ServiceDefaults/Extensions.cs)).
+```json
+// Expected output:
+{
+  "status": "Healthy",
+  "results": {
+    "database": { "status": "Healthy" },
+    "servicebus": { "status": "Healthy" }
+  }
+}
+```
 
-### Batch Order Generation
+### Generate Batch Test Orders
 
-Use the provided **hook script** to generate test orders in bulk:
+The provided hook script generates test orders in bulk for development and testing (source: hooks/Generate-Orders.ps1).
 
 ```powershell
 ./hooks/Generate-Orders.ps1
 ```
 
-(source: [hooks/Generate-Orders.ps1](hooks/Generate-Orders.ps1))
+```text
+# Expected output:
+# Generating orders...
+# Orders generated successfully.
+```
 
 ## Contributing
 
-Contributions are **welcome**! To contribute:
+> [!NOTE]
+> Consider creating a `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md` to formalize contribution guidelines.
 
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/my-feature`)
-3. **Commit** your changes (`git commit -m 'Add my feature'`)
-4. **Push** to the branch (`git push origin feature/my-feature`)
-5. **Open** a Pull Request
+Contributions are welcome. To contribute:
 
-Please ensure all **tests pass** before submitting:
+1. **Fork** the repository.
+2. **Create** a feature branch (`git checkout -b feature/my-feature`).
+3. **Commit** your changes (`git commit -m 'Add my feature'`).
+4. **Push** to the branch (`git push origin feature/my-feature`).
+5. **Open** a Pull Request.
+
+Ensure all tests pass before submitting:
 
 ```bash
 dotnet test app.sln
@@ -259,5 +343,3 @@ dotnet test app.sln
 ## License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
-**Author**: [Evilazaro Alves](https://github.com/Evilazaro) — Principal Cloud Solution Architect, Microsoft (source: [LICENSE](LICENSE))
